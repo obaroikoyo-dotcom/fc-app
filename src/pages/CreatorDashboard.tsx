@@ -14,7 +14,7 @@ export default function CreatorDashboard({ navigate }: Props) {
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1.25rem", textAlign: "center" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1.25rem", textAlign: "center", paddingBottom: "6rem" }}>
         <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Welcome back</p>
         <p style={{ fontSize: "13px", color: "#444" }}>Explore brand campaigns or update your profile.</p>
         <div onClick={() => navigate("explore")} style={{ marginTop: "2rem", padding: "13px 2rem", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -22,17 +22,6 @@ export default function CreatorDashboard({ navigate }: Props) {
         </div>
       </div>
 
-      {/* Bottom Nav */}
-      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a" }}>
-        <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◎</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
-        </div>
-        <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◉</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
-        </div>
-      </div>
     </div>
   );
 }

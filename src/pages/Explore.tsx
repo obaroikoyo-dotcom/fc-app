@@ -167,23 +167,7 @@ useEffect(() => {
           ))
         )}
       </div>
-
-      {/* Bottom Nav */}
-      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◎</span>
-          <span style={{ fontSize: "10px", color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
-        </div>
-        <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>💬</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
-        </div>
-        <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◉</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
-        </div>
-      </div>
-
+  
       {/* Overlay */}
       {showSheet && <div onClick={() => setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
 
