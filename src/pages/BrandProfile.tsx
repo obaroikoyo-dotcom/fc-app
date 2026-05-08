@@ -44,8 +44,8 @@ export default function BrandProfile({ navigate }: Props) {
   };
 
   const saveProfile = async () => {
+    console.log("userId:", userId);
     if (!userId) return;
-    setSaving(true);
 
     const profileData = { id: userId, name, bio, website, instagram, tiktok, niche, location };
 

@@ -31,9 +31,22 @@ export default function Explore({ navigate }: Props) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, []);
+useEffect(() => {
+  fetchCampaigns();
+
+  const channel = supabase
+    .channel("campaigns-feed")
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "campaigns",
+    }, (payload) => {
+      setCampaigns(prev => [payload.new as Campaign, ...prev]);
+    })
+    .subscribe();
+
+  return () => { supabase.removeChannel(channel); };
+}, []);
 
   const fetchCampaigns = async () => {
     setLoading(true);

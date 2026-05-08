@@ -13,23 +13,57 @@ import Search from "./pages/Search";
 
 export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator";
 
+const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
+
+function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => void }) {
+  return (
+    <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%", zIndex: 100 }}>
+      <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+        <span style={{ fontSize: "20px" }}>◎</span>
+        <span style={{ fontSize: "10px", color: page === "explore" ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
+      </div>
+      <div onClick={() => navigate("search-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+        <span style={{ fontSize: "20px" }}>🔍</span>
+        <span style={{ fontSize: "10px", color: page === "search-creator" ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
+      </div>
+      <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+        <span style={{ fontSize: "20px" }}>💬</span>
+        <span style={{ fontSize: "10px", color: page === "messages-creator" ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
+      </div>
+      <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+        <span style={{ fontSize: "20px" }}>◉</span>
+        <span style={{ fontSize: "10px", color: page === "creator-profile" ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [page, setPage] = useState<Page>("role-select");
   const navigate = (p: Page) => setPage(p);
 
-  switch (page) {
-    case "role-select": return <RoleSelect navigate={navigate} />;
-    case "brand-signup": return <BrandSignup navigate={navigate} />;
-    case "creator-signup": return <CreatorSignup navigate={navigate} />;
-    case "login": return <Login navigate={navigate} />;
-    case "brand-dashboard": return <BrandDashboard navigate={navigate} />;
-    case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
-    case "creator-profile": return <CreatorProfile navigate={navigate} />;
-    case "brand-profile": return <BrandProfile navigate={navigate} />;
-    case "explore": return <Explore navigate={navigate} />;
-    case "messages-creator": return <Messages navigate={navigate} role="creator" />;
-    case "messages-brand": return <Messages navigate={navigate} role="brand" />;
-    case "search-creator": return <Search navigate={navigate} />;
-    default: return <RoleSelect navigate={navigate} />;
-  }
+  const renderPage = () => {
+    switch (page) {
+      case "role-select": return <RoleSelect navigate={navigate} />;
+      case "brand-signup": return <BrandSignup navigate={navigate} />;
+      case "creator-signup": return <CreatorSignup navigate={navigate} />;
+      case "login": return <Login navigate={navigate} />;
+      case "brand-dashboard": return <BrandDashboard navigate={navigate} />;
+      case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
+      case "creator-profile": return <CreatorProfile navigate={navigate} />;
+      case "brand-profile": return <BrandProfile navigate={navigate} />;
+      case "explore": return <Explore navigate={navigate} />;
+      case "messages-creator": return <Messages navigate={navigate} role="creator" />;
+      case "messages-brand": return <Messages navigate={navigate} role="brand" />;
+      case "search-creator": return <Search navigate={navigate} />;
+      default: return <RoleSelect navigate={navigate} />;
+    }
+  };
+
+  return (
+    <div>
+      {renderPage()}
+      {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} />}
+    </div>
+  );
 }
