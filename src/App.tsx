@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RoleSelect from "./pages/RoleSelect";
 import BrandSignup from "./pages/BrandSignup";
 import CreatorSignup from "./pages/CreatorSignup";
@@ -10,6 +10,7 @@ import BrandProfile from "./pages/BrandProfile";
 import Explore from "./pages/Explore";
 import Messages from "./pages/Messages";
 import Search from "./pages/Search";
+import { supabase } from "./lib/supabase";
 
 export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator";
 
@@ -40,7 +41,41 @@ function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => voi
 
 export default function App() {
   const [page, setPage] = useState<Page>("role-select");
+  const [loading, setLoading] = useState(true);
+
   const navigate = (p: Page) => setPage(p);
+
+  useEffect(() => {
+    // Check for existing session on load
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile?.role === "brand") setPage("brand-dashboard");
+        else if (profile?.role === "creator") setPage("explore");
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") setPage("role-select");
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#333", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
+      </div>
+    );
+  }
 
   const renderPage = () => {
     switch (page) {
