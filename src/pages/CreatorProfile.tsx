@@ -11,6 +11,7 @@ const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
 export default function CreatorProfile({ navigate }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [niche, setNiche] = useState("");
@@ -61,14 +62,24 @@ export default function CreatorProfile({ navigate }: Props) {
       setAudienceLocation(data.audience_location || "");
       setRates(data.rates || { post: "", story: "", reel: "", video: "", ugc: "" });
       setCollabs(data.collabs || [{ brand: "", description: "" }]);
+      setProfilePic(data.avatar_url || null);
+      setAvatarUrl(data.avatar_url || null);
     }
   };
 
   useEffect(() => { loadProfile(); }, []);
 
-  const handlePic = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setProfilePic(URL.createObjectURL(file));
+    if (!file || !userId) return;
+    const fileExt = file.name.split(".").pop();
+    const filePath = `creators/${userId}.${fileExt}`;
+    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      setProfilePic(data.publicUrl);
+      setAvatarUrl(data.publicUrl);
+    }
   };
 
   const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +119,7 @@ export default function CreatorProfile({ navigate }: Props) {
       audience_location: audienceLocation,
       rates,
       collabs,
+      avatar_url: avatarUrl,
     };
 
     const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
@@ -164,7 +176,6 @@ export default function CreatorProfile({ navigate }: Props) {
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
-      {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
         <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>

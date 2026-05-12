@@ -6,6 +6,7 @@ interface Props { navigate: (p: Page) => void; }
 
 export default function BrandProfile({ navigate }: Props) {
   const [logo, setLogo] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [website, setWebsite] = useState("");
@@ -33,21 +34,35 @@ export default function BrandProfile({ navigate }: Props) {
       setTiktok(data.tiktok || "");
       setNiche(data.niche || "");
       setLocation(data.location || "");
+      setLogo(data.logo_url || null);
+      setLogoUrl(data.logo_url || null);
     }
   };
 
   useEffect(() => { loadProfile(); }, []);
 
-  const handleLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setLogo(URL.createObjectURL(file));
+    if (!file || !userId) return;
+    const fileExt = file.name.split(".").pop();
+    const filePath = `brands/${userId}.${fileExt}`;
+    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      setLogo(data.publicUrl);
+      setLogoUrl(data.publicUrl);
+    }
   };
 
   const saveProfile = async () => {
-    console.log("userId:", userId);
     if (!userId) return;
+    setSaving(true);
 
-    const profileData = { id: userId, name, bio, website, instagram, tiktok, niche, location };
+    const profileData = {
+      id: userId,
+      name, bio, website, instagram, tiktok, niche, location,
+      logo_url: logoUrl,
+    };
 
     const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
 
@@ -117,22 +132,10 @@ export default function BrandProfile({ navigate }: Props) {
 
         {/* Brand Info */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
-          <div>
-            <label style={labelStyle}>Brand Name</label>
-            <input style={inputStyle} placeholder="Your brand name" value={name} onChange={e => setName(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Industry / Niche</label>
-            <input style={inputStyle} placeholder="e.g. Beauty, Fashion, Food" value={niche} onChange={e => setNiche(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Location</label>
-            <input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} />
-          </div>
-          <div>
-            <label style={labelStyle}>Bio</label>
-            <textarea style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }} placeholder="Tell creators about your brand..." value={bio} onChange={e => setBio(e.target.value)} />
-          </div>
+          <div><label style={labelStyle}>Brand Name</label><input style={inputStyle} placeholder="Your brand name" value={name} onChange={e => setName(e.target.value)} /></div>
+          <div><label style={labelStyle}>Industry / Niche</label><input style={inputStyle} placeholder="e.g. Beauty, Fashion, Food" value={niche} onChange={e => setNiche(e.target.value)} /></div>
+          <div><label style={labelStyle}>Location</label><input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} /></div>
+          <div><label style={labelStyle}>Bio</label><textarea style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }} placeholder="Tell creators about your brand..." value={bio} onChange={e => setBio(e.target.value)} /></div>
         </div>
 
         <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "2rem" }} />
@@ -140,18 +143,9 @@ export default function BrandProfile({ navigate }: Props) {
         {/* Links */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "2rem" }}>
           <label style={labelStyle}>Links</label>
-          <div>
-            <label style={{ ...labelStyle, fontSize: "10px" }}>Website</label>
-            <input style={inputStyle} placeholder="https://yourbrand.com" value={website} onChange={e => setWebsite(e.target.value)} />
-          </div>
-          <div>
-            <label style={{ ...labelStyle, fontSize: "10px" }}>Instagram</label>
-            <input style={inputStyle} placeholder="@yourbrand" value={instagram} onChange={e => setInstagram(e.target.value)} />
-          </div>
-          <div>
-            <label style={{ ...labelStyle, fontSize: "10px" }}>TikTok</label>
-            <input style={inputStyle} placeholder="@yourbrand" value={tiktok} onChange={e => setTiktok(e.target.value)} />
-          </div>
+          <div><label style={{ ...labelStyle, fontSize: "10px" }}>Website</label><input style={inputStyle} placeholder="https://yourbrand.com" value={website} onChange={e => setWebsite(e.target.value)} /></div>
+          <div><label style={{ ...labelStyle, fontSize: "10px" }}>Instagram</label><input style={inputStyle} placeholder="@yourbrand" value={instagram} onChange={e => setInstagram(e.target.value)} /></div>
+          <div><label style={{ ...labelStyle, fontSize: "10px" }}>TikTok</label><input style={inputStyle} placeholder="@yourbrand" value={tiktok} onChange={e => setTiktok(e.target.value)} /></div>
         </div>
 
         {/* Save */}
