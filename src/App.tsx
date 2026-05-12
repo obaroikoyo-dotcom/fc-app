@@ -62,7 +62,7 @@ export default function App() {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+   const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, _session) => {
       if (event === "SIGNED_OUT") setPage("role-select");
     });
 
