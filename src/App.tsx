@@ -46,7 +46,6 @@ export default function App() {
   const navigate = (p: Page) => setPage(p);
 
   useEffect(() => {
-    // Check for existing session on load
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const { data: profile } = await supabase
@@ -61,8 +60,7 @@ export default function App() {
       setLoading(false);
     });
 
-    // Listen for auth changes
-   const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, _session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === "SIGNED_OUT") setPage("role-select");
     });
 
