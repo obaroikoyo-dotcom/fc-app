@@ -69,18 +69,26 @@ export default function CreatorProfile({ navigate }: Props) {
 
   useEffect(() => { loadProfile(); }, []);
 
-  const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !userId) return;
-    const fileExt = file.name.split(".").pop();
-    const filePath = `creators/${userId}.${fileExt}`;
-    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-    if (!error) {
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      setProfilePic(data.publicUrl);
-      setAvatarUrl(data.publicUrl);
+const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file || !userId) return;
+  const fileExt = file.name.split(".").pop();
+  const filePath = `creators/${userId}.${fileExt}`;
+  const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+  if (!error) {
+    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    setProfilePic(data.publicUrl);
+    setAvatarUrl(data.publicUrl);
+
+    // Save avatar_url to database immediately
+    const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
+    if (existing) {
+      await supabase.from("creator_profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
+    } else {
+      await supabase.from("creator_profiles").insert({ id: userId, avatar_url: data.publicUrl });
     }
-  };
+  }
+};
 
   const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

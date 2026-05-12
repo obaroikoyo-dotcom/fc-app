@@ -41,18 +41,26 @@ export default function BrandProfile({ navigate }: Props) {
 
   useEffect(() => { loadProfile(); }, []);
 
-  const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !userId) return;
-    const fileExt = file.name.split(".").pop();
-    const filePath = `brands/${userId}.${fileExt}`;
-    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-    if (!error) {
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      setLogo(data.publicUrl);
-      setLogoUrl(data.publicUrl);
+const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file || !userId) return;
+  const fileExt = file.name.split(".").pop();
+  const filePath = `brands/${userId}.${fileExt}`;
+  const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+  if (!error) {
+    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    setLogo(data.publicUrl);
+    setLogoUrl(data.publicUrl);
+
+    // Save logo_url to database immediately
+    const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
+    if (existing) {
+      await supabase.from("brand_profiles").update({ logo_url: data.publicUrl }).eq("id", userId);
+    } else {
+      await supabase.from("brand_profiles").insert({ id: userId, logo_url: data.publicUrl });
     }
-  };
+  }
+};
 
   const saveProfile = async () => {
     if (!userId) return;
