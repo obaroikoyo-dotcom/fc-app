@@ -133,7 +133,10 @@ export default function Search({ navigate }: Props) {
           <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Searching...</p>
         ) : !searched ? (
           <div style={{ textAlign: "center", marginTop: "4rem" }}>
-            <div style={{ fontSize: "36px", marginBottom: "1rem" }}>🔍</div>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
+  <circle cx="11" cy="11" r="7" stroke="#333" strokeWidth="2"/>
+  <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="#333" strokeWidth="2" strokeLinecap="round"/>
+</svg>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Find people</p>
             <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.6 }}>Search by name, niche, or hashtag</p>
           </div>
