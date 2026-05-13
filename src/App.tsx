@@ -1,3 +1,4 @@
+import PublicProfile from "./pages/PublicProfile";
 import { useState, useEffect } from "react";
 import RoleSelect from "./pages/RoleSelect";
 import BrandSignup from "./pages/BrandSignup";
@@ -12,7 +13,7 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import { supabase } from "./lib/supabase";
 
-export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator";
+export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "messages-brand", "brand-profile"];
@@ -106,8 +107,13 @@ export default function App() {
   const [page, setPage] = useState<Page>("role-select");
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
+  const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
 
   const navigate = (p: Page) => setPage(p);
+  const navigateToProfile = (id: string) => {
+  setViewingProfileId(id);
+  setPage("public-profile");
+};
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -152,7 +158,8 @@ export default function App() {
       case "explore": return <Explore navigate={navigate} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" />;
-      case "search-creator": return <Search navigate={navigate} />;
+      case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
+      case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} />;
       default: return <RoleSelect navigate={navigate} />;
     }
   };

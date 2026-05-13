@@ -2,7 +2,7 @@ import { useState } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-interface Props { navigate: (p: Page) => void; }
+interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; }
 
 interface Profile {
   id: string;
@@ -22,7 +22,7 @@ interface Profile {
   } | null;
 }
 
-export default function Search({ navigate }: Props) {
+export default function Search({ navigate, navigateToProfile }: Props) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "creators" | "brands">("all");
   const [results, setResults] = useState<Profile[]>([]);
@@ -154,7 +154,7 @@ export default function Search({ navigate }: Props) {
             const isCreator = p.role === "creator";
 
             return (
-              <div key={p.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div key={p.id} onClick={() => navigateToProfile(p.id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: isCreator ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0 }}>
                   {isCreator ? "◉" : "◈"}
                 </div>
