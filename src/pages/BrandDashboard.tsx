@@ -119,7 +119,6 @@ export default function BrandDashboard({ navigate }: Props) {
               <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading...</p>
             ) : campaigns.length === 0 ? (
               <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-                <div style={{ fontSize: "36px", marginBottom: "1rem" }}>◈</div>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
                 <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7 }}>Post your first campaign and start finding creators.</p>
                 <div onClick={() => setTab("post")} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -213,24 +212,40 @@ export default function BrandDashboard({ navigate }: Props) {
         )}
       </div>
 
-      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%" }}>
+      {/* Bottom Nav */}
+      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "0.75rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%" }}>
         <div onClick={() => setTab("campaigns")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◈</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="3" width="7" height="7" rx="1" stroke={tab === "campaigns" ? "#fff" : "#444"} strokeWidth="1.8"/>
+            <rect x="14" y="3" width="7" height="7" rx="1" stroke={tab === "campaigns" ? "#fff" : "#444"} strokeWidth="1.8"/>
+            <rect x="3" y="14" width="7" height="7" rx="1" stroke={tab === "campaigns" ? "#fff" : "#444"} strokeWidth="1.8"/>
+            <rect x="14" y="14" width="7" height="7" rx="1" stroke={tab === "campaigns" ? "#fff" : "#444"} strokeWidth="1.8"/>
+          </svg>
           <span style={{ fontSize: "10px", color: tab === "campaigns" ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Campaigns</span>
         </div>
         <div onClick={() => navigate("messages-brand")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>💬</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
+              stroke="#444" strokeWidth="2" strokeLinejoin="round"/>
+          </svg>
           <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
         </div>
         <div onClick={() => setTab("post")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>＋</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="5" x2="12" y2="19" stroke={tab === "post" ? "#fff" : "#444"} strokeWidth="2" strokeLinecap="round"/>
+            <line x1="5" y1="12" x2="19" y2="12" stroke={tab === "post" ? "#fff" : "#444"} strokeWidth="2" strokeLinecap="round"/>
+          </svg>
           <span style={{ fontSize: "10px", color: tab === "post" ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Post</span>
         </div>
         <div onClick={() => navigate("brand-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◉</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="#444" strokeWidth="1.8"/>
+            <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
           <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
         </div>
       </div>
+
     </div>
   );
 }
