@@ -126,7 +126,10 @@ export default function Messages({ navigate, role }: Props) {
             <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading...</p>
           ) : conversations.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
-              <div style={{ fontSize: "36px", marginBottom: "1rem" }}>💬</div>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
+  <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
+    stroke="#333" strokeWidth="2" strokeLinejoin="round"/>
+</svg>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No messages yet</p>
               <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.6 }}>
                 {role === "creator" ? "Search for brands or creators to start a conversation." : "Creators who apply will appear here."}
