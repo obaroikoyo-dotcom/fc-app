@@ -38,7 +38,16 @@ export default function PublicProfile({ navigate, profileId, goBack }: Props) {
 
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) setCurrentUserId(user.id);
+    if (user) {
+  setCurrentUserId(user.id);
+  const { data: fav } = await supabase
+    .from("favourites")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("creator_id", profileId)
+    .single();
+  setFavourited(!!fav);
+}
 
     const { data } = await supabase
       .from("creator_profiles")
