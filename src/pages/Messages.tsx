@@ -103,8 +103,6 @@ return { ...c, other_name: otherName, other_role: profile?.role, other_avatar: o
     }).eq("id", activeConvo.id);
   };
 
-  const profilePage = role === "creator" ? "creator-profile" : "brand-profile";
-  const explorePage = role === "creator" ? "explore" : "brand-dashboard";
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>

@@ -108,13 +108,6 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     display: "block",
   };
 
-  const navItem = (icon: string, label: string, active: boolean, onClick: () => void) => (
-    <div onClick={onClick} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-      <span style={{ fontSize: "20px" }}>{icon}</span>
-      <span style={{ fontSize: "10px", color: active ? "#fff" : "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>{label}</span>
-    </div>
-  );
-
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
