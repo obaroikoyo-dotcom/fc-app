@@ -11,6 +11,7 @@ const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
 export default function CreatorProfile({ navigate }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [favourites, setFavourites] = useState<{ creator_id: string; creator_profiles: { name: string; niche: string; } | null }[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -67,7 +68,18 @@ export default function CreatorProfile({ navigate }: Props) {
     }
   };
 
-  useEffect(() => { loadProfile(); }, []);
+  const loadFavourites = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase
+    .from("favourites")
+    .select("creator_id, creator_profiles(name, niche)")
+    .eq("user_id", user.id);
+  if (data) setFavourites(data);
+};
+
+useEffect(() => { loadProfile(); loadFavourites(); }, []);
+
 
 const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
@@ -336,6 +348,39 @@ const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
           {mediaFiles.length > 0 && (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
               {mediaFiles.map((f, i) => <img key={i} src={f} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "8px", border: "1px solid #222" }} />)}
+            </div>
+          )}
+        </div>
+
+        <div style={dividerStyle} />
+
+        {/* Favourites */}
+        <div style={sectionStyle}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+            <label style={labelStyle}>My Favourites</label>
+            <span style={{ fontSize: "10px", color: "#333", letterSpacing: "0.05em" }}>Only visible to you</span>
+          </div>
+          {favourites.length === 0 ? (
+            <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No favourites yet — discover creators in Search</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {favourites.map((f, i) => (
+                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>◉</div>
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+                    </div>
+                  </div>
+                  <div
+                    onClick={() => navigate("messages-creator")}
+                    style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}
+                  >
+                    DM
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
