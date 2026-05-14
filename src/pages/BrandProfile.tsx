@@ -34,8 +34,8 @@ export default function BrandProfile({ navigate }: Props) {
       setTiktok(data.tiktok || "");
       setNiche(data.niche || "");
       setLocation(data.location || "");
-      setLogo(data.logo_url || null);
-      setLogoUrl(data.logo_url || null);
+      setLogo(data.logo_url || data.avatar_url || null);
+setLogoUrl(data.logo_url || data.avatar_url || null);
     }
   };
 
@@ -55,9 +55,9 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // Save logo_url to database immediately
     const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
     if (existing) {
-      await supabase.from("brand_profiles").update({ logo_url: data.publicUrl }).eq("id", userId);
+      await supabase.from("brand_profiles").update({ logo_url: data.publicUrl, avatar_url: data.publicUrl }).eq("id", userId);
     } else {
-      await supabase.from("brand_profiles").insert({ id: userId, logo_url: data.publicUrl });
+      await supabase.from("brand_profiles").insert({ id: userId, logo_url: data.publicUrl, avatar_url: data.publicUrl });
     }
   }
 };
@@ -66,11 +66,12 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!userId) return;
     setSaving(true);
 
-    const profileData = {
-      id: userId,
-      name, bio, website, instagram, tiktok, niche, location,
-      logo_url: logoUrl,
-    };
+  const profileData = {
+  id: userId,
+  name, bio, website, instagram, tiktok, niche, location,
+  logo_url: logoUrl,
+  avatar_url: logoUrl,
+};
 
     const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
 
@@ -164,14 +165,6 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save Profile"}
         </div>
 
-      </div>
-
-      {/* Bottom Nav */}
-      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%" }}>
-        {navItem("◈", "Campaigns", false, () => navigate("brand-dashboard"))}
-        {navItem("💬", "Messages", false, () => navigate("messages-brand"))}
-        {navItem("＋", "Post", false, () => navigate("brand-dashboard"))}
-        {navItem("◉", "Profile", true, () => {})}
       </div>
 
     </div>

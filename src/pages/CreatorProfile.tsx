@@ -12,6 +12,7 @@ const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 export default function CreatorProfile({ navigate }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
+  const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
@@ -73,12 +74,22 @@ export default function CreatorProfile({ navigate }: Props) {
   if (!user) return;
   const { data } = await supabase
     .from("favourites")
-    .select("creator_id, creator_profiles(name, niche)")
+    .select("creator_id, creator_profiles(name, niche, avatar_url)")
     .eq("user_id", user.id);
-  if (data) setFavourites(data);
+if (data) setFavourites(data);
 };
 
-useEffect(() => { loadProfile(); loadFavourites(); }, []);
+const loadCampaignFavourites = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase
+    .from("campaign_favourites")
+    .select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name))")
+    .eq("user_id", user.id);
+  if (data) setCampaignFavourites(data);
+};
+
+useEffect(() => { loadProfile(); loadFavourites(); loadCampaignFavourites(); }, []);
 
 
 const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -354,38 +365,64 @@ const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
         <div style={dividerStyle} />
 
-        {/* Favourites */}
-        <div style={sectionStyle}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-            <label style={labelStyle}>My Favourites</label>
-            <span style={{ fontSize: "10px", color: "#333", letterSpacing: "0.05em" }}>Only visible to you</span>
-          </div>
-          {favourites.length === 0 ? (
-            <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No favourites yet — discover creators in Search</p>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {favourites.map((f, i) => (
-                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>◉</div>
-                    <div>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
-                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
-                    </div>
-                  </div>
-                  <div
-                    onClick={() => navigate("messages-creator")}
-                    style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}
-                  >
-                    DM
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+{/* Favourites */}
+<div style={sectionStyle}>
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+    <label style={labelStyle}>My Favourites</label>
+    <span style={{ fontSize: "10px", color: "#333", letterSpacing: "0.05em" }}>Only visible to you</span>
+  </div>
 
-        <div style={dividerStyle} />
+  {/* Creators */}
+  <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>Creators</p>
+  {favourites.length === 0 ? (
+    <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px", marginBottom: "1.5rem" }}>No creators favourited yet</p>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
+      {favourites.map((f, i) => (
+        <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
+              {(f.creator_profiles as any)?.avatar_url
+                ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : "◉"}
+            </div>
+            <div>
+              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+              <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+            </div>
+          </div>
+          <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            DM
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+
+  {/* Campaigns */}
+  <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>Campaigns</p>
+  <p style={{ fontSize: "10px", color: "#333", marginBottom: "10px", lineHeight: 1.5 }}>Campaigns are automatically removed from your favourites if they've been taken down or completed.</p>
+  {campaignFavourites.length === 0 ? (
+    <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet — bookmark campaigns in Explore</p>
+  ) : (
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {campaignFavourites.map((f, i) => (
+        <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.campaigns as any)?.name || "Campaign"}</p>
+            <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>
+              {(f.campaigns as any)?.type}{(f.campaigns as any)?.budget ? ` · £${(f.campaigns as any).budget}` : ""}
+            </span>
+          </div>
+          <p style={{ fontSize: "12px", color: "#444", marginBottom: "6px" }}>{(f.campaigns as any)?.brand_profiles?.name || "Brand"}</p>
+          <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{(f.campaigns as any)?.description}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+<div style={dividerStyle} />
 
         {/* Wallet */}
         <div style={sectionStyle}>

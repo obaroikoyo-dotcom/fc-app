@@ -18,6 +18,7 @@ interface Campaign {
   brand_profiles: {
     name: string;
     niche: string;
+    avatar_url?: string;
   } | null;
 }
 
@@ -27,36 +28,62 @@ export default function Explore({ navigate }: Props) {
   const [showSheet, setShowSheet] = useState(false);
   const [selected, setSelected] = useState<Campaign | null>(null);
   const [applied, setApplied] = useState<string[]>([]);
+  const [bookmarked, setBookmarked] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [myAvatar, setMyAvatar] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-useEffect(() => {
-  fetchCampaigns();
+  useEffect(() => {
+    fetchCampaigns();
+    fetchMyProfile();
 
-  const channel = supabase
-    .channel("campaigns-feed")
-    .on("postgres_changes", {
-      event: "INSERT",
-      schema: "public",
-      table: "campaigns",
-    }, (payload) => {
-      setCampaigns(prev => [payload.new as Campaign, ...prev]);
-    })
-    .subscribe();
+    const channel = supabase
+      .channel("campaigns-feed")
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "campaigns",
+      }, (payload) => {
+        setCampaigns(prev => [payload.new as Campaign, ...prev]);
+      })
+      .subscribe();
 
-  return () => { supabase.removeChannel(channel); };
-}, []);
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  const fetchMyProfile = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setCurrentUserId(user.id);
+    const { data } = await supabase.from("creator_profiles").select("avatar_url").eq("id", user.id).single();
+    if (data?.avatar_url) setMyAvatar(data.avatar_url);
+
+    const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
+    if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
+  };
 
   const fetchCampaigns = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("campaigns")
-      .select(`*, brand_profiles(name, niche)`)
+      .select(`*, brand_profiles(name, niche, avatar_url)`)
       .order("created_at", { ascending: false });
 
     if (!error && data) setCampaigns(data);
     setLoading(false);
+  };
+
+  const toggleBookmark = async (campaignId: string) => {
+    if (!currentUserId) return;
+    if (bookmarked.includes(campaignId)) {
+      await supabase.from("campaign_favourites").delete().eq("user_id", currentUserId).eq("campaign_id", campaignId);
+      setBookmarked(prev => prev.filter(id => id !== campaignId));
+    } else {
+      await supabase.from("campaign_favourites").insert({ user_id: currentUserId, campaign_id: campaignId });
+      setBookmarked(prev => [...prev, campaignId]);
+    }
   };
 
   const togglePlatform = (p: string) =>
@@ -119,7 +146,9 @@ useEffect(() => {
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
-        <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "16px", color: "#fff" }}>◉</div>
+        <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", flexShrink: 0 }}>
+          {myAvatar ? <img src={myAvatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
+        </div>
       </div>
 
       {/* Feed */}
@@ -139,22 +168,53 @@ useEffect(() => {
             <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0 }}>◈</div>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
+                    {c.brand_profiles?.avatar_url
+                      ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : "◈"}
+                  </div>
                   <div>
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
                     <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
                   </div>
                 </div>
-                <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  {c.type}{c.budget ? ` · £${c.budget}` : ""}
-                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                 <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer" }}>
+  <svg width="16" height="16" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
+  </svg>
+</div>
+                  <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                    {c.type}{c.budget ? ` · £${c.budget}` : ""}
+                  </span>
+                </div>
               </div>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
               <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "10px" }}>{c.description}</p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", gap: "10px", fontSize: "11px", color: "#444" }}>
-                  {c.deadline && <span>📅 {c.deadline}</span>}
-                  <span>👥 {c.applications || 0}</span>
+                  {c.deadline && (
+  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="5" width="18" height="16" rx="2" stroke="#444" strokeWidth="1.8"/>
+      <line x1="3" y1="9" x2="21" y2="9" stroke="#444" strokeWidth="1.8"/>
+      <line x1="8" y1="3" x2="8" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+      <line x1="16" y1="3" x2="16" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+    {c.deadline}
+  </span>
+)}
+<span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="8" r="3" stroke="#444" strokeWidth="1.8"/>
+    <path d="M6 20C6 16.6863 8.68629 14 12 14C15.3137 14 18 16.6863 18 20" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+    <circle cx="5.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
+    <path d="M2 20C2 17.5 3.8 15.8 6.2 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="18.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
+    <path d="M22 20C22 17.5 20.2 15.8 17.8 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+  {c.applications || 0} applied
+</span>
                 </div>
                 <div
                   onClick={() => !applied.includes(c.id) && openSheet(c)}
@@ -167,7 +227,7 @@ useEffect(() => {
           ))
         )}
       </div>
-  
+
       {/* Overlay */}
       {showSheet && <div onClick={() => setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
 
