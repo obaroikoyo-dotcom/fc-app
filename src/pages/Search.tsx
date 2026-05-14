@@ -14,11 +14,13 @@ interface Profile {
     location: string;
     available: boolean;
     hashtags: string[];
+    avatar_url?: string;
   } | null;
   brand_profiles?: {
     name: string;
     niche: string;
     location: string;
+    avatar_url?: string;
   } | null;
 }
 
@@ -36,7 +38,7 @@ export default function Search({ navigate, navigateToProfile }: Props) {
 
     let q = supabase
       .from("profiles")
-      .select(`*, creator_profiles(name, niche, location, available, hashtags), brand_profiles(name, niche, location)`);
+      .select(`*, creator_profiles(name, niche, location, available, hashtags, avatar_url), brand_profiles(name, niche, location, avatar_url)`);
 
     if (filter === "creators") q = q.eq("role", "creator");
     else if (filter === "brands") q = q.eq("role", "brand");
@@ -155,9 +157,11 @@ export default function Search({ navigate, navigateToProfile }: Props) {
 
             return (
               <div key={p.id} onClick={() => navigateToProfile(p.id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: isCreator ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0 }}>
-                  {isCreator ? "◉" : "◈"}
-                </div>
+               <div style={{ width: "44px", height: "44px", borderRadius: isCreator ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
+  {p.creator_profiles?.avatar_url || p.brand_profiles?.avatar_url
+    ? <img src={p.creator_profiles?.avatar_url || p.brand_profiles?.avatar_url || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    : isCreator ? "◉" : "◈"}
+</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{name}</p>
@@ -180,27 +184,7 @@ export default function Search({ navigate, navigateToProfile }: Props) {
             );
           })
         )}
-      </div>
-
-      {/* Bottom Nav — creator version */}
-      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%" }}>
-        <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◎</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
-        </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>🔍</span>
-          <span style={{ fontSize: "10px", color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
-        </div>
-        <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>💬</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
-        </div>
-        <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◉</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
-        </div>
-      </div>
+</div>
     </div>
   );
 }

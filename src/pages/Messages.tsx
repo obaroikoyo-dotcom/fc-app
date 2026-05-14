@@ -58,9 +58,10 @@ export default function Messages({ navigate, role }: Props) {
     if (data) {
       const enriched = await Promise.all(data.map(async (c) => {
         const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
-        const { data: profile } = await supabase.from("profiles").select("role, creator_profiles(name), brand_profiles(name)").eq("id", otherId).single();
-        const otherName = (profile as any)?.creator_profiles?.name || (profile as any)?.brand_profiles?.name || "Unknown";
-        return { ...c, other_name: otherName, other_role: profile?.role };
+        const { data: profile } = await supabase.from("profiles").select("role, creator_profiles(name, avatar_url), brand_profiles(name, avatar_url)").eq("id", otherId).single();
+const otherName = (profile as any)?.creator_profiles?.name || (profile as any)?.brand_profiles?.name || "Unknown";
+const otherAvatar = (profile as any)?.creator_profiles?.avatar_url || (profile as any)?.brand_profiles?.avatar_url || null;
+return { ...c, other_name: otherName, other_role: profile?.role, other_avatar: otherAvatar };
       }));
       setConversations(enriched);
     }
@@ -143,9 +144,11 @@ export default function Messages({ navigate, role }: Props) {
           ) : (
             conversations.map(c => (
               <div key={c.id} onClick={() => openChat(c)} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0 }}>
-                  {c.other_role === "creator" ? "◉" : "◈"}
-                </div>
+                <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
+  {(c as any).other_avatar
+    ? <img src={(c as any).other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    : c.other_role === "creator" ? "◉" : "◈"}
+</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                     <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{c.other_name}</p>
@@ -204,30 +207,8 @@ export default function Messages({ navigate, role }: Props) {
               ↑
             </div>
           </div>
-        </>
+</>
       )}
-
-      {/* Bottom Nav */}
-      <div style={{ borderTop: "1px solid #111", display: "flex", padding: "1rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%" }}>
-        <div onClick={() => navigate(explorePage as Page)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>{role === "creator" ? "◎" : "◈"}</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>{role === "creator" ? "Explore" : "Campaigns"}</span>
-        </div>
-        {role === "creator" && (
-          <div onClick={() => navigate("search-creator" as Page)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-            <span style={{ fontSize: "20px" }}>🔍</span>
-            <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
-          </div>
-        )}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>💬</span>
-          <span style={{ fontSize: "10px", color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
-        </div>
-        <div onClick={() => navigate(profilePage as Page)} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-          <span style={{ fontSize: "20px" }}>◉</span>
-          <span style={{ fontSize: "10px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
-        </div>
-      </div>
     </div>
   );
 }

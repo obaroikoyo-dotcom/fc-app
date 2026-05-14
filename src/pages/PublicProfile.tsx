@@ -11,6 +11,7 @@ interface Props {
 interface CreatorData {
   name: string;
   bio: string;
+  avatar_url?: string;
   niche: string;
   location: string;
   age: string;
@@ -143,7 +144,11 @@ const startDM = async () => {
 
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-            <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333", flexShrink: 0 }}>◉</div>
+           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
+  {creator.avatar_url
+    ? <img src={creator.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    : "◉"}
+</div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name}</p>
