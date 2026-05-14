@@ -11,7 +11,7 @@ const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
 export default function CreatorProfile({ navigate }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [favourites, setFavourites] = useState<{ creator_id: string; creator_profiles: { name: string; niche: string; } | null }[]>([]);
+  const [favourites, setFavourites] = useState<any[]>([]);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
