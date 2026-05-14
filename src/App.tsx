@@ -105,11 +105,24 @@ function BrandNav({ page, navigate, tab, setTab }: { page: Page; navigate: (p: P
 
 export default function App() {
   const [page, setPage] = useState<Page>("role-select");
+const [history, setHistory] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
 
-  const navigate = (p: Page) => setPage(p);
+  const navigate = (p: Page) => {
+  setHistory(prev => [...prev, page]);
+  setPage(p);
+};
+
+const goBack = () => {
+  setHistory(prev => {
+    const newHistory = [...prev];
+    const last = newHistory.pop();
+    if (last) setPage(last);
+    return newHistory;
+  });
+};
   const navigateToProfile = (id: string) => {
   setViewingProfileId(id);
   setPage("public-profile");
@@ -159,7 +172,7 @@ export default function App() {
       case "messages-creator": return <Messages navigate={navigate} role="creator" />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" />;
       case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
-      case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} />;
+      case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
       default: return <RoleSelect navigate={navigate} />;
     }
   };

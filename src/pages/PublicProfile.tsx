@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 interface Props {
   navigate: (p: Page) => void;
   profileId: string;
+  goBack: () => void;
 }
 
 interface CreatorData {
@@ -27,10 +28,10 @@ interface CreatorData {
   collabs: { brand: string; description: string }[];
 }
 
-export default function PublicProfile({ navigate, profileId }: Props) {
+export default function PublicProfile({ navigate, profileId, goBack }: Props) {
   const [creator, setCreator] = useState<CreatorData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [following, setFollowing] = useState(false);
+  const [favourited, setFavourited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => { loadProfile(); }, [profileId]);
@@ -49,7 +50,7 @@ export default function PublicProfile({ navigate, profileId }: Props) {
     setLoading(false);
   };
 
-  const startDM = async () => {
+const startDM = async () => {
     if (!currentUserId) return;
 
     const { data: existing } = await supabase
@@ -66,6 +67,21 @@ export default function PublicProfile({ navigate, profileId }: Props) {
     }
 
     navigate("messages-creator");
+  };
+
+  const toggleFavourite = async () => {
+    if (!currentUserId) return;
+    if (favourited) {
+      await supabase.from("favourites")
+        .delete()
+        .eq("user_id", currentUserId)
+        .eq("creator_id", profileId);
+      setFavourited(false);
+    } else {
+      await supabase.from("favourites")
+        .insert({ user_id: currentUserId, creator_id: profileId });
+      setFavourited(true);
+    }
   };
 
   const chipStyle: React.CSSProperties = {
@@ -109,7 +125,7 @@ export default function PublicProfile({ navigate, profileId }: Props) {
 
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
-        <span onClick={() => navigate(-1 as any)} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+        <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name || "Creator"}</span>
       </div>
 
@@ -139,10 +155,10 @@ export default function PublicProfile({ navigate, profileId }: Props) {
               Message
             </div>
             <div
-              onClick={() => setFollowing(f => !f)}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: following ? "#1a1a1a" : "transparent", color: following ? "#555" : "#fff", border: following ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
+              onClick={toggleFavourite}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: favourited ? "#1a1a1a" : "transparent", color: favourited ? "#555" : "#fff", border: favourited ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
             >
-              {following ? "Following ✓" : "Follow"}
+              {favourited ? "Favourited ✓" : "Favourite"}
             </div>
           </div>
 
