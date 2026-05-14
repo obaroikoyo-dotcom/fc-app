@@ -105,7 +105,7 @@ function BrandNav({ page, navigate, tab, setTab }: { page: Page; navigate: (p: P
 
 export default function App() {
   const [page, setPage] = useState<Page>("role-select");
-const [history, setHistory] = useState<Page[]>([]);
+const [, setHistory] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
