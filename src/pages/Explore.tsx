@@ -231,9 +231,9 @@ export default function Explore({ navigate }: Props) {
       {/* Overlay */}
       {showSheet && <div onClick={() => setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
 
-      {/* Apply Sheet */}
+     {/* Apply Sheet */}
       {selected && (
-        <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 2.5rem", zIndex: 20, transition: "bottom 0.3s ease", maxHeight: "85vh", overflowY: "auto" }}>
+        <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 5rem", zIndex: 20, transition: "bottom 0.3s ease", maxHeight: "90vh", overflowY: "auto" }}>
           <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px", margin: "0 auto 1.5rem" }} />
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
           <p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>{selected.brand_profiles?.name || "Brand"}</p>
