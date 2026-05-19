@@ -73,7 +73,16 @@ export default function CreatorOnboarding({ navigate }: Props) {
       options: { data: { role: "creator", name } }
     });
 
-    if (signUpError) { setError(signUpError.message); setLoading(false); return; }
+   if (signUpError) {
+  if (signUpError.message.toLowerCase().includes("already")) {
+    setError("This email is already registered. Try signing in instead.");
+  } else {
+    setError(signUpError.message);
+  }
+  setLoading(false);
+  setScreen(5);
+  return;
+}
 
     if (data.user) {
       await supabase.from("profiles").insert({ id: data.user.id, role: "creator", email });
@@ -263,11 +272,16 @@ export default function CreatorOnboarding({ navigate }: Props) {
     </div>,
   ];
 
-  const canProceed = () => {
-    if (screen === 0) return name.trim().length > 0;
-    if (screen === 5) return email.trim().length > 0 && password.length >= 6 && password === confirm;
-    return true;
-  };
+const buttonLabel = () => {
+  if (screen === 0) return name.trim() ? "Continue →" : null;
+  if (screen === 1) return (niche.trim() || location.trim()) ? "Continue →" : "Skip for now →";
+  if (screen === 2) return selectedPlatforms.length > 0 ? "Continue →" : "Skip for now →";
+  if (screen === 3) return contentTypes.length > 0 ? "Continue →" : "Skip for now →";
+  if (screen === 4) return Object.values(rates).some(v => v) ? "Continue →" : "Skip for now →";
+  if (screen === 5) return email.trim() && password.length >= 6 && password === confirm ? "Continue →" : null;
+  if (screen === 6) return profilePic ? "Finish & Go Explore →" : "Skip for now →";
+  return "Continue →";
+};
 
   const isLastScreen = screen === TOTAL_SCREENS - 1;
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
@@ -341,11 +355,11 @@ export default function CreatorOnboarding({ navigate }: Props) {
           </div>
         ) : (
           <div
-            onClick={canProceed() ? next : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: canProceed() ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222" }}
-          >
-            Continue →
-          </div>
+         onClick={buttonLabel() ? next : undefined}
+  style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: buttonLabel() ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222" }}
+>
+  {buttonLabel() || "Enter your name to continue"}
+</div>
         )}
       </div>
     </div>
