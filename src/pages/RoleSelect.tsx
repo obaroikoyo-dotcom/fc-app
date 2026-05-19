@@ -12,7 +12,7 @@ export default function RoleSelect({ navigate }: Props) {
     const isHovered = hovered === role;
     return (
       <div
-        onClick={() => navigate(role === "brand" ? "brand-signup" : "creator-signup")}
+        onClick={() => navigate(role === "brand" ? "brand-signup" : "creator-onboarding")}
         onMouseEnter={() => setHovered(role)}
         onMouseLeave={() => setHovered(null)}
         style={{

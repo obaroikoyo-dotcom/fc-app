@@ -1,4 +1,5 @@
 import PublicProfile from "./pages/PublicProfile";
+import CreatorOnboarding from "./pages/CreatorOnboarding";
 import { useState, useEffect } from "react";
 import RoleSelect from "./pages/RoleSelect";
 import BrandSignup from "./pages/BrandSignup";
@@ -13,7 +14,8 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import { supabase } from "./lib/supabase";
 
-export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile";
+export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" |
+ "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile" | "creator-onboarding";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "messages-brand", "brand-profile"];
@@ -138,7 +140,15 @@ const goBack = () => {
           .single();
 
         if (profile?.role === "brand") setPage("brand-dashboard");
-        else if (profile?.role === "creator") setPage("explore");
+else if (profile?.role === "creator") {
+  const { data: creatorProfile } = await supabase
+    .from("creator_profiles")
+    .select("onboarding_complete")
+    .eq("id", session.user.id)
+    .single();
+  if (creatorProfile?.onboarding_complete) setPage("explore");
+  else setPage("creator-onboarding");
+}
       }
       setLoading(false);
     });
@@ -173,7 +183,8 @@ const goBack = () => {
       case "messages-brand": return <Messages navigate={navigate} role="brand" />;
       case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
-      default: return <RoleSelect navigate={navigate} />;
+case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
+default: return <RoleSelect navigate={navigate} />;
     }
   };
 
