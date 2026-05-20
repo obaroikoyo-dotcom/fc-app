@@ -270,7 +270,6 @@ export default function BrandOnboarding({ navigate }: Props) {
     return "Continue →";
   };
 
-  const isLastScreen = screen === TOTAL_SCREENS - 1;
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
