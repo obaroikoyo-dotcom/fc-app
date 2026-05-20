@@ -4,6 +4,14 @@ import { supabase } from "../lib/supabase";
 
 interface Props { navigate: (p: Page) => void; }
 
+const CREATOR_TIERS = [
+  { label: "Nano-Tier Scale", sub: "Under 10k: High-engagement niche focus", value: "nano" },
+  { label: "Micro-Tier Authority", sub: "10k - 100k: Optimized for reach & conversion", value: "micro" },
+  { label: "Mid-Tier Influence", sub: "100k - 500k: Established market presence", value: "mid" },
+  { label: "Macro-Tier Reach", sub: "500k - 1M: Mass awareness spikes", value: "macro" },
+  { label: "Elite/Mega Impact", sub: "1M+: Cultural celebrity & global visibility", value: "mega" }
+];
+
 export default function BrandProfile({ navigate }: Props) {
   const [logo, setLogo] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -14,6 +22,7 @@ export default function BrandProfile({ navigate }: Props) {
   const [tiktok, setTiktok] = useState("");
   const [niche, setNiche] = useState("");
   const [location, setLocation] = useState("");
+  const [targetTier, setTargetTier] = useState(""); // State added for synchronized data alignment
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -27,51 +36,61 @@ export default function BrandProfile({ navigate }: Props) {
 
     const { data } = await supabase.from("brand_profiles").select("*").eq("id", user.id).single();
     if (data) {
-      setName(data.name || "");
+      // Linked to map accurately against onboarding keys
+      setName(data.company_name || data.name || ""); 
       setBio(data.bio || "");
       setWebsite(data.website || "");
       setInstagram(data.instagram || "");
       setTiktok(data.tiktok || "");
-      setNiche(data.niche || "");
+      setNiche(data.industry || data.niche || ""); 
       setLocation(data.location || "");
+      setTargetTier(data.budget_range || ""); // Maps to backend column slot seamlessly
       setLogo(data.logo_url || data.avatar_url || null);
-setLogoUrl(data.logo_url || data.avatar_url || null);
+      setLogoUrl(data.logo_url || data.avatar_url || null);
     }
   };
 
   useEffect(() => { loadProfile(); }, []);
 
-const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file || !userId) return;
-  const fileExt = file.name.split(".").pop();
-  const filePath = `brands/${userId}.${fileExt}`;
-  const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-  if (!error) {
-    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    setLogo(data.publicUrl);
-    setLogoUrl(data.publicUrl);
+  const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    const fileExt = file.name.split(".").pop();
+    const filePath = `brands/${userId}.${fileExt}`;
+    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      setLogo(data.publicUrl);
+      setLogoUrl(data.publicUrl);
 
-    // Save logo_url to database immediately
-    const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
-    if (existing) {
-      await supabase.from("brand_profiles").update({ logo_url: data.publicUrl, avatar_url: data.publicUrl }).eq("id", userId);
-    } else {
-      await supabase.from("brand_profiles").insert({ id: userId, logo_url: data.publicUrl, avatar_url: data.publicUrl });
+      const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
+      if (existing) {
+        await supabase.from("brand_profiles").update({ logo_url: data.publicUrl, avatar_url: data.publicUrl }).eq("id", userId);
+      } else {
+        await supabase.from("brand_profiles").insert({ id: userId, logo_url: data.publicUrl, avatar_url: data.publicUrl });
+      }
     }
-  }
-};
+  };
 
   const saveProfile = async () => {
     if (!userId) return;
     setSaving(true);
 
-  const profileData = {
-  id: userId,
-  name, bio, website, instagram, tiktok, niche, location,
-  logo_url: logoUrl,
-  avatar_url: logoUrl,
-};
+    const profileData = {
+      id: userId,
+      company_name: name, // Matches keys perfectly across database reads
+      name: name,
+      bio, 
+      website, 
+      instagram, 
+      tiktok, 
+      industry: niche, 
+      niche: niche,
+      location,
+      budget_range: targetTier, // Saves selection state smoothly
+      logo_url: logoUrl,
+      avatar_url: logoUrl,
+    };
 
     const { data: existing } = await supabase.from("brand_profiles").select("id").eq("id", userId).single();
 
@@ -108,6 +127,20 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     display: "block",
   };
 
+  const selectStyle: React.CSSProperties = {
+    background: "#111",
+    border: "1px solid #222",
+    borderRadius: "8px",
+    padding: "11px 14px",
+    color: "#fff",
+    fontSize: "14px",
+    outline: "none",
+    width: "100%",
+    fontFamily: "inherit",
+    appearance: "none",
+    cursor: "pointer"
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
@@ -137,6 +170,23 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
           <div><label style={labelStyle}>Brand Name</label><input style={inputStyle} placeholder="Your brand name" value={name} onChange={e => setName(e.target.value)} /></div>
           <div><label style={labelStyle}>Industry / Niche</label><input style={inputStyle} placeholder="e.g. Beauty, Fashion, Food" value={niche} onChange={e => setNiche(e.target.value)} /></div>
           <div><label style={labelStyle}>Location</label><input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} /></div>
+          
+          {/* Synchronized Creator Tier Selector Dropdown */}
+          <div>
+            <label style={labelStyle}>Target Creator Scaling</label>
+            <div style={{ position: "relative" }}>
+              <select style={selectStyle} value={targetTier} onChange={e => setTargetTier(e.target.value)}>
+                <option value="" disabled style={{ color: "#333" }}>Select target scale...</option>
+                {CREATOR_TIERS.map(tier => (
+                  <option key={tier.value} value={tier.value} style={{ background: "#0a0a0a", color: "#fff" }}>
+                    {tier.label} ({tier.sub.split(":")[0]})
+                  </option>
+                ))}
+              </select>
+              <span style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", color: "#555", pointerEvents: "none", fontSize: "11px" }}>▼</span>
+            </div>
+          </div>
+
           <div><label style={labelStyle}>Bio</label><textarea style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }} placeholder="Tell creators about your brand..." value={bio} onChange={e => setBio(e.target.value)} /></div>
         </div>
 
@@ -159,7 +209,6 @@ const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
 
       </div>
-
     </div>
   );
 }

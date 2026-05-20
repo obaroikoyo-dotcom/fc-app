@@ -107,54 +107,81 @@ function BrandNav({ page, navigate, tab, setTab }: { page: Page; navigate: (p: P
 
 export default function App() {
   const [page, setPage] = useState<Page>("role-select");
-const [, setHistory] = useState<Page[]>([]);
+  const [, setHistory] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
 
   const navigate = (p: Page) => {
-  setHistory(prev => [...prev, page]);
-  setPage(p);
-};
+    setHistory(prev => [...prev, page]);
+    setPage(p);
+  };
 
-const goBack = () => {
-  setHistory(prev => {
-    const newHistory = [...prev];
-    const last = newHistory.pop();
-    if (last) setPage(last);
-    return newHistory;
-  });
-};
+  const goBack = () => {
+    setHistory(prev => {
+      const newHistory = [...prev];
+      const last = newHistory.pop();
+      if (last) setPage(last);
+      return newHistory;
+    });
+  };
+
   const navigateToProfile = (id: string) => {
-  setViewingProfileId(id);
-  setPage("public-profile");
-};
+    setViewingProfileId(id);
+    setPage("public-profile");
+  };
+
+  // Synchronized state tracker routing process execution hook
+  const syncUserRoute = async (userId: string) => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (profile?.role === "brand") {
+      const { data: brandProfile } = await supabase
+        .from("brand_profiles")
+        .select("onboarding_complete")
+        .eq("id", userId)
+        .single();
+        
+      if (brandProfile?.onboarding_complete) {
+        setPage("brand-dashboard");
+      } else {
+        setPage("brand-onboarding");
+      }
+    } else if (profile?.role === "creator") {
+      const { data: creatorProfile } = await supabase
+        .from("creator_profiles")
+        .select("onboarding_complete")
+        .eq("id", userId)
+        .single();
+        
+      if (creatorProfile?.onboarding_complete) {
+        setPage("explore");
+      } else {
+        setPage("creator-onboarding");
+      }
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", session.user.id)
-          .single();
-
-        if (profile?.role === "brand") setPage("brand-dashboard");
-else if (profile?.role === "creator") {
-  const { data: creatorProfile } = await supabase
-    .from("creator_profiles")
-    .select("onboarding_complete")
-    .eq("id", session.user.id)
-    .single();
-  if (creatorProfile?.onboarding_complete) setPage("explore");
-  else setPage("creator-onboarding");
-}
+        await syncUserRoute(session.user.id);
       }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === "SIGNED_OUT") setPage("role-select");
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
+        setPage("role-select");
+      } else if (event === "SIGNED_IN" && session?.user) {
+        setLoading(true);
+        await syncUserRoute(session.user.id);
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -168,11 +195,11 @@ else if (profile?.role === "creator") {
     );
   }
 
-const renderPage = () => {
+  const renderPage = () => {
     switch (page) {
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
-      case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; // Put it right here
+      case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
       case "brand-dashboard": return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} />;

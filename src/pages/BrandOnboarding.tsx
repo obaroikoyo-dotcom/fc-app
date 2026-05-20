@@ -6,7 +6,13 @@ interface Props { navigate: (p: Page) => void; }
 
 const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Reels", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos"];
-const BUDGET_RANGES = ["Product Seed / Gifting Only", "Emerging Tier (£500 - £2k/mo)", "Growth Tier (£2k - £10k/mo)", "Enterprise Tier (£10k+/mo)"];
+const CREATOR_TIERS = [
+  { label: "Nano-Tier Scale", sub: "Under 10k: High-engagement niche focus", value: "nano" },
+  { label: "Micro-Tier Authority", sub: "10k - 100k: Optimized for reach & conversion", value: "micro" },
+  { label: "Mid-Tier Influence", sub: "100k - 500k: Established market presence", value: "mid" },
+  { label: "Macro-Tier Reach", sub: "500k - 1M: Mass awareness spikes", value: "macro" },
+  { label: "Elite/Mega Impact", sub: "1M+: Cultural celebrity & global visibility", value: "mega" }
+];
 const TOTAL_SCREENS = 7;
 
 export default function BrandOnboarding({ navigate }: Props) {
@@ -22,7 +28,7 @@ export default function BrandOnboarding({ navigate }: Props) {
   const [bio, setBio] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
   const [contentTypes, setContentTypes] = useState<string[]>([]);
-  const [budgetRange, setBudgetRange] = useState("");
+  const [targetTier, setTargetTier] = useState(""); // Replaced budgetRange state with targetTier
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -78,7 +84,7 @@ export default function BrandOnboarding({ navigate }: Props) {
         setError(signUpError.message);
       }
       setLoading(false);
-      setScreen(4);
+      setScreen(5); // Adjusted to direct users to authentication screen on error
       return;
     }
 
@@ -105,7 +111,7 @@ export default function BrandOnboarding({ navigate }: Props) {
         bio,
         target_audience: targetAudience,
         content_types: contentTypes,
-        budget_range: budgetRange,
+        budget_range: targetTier, // Correctly persisting targetTier value into column structure
         avatar_url: logoUrl,
         onboarding_complete: true,
       });
@@ -127,7 +133,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     fontFamily: "inherit",
   };
 
-  const chipStyle = (active: boolean): React.CSSProperties => ({
+ const chipStyle = (active: boolean): React.CSSProperties => ({
     padding: "10px 16px",
     borderRadius: "20px",
     border: `1px solid ${active ? "#fff" : "#222"}`,
@@ -206,15 +212,27 @@ export default function BrandOnboarding({ navigate }: Props) {
       </div>
     </div>,
 
-    // Screen 4 — Financial Tiers
+    // Screen 4 — Strategic Alignment
     <div key={4}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Budget Allocations</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Specify campaign scales</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Establish your parameters to optimize algorithmic search metrics.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {BUDGET_RANGES.map(range => (
-          <div key={range} onClick={() => setBudgetRange(range)} style={{ ...chipStyle(budgetRange === range), borderRadius: "10px", textAlign: "left" }}>
-            {range}
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What is your target creator tier?</h1>
+      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Defining your target allows our algorithm to prioritize the right talent for your brand voice.</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {CREATOR_TIERS.map(tier => (
+          <div 
+            key={tier.value} 
+            onClick={() => setTargetTier(tier.value)} 
+            style={{ 
+              ...chipStyle(targetTier === tier.value), 
+              borderRadius: "12px", 
+              textAlign: "left",
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px"
+            }}
+          >
+            <span style={{ fontSize: "15px", fontWeight: 700, color: targetTier === tier.value ? "#0a0a0a" : "#fff" }}>{tier.label}</span>
+            <span style={{ fontSize: "11px", opacity: 0.6, color: targetTier === tier.value ? "#333" : "#555" }}>{tier.sub}</span>
           </div>
         ))}
       </div>
@@ -264,7 +282,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     if (screen === 1) return (selectedIndustry || location.trim()) ? "Continue →" : "Skip step →";
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
-    if (screen === 4) return budgetRange ? "Continue →" : "Skip step →";
+    if (screen === 4) return targetTier ? "Continue →" : "Skip step →"; // Corrected condition tracker
     if (screen === 5) return email.trim() && password.length >= 6 && password === confirm ? "Continue →" : null;
     if (screen === 6) return brandLogo ? "Initialize Account →" : "Skip step & Deploy →";
     return "Continue →";
