@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 interface Props {
   navigate: (p: Page) => void;
   role: "brand" | "creator";
+  navigateToProfile?: (id: string) => void; // Add this line
 }
 
 interface Conversation {
@@ -45,7 +46,7 @@ interface Campaign {
   applications: Application[];
 }
 
-export default function Messages({ navigate, role }: Props) {
+export default function Messages({ navigate, role, navigateToProfile }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -150,30 +151,76 @@ export default function Messages({ navigate, role }: Props) {
   };
 
   const handleAccept = async (app: Application) => {
-    setActionLoading(app.id);
-    await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
+  setActionLoading(app.id);
+  
+  // Ensure we have the user ID
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id;
+  if (!userId) { setActionLoading(null); return; }
 
-    // Create conversation if doesn't exist
-    const { data: existing } = await supabase
+  // 1. Update the application status to accepted
+  await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
+
+  // 2. Check for an existing conversation
+  const { data: existing } = await supabase
+    .from("conversations")
+    .select("id")
+    .or(`and(participant_1.eq.${userId},participant_2.eq.${app.creator_id}),and(participant_1.eq.${app.creator_id},participant_2.eq.${userId})`)
+    .maybeSingle();
+
+  const welcomeText = `🎉 Application Approved! You have been accepted for the campaign "${app.campaign_name}". Let's discuss deliverables!`;
+  const nowTimestamp = new Date().toISOString();
+
+  if (!existing) {
+    // 3a. Create conversation with text metadata initialized
+    const { data: newConvo } = await supabase
       .from("conversations")
-      .select("id")
-      .or(`and(participant_1.eq.${currentUserId},participant_2.eq.${app.creator_id}),and(participant_1.eq.${app.creator_id},participant_2.eq.${currentUserId})`)
+      .insert({ 
+        participant_1: userId, 
+        participant_2: app.creator_id,
+        last_message: welcomeText,
+        last_message_at: nowTimestamp
+      })
+      .select()
       .single();
-
-    if (!existing) {
-      await supabase.from("conversations").insert({ participant_1: currentUserId, participant_2: app.creator_id });
+      
+    if (newConvo) {
+      // 4a. Insert the real message row so the chat stream displays it
+      await supabase.from("messages").insert({
+        conversation_id: newConvo.id,
+        sender_id: userId,
+        text: welcomeText,
+        created_at: nowTimestamp
+      });
     }
+  } else {
+    // 3b. Conversation exists: drop message row and bump conversation to top
+    await supabase.from("messages").insert({
+      conversation_id: existing.id,
+      sender_id: userId,
+      text: welcomeText,
+      created_at: nowTimestamp
+    });
 
-    setActionLoading(null);
-    await loadApplications();
-    await loadConversations();
+    await supabase
+      .from("conversations")
+      .update({ 
+        last_message: welcomeText, 
+        last_message_at: nowTimestamp 
+      })
+      .eq("id", existing.id);
+  }
 
-    // Update local state
-    setActiveCampaign(prev => prev ? {
-      ...prev,
-      applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
-    } : null);
-  };
+  setActionLoading(null);
+  await loadApplications();
+  await loadConversations();
+
+  // Update local state
+  setActiveCampaign(prev => prev ? {
+    ...prev,
+    applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
+  } : null);
+};
 
   const handleReject = async (app: Application) => {
     setActionLoading(app.id);
@@ -202,15 +249,47 @@ export default function Messages({ navigate, role }: Props) {
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
-      {/* Top Nav */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
-        {view !== "list" && (
-          <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+  {/* Top Nav */}
+<div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
+  {view !== "list" && (
+    <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+  )}
+  
+  {view === "chat" && activeConvo ? (
+    <div 
+      onClick={() => {
+        // Safe check to find out which participant ID belongs to the other user
+        const otherId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+        
+        if (activeConvo.other_role === "creator") {
+          if (navigateToProfile) {
+            navigateToProfile(otherId); // Calls your App.tsx router function for public profiles safely
+          } else {
+            navigate("public-profile" as any);
+          }
+        } else {
+          navigate("brand-profile" as any);
+        }
+      }}
+      style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+    >
+      <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0 }}>
+        {activeConvo.other_avatar ? (
+          <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          activeConvo.other_role === "creator" ? "◉" : "◈"
         )}
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-          {getHeader()}
-        </span>
       </div>
+      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+        {activeConvo.other_name}
+      </span>
+    </div>
+  ) : (
+    <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+      {getHeader()}
+    </span>
+  )}
+</div>
 
       {/* Brand Tabs */}
       {role === "brand" && view === "list" && (

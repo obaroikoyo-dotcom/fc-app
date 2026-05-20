@@ -179,8 +179,8 @@ else if (profile?.role === "creator") {
       case "creator-profile": return <CreatorProfile navigate={navigate} />;
       case "brand-profile": return <BrandProfile navigate={navigate} />;
       case "explore": return <Explore navigate={navigate} />;
-      case "messages-creator": return <Messages navigate={navigate} role="creator" />;
-      case "messages-brand": return <Messages navigate={navigate} role="brand" />;
+      case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
+      case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
 case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
