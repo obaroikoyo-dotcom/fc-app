@@ -1,3 +1,4 @@
+import BrandOnboarding from "./pages/BrandOnboarding";
 import PublicProfile from "./pages/PublicProfile";
 import CreatorOnboarding from "./pages/CreatorOnboarding";
 import { useState, useEffect } from "react";
@@ -14,8 +15,7 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import { supabase } from "./lib/supabase";
 
-export type Page = "role-select" | "brand-signup" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" |
- "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile" | "creator-onboarding";
+export type Page = "role-select" | "brand-signup" | "brand-onboarding" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile" | "creator-onboarding";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "messages-brand", "brand-profile"];
@@ -168,10 +168,11 @@ else if (profile?.role === "creator") {
     );
   }
 
-  const renderPage = () => {
+const renderPage = () => {
     switch (page) {
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
+      case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; // Put it right here
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
       case "brand-dashboard": return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} />;
@@ -183,8 +184,8 @@ else if (profile?.role === "creator") {
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
-case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
-default: return <RoleSelect navigate={navigate} />;
+      case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
+      default: return <RoleSelect navigate={navigate} />;
     }
   };
 
