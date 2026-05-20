@@ -131,60 +131,100 @@ export default function App() {
     setPage("public-profile");
   };
 
-  // Synchronized state tracker routing process execution hook
   const syncUserRoute = async (userId: string) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", userId)
-      .single();
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .maybeSingle();
 
-    if (profile?.role === "brand") {
-      const { data: brandProfile } = await supabase
-        .from("brand_profiles")
-        .select("onboarding_complete")
-        .eq("id", userId)
-        .single();
-        
-      if (brandProfile?.onboarding_complete) {
-        setPage("brand-dashboard");
-      } else {
-        setPage("brand-onboarding");
+      if (profileError || !profile) {
+        setPage("role-select");
+        return;
       }
-    } else if (profile?.role === "creator") {
-      const { data: creatorProfile } = await supabase
-        .from("creator_profiles")
-        .select("onboarding_complete")
-        .eq("id", userId)
-        .single();
-        
-      if (creatorProfile?.onboarding_complete) {
-        setPage("explore");
+
+      if (profile.role === "brand") {
+        const { data: brandProfile } = await supabase
+          .from("brand_profiles")
+          .select("onboarding_complete")
+          .eq("id", userId)
+          .maybeSingle();
+          
+        if (brandProfile?.onboarding_complete) {
+          setPage("brand-dashboard");
+        } else {
+          setPage("brand-onboarding");
+        }
+      } else if (profile.role === "creator") {
+        const { data: creatorProfile } = await supabase
+          .from("creator_profiles")
+          .select("onboarding_complete")
+          .eq("id", userId)
+          .maybeSingle();
+          
+        if (creatorProfile?.onboarding_complete) {
+          setPage("explore");
+        } else {
+          setPage("creator-onboarding");
+        }
       } else {
-        setPage("creator-onboarding");
+        setPage("role-select");
       }
+    } catch (err) {
+      console.log("Routing error:", err);
+      setPage("role-select");
     }
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        await syncUserRoute(session.user.id);
-      }
-      setLoading(false);
-    });
+    let isMounted = true;
 
+    // Safety fallback: drops the screen veil after 3.5s regardless of database response state
+    const fallbackTimeout = setTimeout(() => {
+      if (isMounted) setLoading(false);
+    }, 3500);
+
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        if (session?.user) {
+          await syncUserRoute(session.user.id);
+        } else {
+          setPage("role-select");
+        }
+      } catch (e) {
+        console.log("Auth catch error:", e);
+        if (isMounted) setPage("role-select");
+      } finally {
+        if (isMounted) {
+          clearTimeout(fallbackTimeout);
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
+
+    // Listen only for distinct session changes (sign out or token refresh updates)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return;
+      
       if (event === "SIGNED_OUT") {
         setPage("role-select");
-      } else if (event === "SIGNED_IN" && session?.user) {
-        setLoading(true);
-        await syncUserRoute(session.user.id);
         setLoading(false);
+      } else if (event === "USER_UPDATED" && session?.user) {
+        await syncUserRoute(session.user.id);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+      clearTimeout(fallbackTimeout);
+    };
   }, []);
 
   if (loading) {
