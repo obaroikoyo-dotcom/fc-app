@@ -63,7 +63,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     }
   };
 
-  const handleFinish = async () => {
+ const handleFinish = async () => {
     setError("");
     if (!email || !password) return setError("Corporate credentials required.");
     if (password !== confirm) return setError("Passwords do not match.");
@@ -71,54 +71,89 @@ export default function BrandOnboarding({ navigate }: Props) {
 
     setLoading(true);
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { role: "brand", company: companyName } }
-    });
-
-    if (signUpError) {
-      if (signUpError.message.toLowerCase().includes("already")) {
-        setError("This corporate email is registered. Proceed to authentication.");
-      } else {
-        setError(signUpError.message);
-      }
-      setLoading(false);
-      setScreen(5); // Adjusted to direct users to authentication screen on error
-      return;
-    }
-
-    if (data.user) {
-      await supabase.from("profiles").insert({ id: data.user.id, role: "brand", email });
-
-      let logoUrl = null;
-      if (logoFile) {
-        const fileExt = logoFile.name.split(".").pop()?.toLowerCase();
-        const filePath = `brands/${data.user.id}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, logoFile, { upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          logoUrl = urlData.publicUrl;
-        }
-      }
-
-      await supabase.from("brand_profiles").insert({
-        id: data.user.id,
-        company_name: companyName,
-        industry: selectedIndustry,
-        location,
-        website,
-        bio,
-        target_audience: targetAudience,
-        content_types: contentTypes,
-        budget_range: targetTier, // Correctly persisting targetTier value into column structure
-        avatar_url: logoUrl,
-        onboarding_complete: true,
+    try {
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { role: "brand", company: companyName } }
       });
-    }
 
-    setLoading(false);
-    navigate("brand-dashboard");
+      if (signUpError) {
+        if (signUpError.message.toLowerCase().includes("already")) {
+          setError("This corporate email is registered. Proceed to authentication.");
+        } else {
+          setError(signUpError.message);
+        }
+        setLoading(false);
+        setScreen(5); 
+        return;
+      }
+
+      const targetUser = signUpData?.user;
+
+      if (targetUser) {
+        // 1. Core structural profile hook (Await completely before going to step 2)
+        const { error: coreError } = await supabase
+          .from("profiles")
+          .insert({ id: targetUser.id, role: "brand", email });
+
+        if (coreError) console.log("Core profile save notice:", coreError.message);
+
+        // 2. Handle visual asset identification payload
+        let logoUrl = null;
+        if (logoFile) {
+          const fileExt = logoFile.name.split(".").pop()?.toLowerCase();
+          const filePath = `brands/${targetUser.id}.${fileExt}`;
+          const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, logoFile, { upsert: true });
+            
+          if (!uploadError) {
+            const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+            logoUrl = urlData.publicUrl;
+          } else {
+            console.log("Asset upload catch:", uploadError.message);
+          }
+        }
+
+        // 3. Populate dedicated brand parameters row
+        const { error: profileError } = await supabase.from("brand_profiles").insert({
+          id: targetUser.id, // Explicitly anchor the row identifier
+          company_name: companyName,
+          name: companyName,
+          industry: selectedIndustry,
+          niche: selectedIndustry,
+          location,
+          website,
+          bio,
+          target_audience: targetAudience,
+          content_types: contentTypes,
+          budget_range: targetTier, 
+          logo_url: logoUrl,
+          avatar_url: logoUrl,
+          onboarding_complete: true,
+        });
+
+        if (profileError) {
+          setError(`Database transmission failure: ${profileError.message}`);
+          setLoading(false);
+          return;
+        }
+      } else {
+        setError("Unable to initialize corporate security context token.");
+        setLoading(false);
+        return;
+      }
+
+      // 4. Structural transaction verified. Proceed to dashboard layout.
+      setLoading(false);
+      navigate("brand-dashboard");
+
+    } catch (catchErr: any) {
+      console.error("Onboarding pipeline crash intercepted:", catchErr);
+      setError("A network transaction interruption occurred. Please re-verify entries.");
+      setLoading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
