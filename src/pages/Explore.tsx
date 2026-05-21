@@ -173,14 +173,14 @@ export default function Explore({ navigate }: Props) {
           <div style={{ textAlign: "center", padding: "4rem 0" }}>
             <p style={{ color: "#444", fontSize: "13px" }}>Loading campaigns...</p>
           </div>
-        ) : campaigns.length === 0 ? (
+        ) : campaigns.filter(c => !applied.includes(c.id)).length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
             <div style={{ fontSize: "36px", marginBottom: "1rem" }}>◎</div>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No opportunities yet</p>
             <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7, maxWidth: "260px", margin: "0 auto" }}>Brand campaigns will appear here. Check back soon.</p>
           </div>
         ) : (
-          campaigns.map(c => (
+          campaigns.filter(c => !applied.includes(c.id)).map(c => (
   <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
