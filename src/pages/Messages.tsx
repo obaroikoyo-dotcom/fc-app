@@ -152,16 +152,14 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
 
   const handleAccept = async (app: Application) => {
   setActionLoading(app.id);
+  setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
   
-  // Ensure we have the user ID
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id;
   if (!userId) { setActionLoading(null); return; }
 
-  // 1. Update the application status to accepted
   await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
 
-  // 2. Check for an existing conversation
   const { data: existing } = await supabase
     .from("conversations")
     .select("id")
@@ -172,7 +170,6 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
   const nowTimestamp = new Date().toISOString();
 
   if (!existing) {
-    // 3a. Create conversation with text metadata initialized
     const { data: newConvo } = await supabase
       .from("conversations")
       .insert({ 
@@ -185,7 +182,6 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
       .single();
       
     if (newConvo) {
-      // 4a. Insert the real message row so the chat stream displays it
       await supabase.from("messages").insert({
         conversation_id: newConvo.id,
         sender_id: userId,
@@ -194,43 +190,38 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
       });
     }
   } else {
-    // 3b. Conversation exists: drop message row and bump conversation to top
     await supabase.from("messages").insert({
       conversation_id: existing.id,
       sender_id: userId,
       text: welcomeText,
       created_at: nowTimestamp
     });
-
-    await supabase
-      .from("conversations")
-      .update({ 
-        last_message: welcomeText, 
-        last_message_at: nowTimestamp 
-      })
-      .eq("id", existing.id);
+    await supabase.from("conversations").update({ 
+      last_message: welcomeText, 
+      last_message_at: nowTimestamp 
+    }).eq("id", existing.id);
   }
 
   setActionLoading(null);
   await loadApplications();
   await loadConversations();
-
-  // Update local state
   setActiveCampaign(prev => prev ? {
     ...prev,
     applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
   } : null);
+  setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
 };
 
-  const handleReject = async (app: Application) => {
-    setActionLoading(app.id);
-    await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
-    setActionLoading(null);
-setActiveCampaign(prev => prev ? {
+const handleReject = async (app: Application) => {
+  setActionLoading(app.id);
+  setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
+  await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
+  setActionLoading(null);
+  setActiveCampaign(prev => prev ? {
     ...prev,
-    applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
+    applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "rejected" } : a)
   } : null);
-  setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
+  setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
 };
   const getHeader = () => {
     if (view === "chat") return activeConvo?.other_name;
