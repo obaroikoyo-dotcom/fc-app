@@ -243,7 +243,7 @@ export default function App() {
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
-      case "brand-dashboard": return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} />;
+     case "brand-dashboard": return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": return <CreatorProfile navigate={navigate} />;
       case "brand-profile": return <BrandProfile navigate={navigate} />;
