@@ -96,24 +96,25 @@ export default function Explore({ navigate }: Props) {
     setShowSheet(true);
   };
 
-  const handleApply = async () => {
-    if (!message || !selected) return;
-    setSubmitting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("applications").insert({
-        campaign_id: selected.id,
-        creator_id: user.id,
-        message,
-        platforms: selectedPlatforms,
-        status: "pending",
-      });
-      await supabase.from("campaigns").update({ applications: (selected.applications || 0) + 1 }).eq("id", selected.id);
-      setApplied(prev => [...prev, selected.id]);
-    }
-    setSubmitting(false);
-    setShowSheet(false);
-  };
+ const handleApply = async () => {
+  if (!message || !selected) return;
+  setSubmitting(true);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await supabase.from("applications").insert({
+      campaign_id: selected.id,
+      creator_id: user.id,
+      message,
+      platforms: selectedPlatforms,
+      status: "pending",
+    });
+    await supabase.rpc("increment_applications", { campaign_id: selected.id });
+    setApplied(prev => [...prev, selected.id]);
+    setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
+  }
+  setSubmitting(false);
+  setShowSheet(false);
+};
 
   const inputStyle: React.CSSProperties = {
     background: "#0a0a0a",
