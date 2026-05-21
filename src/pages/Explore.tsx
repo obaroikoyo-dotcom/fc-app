@@ -119,9 +119,7 @@ export default function Explore({ navigate }: Props) {
     setApplied(prev => [...prev, selected.id]);
     setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
     
-    setTimeout(() => {
-      setCampaigns(prev => prev.filter(c => c.id !== selected.id));
-    }, 600);
+    
   }
   setSubmitting(false);
   setShowSheet(false);
