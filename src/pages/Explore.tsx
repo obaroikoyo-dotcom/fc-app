@@ -54,15 +54,22 @@ export default function Explore({ navigate }: Props) {
   }, []);
 
   const fetchMyProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setCurrentUserId(user.id);
-    const { data } = await supabase.from("creator_profiles").select("avatar_url").eq("id", user.id).single();
-    if (data?.avatar_url) setMyAvatar(data.avatar_url);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  setCurrentUserId(user.id);
 
-    const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
-    if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
-  };
+  const { data } = await supabase.from("creator_profiles").select("avatar_url").eq("id", user.id).single();
+  if (data?.avatar_url) setMyAvatar(data.avatar_url);
+
+  const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
+  if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
+
+  const { data: existingApps } = await supabase
+    .from("applications")
+    .select("campaign_id")
+    .eq("creator_id", user.id);
+  if (existingApps) setApplied(existingApps.map((a: any) => a.campaign_id));
+};
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -111,6 +118,10 @@ export default function Explore({ navigate }: Props) {
     
     setApplied(prev => [...prev, selected.id]);
     setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
+    
+    setTimeout(() => {
+      setCampaigns(prev => prev.filter(c => c.id !== selected.id));
+    }, 600);
   }
   setSubmitting(false);
   setShowSheet(false);
@@ -142,7 +153,13 @@ export default function Explore({ navigate }: Props) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+     <style>{`
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; max-height: 300px; margin-bottom: 10px; }
+    to { transform: translateX(60px); opacity: 0; max-height: 0; margin-bottom: 0; padding: 0; }
+  }
+`}</style>
 
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
@@ -166,7 +183,7 @@ export default function Explore({ navigate }: Props) {
           </div>
         ) : (
           campaigns.map(c => (
-            <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
+  <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden" }}>

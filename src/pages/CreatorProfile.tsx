@@ -36,6 +36,7 @@ export default function CreatorProfile({ navigate }: Props) {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [appliedCampaigns, setAppliedCampaigns] = useState<any[]>([]);
 
   const picRef = useRef<HTMLInputElement>(null);
   const mediaRef = useRef<HTMLInputElement>(null);
@@ -66,6 +67,12 @@ export default function CreatorProfile({ navigate }: Props) {
       setCollabs(data.collabs || [{ brand: "", description: "" }]);
       setProfilePic(data.avatar_url || null);
       setAvatarUrl(data.avatar_url || null);
+      const { data: apps } = await supabase
+  .from("applications")
+  .select("*, campaigns(name, description, type, budget, brand_profiles(name))")
+  .eq("creator_id", user.id)
+  .order("created_at", { ascending: false });
+if (apps) setAppliedCampaigns(apps);
     }
   };
 
@@ -423,6 +430,32 @@ const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
 </div>
 
 <div style={dividerStyle} />
+
+        {/* Applied Campaigns */}
+        <div style={sectionStyle}>
+          <label style={labelStyle}>My Applications</label>
+          <p style={{ fontSize: "10px", color: "#333", marginBottom: "10px", lineHeight: 1.5 }}>Campaigns you've applied to.</p>
+          {appliedCampaigns.length === 0 ? (
+            <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No applications yet — explore campaigns to apply</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {appliedCampaigns.map((a, i) => (
+                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(a.campaigns as any)?.name || "Campaign"}</p>
+                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>
+                      {a.status}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "#444", marginBottom: "4px" }}>{(a.campaigns as any)?.brand_profiles?.name || "Brand"}</p>
+                  <p style={{ fontSize: "11px", color: "#555", lineHeight: 1.5 }}>{(a.campaigns as any)?.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div style={dividerStyle} />
 
         {/* Wallet */}
         <div style={sectionStyle}>
