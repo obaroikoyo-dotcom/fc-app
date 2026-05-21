@@ -35,7 +35,7 @@ export default function BrandDashboard({ navigate, tab, setTab }: Props) {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data } = await supabase.from("campaigns").select("*").eq("brand_id", user.id).order("created_at", { ascending: false });
+      const { data } = await supabase.from("campaigns").select("*, applications(count)").eq("brand_id", user.id).order("created_at", { ascending: false });
       if (data) setCampaigns(data);
     }
     setLoading(false);
@@ -153,7 +153,7 @@ export default function BrandDashboard({ navigate, tab, setTab }: Props) {
                     </div>
                   )}
                   <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #1a1a1a", fontSize: "12px", color: "#444" }}>
-                    {c.applications} application{c.applications !== 1 ? "s" : ""}
+                    {(c as any).applications?.[0]?.count || 0} application{((c as any).applications?.[0]?.count || 0) !== 1 ? "s" : ""}
                   </div>
                 </div>
               ))
