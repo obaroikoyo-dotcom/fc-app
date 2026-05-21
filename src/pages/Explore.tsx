@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -67,9 +67,9 @@ export default function Explore({ navigate }: Props) {
   const fetchCampaigns = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("campaigns")
-      .select(`*, brand_profiles(name, niche, avatar_url)`)
-      .order("created_at", { ascending: false });
+  .from("campaigns")
+  .select(`*, brand_profiles(name, niche, avatar_url), applications(count)`)
+  .order("created_at", { ascending: false });
 
     if (!error && data) setCampaigns(data);
     setLoading(false);
@@ -96,7 +96,7 @@ export default function Explore({ navigate }: Props) {
     setShowSheet(true);
   };
 
- const handleApply = async () => {
+  const handleApply = async () => {
   if (!message || !selected) return;
   setSubmitting(true);
   const { data: { user } } = await supabase.auth.getUser();
@@ -108,7 +108,7 @@ export default function Explore({ navigate }: Props) {
       platforms: selectedPlatforms,
       status: "pending",
     });
-    await supabase.rpc("increment_applications", { campaign_id: selected.id });
+    
     setApplied(prev => [...prev, selected.id]);
     setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
   }
@@ -214,7 +214,7 @@ export default function Explore({ navigate }: Props) {
     <circle cx="18.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
     <path d="M22 20C22 17.5 20.2 15.8 17.8 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
-  {c.applications || 0} applied
+  {((c as any).applications?.[0]?.count || 0)} applied
 </span>
                 </div>
                 <div
