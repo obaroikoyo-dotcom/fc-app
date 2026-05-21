@@ -140,9 +140,10 @@ export default function App() {
         .maybeSingle();
 
       if (profileError || !profile) {
-        setPage("role-select");
-        return;
-      }
+  await supabase.auth.signOut();
+  setPage("role-select");
+  return;
+}
 
       if (profile.role === "brand") {
         const { data: brandProfile } = await supabase

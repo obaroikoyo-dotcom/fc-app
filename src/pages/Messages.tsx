@@ -226,12 +226,12 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
     setActionLoading(app.id);
     await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
     setActionLoading(null);
-    setActiveCampaign(prev => prev ? {
-      ...prev,
-      applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "rejected" } : a)
-    } : null);
-  };
-
+setActiveCampaign(prev => prev ? {
+    ...prev,
+    applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
+  } : null);
+  setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
+};
   const getHeader = () => {
     if (view === "chat") return activeConvo?.other_name;
     if (view === "campaign-apps") return activeCampaign?.name;
@@ -390,32 +390,44 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
             </div>
           )}
 
-          {/* Status */}
-          {activeApplication.status !== "pending" && (
-            <div style={{ background: "#111", border: `1px solid ${activeApplication.status === "accepted" ? "#333" : "#222"}`, borderRadius: "10px", padding: "12px 16px", marginBottom: "1.5rem", textAlign: "center" }}>
-              <p style={{ fontSize: "13px", color: activeApplication.status === "accepted" ? "#fff" : "#444", fontWeight: 600 }}>
-                {activeApplication.status === "accepted" ? "✓ Accepted — a conversation has been created" : "Application declined"}
-              </p>
-            </div>
-          )}
 
-          {/* Actions */}
-          {activeApplication.status === "pending" && (
-            <div style={{ display: "flex", gap: "10px" }}>
-              <div
-                onClick={() => handleAccept(activeApplication)}
-                style={{ flex: 1, padding: "14px", borderRadius: "8px", background: actionLoading === activeApplication.id ? "#1a1a1a" : "#fff", color: actionLoading === activeApplication.id ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
-              >
-                {actionLoading === activeApplication.id ? "..." : "Accept"}
-              </div>
-              <div
-                onClick={() => handleReject(activeApplication)}
-                style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", color: "#555", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
-              >
-                Decline
-              </div>
-            </div>
-          )}
+       {/* Status banner */}
+{activeApplication.status === "accepted" && (
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+    <p style={{ fontSize: "20px", marginBottom: "8px" }}>🎉</p>
+    <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>You accepted this creator</p>
+    <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6 }}>Head to your messages tab to discuss deliverables and next steps.</p>
+  </div>
+)}
+
+{activeApplication.status === "rejected" && (
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+    <p style={{ fontSize: "13px", color: "#444", fontWeight: 600 }}>Application declined</p>
+  </div>
+)}
+
+{activeApplication.status === "pending" && actionLoading !== activeApplication.id && (
+  <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
+    <div
+      onClick={() => handleAccept(activeApplication)}
+      style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+    >
+      Accept
+    </div>
+    <div
+      onClick={() => handleReject(activeApplication)}
+      style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", color: "#555", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+    >
+      Decline
+    </div>
+  </div>
+)}
+
+{activeApplication.status === "pending" && actionLoading === activeApplication.id && (
+  <div style={{ padding: "14px", borderRadius: "8px", background: "#1a1a1a", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1rem" }}>
+    Processing...
+  </div>
+)}
 
           {/* DM Button if accepted */}
           {activeApplication.status === "accepted" && (
