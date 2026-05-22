@@ -246,7 +246,7 @@ const renderPage = () => {
       case "brand-dashboard" as any: 
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
-      case "creator-profile": return <CreatorProfile navigate={navigate} />;
+     case "creator-profile": return <CreatorProfile navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;

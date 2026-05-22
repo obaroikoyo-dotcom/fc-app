@@ -2,14 +2,17 @@ import { useState, useRef, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-interface Props { navigate: (p: Page) => void; }
+interface Props { 
+  navigate: (p: Page) => void; 
+  navigateToProfile: (id: string) => void; 
+}
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
-export default function CreatorProfile({ navigate }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
@@ -67,58 +70,72 @@ export default function CreatorProfile({ navigate }: Props) {
       setCollabs(data.collabs || [{ brand: "", description: "" }]);
       setProfilePic(data.avatar_url || null);
       setAvatarUrl(data.avatar_url || null);
+      
       const { data: apps } = await supabase
   .from("applications")
-  .select("*, campaigns(name, description, type, budget, brand_profiles(name))")
+  .select(`
+    *, 
+    campaigns(
+      id,
+      name, 
+      description, 
+      type, 
+      budget, 
+      brand_id,
+      brand_profiles(
+        name,
+        logo_url
+      )
+    )
+  `)
   .eq("creator_id", user.id)
   .order("created_at", { ascending: false });
-if (apps) setAppliedCampaigns(apps);
+
+      if (apps) setAppliedCampaigns(apps);
     }
   };
 
   const loadFavourites = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  const { data } = await supabase
-    .from("favourites")
-    .select("creator_id, creator_profiles(name, niche, avatar_url)")
-    .eq("user_id", user.id);
-if (data) setFavourites(data);
-};
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("favourites")
+      .select("creator_id, creator_profiles(name, niche, avatar_url)")
+      .eq("user_id", user.id);
+    if (data) setFavourites(data);
+  };
 
-const loadCampaignFavourites = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  const { data } = await supabase
-    .from("campaign_favourites")
-    .select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name))")
-    .eq("user_id", user.id);
-  if (data) setCampaignFavourites(data);
-};
+  const loadCampaignFavourites = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("campaign_favourites")
+      .select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name))")
+      .eq("user_id", user.id);
+    if (data) setCampaignFavourites(data);
+  };
 
-useEffect(() => { loadProfile(); loadFavourites(); loadCampaignFavourites(); }, []);
+  useEffect(() => { loadProfile(); loadFavourites(); loadCampaignFavourites(); }, []);
 
+  const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    const fileExt = file.name.split(".").pop();
+    const filePath = `creators/${userId}.${fileExt}`;
+    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
+    if (!error) {
+      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      setProfilePic(data.publicUrl);
+      setAvatarUrl(data.publicUrl);
 
-const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file || !userId) return;
-  const fileExt = file.name.split(".").pop();
-  const filePath = `creators/${userId}.${fileExt}`;
-  const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-  if (!error) {
-    const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-    setProfilePic(data.publicUrl);
-    setAvatarUrl(data.publicUrl);
-
-    // Save avatar_url to database immediately
-    const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
-    if (existing) {
-      await supabase.from("creator_profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
-    } else {
-      await supabase.from("creator_profiles").insert({ id: userId, avatar_url: data.publicUrl });
+      const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
+      if (existing) {
+        await supabase.from("creator_profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
+      } else {
+        await supabase.from("creator_profiles").insert({ id: userId, avatar_url: data.publicUrl });
+      }
     }
-  }
-};
+  };
 
   const handleMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -372,64 +389,64 @@ const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
         <div style={dividerStyle} />
 
-{/* Favourites */}
-<div style={sectionStyle}>
-  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-    <label style={labelStyle}>My Favourites</label>
-    <span style={{ fontSize: "10px", color: "#333", letterSpacing: "0.05em" }}>Only visible to you</span>
-  </div>
+        {/* Favourites */}
+        <div style={sectionStyle}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+            <label style={labelStyle}>My Favourites</label>
+            <span style={{ fontSize: "10px", color: "#333", letterSpacing: "0.05em" }}>Only visible to you</span>
+          </div>
 
-  {/* Creators */}
-  <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>Creators</p>
-  {favourites.length === 0 ? (
-    <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px", marginBottom: "1.5rem" }}>No creators favourited yet</p>
-  ) : (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
-      {favourites.map((f, i) => (
-        <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
-              {(f.creator_profiles as any)?.avatar_url
-                ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : "◉"}
+          {/* Creators */}
+          <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>Creators</p>
+          {favourites.length === 0 ? (
+            <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px", marginBottom: "1.5rem" }}>No creators favourited yet</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
+              {favourites.map((f, i) => (
+                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
+                      {(f.creator_profiles as any)?.avatar_url
+                        ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : "◉"}
+                    </div>
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+                    </div>
+                  </div>
+                  <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    DM
+                  </div>
+                </div>
+              ))}
             </div>
-            <div>
-              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
-              <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+          )}
+
+          {/* Campaigns */}
+          <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>Campaigns</p>
+          <p style={{ fontSize: "10px", color: "#333", marginBottom: "10px", lineHeight: 1.5 }}>Campaigns are automatically removed from your favourites if they've been taken down or completed.</p>
+          {campaignFavourites.length === 0 ? (
+            <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet — bookmark campaigns in Explore</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {campaignFavourites.map((f, i) => (
+                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.campaigns as any)?.name || "Campaign"}</p>
+                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>
+                      {(f.campaigns as any)?.type}{(f.campaigns as any)?.budget ? ` · £${(f.campaigns as any).budget}` : ""}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "12px", color: "#444", marginBottom: "6px" }}>{(f.campaigns as any)?.brand_profiles?.name || "Brand"}</p>
+                  <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{(f.campaigns as any)?.description}</p>
+                </div>
+              ))}
             </div>
-          </div>
-          <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-            DM
-          </div>
+          )}
         </div>
-      ))}
-    </div>
-  )}
 
-  {/* Campaigns */}
-  <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>Campaigns</p>
-  <p style={{ fontSize: "10px", color: "#333", marginBottom: "10px", lineHeight: 1.5 }}>Campaigns are automatically removed from your favourites if they've been taken down or completed.</p>
-  {campaignFavourites.length === 0 ? (
-    <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet — bookmark campaigns in Explore</p>
-  ) : (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {campaignFavourites.map((f, i) => (
-        <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.campaigns as any)?.name || "Campaign"}</p>
-            <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>
-              {(f.campaigns as any)?.type}{(f.campaigns as any)?.budget ? ` · £${(f.campaigns as any).budget}` : ""}
-            </span>
-          </div>
-          <p style={{ fontSize: "12px", color: "#444", marginBottom: "6px" }}>{(f.campaigns as any)?.brand_profiles?.name || "Brand"}</p>
-          <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{(f.campaigns as any)?.description}</p>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
-<div style={dividerStyle} />
+        <div style={dividerStyle} />
 
         {/* Applied Campaigns */}
         <div style={sectionStyle}>
@@ -439,18 +456,51 @@ const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
             <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No applications yet — explore campaigns to apply</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {appliedCampaigns.map((a, i) => (
-                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(a.campaigns as any)?.name || "Campaign"}</p>
-                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>
-                      {a.status}
-                    </span>
+              {appliedCampaigns.map((a, i) => {
+                const campaignData = a.campaigns as any;
+                const brandData = campaignData?.brand_profiles as any;
+                
+                const brandName = brandData?.name || "Unknown Brand";
+                const brandPfp = brandData?.logo_url || "";
+                const brandId = campaignData?.brand_id;
+
+                return (
+                  <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
+                      <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>
+                        {a.status}
+                      </span>
+                    </div>
+
+                    {/* Clickable Brand Row containing PFP & Underlined Brand Name */}
+                    <div 
+                      onClick={() => {
+                        if (brandId) {
+                          navigateToProfile(brandId);
+                        } else {
+                          console.error("No brand reference found for routing card click context.");
+                        }
+                      }}
+                      style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", cursor: "pointer", alignSelf: "flex-start" }}
+                    >
+                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333", overflow: "hidden", flexShrink: 0 }}>
+                        {brandPfp ? (
+                          <img src={brandPfp} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={brandName} />
+                        ) : (
+                          "★"
+                        )}
+                      </div>
+                      <p style={{ fontSize: "12px", color: "#aaa", textDecoration: "underline", fontWeight: 500 }}>
+                        {brandName}
+                      </p>
+                    </div>
+
+                    <p style={{ fontSize: "11px", color: "#555", lineHeight: 1.5 }}>{campaignData?.description}</p>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#444", marginBottom: "4px" }}>{(a.campaigns as any)?.brand_profiles?.name || "Brand"}</p>
-                  <p style={{ fontSize: "11px", color: "#555", lineHeight: 1.5 }}>{(a.campaigns as any)?.description}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -494,7 +544,7 @@ const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
         {/* Save */}
         <div
           onClick={saveProfile}
-          style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#555" : "#0a0a0a", border: saved ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
+          style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#0a0a0a" : "#0a0a0a", border: saved ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
         >
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save Profile"}
         </div>
