@@ -36,6 +36,14 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
+  // ==========================================
+  // NEW: FILTER & SEARCH STATES FOR CREATORS
+  // ==========================================
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedNiche, setSelectedNiche] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [minBudget, setMinBudget] = useState("");
+
   useEffect(() => {
     fetchCampaigns();
     fetchMyProfile();
@@ -106,7 +114,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
   const handleApply = async () => {
     if (!message || !selected) return;
-    setSubmitting(true);
+    options: setSubmitting(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       await supabase.from("applications").insert({
@@ -124,6 +132,33 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     setShowSheet(false);
   };
 
+  // ==========================================
+  // NEW: FILTER COMPUTATION ENGINE
+  // ==========================================
+  const filteredCampaigns = campaigns.filter((c) => {
+    // 1. Text Search (Matches brand name, campaign name, or description body text)
+    const matchesSearch = 
+      !searchQuery ||
+      c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.brand_profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // 2. Niche Filter matching
+    const matchesNiche = !selectedNiche || c.niche === selectedNiche;
+
+    // 3. Required Deliverable Platform Filter matching
+    const matchesPlatform = !selectedPlatform || c.platforms?.includes(selectedPlatform);
+
+    // 4. Financial Minimum Budget Filter logic
+    let matchesBudget = true;
+    if (minBudget) {
+      const budgetVal = parseInt(c.budget, 10) || 0;
+      matchesBudget = budgetVal >= parseInt(minBudget, 10);
+    }
+
+    return matchesSearch && matchesNiche && matchesPlatform && matchesBudget;
+  });
+
   const inputStyle: React.CSSProperties = {
     background: "#0a0a0a",
     border: "1px solid #222",
@@ -134,6 +169,19 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     outline: "none",
     width: "100%",
     fontFamily: "inherit",
+  };
+
+  const filterSelectStyle: React.CSSProperties = {
+    background: "#111",
+    border: "1px solid #222",
+    borderRadius: "8px",
+    padding: "10px 12px",
+    color: "#fff",
+    fontSize: "13px",
+    flex: 1,
+    outline: "none",
+    fontFamily: "inherit",
+    minWidth: "100px"
   };
 
   const chipStyle = (active: boolean): React.CSSProperties => ({
@@ -166,20 +214,59 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
         </div>
       </div>
 
+      {/* NEW: Dynamic Feed Filtering Component Control Dock */}
+      <div style={{ padding: "1rem 1rem 0 1rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <input 
+          type="text" 
+          placeholder="Search campaigns, brands, or keywords..." 
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={inputStyle} 
+        />
+
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <select value={selectedNiche} onChange={e => setSelectedNiche(e.target.value)} style={filterSelectStyle}>
+            <option value="">All Niches</option>
+            <option value="Lifestyle">Lifestyle</option>
+            <option value="Beauty">Beauty</option>
+            <option value="Fitness">Fitness</option>
+            <option value="Tech">Tech</option>
+            <option value="Fashion">Fashion</option>
+          </select>
+
+          <select value={selectedPlatform} onChange={e => setSelectedPlatform(e.target.value)} style={filterSelectStyle}>
+            <option value="">All Platforms</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube">YouTube</option>
+            <option value="Twitter/X">Twitter/X</option>
+          </select>
+
+          <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={filterSelectStyle}>
+            <option value="">Any Budget</option>
+            <option value="50">£50+</option>
+            <option value="100">£100+</option>
+            <option value="250">£250+</option>
+            <option value="500">£500+</option>
+            <option value="1000">£1000+</option>
+          </select>
+        </div>
+      </div>
+
       {/* Feed */}
       <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: "4rem 0" }}>
             <p style={{ color: "#444", fontSize: "13px" }}>Loading campaigns...</p>
           </div>
-        ) : campaigns.filter(c => !applied.includes(c.id)).length === 0 ? (
+        ) : filteredCampaigns.filter(c => !applied.includes(c.id)).length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
             <div style={{ fontSize: "36px", marginBottom: "1rem" }}>◎</div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No opportunities yet</p>
-            <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7, maxWidth: "260px", margin: "0 auto" }}>Brand campaigns will appear here. Check back soon.</p>
+            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No opportunities match</p>
+            <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7, maxWidth: "260px", margin: "0 auto" }}>Try adjusting or lowering your target filter parameters to find matches.</p>
           </div>
         ) : (
-          campaigns.filter(c => !applied.includes(c.id)).map(c => (
+          filteredCampaigns.filter(c => !applied.includes(c.id)).map(c => (
             <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
