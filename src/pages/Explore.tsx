@@ -55,29 +55,29 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   }, []);
 
   const fetchMyProfile = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  setCurrentUserId(user.id);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setCurrentUserId(user.id);
 
-  const { data } = await supabase.from("creator_profiles").select("avatar_url").eq("id", user.id).single();
-  if (data?.avatar_url) setMyAvatar(data.avatar_url);
+    const { data } = await supabase.from("creator_profiles").select("avatar_url").eq("id", user.id).single();
+    if (data?.avatar_url) setMyAvatar(data.avatar_url);
 
-  const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
-  if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
+    const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
+    if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
 
-  const { data: existingApps } = await supabase
-    .from("applications")
-    .select("campaign_id")
-    .eq("creator_id", user.id);
-  if (existingApps) setApplied(existingApps.map((a: any) => a.campaign_id));
-};
+    const { data: existingApps } = await supabase
+      .from("applications")
+      .select("campaign_id")
+      .eq("creator_id", user.id);
+    if (existingApps) setApplied(existingApps.map((a: any) => a.campaign_id));
+  };
 
   const fetchCampaigns = async () => {
     setLoading(true);
     const { data, error } = await supabase
-  .from("campaigns")
-  .select(`*, brand_profiles(name, niche, avatar_url), applications(count)`)
-  .order("created_at", { ascending: false });
+      .from("campaigns")
+      .select(`*, brand_profiles(name, niche, avatar_url), applications(count)`)
+      .order("created_at", { ascending: false });
 
     if (!error && data) setCampaigns(data);
     setLoading(false);
@@ -105,26 +105,24 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   };
 
   const handleApply = async () => {
-  if (!message || !selected) return;
-  setSubmitting(true);
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    await supabase.from("applications").insert({
-      campaign_id: selected.id,
-      creator_id: user.id,
-      message,
-      platforms: selectedPlatforms,
-      status: "pending",
-    });
-    
-    setApplied(prev => [...prev, selected.id]);
-    setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
-    
-    
-  }
-  setSubmitting(false);
-  setShowSheet(false);
-};
+    if (!message || !selected) return;
+    setSubmitting(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from("applications").insert({
+        campaign_id: selected.id,
+        creator_id: user.id,
+        message,
+        platforms: selectedPlatforms,
+        status: "pending",
+      });
+      
+      setApplied(prev => [...prev, selected.id]);
+      setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
+    }
+    setSubmitting(false);
+    setShowSheet(false);
+  };
 
   const inputStyle: React.CSSProperties = {
     background: "#0a0a0a",
@@ -152,13 +150,13 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-     <style>{`
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; max-height: 300px; margin-bottom: 10px; }
-    to { transform: translateX(60px); opacity: 0; max-height: 0; margin-bottom: 0; padding: 0; }
-  }
-`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @keyframes slideOut {
+          from { transform: translateX(0); opacity: 1; max-height: 300px; margin-bottom: 10px; }
+          to { transform: translateX(60px); opacity: 0; max-height: 0; margin-bottom: 0; padding: 0; }
+        }
+      `}</style>
 
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
@@ -182,28 +180,28 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
           </div>
         ) : (
           campaigns.filter(c => !applied.includes(c.id)).map(c => (
-  <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
+            <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        <div
-  onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
-  style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden", cursor: "pointer" }}
->
-  {c.brand_profiles?.avatar_url
-    ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-    : "◈"}
-</div>
-<div>
-  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
-  <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
-</div>
-              </div>
+                  <div
+                    onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
+                    style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden", cursor: "pointer", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
+                  >
+                    {c.brand_profiles?.avatar_url
+                      ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      : "◈"}
+                  </div>
+                  <div>
+                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
+                    <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
+                  </div>
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                 <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer" }}>
-  <svg width="16" height="16" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
-    <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
-  </svg>
-</div>
+                  <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
+                      <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
                   <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                     {c.type}{c.budget ? ` · £${c.budget}` : ""}
                   </span>
@@ -214,27 +212,27 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", gap: "10px", fontSize: "11px", color: "#444" }}>
                   {c.deadline && (
-  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="5" width="18" height="16" rx="2" stroke="#444" strokeWidth="1.8"/>
-      <line x1="3" y1="9" x2="21" y2="9" stroke="#444" strokeWidth="1.8"/>
-      <line x1="8" y1="3" x2="8" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
-      <line x1="16" y1="3" x2="16" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
-    </svg>
-    {c.deadline}
-  </span>
-)}
-<span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-    <circle cx="12" cy="8" r="3" stroke="#444" strokeWidth="1.8"/>
-    <path d="M6 20C6 16.6863 8.68629 14 12 14C15.3137 14 18 16.6863 18 20" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
-    <circle cx="5.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
-    <path d="M2 20C2 17.5 3.8 15.8 6.2 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="18.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
-    <path d="M22 20C22 17.5 20.2 15.8 17.8 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-  {((c as any).applications?.[0]?.count || 0)} applied
-</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="5" width="18" height="16" rx="2" stroke="#444" strokeWidth="1.8"/>
+                        <line x1="3" y1="9" x2="21" y2="9" stroke="#444" strokeWidth="1.8"/>
+                        <line x1="8" y1="3" x2="8" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+                        <line x1="16" y1="3" x2="16" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+                      </svg>
+                      {c.deadline}
+                    </span>
+                  )}
+                  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="3" stroke="#444" strokeWidth="1.8"/>
+                      <path d="M6 20C6 16.6863 8.68629 14 12 14C15.3137 14 18 16.6863 18 20" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+                      <circle cx="5.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
+                      <path d="M2 20C2 17.5 3.8 15.8 6.2 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="18.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
+                      <path d="M22 20C22 17.5 20.2 15.8 17.8 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                    {((c as any).applications?.[0]?.count || 0)} applied
+                  </span>
                 </div>
                 <div
                   onClick={() => !applied.includes(c.id) && openSheet(c)}
@@ -251,15 +249,15 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
       {/* Overlay */}
       {showSheet && <div onClick={() => setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
 
-     {/* Apply Sheet */}
+      {/* Apply Sheet */}
       {selected && (
         <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 5rem", zIndex: 20, transition: "bottom 0.3s ease", maxHeight: "90vh", overflowY: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-  <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
-  <span onClick={() => setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: "pointer", lineHeight: 1 }}>×</span>
-</div>
-<p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
-<p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>{selected.brand_profiles?.name || "Brand"}</p>
+            <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
+            <span onClick={() => setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: "pointer", lineHeight: 1 }}>×</span>
+          </div>
+          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
+          <p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>{selected.brand_profiles?.name || "Brand"}</p>
 
           {selected.script && (
             <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>

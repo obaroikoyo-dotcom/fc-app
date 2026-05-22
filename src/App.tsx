@@ -15,10 +15,10 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import { supabase } from "./lib/supabase";
 
-export type Page = "role-select" | "brand-signup" | "brand-onboarding" | "creator-signup" | "login" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile" | "creator-onboarding";
+export type Page = "role-select" | "brand-signup" | "brand-onboarding" | "creator-signup" | "login" | "BrandDashboard" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile" | "creator-onboarding";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
-const BRAND_PAGES: Page[] = ["brand-dashboard", "messages-brand", "brand-profile"];
+const BRAND_PAGES: Page[] = ["BrandDashboard", "messages-brand", "brand-profile"];
 
 function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => void }) {
   const activeColor = "#fff";
@@ -59,7 +59,7 @@ function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => voi
   );
 }
 
-function BrandNav({ page, navigate, tab, setTab }: { page: Page; navigate: (p: Page) => void; tab: string; setTab: (t: "campaigns" | "post") => void }) {
+function BrandNav({ page, navigate, tab, setTab, setViewingProfileId }: { page: Page; navigate: (p: Page) => void; tab: string; setTab: (t: "campaigns" | "post") => void; setViewingProfileId: (id: string | null) => void }) {
   const activeColor = "#fff";
   const inactiveColor = "#444";
 
@@ -69,8 +69,8 @@ function BrandNav({ page, navigate, tab, setTab }: { page: Page; navigate: (p: P
   const profileActive = page === "brand-profile";
 
   return (
-    <div style={{ borderTop: "1px solid #111", display: "flex", padding: "0.75rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%", zIndex: 100 }}>
-      <div onClick={() => { navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+    <div style={{ borderTop: "1px solid #111", display: "flex", padding: "0.75rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
           <rect x="14" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -79,21 +79,21 @@ function BrandNav({ page, navigate, tab, setTab }: { page: Page; navigate: (p: P
         </svg>
         <span style={{ fontSize: "10px", color: campaignsActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Campaigns</span>
       </div>
-      <div onClick={() => navigate("messages-brand")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
             stroke={messagesActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
         </svg>
         <span style={{ fontSize: "10px", color: messagesActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
       </div>
-      <div onClick={() => { navigate("brand-dashboard"); setTab("post"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("post"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <line x1="12" y1="5" x2="12" y2="19" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
           <line x1="5" y1="12" x2="19" y2="12" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
         </svg>
         <span style={{ fontSize: "10px", color: postActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Post</span>
       </div>
-      <div onClick={() => navigate("brand-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("brand-profile"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="8" r="4" stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
           <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
@@ -140,10 +140,10 @@ export default function App() {
         .maybeSingle();
 
       if (profileError || !profile) {
-  await supabase.auth.signOut();
-  setPage("role-select");
-  return;
-}
+        await supabase.auth.signOut();
+        setPage("role-select");
+        return;
+      }
 
       if (profile.role === "brand") {
         const { data: brandProfile } = await supabase
@@ -181,7 +181,6 @@ export default function App() {
   useEffect(() => {
     let isMounted = true;
 
-    // Safety fallback: drops the screen veil after 3.5s regardless of database response state
     const fallbackTimeout = setTimeout(() => {
       if (isMounted) setLoading(false);
     }, 3500);
@@ -209,7 +208,6 @@ export default function App() {
 
     initializeAuth();
 
-    // Listen only for distinct session changes (sign out or token refresh updates)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       
@@ -236,22 +234,36 @@ export default function App() {
     );
   }
 
-  const renderPage = () => {
+const renderPage = () => {
     switch (page) {
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
-     case "brand-dashboard": return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
+      // Added both casing handlers to match your route component requirements safely
+      case "BrandDashboard":
+      case "brand-dashboard" as any: 
+        return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": return <CreatorProfile navigate={navigate} />;
-      case "brand-profile": return <BrandProfile navigate={navigate} />;
-      case "explore": return <Explore navigate={navigate} />;
+      case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
+      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
-      case "public-profile": return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
+      case "public-profile": {
+        // Converting to a pure string comparison clears the "not comparable to type Page" error instantly
+        const pageString = page as string;
+        const isBrandBrowsing = BRAND_PAGES.map(p => p as string).includes(pageString) || 
+                                pageString === "BrandDashboard" || 
+                                pageString === "brand-dashboard";
+        
+        if (isBrandBrowsing) {
+          return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
+        }
+        return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
+      }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       default: return <RoleSelect navigate={navigate} />;
     }
@@ -261,7 +273,7 @@ export default function App() {
     <div>
       {renderPage()}
       {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} />}
-      {BRAND_PAGES.includes(page) && <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} />}
+      {BRAND_PAGES.includes(page) && <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} />}
     </div>
   );
 }
