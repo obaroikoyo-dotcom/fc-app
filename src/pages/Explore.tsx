@@ -37,9 +37,8 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   // ==========================================
-  // NEW: FILTER & SEARCH STATES FOR CREATORS
+  // UPDATED: REMOVED SEARCH QUERY STATE
   // ==========================================
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [minBudget, setMinBudget] = useState("");
@@ -114,7 +113,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
   const handleApply = async () => {
     if (!message || !selected) return;
-    options: setSubmitting(true);
+    setSubmitting(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       await supabase.from("applications").insert({
@@ -133,30 +132,23 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   };
 
   // ==========================================
-  // NEW: FILTER COMPUTATION ENGINE
+  // FILTER COMPUTATION ENGINE (WITHOUT TEXT SEARCH)
   // ==========================================
   const filteredCampaigns = campaigns.filter((c) => {
-    // 1. Text Search (Matches brand name, campaign name, or description body text)
-    const matchesSearch = 
-      !searchQuery ||
-      c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.brand_profiles?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // 2. Niche Filter matching
+    // 1. Niche Filter matching
     const matchesNiche = !selectedNiche || c.niche === selectedNiche;
 
-    // 3. Required Deliverable Platform Filter matching
+    // 2. Required Deliverable Platform Filter matching
     const matchesPlatform = !selectedPlatform || c.platforms?.includes(selectedPlatform);
 
-    // 4. Financial Minimum Budget Filter logic
+    // 3. Financial Minimum Budget Filter logic
     let matchesBudget = true;
     if (minBudget) {
       const budgetVal = parseInt(c.budget, 10) || 0;
       matchesBudget = budgetVal >= parseInt(minBudget, 10);
     }
 
-    return matchesSearch && matchesNiche && matchesPlatform && matchesBudget;
+    return matchesNiche && matchesPlatform && matchesBudget;
   });
 
   const inputStyle: React.CSSProperties = {
@@ -214,43 +206,33 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
         </div>
       </div>
 
-      {/* NEW: Dynamic Feed Filtering Component Control Dock */}
-      <div style={{ padding: "1rem 1rem 0 1rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-        <input 
-          type="text" 
-          placeholder="Search campaigns, brands, or keywords..." 
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          style={inputStyle} 
-        />
+      {/* UPDATED: Dropdowns Dock Only (No Search Bar) */}
+      <div style={{ padding: "1rem 1rem 0 1rem", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <select value={selectedNiche} onChange={e => setSelectedNiche(e.target.value)} style={filterSelectStyle}>
+          <option value="">All Niches</option>
+          <option value="Lifestyle">Lifestyle</option>
+          <option value="Beauty">Beauty</option>
+          <option value="Fitness">Fitness</option>
+          <option value="Tech">Tech</option>
+          <option value="Fashion">Fashion</option>
+        </select>
 
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          <select value={selectedNiche} onChange={e => setSelectedNiche(e.target.value)} style={filterSelectStyle}>
-            <option value="">All Niches</option>
-            <option value="Lifestyle">Lifestyle</option>
-            <option value="Beauty">Beauty</option>
-            <option value="Fitness">Fitness</option>
-            <option value="Tech">Tech</option>
-            <option value="Fashion">Fashion</option>
-          </select>
+        <select value={selectedPlatform} onChange={e => setSelectedPlatform(e.target.value)} style={filterSelectStyle}>
+          <option value="">All Platforms</option>
+          <option value="Instagram">Instagram</option>
+          <option value="TikTok">TikTok</option>
+          <option value="YouTube">YouTube</option>
+          <option value="Twitter/X">Twitter/X</option>
+        </select>
 
-          <select value={selectedPlatform} onChange={e => setSelectedPlatform(e.target.value)} style={filterSelectStyle}>
-            <option value="">All Platforms</option>
-            <option value="Instagram">Instagram</option>
-            <option value="TikTok">TikTok</option>
-            <option value="YouTube">YouTube</option>
-            <option value="Twitter/X">Twitter/X</option>
-          </select>
-
-          <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={filterSelectStyle}>
-            <option value="">Any Budget</option>
-            <option value="50">£50+</option>
-            <option value="100">£100+</option>
-            <option value="250">£250+</option>
-            <option value="500">£500+</option>
-            <option value="1000">£1000+</option>
-          </select>
-        </div>
+        <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={filterSelectStyle}>
+          <option value="">Any Budget</option>
+          <option value="50">£50+</option>
+          <option value="100">£100+</option>
+          <option value="250">£250+</option>
+          <option value="500">£500+</option>
+          <option value="1000">£1000+</option>
+        </select>
       </div>
 
       {/* Feed */}
