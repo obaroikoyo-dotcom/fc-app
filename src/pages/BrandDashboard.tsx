@@ -35,22 +35,22 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [posting, setPosting] = useState(false);
 
   const fetchCampaigns = async () => {
-  setLoading(true);
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) {
-    setCurrentUserId(user.id);
-    const { data } = await supabase
-      .from("campaigns")
-      .select("*, applications(count), brand_profiles(name, logo_url)")
-      .order("created_at", { ascending: false });
-    if (data) {
-      const mine = data.filter(c => c.brand_id === user.id);
-      const others = data.filter(c => c.brand_id !== user.id);
-      setCampaigns([...mine, ...others]);
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+      const { data } = await supabase
+        .from("campaigns")
+        .select("*, applications(count), brand_profiles(name, logo_url)")
+        .order("created_at", { ascending: false });
+      if (data) {
+        const mine = data.filter(c => c.brand_id === user.id);
+        const others = data.filter(c => c.brand_id !== user.id);
+        setCampaigns([...mine, ...others]);
+      }
     }
-  }
-  setLoading(false);
-};
+    setLoading(false);
+  };
 
   useEffect(() => { fetchCampaigns(); }, []);
 
@@ -141,57 +141,88 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               </div>
             ) : (
               campaigns.map(c => {
-  const isOwn = c.brand_id === currentUserId;
-  const brandLogo = (c as any).brand_profiles?.logo_url;
-  const brandName = (c as any).brand_profiles?.name;
+                const isOwn = c.brand_id === currentUserId;
+                const brandLogo = (c as any).brand_profiles?.logo_url;
+                const brandName = (c as any).brand_profiles?.name;
+                const budgetVal = parseInt(c.budget, 10);
 
-  return (
-    <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#333" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
-      
-      {/* Brand header row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-        <div
-          onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
-          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
-        >
-          <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#333", flexShrink: 0 }}>
-            {brandLogo ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
-          </div>
-          <span style={{ fontSize: "12px", color: "#555" }}>{brandName || "Brand"}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {isOwn && (
-            <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", background: "#fff", color: "#0a0a0a", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Yours</span>
-          )}
-          <span style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "20px", border: `1px solid ${c.type === "paid" ? "#fff" : "#444"}`, color: c.type === "paid" ? "#fff" : "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>{c.type}</span>
-        </div>
-      </div>
+                return (
+                  <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#333" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
+                    
+                    {/* Brand header row */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                      <div
+                        onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
+                        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+                      >
+                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#333", flexShrink: 0 }}>
+                          {brandLogo ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                        </div>
+                        <span style={{ fontSize: "12px", color: "#555" }}>{brandName || "Brand"}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {isOwn && (
+                          <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", background: "#fff", color: "#0a0a0a", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Yours</span>
+                        )}
+                        <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                          {c.type}
+                        </span>
+                      </div>
+                    </div>
 
-      {/* Campaign info */}
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
-      <p style={{ fontSize: "13px", color: "#444", marginBottom: "12px", lineHeight: 1.5 }}>{c.description}</p>
-      <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555" }}>
-        {c.budget && <span>£{c.budget}</span>}
-        {c.niche && <span>{c.niche}</span>}
-        {c.deadline && <span>By {c.deadline}</span>}
-      </div>
-      {c.platforms?.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px" }}>
-          {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "11px", padding: "3px 8px", border: "1px solid #222", borderRadius: "20px", color: "#444" }}>{p}</span>)}
-        </div>
-      )}
-      {isOwn && c.script && (
-        <div style={{ marginTop: "12px", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
-          <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Script</p>
-          <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{c.script}</p>
-        </div>
-      )}
-      <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #1a1a1a", fontSize: "12px", color: "#444" }}>
-        {(c as any).applications?.[0]?.count || 0} application{((c as any).applications?.[0]?.count || 0) !== 1 ? "s" : ""}
-      </div>
-    </div>
-  );
-})
+                    {/* Campaign info */}
+                    <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
+                    <p style={{ fontSize: "13px", color: "#444", marginBottom: "12px", lineHeight: 1.5 }}>{c.description}</p>
+                    
+                    <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555", marginBottom: "12px" }}>
+                      {c.niche && <span>{c.niche}</span>}
+                      {c.deadline && (
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#555" strokeWidth="1.8"/><line x1="3" y1="9" x2="21" y2="9" stroke="#555" strokeWidth="1.8"/></svg>
+                          {c.deadline}
+                        </span>
+                      )}
+                    </div>
+
+                    {c.platforms?.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px", marginBottom: "12px" }}>
+                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "11px", padding: "3px 8px", border: "1px solid #222", borderRadius: "20px", color: "#444" }}>{p}</span>)}
+                      </div>
+                    )}
+
+                    {isOwn && c.script && (
+                      <div style={{ marginTop: "12px", marginBottom: "12px", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
+                        <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Script</p>
+                        <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{c.script}</p>
+                      </div>
+                    )}
+
+                    {/* Bottom row money data callout without emojis */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
+                      {c.type === "paid" && budgetVal ? (
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Budget</span>
+                          <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
+                            £{budgetVal.toLocaleString()}
+                          </span>
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
+                            Gifted
+                          </span>
+                        </div>
+                      )}
+
+                      <div style={{ fontSize: "11px", color: "#444", fontWeight: 500 }}>
+                        {(c as any).applications?.[0]?.count || 0} application{((c as any).applications?.[0]?.count || 0) !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })
             )}
           </div>
         )}
