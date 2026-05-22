@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-interface Props { navigate: (p: Page) => void; }
+interface Props { navigate: (p: Page) => void; navigateToProfile?: (id: string) => void; }
 
 interface Campaign {
   id: string;
+  brand_id: string;
   name: string;
   description: string;
   budget: string;
@@ -22,7 +23,7 @@ interface Campaign {
   } | null;
 }
 
-export default function Explore({ navigate }: Props) {
+export default function Explore({ navigate, navigateToProfile }: Props) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSheet, setShowSheet] = useState(false);
@@ -184,16 +185,19 @@ export default function Explore({ navigate }: Props) {
   <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
-                    {c.brand_profiles?.avatar_url
-                      ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : "◈"}
-                  </div>
-                  <div>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
-                    <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
-                  </div>
-                </div>
+        <div
+  onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
+  style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden", cursor: "pointer" }}
+>
+  {c.brand_profiles?.avatar_url
+    ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    : "◈"}
+</div>
+<div>
+  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
+  <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
+</div>
+              </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                  <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer" }}>
   <svg width="16" height="16" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
@@ -250,9 +254,12 @@ export default function Explore({ navigate }: Props) {
      {/* Apply Sheet */}
       {selected && (
         <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 5rem", zIndex: 20, transition: "bottom 0.3s ease", maxHeight: "90vh", overflowY: "auto" }}>
-          <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px", margin: "0 auto 1.5rem" }} />
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
-          <p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>{selected.brand_profiles?.name || "Brand"}</p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
+  <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
+  <span onClick={() => setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: "pointer", lineHeight: 1 }}>×</span>
+</div>
+<p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
+<p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>{selected.brand_profiles?.name || "Brand"}</p>
 
           {selected.script && (
             <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
