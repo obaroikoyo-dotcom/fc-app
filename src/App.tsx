@@ -252,16 +252,14 @@ const renderPage = () => {
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
-      case "public-profile": {
-        // Converting to a pure string comparison clears the "not comparable to type Page" error instantly
-        const pageString = page as string;
-        const isBrandBrowsing = BRAND_PAGES.map(p => p as string).includes(pageString) || 
-                                pageString === "BrandDashboard" || 
-                                pageString === "brand-dashboard";
-        
-        if (isBrandBrowsing) {
+     case "public-profile": {
+        // Anyone (Creator OR Brand) clicking a campaign card should be routed 
+        // straight to the BrandProfile view using the targeted profile ID!
+        if (viewingProfileId) {
           return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
         }
+        
+        // Fallback to PublicProfile layout if no specific target ID was captured
         return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
       }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
