@@ -23,6 +23,12 @@ interface Campaign {
   } | null;
 }
 
+const UI = {
+  input: { background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit" },
+  dropdown: { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px", color: "#fff", fontSize: "13px", flex: 1, outline: "none", fontFamily: "inherit", minWidth: "100px" },
+  chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s" })
+};
+
 export default function Explore({ navigate, navigateToProfile }: Props) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,9 +42,6 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // ==========================================
-  // UPDATED: REMOVED SEARCH QUERY STATE
-  // ==========================================
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [minBudget, setMinBudget] = useState("");
@@ -49,11 +52,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
     const channel = supabase
       .channel("campaigns-feed")
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "campaigns",
-      }, (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "campaigns" }, (payload) => {
         setCampaigns(prev => [payload.new as Campaign, ...prev]);
       })
       .subscribe();
@@ -72,10 +71,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
     if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
 
-    const { data: existingApps } = await supabase
-      .from("applications")
-      .select("campaign_id")
-      .eq("creator_id", user.id);
+    const { data: existingApps } = await supabase.from("applications").select("campaign_id").eq("creator_id", user.id);
     if (existingApps) setApplied(existingApps.map((a: any) => a.campaign_id));
   };
 
@@ -131,61 +127,11 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     setShowSheet(false);
   };
 
-  // ==========================================
-  // FILTER COMPUTATION ENGINE (WITHOUT TEXT SEARCH)
-  // ==========================================
   const filteredCampaigns = campaigns.filter((c) => {
-    // 1. Niche Filter matching
-    const matchesNiche = !selectedNiche || c.niche === selectedNiche;
-
-    // 2. Required Deliverable Platform Filter matching
-    const matchesPlatform = !selectedPlatform || c.platforms?.includes(selectedPlatform);
-
-    // 3. Financial Minimum Budget Filter logic
-    let matchesBudget = true;
-    if (minBudget) {
-      const budgetVal = parseInt(c.budget, 10) || 0;
-      matchesBudget = budgetVal >= parseInt(minBudget, 10);
-    }
-
-    return matchesNiche && matchesPlatform && matchesBudget;
-  });
-
-  const inputStyle: React.CSSProperties = {
-    background: "#0a0a0a",
-    border: "1px solid #222",
-    borderRadius: "8px",
-    padding: "11px 14px",
-    color: "#fff",
-    fontSize: "14px",
-    outline: "none",
-    width: "100%",
-    fontFamily: "inherit",
-  };
-
-  const filterSelectStyle: React.CSSProperties = {
-    background: "#111",
-    border: "1px solid #222",
-    borderRadius: "8px",
-    padding: "10px 12px",
-    color: "#fff",
-    fontSize: "13px",
-    flex: 1,
-    outline: "none",
-    fontFamily: "inherit",
-    minWidth: "100px"
-  };
-
-  const chipStyle = (active: boolean): React.CSSProperties => ({
-    padding: "7px 14px",
-    borderRadius: "20px",
-    border: `1px solid ${active ? "#fff" : "#222"}`,
-    background: active ? "#fff" : "transparent",
-    color: active ? "#0a0a0a" : "#555",
-    fontSize: "12px",
-    fontWeight: 500,
-    cursor: "pointer",
-    transition: "all 0.15s",
+    if (selectedNiche && c.niche !== selectedNiche) return false;
+    if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
+    if (minBudget && (parseInt(c.budget, 10) || 0) < parseInt(minBudget, 10)) return false;
+    return true;
   });
 
   return (
@@ -206,112 +152,105 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
         </div>
       </div>
 
-      {/* UPDATED: Dropdowns Dock Only (No Search Bar) */}
+      {/* Filter Options Dock */}
       <div style={{ padding: "1rem 1rem 0 1rem", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-        <select value={selectedNiche} onChange={e => setSelectedNiche(e.target.value)} style={filterSelectStyle}>
+        <select value={selectedNiche} onChange={e => setSelectedNiche(e.target.value)} style={UI.dropdown}>
           <option value="">All Niches</option>
-          <option value="Lifestyle">Lifestyle</option>
-          <option value="Beauty">Beauty</option>
-          <option value="Fitness">Fitness</option>
-          <option value="Tech">Tech</option>
-          <option value="Fashion">Fashion</option>
+          {["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"].map(n => <option key={n} value={n}>{n}</option>)}
         </select>
 
-        <select value={selectedPlatform} onChange={e => setSelectedPlatform(e.target.value)} style={filterSelectStyle}>
+        <select value={selectedPlatform} onChange={e => setSelectedPlatform(e.target.value)} style={UI.dropdown}>
           <option value="">All Platforms</option>
-          <option value="Instagram">Instagram</option>
-          <option value="TikTok">TikTok</option>
-          <option value="YouTube">YouTube</option>
-          <option value="Twitter/X">Twitter/X</option>
+          {["Instagram", "TikTok", "YouTube", "Twitter/X"].map(p => <option key={p} value={p}>{p}</option>)}
         </select>
 
-        <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={filterSelectStyle}>
+        <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={UI.dropdown}>
           <option value="">Any Budget</option>
-          <option value="50">£50+</option>
-          <option value="100">£100+</option>
-          <option value="250">£250+</option>
-          <option value="500">£500+</option>
-          <option value="1000">£1000+</option>
+          {["50", "100", "250", "500", "1000"].map(v => <option key={v} value={v}>£{v}+</option>)}
         </select>
       </div>
 
-      {/* Feed */}
+      {/* Campaign Feed Container */}
       <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "4rem 0" }}>
-            <p style={{ color: "#444", fontSize: "13px" }}>Loading campaigns...</p>
-          </div>
+          <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading campaigns...</p>
         ) : filteredCampaigns.filter(c => !applied.includes(c.id)).length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-            <div style={{ fontSize: "36px", marginBottom: "1rem" }}>◎</div>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No opportunities match</p>
-            <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7, maxWidth: "260px", margin: "0 auto" }}>Try adjusting or lowering your target filter parameters to find matches.</p>
+            <p style={{ fontSize: "13px", color: "#444", maxWidth: "260px", margin: "0 auto" }}>Try adjusting your parameters.</p>
           </div>
         ) : (
-          filteredCampaigns.filter(c => !applied.includes(c.id)).map(c => (
-            <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div
-                    onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
-                    style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0, overflow: "hidden", cursor: "pointer", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}
-                  >
-                    {c.brand_profiles?.avatar_url
-                      ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : "◈"}
+          filteredCampaigns.filter(c => !applied.includes(c.id)).map(c => {
+            const budgetVal = parseInt(c.budget, 10);
+            return (
+              <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div
+                      onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
+                      style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", cursor: "pointer" }}
+                    >
+                      {c.brand_profiles?.avatar_url ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                    </div>
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
+                      <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
-                    <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
-                      <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                  <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    {c.type}{c.budget ? ` · £${c.budget}` : ""}
-                  </span>
-                </div>
-              </div>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
-              <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "10px" }}>{c.description}</p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", gap: "10px", fontSize: "11px", color: "#444" }}>
-                  {c.deadline && (
-                    <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                        <rect x="3" y="5" width="18" height="16" rx="2" stroke="#444" strokeWidth="1.8"/>
-                        <line x1="3" y1="9" x2="21" y2="9" stroke="#444" strokeWidth="1.8"/>
-                        <line x1="8" y1="3" x2="8" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
-                        <line x1="16" y1="3" x2="16" y2="7" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
+                  
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
                       </svg>
-                      {c.deadline}
+                    </div>
+                    {/* Cleaned Type Badge */}
+                    <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                      {c.type}
                     </span>
-                  )}
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                      <circle cx="12" cy="8" r="3" stroke="#444" strokeWidth="1.8"/>
-                      <path d="M6 20C6 16.6863 8.68629 14 12 14C15.3137 14 18 16.6863 18 20" stroke="#444" strokeWidth="1.8" strokeLinecap="round"/>
-                      <circle cx="5.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
-                      <path d="M2 20C2 17.5 3.8 15.8 6.2 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
-                      <circle cx="18.5" cy="9.5" r="2.5" stroke="#444" strokeWidth="1.5"/>
-                      <path d="M22 20C22 17.5 20.2 15.8 17.8 15.3" stroke="#444" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                    {((c as any).applications?.[0]?.count || 0)} applied
-                  </span>
+                  </div>
                 </div>
-                <div
-                  onClick={() => !applied.includes(c.id) && openSheet(c)}
-                  style={{ padding: "7px 16px", background: applied.includes(c.id) ? "#1a1a1a" : "#fff", color: applied.includes(c.id) ? "#555" : "#0a0a0a", border: applied.includes(c.id) ? "1px solid #222" : "1px solid #fff", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: applied.includes(c.id) ? "default" : "pointer", letterSpacing: "0.05em", textTransform: "uppercase", transition: "all 0.2s" }}
-                >
-                  {applied.includes(c.id) ? "Applied ✓" : "Apply"}
+
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
+                <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "12px" }}>{c.description}</p>
+                
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
+                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                    {/* Visual Psychology Upgrade: High-Impact Price Callout */}
+                    {c.type === "paid" && budgetVal ? (
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Budget</span>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#4ade80", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
+                          £{budgetVal.toLocaleString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#a855f7", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
+                          Gifted 🎁
+                        </span>
+                      </div>
+                    )}
+
+                    {c.deadline && (
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", color: "#444", marginLeft: "4px" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#444" strokeWidth="1.8"/><line x1="3" y1="9" x2="21" y2="9" stroke="#444" strokeWidth="1.8"/></svg>
+                        {c.deadline}
+                      </span>
+                    )}
+                  </div>
+
+                  <div
+                    onClick={() => !applied.includes(c.id) && openSheet(c)}
+                    style={{ padding: "7px 16px", background: applied.includes(c.id) ? "#1a1a1a" : "#fff", color: applied.includes(c.id) ? "#555" : "#0a0a0a", border: applied.includes(c.id) ? "1px solid #222" : "1px solid #fff", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: applied.includes(c.id) ? "default" : "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                  >
+                    {applied.includes(c.id) ? "Applied ✓" : "Apply"}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -339,14 +278,14 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
             <div style={{ marginBottom: "1.25rem" }}>
               <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms you'll post on</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {selected.platforms.map(p => <div key={p} onClick={() => togglePlatform(p)} style={chipStyle(selectedPlatforms.includes(p))}>{p}</div>)}
+                {selected.platforms.map(p => <div key={p} onClick={() => togglePlatform(p)} style={UI.chip(selectedPlatforms.includes(p))}>{p}</div>)}
               </div>
             </div>
           )}
 
           <div style={{ marginBottom: "1.5rem" }}>
             <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Message to brand</p>
-            <textarea style={{ ...inputStyle, minHeight: "100px", resize: "none" }} placeholder="Introduce yourself and why you're a good fit..." value={message} onChange={e => setMessage(e.target.value)} />
+            <textarea style={{ ...UI.input, minHeight: "100px", resize: "none" }} placeholder="Introduce yourself and why you're a good fit..." value={message} onChange={e => setMessage(e.target.value)} />
           </div>
 
           <div
