@@ -204,7 +204,6 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                         <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
                       </svg>
                     </div>
-                    {/* Cleaned Type Badge */}
                     <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                       {c.type}
                     </span>
@@ -216,18 +215,18 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    {/* Visual Psychology Upgrade: High-Impact Price Callout */}
+                    {/* Updated Color: Clean monochrome white price treatment */}
                     {c.type === "paid" && budgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Budget</span>
-                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#4ade80", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
                           £{budgetVal.toLocaleString()}
                         </span>
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#a855f7", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
                           Gifted 🎁
                         </span>
                       </div>
