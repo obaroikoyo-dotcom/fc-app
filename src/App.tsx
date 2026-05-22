@@ -273,7 +273,9 @@ const renderPage = () => {
     <div>
       {renderPage()}
       {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} />}
-      {BRAND_PAGES.includes(page) && <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} />}
+      {(BRAND_PAGES.includes(page) || (page as string) === "BrandDashboard" || (page as string) === "brand-dashboard") && (
+        <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} />
+      )}
     </div>
   );
 }
