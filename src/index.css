@@ -3,3 +3,16 @@ body {
   padding: 0;
   background: #0a0a0a;
 }
+
+/* --- Dynamic Theme Inversion Filter Rules --- */
+.inverted-theme {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Safeguard media layers from turning into negative layouts */
+.inverted-theme img,
+.inverted-theme video,
+.inverted-theme svg:not([stroke]),
+.inverted-theme [style*="background-image"] {
+  filter: invert(1) hue-rotate(180deg);
+}

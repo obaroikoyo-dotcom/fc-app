@@ -2,10 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-// Updated props to optionally accept a target profile ID passed from your App.tsx routing state
+// Added optional theme controls passed from App.tsx layout routes
 interface Props { 
   navigate: (p: Page) => void; 
   targetProfileId?: string | null; 
+  isInverted?: boolean;
+  toggleTheme?: () => void;
 }
 
 const CREATOR_TIERS = [
@@ -16,7 +18,7 @@ const CREATOR_TIERS = [
   { label: "Elite/Mega Impact", sub: "1M+: Cultural celebrity & global visibility", value: "mega" }
 ];
 
-export default function BrandProfile({ navigate, targetProfileId }: Props) {
+export default function BrandProfile({ navigate, targetProfileId, isInverted, toggleTheme }: Props) {
   const [logo, setLogo] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -263,6 +265,50 @@ export default function BrandProfile({ navigate, targetProfileId }: Props) {
           <div><label style={{ ...labelStyle, fontSize: "10px" }}>Instagram</label><input style={inputStyle} readOnly={isReadOnly} placeholder="@yourbrand" value={instagram} onChange={e => setInstagram(e.target.value)} /></div>
           <div><label style={{ ...labelStyle, fontSize: "10px" }}>TikTok</label><input style={inputStyle} readOnly={isReadOnly} placeholder="@yourbrand" value={tiktok} onChange={e => setTiktok(e.target.value)} /></div>
         </div>
+
+        {/* Interactive Inversion Control Switcher Block */}
+        {!isReadOnly && toggleTheme && (
+          <div style={{ marginBottom: "1rem" }}>
+            <label style={labelStyle}>Interface Accent</label>
+            <div 
+              onClick={toggleTheme} 
+              style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                justifyContent: "center", 
+                gap: "10px", 
+                padding: "12px", 
+                background: "#111", 
+                border: "1px solid #222", 
+                borderRadius: "8px", 
+                cursor: "pointer", 
+                userSelect: "none",
+                touchAction: "manipulation",
+                WebkitTapHighlightColor: "transparent"
+              }}
+            >
+              {isInverted ? (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                  <span style={{ fontSize: "13px", color: "#fff", fontWeight: 600, letterSpacing: "0.05em" }}>DARK MODE</span>
+                </>
+              ) : (
+                <>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                  </svg>
+                  <span style={{ fontSize: "13px", color: "#555", fontWeight: 600, letterSpacing: "0.05em" }}>LIGHT MODE</span>
+                </>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Save Controls Condition */}
         {!isReadOnly && (

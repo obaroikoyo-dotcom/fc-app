@@ -37,12 +37,21 @@ export type Page =
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
 const BRAND_PAGES: Page[] = ["BrandDashboard", "brand-dashboard" as any, "search-brand", "messages-brand", "brand-profile"];
 
-function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => void }) {
-  const activeColor = "#fff";
-  const inactiveColor = "#444";
+interface NavProps {
+  page: Page;
+  navigate: (p: Page) => void;
+  isInverted: boolean;
+}
+
+function CreatorNav({ page, navigate, isInverted }: NavProps) {
+  // Dynamically invert the colors based on state
+  const activeColor = isInverted ? "#0a0a0a" : "#fff";
+  const inactiveColor = isInverted ? "#b3b3b3" : "#444";
+  const bgColor = isInverted ? "#fff" : "#0a0a0a";
+  const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   return (
-    <div style={{ borderTop: "1px solid #111", display: "flex", padding: "0.75rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%", zIndex: 100 }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100 }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -76,9 +85,17 @@ function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => voi
   );
 }
 
-function BrandNav({ page, navigate, tab, setTab, setViewingProfileId }: { page: Page; navigate: (p: Page) => void; tab: string; setTab: (t: "campaigns" | "post") => void; setViewingProfileId: (id: string | null) => void }) {
-  const activeColor = "#fff";
-  const inactiveColor = "#444";
+interface BrandNavProps extends NavProps {
+  tab: string;
+  setTab: (t: "campaigns" | "post") => void;
+  setViewingProfileId: (id: string | null) => void;
+}
+
+function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted }: BrandNavProps) {
+  const activeColor = isInverted ? "#0a0a0a" : "#fff";
+  const inactiveColor = isInverted ? "#b3b3b3" : "#444";
+  const bgColor = isInverted ? "#fff" : "#0a0a0a";
+  const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   const campaignsActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "campaigns";
   const postActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "post";
@@ -87,7 +104,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId }: { page: 
   const profileActive = page === "brand-profile";
 
   return (
-    <div style={{ borderTop: "1px solid #111", display: "flex", padding: "0.75rem 0", background: "#0a0a0a", position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -136,6 +153,13 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
+  
+  // Color Inversion State (false = standard dark design, true = light theme design)
+  const [isInverted, setIsInverted] = useState<boolean>(false);
+
+  const toggleTheme = () => {
+    setIsInverted(prev => !prev);
+  };
 
   const navigate = (p: Page) => {
     setHistory(prev => [...prev, page]);
@@ -210,7 +234,7 @@ export default function App() {
       if (isMounted) setLoading(false);
     }, 3500);
 
-    const initializeAuth = async () => {
+  const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
@@ -270,7 +294,18 @@ export default function App() {
       case "brand-dashboard" as any: 
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
-      case "creator-profile": return <CreatorProfile navigate={navigate} navigateToProfile={navigateToProfile} />;
+      
+      // Wire up the inversion states directly to your CreatorProfile view
+      case "creator-profile": 
+        return (
+          <CreatorProfile 
+            navigate={navigate} 
+            navigateToProfile={navigateToProfile} 
+            isInverted={isInverted}
+            toggleTheme={toggleTheme}
+          />
+        );
+        
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
@@ -278,12 +313,18 @@ export default function App() {
       case "search-creator":
       case "search-brand": 
         return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
+      
+      // FIX: Clean layout target path routing so PublicProfile is used exclusively!
       case "public-profile": {
-        if (viewingProfileId) {
-          return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
-        }
-        return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
+        return (
+          <PublicProfile 
+            navigate={navigate} 
+            profileId={viewingProfileId || ""} 
+            goBack={goBack} 
+          />
+        );
       }
+      
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       default: return <RoleSelect navigate={navigate} />;
     }
@@ -294,9 +335,9 @@ export default function App() {
       <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
         {renderPage()}
       </div>
-      {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} />}
+      {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} isInverted={isInverted} />}
       {BRAND_PAGES.includes(page) && (
-        <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} />
+        <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} />
       )}
     </div>
   );

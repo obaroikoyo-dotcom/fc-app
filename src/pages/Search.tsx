@@ -12,7 +12,7 @@ interface Profile {
 const UI = {
   input: { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", width: "100%" },
   dropdown: { background: "#111", border: "1px solid #222", borderRadius: "20px", padding: "6px 12px", color: "#fff", fontSize: "12px", outline: "none", fontFamily: "inherit", cursor: "pointer" },
-  chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.03em" })
+  chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" })
 };
 
 export default function Search({ navigate, navigateToProfile }: Props) {
@@ -21,7 +21,6 @@ export default function Search({ navigate, navigateToProfile }: Props) {
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [niche, setNiche] = useState("");
   const [budget, setBudget] = useState("");
   const [followers, setFollowers] = useState("");
@@ -31,11 +30,9 @@ export default function Search({ navigate, navigateToProfile }: Props) {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setCurrentUserId(user.id);
         const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
         if (data?.role) { 
           setUserRole(data.role); 
-          // Defaults contextually: Brands see creators first, creators see brands first
           setFilter(data.role === "brand" ? "creators" : "brands"); 
         }
       }
@@ -46,26 +43,14 @@ export default function Search({ navigate, navigateToProfile }: Props) {
   }, []);
 
   const startDM = async (recId: string) => {
-    if (!currentUserId || !userRole) return;
-    
-    // Safely look for an existing conversation loop
-    const { data } = await supabase
-      .from("conversations")
-      .select("id")
-      .or(`and(participant_1.eq.${currentUserId},participant_2.eq.${recId}),and(participant_1.eq.${recId},participant_2.eq.${currentUserId})`)
-      .maybeSingle();
-
-    if (!data) {
-      await supabase.from("conversations").insert({ participant_1: currentUserId, participant_2: recId });
-    }
-    
-    navigate(userRole === "brand" ? ("messages-brand" as any) : "messages-creator");
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase.from("conversations").select("id").or(`and(participant_1.eq.${user.id},participant_2.eq.${recId}),and(participant_1.eq.${recId},participant_2.eq.${user.id})`).single();
+    if (!data) await supabase.from("conversations").insert({ participant_1: user.id, participant_2: recId });
+    navigate(userRole === "brand" ? "messages-brand" as any : "messages-creator");
   };
 
   const filtered = allProfiles.filter(p => {
-    // Hide the currently logged-in user from their own search feed
-    if (p.id === currentUserId) return false;
-
     if (filter === "creators" && p.role !== "creator") return false;
     if (filter === "brands" && p.role !== "brand") return false;
 
@@ -100,17 +85,12 @@ export default function Search({ navigate, navigateToProfile }: Props) {
       <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Discovery Hub</span>
         <div style={{ marginTop: "1rem" }}>
-          <input 
-            style={UI.input} 
-            placeholder={filter === "creators" ? "Search creators, skills, tags..." : filter === "brands" ? "Search brands..." : "Search community..."} 
-            value={query} 
-            onChange={e => setQuery(e.target.value)} 
-          />
+          <input style={UI.input} placeholder={filter === "creators" ? "Search creators..." : "Search brands..."} value={query} onChange={e => setQuery(e.target.value)} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "14px" }}>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {(["all", "creators", "brands"] as const).map(f => (
-              <div key={f} onClick={() => setFilter(f)} style={UI.chip(filter === f)}>{f}</div>
+              <div key={f} onClick={() => setFilter(f)} style={UI.chip(filter === f)}>{f.toUpperCase()}</div>
             ))}
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
@@ -118,22 +98,14 @@ export default function Search({ navigate, navigateToProfile }: Props) {
               <option value="">All Niches</option>
               {["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
-            
             <select value={budget} onChange={e => setBudget(e.target.value)} style={UI.dropdown}>
               <option value="">{filter === "creators" ? "Any Rate" : "Any Budget"}</option>
-              <option value="0-100">£0 - £100</option>
-              <option value="100-500">£100 - £500</option>
-              <option value="500+">£500+</option>
+              <option value="0-100">£0 - £100</option><option value="100-500">£100 - £500</option><option value="500+">£500+</option>
             </select>
-            
             {filter !== "brands" && (
               <select value={followers} onChange={e => setFollowers(e.target.value)} style={UI.dropdown}>
                 <option value="">Any Followers</option>
-                <option value="0-10k">0 - 10k fans</option>
-                <option value="10k-50k">10k - 50k fans</option>
-                <option value="50k-100k">50k - 100k fans</option>
-                <option value="100k-1m">100k - 1M fans</option>
-                <option value="1m+">1M+ fans</option>
+                {["0-10k", "10k-50k", "50k-100k", "100k-1m", "1m+"].map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             )}
           </div>
@@ -141,55 +113,24 @@ export default function Search({ navigate, navigateToProfile }: Props) {
       </div>
 
       <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-        {loading ? (
-          <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading profiles...</p>
-        ) : filtered.length === 0 ? (
-          <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results found matching those filters.</p>
-        ) : (
-          filtered.map(p => {
-            const isC = p.role === "creator";
-            const cp = p.creator_profiles;
-            const bp = p.brand_profiles;
-            
-            const avatar = isC ? cp?.avatar_url : bp?.avatar_url;
-            const fallbackIcon = isC ? "◉" : "◈";
-            const financialValue = isC ? cp?.rate : bp?.budget;
-
-            return (
-              <div 
-                key={p.id} 
-                onClick={() => navigateToProfile(p.id)} 
-                style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
-              >
-                <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, fontSize: "18px", color: "#333" }}>
-                  {avatar ? <img src={avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : fallbackIcon}
-                </div>
-                
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {isC ? (cp?.name || "Unnamed Creator") : (bp?.name || "Unnamed Brand")}
-                  </p>
-                  <p style={{ fontSize: "12px", color: "#444", marginTop: "2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {isC ? (cp?.niche || "General Niches") : (bp?.niche || "General Brand")}
-                    {isC && cp?.followers ? ` · ${cp.followers.toLocaleString()} fans` : ""}
-                  </p>
-                  {financialValue !== undefined && financialValue !== null && (
-                    <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "4px" }}>
-                      {isC ? "Rate" : "Project Budget"}: <span style={{ color: "#666" }}>£{Number(financialValue).toLocaleString()}</span>
-                    </p>
-                  )}
-                </div>
-                
-                <div 
-                  onClick={e => { e.stopPropagation(); startDM(p.id); }} 
-                  style={{ padding: "7px 14px", border: "1px solid #222", background: "#161616", borderRadius: "6px", fontSize: "11px", fontWeight: 600, color: "#fff", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
-                >
-                  DM
-                </div>
-              </div>
-            );
-          })
-        )}
+        {loading ? <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading...</p> : 
+         filtered.length === 0 ? <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p> : 
+         filtered.map(p => {
+           const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;
+           return (
+             <div key={p.id} onClick={() => navigateToProfile(p.id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+               <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                 {cp?.avatar_url || bp?.avatar_url ? <img src={cp?.avatar_url || bp?.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : isC ? "◉" : "◈"}
+               </div>
+               <div style={{ flex: 1, minWidth: 0 }}>
+                 <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{cp?.name || bp?.name || p.email}</p>
+                 <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && cp?.followers ? ` · ${cp.followers.toLocaleString()} fans` : ""}</p>
+                 {(isC ? cp?.rate : bp?.budget) && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>{isC ? "Rate" : "Budget"}: £{isC ? cp?.rate : bp?.budget}</p>}
+               </div>
+               <div onClick={e => { e.stopPropagation(); startDM(p.id); }} style={{ padding: "7px 14px", border: "1px solid #333", borderRadius: "6px", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer" }}>DM</div>
+             </div>
+           );
+         })}
       </div>
     </div>
   );
