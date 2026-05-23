@@ -44,14 +44,13 @@ interface NavProps {
 }
 
 function CreatorNav({ page, navigate, isInverted }: NavProps) {
-  // Dynamically invert the colors based on state
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
-  const inactiveColor = isInverted ? "#b3b3b3" : "#444";
-  const bgColor = isInverted ? "#fff" : "#0a0a0a";
+  const inactiveColor = isInverted ? "#a3a3a3" : "#444";
+  const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   return (
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100 }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -93,8 +92,8 @@ interface BrandNavProps extends NavProps {
 
 function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted }: BrandNavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
-  const inactiveColor = isInverted ? "#b3b3b3" : "#444";
-  const bgColor = isInverted ? "#fff" : "#0a0a0a";
+  const inactiveColor = isInverted ? "#a3a3a3" : "#444";
+  const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   const campaignsActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "campaigns";
@@ -104,7 +103,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   const profileActive = page === "brand-profile";
 
   return (
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -154,7 +153,7 @@ export default function App() {
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   
-  // Color Inversion State (false = standard dark design, true = light theme design)
+  // Theme state: false = default system black layout, true = inverted white layout
   const [isInverted, setIsInverted] = useState<boolean>(false);
 
   const toggleTheme = () => {
@@ -234,7 +233,7 @@ export default function App() {
       if (isMounted) setLoading(false);
     }, 3500);
 
-  const initializeAuth = async () => {
+    const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
@@ -294,8 +293,6 @@ export default function App() {
       case "brand-dashboard" as any: 
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
-      
-      // Wire up the inversion states directly to your CreatorProfile view
       case "creator-profile": 
         return (
           <CreatorProfile 
@@ -305,7 +302,6 @@ export default function App() {
             toggleTheme={toggleTheme}
           />
         );
-        
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
@@ -313,8 +309,6 @@ export default function App() {
       case "search-creator":
       case "search-brand": 
         return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
-      
-      // FIX: Clean layout target path routing so PublicProfile is used exclusively!
       case "public-profile": {
         return (
           <PublicProfile 
@@ -324,14 +318,35 @@ export default function App() {
           />
         );
       }
-      
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       default: return <RoleSelect navigate={navigate} />;
     }
   };
 
+  // Determine global baseline theme colors
+  const globalBg = isInverted ? "#ffffff" : "#0a0a0a";
+  const globalText = isInverted ? "#0a0a0a" : "#ffffff";
+
   return (
-    <div>
+    <div style={{ 
+      minHeight: "100vh", 
+      background: globalBg, 
+      color: globalText, 
+      transition: "background 0.2s ease, color 0.2s ease" 
+    }}>
+      {/* Universal stylesheet overrides to force light background down into deep components */}
+      <style>{`
+        body { 
+          background-color: ${globalBg} !important; 
+          color: ${globalText} !important; 
+          transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        /* Ensures standard paragraph/header items morph dynamically */
+        div, p, span, label, h1, h2, h3 {
+          color: inherit;
+        }
+      `}</style>
+
       <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
         {renderPage()}
       </div>
