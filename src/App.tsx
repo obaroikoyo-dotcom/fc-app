@@ -15,10 +15,27 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import { supabase } from "./lib/supabase";
 
-export type Page = "role-select" | "brand-signup" | "brand-onboarding" | "creator-signup" | "login" | "BrandDashboard" | "brand-dashboard" | "creator-dashboard" | "creator-profile" | "brand-profile" | "explore" | "messages-creator" | "messages-brand" | "search-creator" | "public-profile" | "creator-onboarding";
+export type Page = 
+  | "role-select" 
+  | "brand-signup" 
+  | "brand-onboarding" 
+  | "creator-signup" 
+  | "login" 
+  | "BrandDashboard" 
+  | "brand-dashboard" 
+  | "creator-dashboard" 
+  | "creator-profile" 
+  | "brand-profile" 
+  | "explore" 
+  | "messages-creator" 
+  | "messages-brand" 
+  | "search-creator" 
+  | "search-brand" 
+  | "public-profile" 
+  | "creator-onboarding";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
-const BRAND_PAGES: Page[] = ["BrandDashboard", "messages-brand", "brand-profile"];
+const BRAND_PAGES: Page[] = ["BrandDashboard", "brand-dashboard" as any, "search-brand", "messages-brand", "brand-profile"];
 
 function CreatorNav({ page, navigate }: { page: Page; navigate: (p: Page) => void }) {
   const activeColor = "#fff";
@@ -63,8 +80,9 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId }: { page: 
   const activeColor = "#fff";
   const inactiveColor = "#444";
 
-  const campaignsActive = page === "brand-dashboard" && tab === "campaigns";
-  const postActive = page === "brand-dashboard" && tab === "post";
+  const campaignsActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "campaigns";
+  const postActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "post";
+  const searchActive = page === "search-brand";
   const messagesActive = page === "messages-brand";
   const profileActive = page === "brand-profile";
 
@@ -78,6 +96,13 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId }: { page: 
           <rect x="14" y="14" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
         </svg>
         <span style={{ fontSize: "10px", color: campaignsActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Campaigns</span>
+      </div>
+      <div onClick={() => { setViewingProfileId(null); navigate("search-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke={searchActive ? activeColor : inactiveColor} strokeWidth="2"/>
+          <line x1="16.65" y1="16.65" x2="21" y2="21" stroke={searchActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+        <span style={{ fontSize: "10px", color: searchActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
       <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -234,32 +259,29 @@ export default function App() {
     );
   }
 
-const renderPage = () => {
+  const renderPage = () => {
     switch (page) {
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
-      // Added both casing handlers to match your route component requirements safely
       case "BrandDashboard":
       case "brand-dashboard" as any: 
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
-     case "creator-profile": return <CreatorProfile navigate={navigate} navigateToProfile={navigateToProfile} />;
+      case "creator-profile": return <CreatorProfile navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
-      case "search-creator": return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
-     case "public-profile": {
-        // Anyone (Creator OR Brand) clicking a campaign card should be routed 
-        // straight to the BrandProfile view using the targeted profile ID!
+      case "search-creator":
+      case "search-brand": 
+        return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
+      case "public-profile": {
         if (viewingProfileId) {
           return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
         }
-        
-        // Fallback to PublicProfile layout if no specific target ID was captured
         return <PublicProfile navigate={navigate} profileId={viewingProfileId || ""} goBack={goBack} />;
       }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
@@ -269,9 +291,11 @@ const renderPage = () => {
 
   return (
     <div>
-      {renderPage()}
+      <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
+        {renderPage()}
+      </div>
       {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} />}
-      {(BRAND_PAGES.includes(page) || (page as string) === "BrandDashboard" || (page as string) === "brand-dashboard") && (
+      {BRAND_PAGES.includes(page) && (
         <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} />
       )}
     </div>
