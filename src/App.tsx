@@ -153,11 +153,8 @@ export default function App() {
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   
-  const [isInverted, setIsInverted] = useState<boolean>(false);
+  const [isInverted] = useState<boolean>(false);
 
-  const toggleTheme = () => {
-    setIsInverted(prev => !prev);
-  };
 
   const navigate = (p: Page) => {
     setHistory(prev => [...prev, page]);
