@@ -153,7 +153,6 @@ export default function App() {
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   
-  // Theme state: false = default system black layout, true = inverted white layout
   const [isInverted, setIsInverted] = useState<boolean>(false);
 
   const toggleTheme = () => {
@@ -323,27 +322,28 @@ export default function App() {
     }
   };
 
-  // Determine global baseline theme colors
-  const globalBg = isInverted ? "#ffffff" : "#0a0a0a";
-  const globalText = isInverted ? "#0a0a0a" : "#ffffff";
-
   return (
-    <div style={{ 
-      minHeight: "100vh", 
-      background: globalBg, 
-      color: globalText, 
-      transition: "background 0.2s ease, color 0.2s ease" 
-    }}>
-      {/* Universal stylesheet overrides to force light background down into deep components */}
+    <div>
+      {/* Global CSS Variable Injection Engine */}
       <style>{`
-        body { 
-          background-color: ${globalBg} !important; 
-          color: ${globalText} !important; 
+        :root {
+          --bg-color: ${isInverted ? "#ffffff" : "#0a0a0a"};
+          --text-color: ${isInverted ? "#0a0a0a" : "#ffffff"};
+        }
+        
+        /* Force root application frame to use the active variable values */
+        body, #root, html {
+          background-color: var(--bg-color) !important;
+          color: var(--text-color) !important;
           transition: background-color 0.2s ease, color 0.2s ease;
         }
-        /* Ensures standard paragraph/header items morph dynamically */
-        div, p, span, label, h1, h2, h3 {
-          color: inherit;
+
+        /* Enforce variable styling on nested containers trying to block theme change */
+        div[style*="background: #0a0a0a"], 
+        div[style*="background-color: #0a0a0a"],
+        div[style*="background:#0a0a0a"] {
+          background: var(--bg-color) !important;
+          color: var(--text-color) !important;
         }
       `}</style>
 
