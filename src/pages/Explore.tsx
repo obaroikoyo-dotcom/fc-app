@@ -30,11 +30,18 @@ const UI = {
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s" })
 };
 
-// Simple standard formatter for deadline dates
+// Safely formats deadlines to "DD Mmm YYYY" globally without timezone shifting
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  
+  // Splits the YYYY-MM-DD string directly to bypass browser timezone adjustments
+  const [year, month, day] = dateString.split("-");
+  if (!year || !month || !day) return dateString;
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthIndex = parseInt(month, 10) - 1;
+
+  return `${parseInt(day, 10)} ${months[monthIndex]} ${year}`;
 };
 
 // Dynamic relative time formatter
