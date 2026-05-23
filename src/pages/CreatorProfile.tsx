@@ -233,7 +233,20 @@ export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
 
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
-        <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+  <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
+  <span onClick={async () => {
+  const confirmed = window.confirm("Are you sure you want to delete your account? This cannot be undone.");
+  if (!confirmed) return;
+  if (userId) {
+    await supabase.from("creator_profiles").delete().eq("id", userId);
+    await supabase.from("profiles").delete().eq("id", userId);
+    await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+    await supabase.auth.signOut();
+  }
+  navigate("role-select");
+}} style={{ fontSize: "12px", color: "#ff4444", cursor: "pointer" }}>Delete account</span>
+</div>
       </div>
 
       <div style={{ padding: "1.5rem 1.25rem" }}>
