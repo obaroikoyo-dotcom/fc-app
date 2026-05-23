@@ -125,21 +125,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setTimeout(() => { setPosted(false); setTab("campaigns"); }, 1500);
   };
 
-  // Secure Cascading Delete Action
-  const deleteCampaign = async (campaignId: string) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this campaign? This instantly removes all matching creator applications and bookmarks.");
-    if (!confirmDelete) return;
-
-    const { error } = await supabase
-      .from("campaigns")
-      .delete()
-      .eq("id", campaignId);
-
-    if (!error) {
-      setCampaigns(prev => prev.filter(c => c.id !== campaignId));
-    } else {
-      alert("Error removing campaign. Please try again.");
-    }
+  // Your new delete function
+  const deleteCampaign = async (id: string) => {
+    if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
+    await supabase.from("campaigns").delete().eq("id", id);
+    setCampaigns(prev => prev.filter(c => c.id !== id));
   };
 
   const inputStyle: React.CSSProperties = {
