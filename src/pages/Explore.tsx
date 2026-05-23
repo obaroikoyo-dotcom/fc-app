@@ -14,6 +14,7 @@ interface Campaign {
   niche: string;
   platforms: string[];
   deadline: string;
+  created_at: string;
   script: string;
   applications: number;
   brand_profiles: {
@@ -27,6 +28,33 @@ const UI = {
   input: { background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit" },
   dropdown: { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px", color: "#fff", fontSize: "13px", flex: 1, outline: "none", fontFamily: "inherit", minWidth: "100px" },
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s" })
+};
+
+// Simple standard formatter for deadline dates
+const formatDeadline = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+};
+
+// Dynamic relative time formatter
+const formatRelativeTime = (dateString: string, now: Date) => {
+  if (!dateString) return "";
+  const postedDate = new Date(dateString);
+  const diffMs = now.getTime() - postedDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return "under 1 minute ago";
+  if (diffMins === 1) return "1 minute ago";
+  if (diffMins < 60) return `${diffMins} minutes ago`;
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours === 1) return "1 hour ago";
+  if (diffHours < 24) return `${diffHours} hours ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "1 day ago";
+  return `${diffDays} days ago`;
 };
 
 export default function Explore({ navigate, navigateToProfile }: Props) {
@@ -45,10 +73,18 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [minBudget, setMinBudget] = useState("");
+  
+  // State to force re-render relative times every minute
+  const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     fetchCampaigns();
     fetchMyProfile();
+
+    // Setup an interval to update the absolute relative reference anchor point every 60s
+    const clockInterval = setInterval(() => {
+      setNow(new Date());
+    }, 60000);
 
     const channel = supabase
       .channel("campaigns-feed")
@@ -57,7 +93,10 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      clearInterval(clockInterval);
+      supabase.removeChannel(channel); 
+    };
   }, []);
 
   const fetchMyProfile = async () => {
@@ -213,9 +252,22 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
                 <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "12px" }}>{c.description}</p>
                 
+                {/* Dynamically Updated Posted & Deadline Rows */}
+                <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#444", marginBottom: "12px" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Posted:</span>
+                    <span style={{ color: "#666" }}>{formatRelativeTime(c.created_at, now)}</span>
+                  </span>
+                  {c.deadline && (
+                    <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Deadline:</span>
+                      <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline) || c.deadline}</span>
+                    </span>
+                  )}
+                </div>
+
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    {/* Updated Color: Clean monochrome white price treatment */}
                     {c.type === "paid" && budgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Budget</span>
@@ -227,16 +279,9 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
                         <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
-                          Gifted 🎁
+                          Gifted
                         </span>
                       </div>
-                    )}
-
-                    {c.deadline && (
-                      <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "11px", color: "#444", marginLeft: "4px" }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#444" strokeWidth="1.8"/><line x1="3" y1="9" x2="21" y2="9" stroke="#444" strokeWidth="1.8"/></svg>
-                        {c.deadline}
-                      </span>
                     )}
                   </div>
 
@@ -268,7 +313,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
           {selected.script && (
             <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
-              <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>📋 Brief / Script</p>
+              <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Brief / Script</p>
               <p style={{ fontSize: "12px", color: "#777", lineHeight: 1.7, whiteSpace: "pre-line" }}>{selected.script}</p>
             </div>
           )}

@@ -19,11 +19,37 @@ interface Campaign {
   niche: string;
   platforms: string[];
   deadline: string;
+  created_at: string;
   script: string;
   applications: number;
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
+
+const formatDeadline = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+};
+
+const formatRelativeTime = (dateString: string, now: Date) => {
+  if (!dateString) return "";
+  const postedDate = new Date(dateString);
+  const diffMs = now.getTime() - postedDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return "under 1 minute ago";
+  if (diffMins === 1) return "1 minute ago";
+  if (diffMins < 60) return `${diffMins} minutes ago`;
+
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours === 1) return "1 hour ago";
+  if (diffHours < 24) return `${diffHours} hours ago`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return "1 day ago";
+  return `${diffDays} days ago`;
+};
 
 export default function BrandDashboard({ navigate, tab, setTab, navigateToProfile }: Props) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -33,6 +59,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [posted, setPosted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [now, setNow] = useState(new Date());
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -52,7 +79,13 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setLoading(false);
   };
 
-  useEffect(() => { fetchCampaigns(); }, []);
+  useEffect(() => { 
+    fetchCampaigns(); 
+    const clockInterval = setInterval(() => {
+      setNow(new Date());
+    }, 60000);
+    return () => clearInterval(clockInterval);
+  }, []);
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
@@ -149,7 +182,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 return (
                   <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#333" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
                     
-                    {/* Brand header row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div
                         onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
@@ -170,16 +202,19 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
                     </div>
 
-                    {/* Campaign info */}
                     <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
                     <p style={{ fontSize: "13px", color: "#444", marginBottom: "12px", lineHeight: 1.5 }}>{c.description}</p>
                     
-                    <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555", marginBottom: "12px" }}>
-                      {c.niche && <span>{c.niche}</span>}
+                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#555", marginBottom: "12px" }}>
+                      {c.niche && <span style={{ borderRight: "1px solid #222", paddingRight: "14px" }}>{c.niche}</span>}
+                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Posted:</span>
+                        <span style={{ color: "#666" }}>{formatRelativeTime(c.created_at, now)}</span>
+                      </span>
                       {c.deadline && (
                         <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="#555" strokeWidth="1.8"/><line x1="3" y1="9" x2="21" y2="9" stroke="#555" strokeWidth="1.8"/></svg>
-                          {c.deadline}
+                          <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Deadline:</span>
+                          <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline) || c.deadline}</span>
                         </span>
                       )}
                     </div>
@@ -197,7 +232,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
                     )}
 
-                    {/* Bottom row money data callout without emojis */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
                       {c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
