@@ -26,11 +26,9 @@ interface Campaign {
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 
-// Safely formats deadlines to "DD Mmm YYYY" globally without timezone shifting
+// Foolproof global deadline formatter: Splits YYYY-MM-DD to avoid browser timezone shifts
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
-  
-  // Splits the YYYY-MM-DD string directly to bypass browser timezone adjustments
   const [year, month, day] = dateString.split("-");
   if (!year || !month || !day) return dateString;
 
@@ -40,6 +38,7 @@ const formatDeadline = (dateString: string) => {
   return `${parseInt(day, 10)} ${months[monthIndex]} ${year}`;
 };
 
+// Live auto-updating relative time engine
 const formatRelativeTime = (dateString: string, now: Date) => {
   if (!dateString) return "";
   const postedDate = new Date(dateString);
@@ -67,6 +66,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [posted, setPosted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  
+  // Drives the minute-by-minute dynamic text updates
   const [now, setNow] = useState(new Date());
 
   const fetchCampaigns = async () => {
@@ -89,9 +90,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
   useEffect(() => { 
     fetchCampaigns(); 
+
+    // Ticks every 60 seconds to refresh text across the dashboard seamlessly
     const clockInterval = setInterval(() => {
       setNow(new Date());
     }, 60000);
+
     return () => clearInterval(clockInterval);
   }, []);
 
@@ -119,6 +123,23 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setPosted(true);
     setPosting(false);
     setTimeout(() => { setPosted(false); setTab("campaigns"); }, 1500);
+  };
+
+  // Secure Cascading Delete Action
+  const deleteCampaign = async (campaignId: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this campaign? This instantly removes all matching creator applications and bookmarks.");
+    if (!confirmDelete) return;
+
+    const { error } = await supabase
+      .from("campaigns")
+      .delete()
+      .eq("id", campaignId);
+
+    if (!error) {
+      setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+    } else {
+      alert("Error removing campaign. Please try again.");
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -159,6 +180,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
+      {/* Header Bar */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
           {tab === "campaigns" ? "My Campaigns" : "Post Campaign"}
@@ -166,6 +188,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
       </div>
 
+      {/* Main Content Area */}
       <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem" }}>
 
         {tab === "campaigns" && (
@@ -188,8 +211,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const budgetVal = parseInt(c.budget, 10);
 
                 return (
-                  <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#333" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
+                  <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
                     
+                    {/* Header Row & Delete Trigger */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div
                         onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
@@ -200,19 +224,27 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         </div>
                         <span style={{ fontSize: "12px", color: "#555" }}>{brandName || "Brand"}</span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {isOwn && (
-                          <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", background: "#fff", color: "#0a0a0a", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>Yours</span>
+                      
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        {isOwn ? (
+                          <span 
+                            onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }} 
+                            style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
+                          >
+                            Delete
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                            {c.type}
+                          </span>
                         )}
-                        <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
-                          {c.type}
-                        </span>
                       </div>
                     </div>
 
                     <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
                     <p style={{ fontSize: "13px", color: "#444", marginBottom: "12px", lineHeight: 1.5 }}>{c.description}</p>
                     
+                    {/* Live Tracking Time Metadata Block */}
                     <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#555", marginBottom: "12px" }}>
                       {c.niche && <span style={{ borderRight: "1px solid #222", paddingRight: "14px" }}>{c.niche}</span>}
                       <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -222,7 +254,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       {c.deadline && (
                         <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                           <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Deadline:</span>
-                          <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline) || c.deadline}</span>
+                          <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline)}</span>
                         </span>
                       )}
                     </div>
@@ -240,6 +272,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
                     )}
 
+                    {/* Bottom Metadata Divider Row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
                       {c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -269,6 +302,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           </div>
         )}
 
+        {/* Form Submission Builder */}
         {tab === "post" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <div>
