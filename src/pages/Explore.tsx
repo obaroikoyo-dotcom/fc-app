@@ -94,11 +94,18 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     }, 60000);
 
     const channel = supabase
-      .channel("campaigns-feed")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "campaigns" }, (payload) => {
-        setCampaigns(prev => [payload.new as Campaign, ...prev]);
-      })
-      .subscribe();
+  .channel("campaigns-feed")
+  .on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, (payload) => {
+    if (payload.eventType === "INSERT") {
+      setCampaigns(prev => [payload.new as Campaign, ...prev]);
+    } else if (payload.eventType === "DELETE") {
+      // Instantly drop it from the creator's feed when a brand deletes it
+      setCampaigns(prev => prev.filter(c => c.id !== payload.old.id));
+      // Instantly pull it from their bookmarks array if it was saved
+      setBookmarked(prev => prev.filter(id => id !== payload.old.id));
+    }
+  })
+  .subscribe();
 
     return () => { 
       clearInterval(clockInterval);
