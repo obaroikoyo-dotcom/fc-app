@@ -4,9 +4,7 @@ import { supabase } from "../lib/supabase";
 
 interface Props { 
   navigate: (p: Page) => void; 
-  navigateToProfile: (id: string) => void; 
-  isInverted?: boolean;
-  toggleTheme?: () => void;
+  navigateToProfile: (id: string) => void;
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
@@ -14,7 +12,7 @@ const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "U
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
-export default function CreatorProfile({ navigate, navigateToProfile, isInverted, toggleTheme }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
@@ -541,50 +539,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, isInverted
             )}
           </div>
         </div>
-
-        {/* Interactive Inversion Control Switcher Block */}
-        {toggleTheme && (
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={labelStyle}>Interface Accent</label>
-            <div 
-              onClick={toggleTheme} 
-              style={{ 
-                display: "flex", 
-                alignItems: "center", 
-                justifyContent: "center", 
-                gap: "10px", 
-                padding: "12px", 
-                background: "#111", 
-                border: "1px solid #222", 
-                borderRadius: "8px", 
-                cursor: "pointer", 
-                userSelect: "none",
-                touchAction: "manipulation",
-                WebkitTapHighlightColor: "transparent"
-              }}
-            >
-              {isInverted ? (
-                <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="5" />
-                    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                  </svg>
-                  <span style={{ fontSize: "13px", color: "#fff", fontWeight: 600, letterSpacing: "0.05em" }}>DARK MODE</span>
-                </>
-              ) : (
-                <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                  </svg>
-                  <span style={{ fontSize: "13px", color: "#555", fontWeight: 600, letterSpacing: "0.05em" }}>LIGHT MODE</span>
-                </>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Save */}
         <div

@@ -293,14 +293,12 @@ export default function App() {
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": 
-        return (
-          <CreatorProfile 
-            navigate={navigate} 
-            navigateToProfile={navigateToProfile} 
-            isInverted={isInverted}
-            toggleTheme={toggleTheme}
-          />
-        );
+  return (
+    <CreatorProfile 
+      navigate={navigate} 
+      navigateToProfile={navigateToProfile} 
+    />
+  );
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
@@ -323,30 +321,7 @@ export default function App() {
   };
 
   return (
-    <div>
-      {/* Global CSS Variable Injection Engine */}
-      <style>{`
-        :root {
-          --bg-color: ${isInverted ? "#ffffff" : "#0a0a0a"};
-          --text-color: ${isInverted ? "#0a0a0a" : "#ffffff"};
-        }
-        
-        /* Force root application frame to use the active variable values */
-        body, #root, html {
-          background-color: var(--bg-color) !important;
-          color: var(--text-color) !important;
-          transition: background-color 0.2s ease, color 0.2s ease;
-        }
-
-        /* Enforce variable styling on nested containers trying to block theme change */
-        div[style*="background: #0a0a0a"], 
-        div[style*="background-color: #0a0a0a"],
-        div[style*="background:#0a0a0a"] {
-          background: var(--bg-color) !important;
-          color: var(--text-color) !important;
-        }
-      `}</style>
-
+    <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", minHeight: "100vh" }}>
       <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
         {renderPage()}
       </div>
