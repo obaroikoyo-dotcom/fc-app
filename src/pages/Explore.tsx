@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-interface Props { navigate: (p: Page) => void; navigateToProfile?: (id: string) => void; }
+interface Props { 
+  navigate: (p: Page) => void; 
+  navigateToProfile?: (id: string) => void; 
+}
 
 interface Campaign {
   id: string;
@@ -16,12 +19,15 @@ interface Campaign {
   deadline: string;
   created_at: string;
   script: string;
-  applications: number;
   brand_profiles: {
     name: string;
     niche: string;
     avatar_url?: string;
   } | null;
+  my_application?: {
+    status: "pending" | "approved" | "declined";
+    message: string;
+  };
 }
 
 const UI = {
@@ -30,41 +36,32 @@ const UI = {
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s" })
 };
 
-// Safely formats deadlines to "DD Mmm YYYY" globally without timezone shifting
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
-  
-  // Splits the YYYY-MM-DD string directly to bypass browser timezone adjustments
   const [year, month, day] = dateString.split("-");
   if (!year || !month || !day) return dateString;
-
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const monthIndex = parseInt(month, 10) - 1;
-
-  return `${parseInt(day, 10)} ${months[monthIndex]} ${year}`;
+  return `${parseInt(day, 10)} ${months[parseInt(month, 10) - 1]} ${year}`;
 };
 
-// Dynamic relative time formatter
 const formatRelativeTime = (dateString: string, now: Date) => {
   if (!dateString) return "";
   const postedDate = new Date(dateString);
-  const diffMs = now.getTime() - postedDate.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
+  const diffMins = Math.floor((now.getTime() - postedDate.getTime()) / 60000);
 
   if (diffMins < 1) return "under 1 minute ago";
   if (diffMins === 1) return "1 minute ago";
   if (diffMins < 60) return `${diffMins} minutes ago`;
-
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours === 1) return "1 hour ago";
   if (diffHours < 24) return `${diffHours} hours ago`;
-
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays === 1) return "1 day ago";
   return `${diffDays} days ago`;
 };
 
 export default function Explore({ navigate, navigateToProfile }: Props) {
+  const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSheet, setShowSheet] = useState(false);
@@ -75,37 +72,27 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
+  const [myCreatorName, setMyCreatorName] = useState<string>("A creator");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [minBudget, setMinBudget] = useState("");
-  
-  // State to force re-render relative times every minute
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    fetchCampaigns();
-    fetchMyProfile();
+    fetchMyProfile().then((userId) => {
+      fetchCampaigns(userId || undefined);
+    });
 
-    // Setup an interval to update the absolute relative reference anchor point every 60s
-    const clockInterval = setInterval(() => {
-      setNow(new Date());
-    }, 60000);
+    const clockInterval = setInterval(() => setNow(new Date()), 60000);
 
     const channel = supabase
-  .channel("campaigns-feed")
-  .on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, (payload) => {
-    if (payload.eventType === "INSERT") {
-      setCampaigns(prev => [payload.new as Campaign, ...prev]);
-    } else if (payload.eventType === "DELETE") {
-      // Instantly drop it from the creator's feed when a brand deletes it
-      setCampaigns(prev => prev.filter(c => c.id !== payload.old.id));
-      // Instantly pull it from their bookmarks array if it was saved
-      setBookmarked(prev => prev.filter(id => id !== payload.old.id));
-    }
-  })
-  .subscribe();
+      .channel("campaigns-feed")
+      .on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, () => {
+        supabase.auth.getUser().then(({ data }) => fetchCampaigns(data.user?.id || undefined));
+      })
+      .subscribe();
 
     return () => { 
       clearInterval(clockInterval);
@@ -115,27 +102,41 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
   const fetchMyProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) return null;
     setCurrentUserId(user.id);
 
-    const { data } = await supabase.from("creator_profiles").select("avatar_url").eq("id", user.id).single();
-    if (data?.avatar_url) setMyAvatar(data.avatar_url);
+    const { data } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", user.id).single();
+    if (data) {
+      if (data.avatar_url) setMyAvatar(data.avatar_url);
+      if (data.name) setMyCreatorName(data.name);
+    }
 
     const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
     if (favs) setBookmarked(favs.map((f: any) => f.campaign_id));
 
-    const { data: existingApps } = await supabase.from("applications").select("campaign_id").eq("creator_id", user.id);
-    if (existingApps) setApplied(existingApps.map((a: any) => a.campaign_id));
+    return user.id;
   };
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = async (userId?: string) => {
     setLoading(true);
     const { data, error } = await supabase
       .from("campaigns")
-      .select(`*, brand_profiles(name, niche, avatar_url), applications(count)`)
+      .select(`*, brand_profiles(name, niche, avatar_url), applications(creator_id, status, message)`)
       .order("created_at", { ascending: false });
 
-    if (!error && data) setCampaigns(data);
+    if (!error && data) {
+      const activeUid = userId || currentUserId;
+      const parsed: Campaign[] = data.map((c: any) => {
+        const myApp = c.applications?.find((a: any) => a.creator_id === activeUid);
+        return {
+          ...c,
+          my_application: myApp ? { status: myApp.status, message: myApp.message } : undefined
+        };
+      });
+
+      setCampaigns(parsed);
+      setApplied(parsed.filter(c => c.my_application).map(c => c.id));
+    }
     setLoading(false);
   };
 
@@ -161,21 +162,34 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   };
 
   const handleApply = async () => {
-    if (!message || !selected) return;
+    if (!message || !selected || !currentUserId) return;
     setSubmitting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from("applications").insert({
-        campaign_id: selected.id,
-        creator_id: user.id,
-        message,
-        platforms: selectedPlatforms,
-        status: "pending",
+    
+    const { error: appError } = await supabase.from("applications").insert({
+      campaign_id: selected.id,
+      creator_id: currentUserId,
+      message,
+      platforms: selectedPlatforms,
+      status: "pending",
+    });
+    
+    if (!appError) {
+      await supabase.from("notifications").insert({
+        user_id: selected.brand_id,
+        actor_id: currentUserId,
+        type: "campaign_application",
+        title: "New Application 📩",
+        body: `${myCreatorName} applied to your campaign "${selected.name}".`,
+        data: { campaign_id: selected.id }
       });
-      
+
       setApplied(prev => [...prev, selected.id]);
-      setCampaigns(prev => prev.map(c => c.id === selected.id ? { ...c, applications: (c.applications || 0) + 1 } : c));
+      setCampaigns(prev => prev.map(c => c.id === selected.id ? { 
+        ...c, 
+        my_application: { status: "pending", message } 
+      } : c));
     }
+
     setSubmitting(false);
     setShowSheet(false);
   };
@@ -184,59 +198,81 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     if (selectedNiche && c.niche !== selectedNiche) return false;
     if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
     if (minBudget && (parseInt(c.budget, 10) || 0) < parseInt(minBudget, 10)) return false;
+    
+    if (feedTab === "discover" && applied.includes(c.id)) return false;
+    if (feedTab === "pitches" && !applied.includes(c.id)) return false;
+    
     return true;
   });
 
-  return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
-        @keyframes slideOut {
-          from { transform: translateX(0); opacity: 1; max-height: 300px; margin-bottom: 10px; }
-          to { transform: translateX(60px); opacity: 0; max-height: 0; margin-bottom: 0; padding: 0; }
-        }
-      `}</style>
+  const getStatusStyle = (status?: string): React.CSSProperties => {
+    switch (status) {
+      case "approved": return { color: "#34c759", background: "rgba(52,199,89,0.1)" };
+      case "declined": return { color: "#ff3b30", background: "rgba(255,59,48,0.1)" };
+      default: return { color: "#ff9500", background: "rgba(255,149,0,0.1)" };
+    }
+  };
 
-      {/* Top Nav */}
+  return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif", display: "flex", flexDirection: "column" }}>
+      {/* Top Header */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
-        <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", flexShrink: 0 }}>
+        <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
           {myAvatar ? <img src={myAvatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
         </div>
       </div>
 
-      {/* Filter Options Dock */}
+      {/* Switcher Tab Context */}
+      <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+        <button 
+          onClick={() => setFeedTab("discover")} 
+          style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer" }}
+        >
+          Discover Deals
+        </button>
+        <button 
+          onClick={() => setFeedTab("pitches")} 
+          style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "pitches" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "pitches" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer" }}
+        >
+          My Pitches ({applied.length})
+        </button>
+      </div>
+
+      {/* Filters Parameter Section */}
       <div style={{ padding: "1rem 1rem 0 1rem", display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <select value={selectedNiche} onChange={e => setSelectedNiche(e.target.value)} style={UI.dropdown}>
           <option value="">All Niches</option>
           {["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"].map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-
         <select value={selectedPlatform} onChange={e => setSelectedPlatform(e.target.value)} style={UI.dropdown}>
           <option value="">All Platforms</option>
           {["Instagram", "TikTok", "YouTube", "Twitter/X"].map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-
         <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={UI.dropdown}>
           <option value="">Any Budget</option>
           {["50", "100", "250", "500", "1000"].map(v => <option key={v} value={v}>£{v}+</option>)}
         </select>
       </div>
 
-      {/* Campaign Feed Container */}
+      {/* Main Campaign Stream */}
       <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {loading ? (
           <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading campaigns...</p>
-        ) : filteredCampaigns.filter(c => !applied.includes(c.id)).length === 0 ? (
+        ) : filteredCampaigns.length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No opportunities match</p>
-            <p style={{ fontSize: "13px", color: "#444", maxWidth: "260px", margin: "0 auto" }}>Try adjusting your parameters.</p>
+            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
+              {feedTab === "discover" ? "No new offers active" : "No pitches sent yet"}
+            </p>
+            <p style={{ fontSize: "12px", color: "#444", maxWidth: "260px", margin: "0 auto" }}>
+              {feedTab === "discover" ? "Try loosening your search filters up top." : "Opportunities you apply to will show up right here."}
+            </p>
           </div>
         ) : (
-          filteredCampaigns.filter(c => !applied.includes(c.id)).map(c => {
+          filteredCampaigns.map(c => {
             const budgetVal = parseInt(c.budget, 10);
             return (
-              <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", animation: applied.includes(c.id) ? "slideOut 0.5s ease forwards" : "none" }}>
+              <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div
@@ -253,7 +289,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                   
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"} xmlns="http://www.w3.org/2000/svg">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"}>
                         <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round"/>
                       </svg>
                     </div>
@@ -266,7 +302,6 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
                 <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "12px" }}>{c.description}</p>
                 
-                {/* Dynamically Updated Posted & Deadline Rows */}
                 <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#444", marginBottom: "12px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Posted:</span>
@@ -275,36 +310,38 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                   {c.deadline && (
                     <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                       <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Deadline:</span>
-                      <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline) || c.deadline}</span>
+                      <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline)}</span>
                     </span>
                   )}
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
-                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  <div>
                     {c.type === "paid" && budgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Budget</span>
-                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
-                          £{budgetVal.toLocaleString()}
-                        </span>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Budget</span>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{budgetVal.toLocaleString()}</span>
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
-                          Gifted
-                        </span>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Reward</span>
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", textTransform: "uppercase" }}>Gifted</span>
                       </div>
                     )}
                   </div>
 
-                  <div
-                    onClick={() => !applied.includes(c.id) && openSheet(c)}
-                    style={{ padding: "7px 16px", background: applied.includes(c.id) ? "#1a1a1a" : "#fff", color: applied.includes(c.id) ? "#555" : "#0a0a0a", border: applied.includes(c.id) ? "1px solid #222" : "1px solid #fff", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: applied.includes(c.id) ? "default" : "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
-                  >
-                    {applied.includes(c.id) ? "Applied ✓" : "Apply"}
-                  </div>
+                  {c.my_application ? (
+                    <div style={{ padding: "5px 12px", borderRadius: "6px", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", ...getStatusStyle(c.my_application.status) }}>
+                      {c.my_application.status}
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => openSheet(c)}
+                      style={{ padding: "7px 16px", background: "#fff", color: "#0a0a0a", border: "1px solid #fff", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                    >
+                      Apply
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -312,10 +349,10 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
         )}
       </div>
 
-      {/* Overlay */}
+      {/* Dark Overlay Sheet */}
       {showSheet && <div onClick={() => setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
 
-      {/* Apply Sheet */}
+      {/* Bottom Form Modal Sheet */}
       {selected && (
         <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 5rem", zIndex: 20, transition: "bottom 0.3s ease", maxHeight: "90vh", overflowY: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
@@ -347,8 +384,8 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
           </div>
 
           <div
-            onClick={handleApply}
-            style={{ padding: "14px", borderRadius: "8px", background: message ? "#fff" : "#1a1a1a", color: message ? "#0a0a0a" : "#333", border: message ? "1px solid #fff" : "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: message ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
+            onClick={!submitting && message ? handleApply : undefined}
+            style={{ padding: "14px", borderRadius: "8px", background: message ? "#fff" : "#1a1a1a", color: message ? "#0a0a0a" : "#333", border: message ? "1px solid #fff" : "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: message && !submitting ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
           >
             {submitting ? "Submitting..." : "Submit Application"}
           </div>

@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 interface Props {
   navigate: (p: Page) => void;
   role: "brand" | "creator";
-  navigateToProfile?: (id: string) => void; // Add this line
+  navigateToProfile?: (id: string) => void;
 }
 
 interface Conversation {
@@ -55,26 +55,60 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState<string>("Someone");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
   const [activeApplication, setActiveApplication] = useState<Application | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
+  // Track unread conversation IDs locally to place red dots on chats
+  const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
+  
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadConversations();
     if (role === "brand") loadApplications();
-  }, []);
+
+    // Listen live for incoming notification rows to update badges instantly
+    const channel = supabase
+      .channel("messages-badge-sync")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
+        fetchUnreadMessages();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // When opening a chat, automatically clear its unread status
+  useEffect(() => {
+    if (view === "chat" && activeConvo) {
+      clearUnreadForConvo(activeConvo.id);
+    }
+  }, [view, activeConvo]);
 
   const loadConversations = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
     setCurrentUserId(user.id);
+
+    const { data: myProfile } = await supabase
+      .from("profiles")
+      .select("creator_profiles(name), brand_profiles(name)")
+      .eq("id", user.id)
+      .single();
+    if (myProfile) {
+      const myName = (myProfile as any)?.creator_profiles?.name || (myProfile as any)?.brand_profiles?.name || "Someone";
+      setCurrentUserName(myName);
+    }
 
     const { data } = await supabase
       .from("conversations")
@@ -92,7 +126,36 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
       }));
       setConversations(enriched);
     }
+    fetchUnreadMessages(user.id);
     setLoading(false);
+  };
+
+  const fetchUnreadMessages = async (userId = currentUserId) => {
+    if (!userId) return;
+    const { data } = await supabase
+      .from("notifications")
+      .select("data")
+      .eq("user_id", userId)
+      .eq("type", "new_message")
+      .eq("is_read", false);
+
+    if (data) {
+      const ids = data.map(n => n.data?.conversation_id).filter(Boolean);
+      setUnreadConvoIds(ids);
+    }
+  };
+
+  const clearUnreadForConvo = async (convoId: string) => {
+    if (!currentUserId) return;
+    await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", currentUserId)
+      .eq("type", "new_message")
+      .eq("is_read", false)
+      .containedBy("data", { conversation_id: convoId });
+
+    setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
   };
 
   const loadApplications = async () => {
@@ -146,83 +209,108 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
     if (!input.trim() || !activeConvo || !currentUserId) return;
     const text = input;
     setInput("");
+    
     await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text });
     await supabase.from("conversations").update({ last_message: text, last_message_at: new Date().toISOString() }).eq("id", activeConvo.id);
+
+    const receiverId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+
+    await supabase.from("notifications").insert({
+      user_id: receiverId,
+      actor_id: currentUserId,
+      type: "new_message",
+      title: "New Message",
+      body: `${currentUserName} sent you a message: "${text.substring(0, 40)}${text.length > 40 ? "..." : ""}"`,
+      data: { conversation_id: activeConvo.id }
+    });
   };
 
   const handleAccept = async (app: Application) => {
-  setActionLoading(app.id);
-  setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
-  
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData.user?.id;
-  if (!userId) { setActionLoading(null); return; }
+    setActionLoading(app.id);
+    setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
+    
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    if (!userId) { setActionLoading(null); return; }
 
-  await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
+    await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
 
-  const { data: existing } = await supabase
-    .from("conversations")
-    .select("id")
-    .or(`and(participant_1.eq.${userId},participant_2.eq.${app.creator_id}),and(participant_1.eq.${app.creator_id},participant_2.eq.${userId})`)
-    .maybeSingle();
-
-  const welcomeText = `🎉 Application Approved! You have been accepted for the campaign "${app.campaign_name}". Let's discuss deliverables!`;
-  const nowTimestamp = new Date().toISOString();
-
-  if (!existing) {
-    const { data: newConvo } = await supabase
+    const { data: existing } = await supabase
       .from("conversations")
-      .insert({ 
-        participant_1: userId, 
-        participant_2: app.creator_id,
-        last_message: welcomeText,
-        last_message_at: nowTimestamp
-      })
-      .select()
-      .single();
-      
-    if (newConvo) {
+      .select("id")
+      .or(`and(participant_1.eq.${userId},participant_2.eq.${app.creator_id}),and(participant_1.eq.${app.creator_id},participant_2.eq.${userId})`)
+      .maybeSingle();
+
+    const welcomeText = `🎉 Application Approved! You have been accepted for the campaign "${app.campaign_name}". Let's discuss deliverables!`;
+    const nowTimestamp = new Date().toISOString();
+
+    let targetConvoId = existing?.id || "";
+
+    if (!existing) {
+      const { data: newConvo } = await supabase
+        .from("conversations")
+        .insert({ 
+          participant_1: userId, 
+          participant_2: app.creator_id,
+          last_message: welcomeText,
+          last_message_at: nowTimestamp
+        })
+        .select()
+        .single();
+        
+      if (newConvo) {
+        targetConvoId = newConvo.id;
+        await supabase.from("messages").insert({
+          conversation_id: newConvo.id,
+          sender_id: userId,
+          text: welcomeText,
+          created_at: nowTimestamp
+        });
+      }
+    } else {
       await supabase.from("messages").insert({
-        conversation_id: newConvo.id,
+        conversation_id: existing.id,
         sender_id: userId,
         text: welcomeText,
         created_at: nowTimestamp
       });
+      await supabase.from("conversations").update({ 
+        last_message: welcomeText, 
+        last_message_at: nowTimestamp 
+      }).eq("id", existing.id);
     }
-  } else {
-    await supabase.from("messages").insert({
-      conversation_id: existing.id,
-      sender_id: userId,
-      text: welcomeText,
-      created_at: nowTimestamp
+
+    await supabase.from("notifications").insert({
+      user_id: app.creator_id,
+      actor_id: userId,
+      type: "campaign_accepted",
+      title: "Application Approved! 🎉",
+      body: `${currentUserName} accepted your application for "${app.campaign_name}".`,
+      data: { campaign_id: app.campaign_id, conversation_id: targetConvoId }
     });
-    await supabase.from("conversations").update({ 
-      last_message: welcomeText, 
-      last_message_at: nowTimestamp 
-    }).eq("id", existing.id);
-  }
 
-  setActionLoading(null);
-  await loadApplications();
-  await loadConversations();
-  setActiveCampaign(prev => prev ? {
-    ...prev,
-    applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
-  } : null);
-  setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
-};
+    setActionLoading(null);
+    await loadApplications();
+    await loadConversations();
+    setActiveCampaign(prev => prev ? {
+      ...prev,
+      applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "accepted" } : a)
+    } : null);
+    setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
+  };
 
-const handleReject = async (app: Application) => {
-  setActionLoading(app.id);
-  setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
-  await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
-  setActionLoading(null);
-  setActiveCampaign(prev => prev ? {
-    ...prev,
-    applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "rejected" } : a)
-  } : null);
-  setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
-};
+  const handleReject = async (app: Application) => {
+    setActionLoading(app.id);
+    setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
+    await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
+    setActionLoading(null);
+    setActiveCampaign(prev => prev ? {
+      ...prev,
+      applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "rejected" } : a)
+    } : null);
+    setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
+  };
+
   const getHeader = () => {
     if (view === "chat") return activeConvo?.other_name;
     if (view === "campaign-apps") return activeCampaign?.name;
@@ -240,56 +328,59 @@ const handleReject = async (app: Application) => {
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
-  {/* Top Nav */}
-<div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
-  {view !== "list" && (
-    <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
-  )}
-  
-  {view === "chat" && activeConvo ? (
-    <div 
-      onClick={() => {
-        // Safe check to find out which participant ID belongs to the other user
-        const otherId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+      {/* Top Nav */}
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
+        {view !== "list" && (
+          <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+        )}
         
-        if (activeConvo.other_role === "creator") {
-          if (navigateToProfile) {
-            navigateToProfile(otherId); // Calls your App.tsx router function for public profiles safely
-          } else {
-            navigate("public-profile" as any);
-          }
-        } else {
-          navigate("brand-profile" as any);
-        }
-      }}
-      style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
-    >
-      <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0 }}>
-        {activeConvo.other_avatar ? (
-          <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {view === "chat" && activeConvo ? (
+          <div 
+            onClick={() => {
+              const otherId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+              if (activeConvo.other_role === "creator") {
+                if (navigateToProfile) {
+                  navigateToProfile(otherId);
+                } else {
+                  navigate("public-profile" as any);
+                }
+              } else {
+                navigate("brand-profile" as any);
+              }
+            }}
+            style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
+          >
+            <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", flexShrink: 0 }}>
+              {activeConvo.other_avatar ? (
+                <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                activeConvo.other_role === "creator" ? "◉" : "◈"
+              )}
+            </div>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+              {activeConvo.other_name}
+            </span>
+          </div>
         ) : (
-          activeConvo.other_role === "creator" ? "◉" : "◈"
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+            {getHeader()}
+          </span>
         )}
       </div>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-        {activeConvo.other_name}
-      </span>
-    </div>
-  ) : (
-    <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-      {getHeader()}
-    </span>
-  )}
-</div>
 
-      {/* Brand Tabs */}
+      {/* Brand Tabs Toggle */}
       {role === "brand" && view === "list" && (
         <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
-          {(["applications", "messages"] as const).map(t => (
-            <div key={t} onClick={() => setBrandTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === t ? "#fff" : "#444", borderBottom: brandTab === t ? "2px solid #fff" : "2px solid transparent" }}>
-              {t}
-            </div>
-          ))}
+          <div onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "#fff" : "#444", borderBottom: brandTab === "applications" ? "2px solid #fff" : "2px solid transparent" }}>
+            applications
+          </div>
+          <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "#fff" : "#444", borderBottom: brandTab === "messages" ? "2px solid #fff" : "2px solid transparent", position: "relative" }}>
+            messages
+            {/* RED NOTIFICATION DOT FOR THE BRAND MESSAGES SWITCHER TAB */}
+            {unreadConvoIds.length > 0 && (
+              <span style={{ display: "inline-block", width: "6px", height: "6px", background: "#ff3b30", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
+            )}
+          </div>
         </div>
       )}
 
@@ -352,7 +443,6 @@ const handleReject = async (app: Application) => {
       {/* Application Detail */}
       {view === "app-detail" && activeApplication && (
         <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem 1.25rem", paddingBottom: "8rem" }}>
-          {/* Creator Header */}
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.5rem" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#333" }}>
               {activeApplication.creator_avatar ? <img src={activeApplication.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
@@ -363,13 +453,11 @@ const handleReject = async (app: Application) => {
             </div>
           </div>
 
-          {/* Message */}
           <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
             <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Their message</p>
             <p style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>{activeApplication.message}</p>
           </div>
 
-          {/* Platforms */}
           {activeApplication.platforms?.length > 0 && (
             <div style={{ marginBottom: "1.5rem" }}>
               <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms</p>
@@ -381,58 +469,42 @@ const handleReject = async (app: Application) => {
             </div>
           )}
 
-
-       {/* Status banner */}
-{activeApplication.status === "accepted" && (
-  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
-    <p style={{ fontSize: "20px", marginBottom: "8px" }}>🎉</p>
-    <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>You accepted this creator</p>
-    <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6 }}>Head to your messages tab to discuss deliverables and next steps.</p>
-  </div>
-)}
-
-{activeApplication.status === "rejected" && (
-  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
-    <p style={{ fontSize: "13px", color: "#444", fontWeight: 600 }}>Application declined</p>
-  </div>
-)}
-
-{activeApplication.status === "pending" && actionLoading !== activeApplication.id && (
-  <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
-    <div
-      onClick={() => handleAccept(activeApplication)}
-      style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
-    >
-      Accept
-    </div>
-    <div
-      onClick={() => handleReject(activeApplication)}
-      style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", color: "#555", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
-    >
-      Decline
-    </div>
-  </div>
-)}
-
-{activeApplication.status === "pending" && actionLoading === activeApplication.id && (
-  <div style={{ padding: "14px", borderRadius: "8px", background: "#1a1a1a", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1rem" }}>
-    Processing...
-  </div>
-)}
-
-          {/* DM Button if accepted */}
           {activeApplication.status === "accepted" && (
-            <div
-              onClick={() => { setBrandTab("messages"); setView("list"); }}
-              style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
-            >
+            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <p style={{ fontSize: "20px", marginBottom: "8px" }}>🎉</p>
+              <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>You accepted this creator</p>
+              <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6 }}>Head to your messages tab to discuss deliverables and next steps.</p>
+            </div>
+          )}
+
+          {activeApplication.status === "rejected" && (
+            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <p style={{ fontSize: "13px", color: "#444", fontWeight: 600 }}>Application declined</p>
+            </div>
+          )}
+
+          {activeApplication.status === "pending" && actionLoading !== activeApplication.id && (
+            <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
+              <div onClick={() => handleAccept(activeApplication)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Accept</div>
+              <div onClick={() => handleReject(activeApplication)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", color: "#555", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Decline</div>
+            </div>
+          )}
+
+          {activeApplication.status === "pending" && actionLoading === activeApplication.id && (
+            <div style={{ padding: "14px", borderRadius: "8px", background: "#1a1a1a", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1rem" }}>
+              <p>Processing...</p>
+            </div>
+          )}
+
+          {activeApplication.status === "accepted" && (
+            <div onClick={() => { setBrandTab("messages"); setView("list"); }} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Go to Messages →
             </div>
           )}
         </div>
       )}
 
-      {/* Messages Tab / Creator view */}
+      {/* Messages Tab List View */}
       {(role === "creator" || (role === "brand" && brandTab === "messages")) && view === "list" && (
         <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
           {loading ? (
@@ -453,25 +525,39 @@ const handleReject = async (app: Application) => {
               )}
             </div>
           ) : (
-            conversations.map(c => (
-              <div key={c.id} onClick={() => openChat(c)} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
-                  {c.other_avatar ? <img src={c.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.other_role === "creator" ? "◉" : "◈"}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{c.other_name}</p>
-                    <span style={{ fontSize: "11px", color: "#444" }}>{new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+            conversations.map(c => {
+              const isUnread = unreadConvoIds.includes(c.id);
+              return (
+                <div key={c.id} onClick={() => openChat(c)} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer", background: isUnread ? "#11111144" : "transparent" }}>
+                  <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0, overflow: "hidden", position: "relative" }}>
+                    {c.other_avatar ? <img src={c.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.other_role === "creator" ? "◉" : "◈"}
                   </div>
-                  <p style={{ fontSize: "12px", color: "#444", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.last_message || "Start a conversation"}</p>
+                  
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <p style={{ color: "#fff", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{c.other_name}</p>
+                        {/* RED DOT ON THE CHAT ROW IF UNREAD */}
+                        {isUnread && (
+                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
+                        )}
+                      </div>
+                      <span style={{ fontSize: "11px", color: isUnread ? "#fff" : "#444", fontWeight: isUnread ? 600 : 400 }}>
+                        {new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "12px", color: isUnread ? "#eee" : "#444", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {c.last_message || "Start a conversation"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}
 
-      {/* Chat */}
+      {/* Chat View */}
       {view === "chat" && (
         <>
           <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "7rem", display: "flex", flexDirection: "column", gap: "10px" }}>

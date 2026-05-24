@@ -13,6 +13,7 @@ import BrandProfile from "./pages/BrandProfile";
 import Explore from "./pages/Explore";
 import Messages from "./pages/Messages";
 import Search from "./pages/Search";
+import Notifications from "./pages/Notifications"; // Import Step 3 Component
 import { supabase } from "./lib/supabase";
 
 export type Page = 
@@ -32,18 +33,21 @@ export type Page =
   | "search-creator" 
   | "search-brand" 
   | "public-profile" 
-  | "creator-onboarding";
+  | "creator-onboarding"
+  | "notifications-creator"
+  | "notifications-brand";
 
-const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile"];
-const BRAND_PAGES: Page[] = ["BrandDashboard", "brand-dashboard" as any, "search-brand", "messages-brand", "brand-profile"];
+const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator"];
+const BRAND_PAGES: Page[] = ["BrandDashboard", "brand-dashboard" as any, "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
 
 interface NavProps {
   page: Page;
   navigate: (p: Page) => void;
   isInverted: boolean;
+  unreadCount?: number; // Added to support live indicator dots
 }
 
-function CreatorNav({ page, navigate, isInverted }: NavProps) {
+function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#a3a3a3" : "#444";
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
@@ -65,13 +69,21 @@ function CreatorNav({ page, navigate, isInverted }: NavProps) {
         </svg>
         <span style={{ fontSize: "10px", color: page === "search-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
-      <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
-            stroke={page === "messages-creator" ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
-        </svg>
-        <span style={{ fontSize: "10px", color: page === "messages-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
+      
+      {/* Messages Tab with Notification Indicator */}
+      <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
+        <div style={{ position: "relative" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
+              stroke={page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
+          </svg>
+          {unreadCount > 0 && (
+            <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30", border: `2px solid ${bgColor}` }} />
+          )}
+        </div>
+        <span style={{ fontSize: "10px", color: page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
       </div>
+
       <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="8" r="4" stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -90,7 +102,7 @@ interface BrandNavProps extends NavProps {
   setViewingProfileId: (id: string | null) => void;
 }
 
-function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted }: BrandNavProps) {
+function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted, unreadCount = 0 }: BrandNavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#a3a3a3" : "#444";
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
@@ -99,7 +111,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   const campaignsActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "campaigns";
   const postActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "post";
   const searchActive = page === "search-brand";
-  const messagesActive = page === "messages-brand";
+  const messagesActive = page === "messages-brand" || page === "notifications-brand";
   const profileActive = page === "brand-profile";
 
   return (
@@ -120,13 +132,21 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
         </svg>
         <span style={{ fontSize: "10px", color: searchActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
-      <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
-            stroke={messagesActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
-        </svg>
+
+      {/* Messages Tab with Notification Indicator */}
+      <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
+        <div style={{ position: "relative" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
+              stroke={messagesActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
+          </svg>
+          {unreadCount > 0 && (
+            <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30", border: `2px solid ${bgColor}` }} />
+          )}
+        </div>
         <span style={{ fontSize: "10px", color: messagesActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
       </div>
+
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("post"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <line x1="12" y1="5" x2="12" y2="19" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
@@ -152,9 +172,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
-  
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isInverted] = useState<boolean>(false);
-
 
   const navigate = (p: Page) => {
     setHistory(prev => [...prev, page]);
@@ -173,6 +192,22 @@ export default function App() {
   const navigateToProfile = (id: string) => {
     setViewingProfileId(id);
     setPage("public-profile");
+  };
+
+  // Live database unread count logic
+  const fetchGlobalUnreadCount = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { count, error } = await supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("is_read", false);
+
+    if (!error && count !== null) {
+      setUnreadCount(count);
+    }
   };
 
   const syncUserRoute = async (userId: string) => {
@@ -236,6 +271,7 @@ export default function App() {
 
         if (session?.user) {
           await syncUserRoute(session.user.id);
+          fetchGlobalUnreadCount();
         } else {
           setPage("role-select");
         }
@@ -252,20 +288,31 @@ export default function App() {
 
     initializeAuth();
 
+    // Subscribe to incoming database modifications to instantly trigger navigation indicators
+    const channel = supabase
+      .channel("global-nav-counter")
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
+        if (isMounted) fetchGlobalUnreadCount();
+      })
+      .subscribe();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return;
       
       if (event === "SIGNED_OUT") {
         setPage("role-select");
+        setUnreadCount(0);
         setLoading(false);
       } else if (event === "USER_UPDATED" && session?.user) {
         await syncUserRoute(session.user.id);
+        fetchGlobalUnreadCount();
       }
     });
 
     return () => {
       isMounted = false;
       subscription.unsubscribe();
+      supabase.removeChannel(channel);
       clearTimeout(fallbackTimeout);
     };
   }, []);
@@ -290,16 +337,20 @@ export default function App() {
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": 
-  return (
-    <CreatorProfile 
-      navigate={navigate} 
-      navigateToProfile={navigateToProfile} 
-    />
-  );
+        return (
+          <CreatorProfile 
+            navigate={navigate} 
+            navigateToProfile={navigateToProfile} 
+          />
+        );
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
+      case "notifications-creator": 
+        return <Notifications navigate={navigate} />;
+      case "notifications-brand": 
+        return <Notifications navigate={navigate} />;
       case "search-creator":
       case "search-brand": 
         return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
@@ -322,9 +373,9 @@ export default function App() {
       <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
         {renderPage()}
       </div>
-      {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} isInverted={isInverted} />}
+      {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} isInverted={isInverted} unreadCount={unreadCount} />}
       {BRAND_PAGES.includes(page) && (
-        <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} />
+        <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} unreadCount={unreadCount} />
       )}
     </div>
   );
