@@ -26,7 +26,15 @@ export default function Login({ navigate }: Props) {
       password: form.password,
     });
 
-    if (loginError) { setError(loginError.message); setLoading(false); return; }
+    if (loginError) {
+  if (loginError.message.toLowerCase().includes("invalid") || loginError.message.toLowerCase().includes("credentials")) {
+    setError("Account not found or incorrect password. Try signing up instead.");
+  } else {
+    setError(loginError.message);
+  }
+  setLoading(false);
+  return;
+}
 
     if (data.user) {
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
