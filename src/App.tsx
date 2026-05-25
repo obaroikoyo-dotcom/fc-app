@@ -1,6 +1,7 @@
 import BrandOnboarding from "./pages/BrandOnboarding";
 import PublicProfile from "./pages/PublicProfile";
 import CreatorOnboarding from "./pages/CreatorOnboarding";
+import BrandPublicProfile from "./pages/BrandPublicProfile"; // Change 4: Added Import
 import { useState, useEffect } from "react";
 import RoleSelect from "./pages/RoleSelect";
 import BrandSignup from "./pages/BrandSignup";
@@ -13,7 +14,7 @@ import BrandProfile from "./pages/BrandProfile";
 import Explore from "./pages/Explore";
 import Messages from "./pages/Messages";
 import Search from "./pages/Search";
-import Notifications from "./pages/Notifications"; // Import Step 3 Component
+import Notifications from "./pages/Notifications"; 
 import { supabase } from "./lib/supabase";
 
 export type Page = 
@@ -34,17 +35,18 @@ export type Page =
   | "search-brand" 
   | "public-profile" 
   | "creator-onboarding"
+  | "brand-public-profile" // Change 1: Added to Page Type
   | "notifications-creator"
   | "notifications-brand";
 
-const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator"];
+const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile"];
 const BRAND_PAGES: Page[] = ["BrandDashboard", "brand-dashboard" as any, "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
 
 interface NavProps {
   page: Page;
   navigate: (p: Page) => void;
   isInverted: boolean;
-  unreadCount?: number; // Added to support live indicator dots
+  unreadCount?: number; 
 }
 
 function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
@@ -70,7 +72,6 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
         <span style={{ fontSize: "10px", color: page === "search-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
       
-      {/* Messages Tab with Notification Indicator */}
       <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
         <div style={{ position: "relative" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -133,7 +134,6 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
         <span style={{ fontSize: "10px", color: searchActive ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
 
-      {/* Messages Tab with Notification Indicator */}
       <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
         <div style={{ position: "relative" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -172,6 +172,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
+  const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); // Change 2: Added viewingBrandId State
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isInverted] = useState<boolean>(false);
 
@@ -194,7 +195,12 @@ export default function App() {
     setPage("public-profile");
   };
 
-  // Live database unread count logic
+  // Change 3: Added navigateToBrandProfile Function
+  const navigateToBrandProfile = (id: string) => {
+    setViewingBrandId(id);
+    setPage("brand-public-profile");
+  };
+
   const fetchGlobalUnreadCount = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -288,7 +294,6 @@ export default function App() {
 
     initializeAuth();
 
-    // Subscribe to incoming database modifications to instantly trigger navigation indicators
     const channel = supabase
       .channel("global-nav-counter")
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications" }, () => {
@@ -344,7 +349,7 @@ export default function App() {
           />
         );
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
-      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToProfile} />;
+      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; // Change 5: Swapped navigateToProfile for navigateToBrandProfile
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "notifications-creator": 
@@ -364,6 +369,7 @@ export default function App() {
         );
       }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
+      case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; // Change 6: Added case right before default
       default: return <RoleSelect navigate={navigate} />;
     }
   };
