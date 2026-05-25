@@ -5,6 +5,8 @@ import { supabase } from "../lib/supabase";
 interface Props { 
   navigate: (p: Page) => void; 
   navigateToProfile: (id: string) => void;
+  toggleTheme: () => void;
+  isInverted: boolean;
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
@@ -12,7 +14,7 @@ const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "U
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
-export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
@@ -234,19 +236,19 @@ export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
         <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-  <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
-  <span onClick={async () => {
-  const confirmed = window.confirm("Are you sure you want to delete your account? This cannot be undone.");
-  if (!confirmed) return;
-  if (userId) {
-    await supabase.from("creator_profiles").delete().eq("id", userId);
-    await supabase.from("profiles").delete().eq("id", userId);
-    await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
-    await supabase.auth.signOut();
-  }
-  navigate("role-select");
-}} style={{ fontSize: "12px", color: "#ff4444", cursor: "pointer" }}>Delete account</span>
-</div>
+          <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
+          <span onClick={async () => {
+            const confirmed = window.confirm("Are you sure you want to delete your account? This cannot be undone.");
+            if (!confirmed) return;
+            if (userId) {
+              await supabase.from("creator_profiles").delete().eq("id", userId);
+              await supabase.from("profiles").delete().eq("id", userId);
+              await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+              await supabase.auth.signOut();
+            }
+            navigate("role-select");
+          }} style={{ fontSize: "12px", color: "#ff4444", cursor: "pointer" }}>Delete account</span>
+        </div>
       </div>
 
       <div style={{ padding: "1.5rem 1.25rem" }}>
@@ -550,6 +552,17 @@ export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
                 <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 2-3 business days</p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Display Dark Mode Inversion Toggle */}
+        <div style={{ ...sectionStyle, display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
+          <div>
+            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Inverted Light Mode</p>
+            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Toggle between clean view types</p>
+          </div>
+          <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div style={{ position: "absolute", top: "3px", left: isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
           </div>
         </div>
 

@@ -174,7 +174,20 @@ export default function App() {
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); 
   const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [isInverted] = useState<boolean>(false);
+  
+  // Theme configuration synced with localized configurations
+  const [isInverted, setIsInverted] = useState<boolean>(() => {  
+    return localStorage.getItem("theme") === "inverted";
+  });
+
+  const toggleTheme = () => {  
+    setIsInverted(prev => {    
+      const next = !prev;    
+      localStorage.getItem("theme");    
+      localStorage.setItem("theme", next ? "inverted" : "normal");    
+      return next;  
+    });
+  };
 
   const navigate = (p: Page) => {
     setHistory(prev => [...prev, page]);
@@ -197,7 +210,7 @@ export default function App() {
 
   const navigateToBrandProfile = (id: string) => {
     setViewingBrandId(id);
-    navigate("brand-public-profile"); // Fixed: Now correctly calls navigate wrapper to save history state
+    navigate("brand-public-profile"); 
   };
 
   const fetchGlobalUnreadCount = async () => {
@@ -344,7 +357,9 @@ export default function App() {
         return (
           <CreatorProfile 
             navigate={navigate} 
-            navigateToProfile={navigateToProfile} 
+            navigateToProfile={navigateToProfile}
+            toggleTheme={toggleTheme}
+            isInverted={isInverted}
           />
         );
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
