@@ -390,6 +390,7 @@ export default function App() {
 
   return (
     <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", minHeight: "100vh" }}>
+  <style>{isInverted ? `img { filter: invert(1) hue-rotate(180deg); }` : ""}</style>
       <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
         {renderPage()}
       </div>
