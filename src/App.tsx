@@ -175,7 +175,6 @@ export default function App() {
   const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   
-  // Theme configuration synced with localized configurations
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
   });
@@ -183,7 +182,6 @@ export default function App() {
   const toggleTheme = () => {  
     setIsInverted(prev => {    
       const next = !prev;    
-      localStorage.getItem("theme");    
       localStorage.setItem("theme", next ? "inverted" : "normal");    
       return next;  
     });
@@ -390,13 +388,18 @@ export default function App() {
 
   return (
     <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", minHeight: "100vh" }}>
-  <style>{isInverted ? `img { filter: invert(1) hue-rotate(180deg); }` : ""}</style>
-      <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "4rem" : "0px" }}>
+      <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "6rem" : "0px" }}>
         {renderPage()}
       </div>
-      {CREATOR_PAGES.includes(page) && <CreatorNav page={page} navigate={navigate} isInverted={isInverted} unreadCount={unreadCount} />}
+      {CREATOR_PAGES.includes(page) && (
+        <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none" }}>
+          <CreatorNav page={page} navigate={navigate} isInverted={isInverted} unreadCount={unreadCount} />
+        </div>
+      )}
       {BRAND_PAGES.includes(page) && (
-        <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} unreadCount={unreadCount} />
+        <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none" }}>
+          <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} unreadCount={unreadCount} />
+        </div>
       )}
     </div>
   );
