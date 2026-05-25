@@ -241,7 +241,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             const confirmed = window.confirm("Are you sure you want to delete your account? This cannot be undone.");
             if (!confirmed) return;
             if (userId) {
-              await supabase.from("creator_profiles").delete().eq("id", userId);
+  console.log("Deleting user:", userId);
+  await supabase.from("creator_profiles").delete().eq("id", userId);
               await supabase.from("profiles").delete().eq("id", userId);
               await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
               await supabase.auth.signOut();
