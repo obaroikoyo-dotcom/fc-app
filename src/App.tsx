@@ -360,7 +360,15 @@ export default function App() {
             isInverted={isInverted}
           />
         );
-      case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
+      case "brand-profile": 
+        return (
+          <BrandProfile 
+            navigate={navigate} 
+            targetProfileId={viewingProfileId} 
+            toggleTheme={toggleTheme} 
+            isInverted={isInverted} 
+          />
+        );
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; 
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
