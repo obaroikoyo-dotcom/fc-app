@@ -1,7 +1,7 @@
 import BrandOnboarding from "./pages/BrandOnboarding";
 import PublicProfile from "./pages/PublicProfile";
 import CreatorOnboarding from "./pages/CreatorOnboarding";
-import BrandPublicProfile from "./pages/BrandPublicProfile"; // Change 4: Added Import
+import BrandPublicProfile from "./pages/BrandPublicProfile";
 import { useState, useEffect } from "react";
 import RoleSelect from "./pages/RoleSelect";
 import BrandSignup from "./pages/BrandSignup";
@@ -35,7 +35,7 @@ export type Page =
   | "search-brand" 
   | "public-profile" 
   | "creator-onboarding"
-  | "brand-public-profile" // Change 1: Added to Page Type
+  | "brand-public-profile" 
   | "notifications-creator"
   | "notifications-brand";
 
@@ -172,7 +172,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
-  const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); // Change 2: Added viewingBrandId State
+  const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [isInverted] = useState<boolean>(false);
 
@@ -195,10 +195,9 @@ export default function App() {
     setPage("public-profile");
   };
 
-  // Change 3: Added navigateToBrandProfile Function
   const navigateToBrandProfile = (id: string) => {
     setViewingBrandId(id);
-    setPage("brand-public-profile");
+    navigate("brand-public-profile"); // Fixed: Now correctly calls navigate wrapper to save history state
   };
 
   const fetchGlobalUnreadCount = async () => {
@@ -349,7 +348,7 @@ export default function App() {
           />
         );
       case "brand-profile": return <BrandProfile navigate={navigate} targetProfileId={viewingProfileId} />;
-      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; // Change 5: Swapped navigateToProfile for navigateToBrandProfile
+      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; 
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "notifications-creator": 
@@ -369,7 +368,7 @@ export default function App() {
         );
       }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
-      case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; // Change 6: Added case right before default
+      case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; 
       default: return <RoleSelect navigate={navigate} />;
     }
   };
