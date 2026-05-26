@@ -185,7 +185,22 @@ export default function BrandProfile({ navigate, targetProfileId, isInverted, to
         </div>
         
         {!isReadOnly ? (
-          <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer", touchAction: "manipulation" }}>Sign out</span>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+  <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer", touchAction: "manipulation" }}>Sign out</span>
+  <span onClick={async () => {
+    const confirmed = window.confirm("Are you sure you want to delete your account? This cannot be undone.");
+    if (!confirmed) return;
+    if (userId) {
+      const { error } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+      if (!error) {
+        await supabase.from("brand_profiles").delete().eq("id", userId);
+        await supabase.from("profiles").delete().eq("id", userId);
+        await supabase.auth.signOut();
+      }
+    }
+    navigate("role-select");
+  }} style={{ fontSize: "12px", color: "#ff4444", cursor: "pointer", touchAction: "manipulation" }}>Delete account</span>
+</div>
         ) : (
           <span style={{ fontSize: "11px", color: "#333", letterSpacing: "0.05em", textTransform: "uppercase" }}>Verified Brand</span>
         )}
