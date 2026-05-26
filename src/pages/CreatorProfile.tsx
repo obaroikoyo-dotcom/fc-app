@@ -5,8 +5,6 @@ import { supabase } from "../lib/supabase";
 interface Props { 
   navigate: (p: Page) => void; 
   navigateToProfile: (id: string) => void;
-  toggleTheme: () => void;
-  isInverted: boolean;
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
@@ -14,7 +12,7 @@ const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "U
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
-export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
@@ -420,21 +418,24 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
               {favourites.map((f, i) => (
                 <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
-                      {(f.creator_profiles as any)?.avatar_url
-                        ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        : "◉"}
-                    </div>
-                    <div>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
-                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
-                    </div>
-                  </div>
-                  <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                    DM
-                  </div>
-                </div>
+  <div
+    onClick={() => navigateToProfile(f.creator_id)}
+    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+  >
+    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
+      {(f.creator_profiles as any)?.avatar_url
+        ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        : "◉"}
+    </div>
+    <div>
+      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+    </div>
+  </div>
+  <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+    DM
+  </div>
+</div>
               ))}
             </div>
           )}
@@ -553,17 +554,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
                 <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 2-3 business days</p>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Display Dark Mode Inversion Toggle */}
-        <div style={{ ...sectionStyle, display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
-          <div>
-            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Inverted Light Mode</p>
-            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Toggle between clean view types</p>
-          </div>
-          <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-            <div style={{ position: "absolute", top: "3px", left: isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
           </div>
         </div>
 
