@@ -559,6 +559,17 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
           </div>
         </div>
 
+        {/* Display Dark Mode Inversion Toggle */}
+<div style={{ ...sectionStyle, display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
+  <div>
+    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Inverted Light Mode</p>
+    <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Toggle between clean view types</p>
+  </div>
+  <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+    <div style={{ position: "absolute", top: "3px", left: isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+  </div>
+</div>
+
         {/* Save */}
         <div
           onClick={saveProfile}
