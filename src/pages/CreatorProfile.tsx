@@ -5,6 +5,8 @@ import { supabase } from "../lib/supabase";
 interface Props { 
   navigate: (p: Page) => void; 
   navigateToProfile: (id: string) => void;
+  toggleTheme: () => void;
+  isInverted: boolean;
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
@@ -12,7 +14,7 @@ const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "U
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
-export default function CreatorProfile({ navigate, navigateToProfile }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
