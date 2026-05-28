@@ -6,7 +6,7 @@ import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same fold
 interface Props { navigate: (p: Page) => void; }
 
 const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home"];
-const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Reels", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos"];
+const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Aires", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos"];
 const CREATOR_TIERS = [
   { label: "Nano-Tier Scale", sub: "Under 10k: High-engagement niche focus", value: "nano" },
   { label: "Micro-Tier Authority", sub: "10k - 100k: Optimized for reach & conversion", value: "micro" },
@@ -66,29 +66,6 @@ export default function BrandOnboarding({ navigate }: Props) {
       setLogoFile(file);
       setBrandLogo(URL.createObjectURL(file));
     }
-  };
-
-  // Intercept method to make sure terms are approved right before hitting database
-  const triggerTermsCheck = () => {
-    setError("");
-    if (!email || !password) {
-      setError("Corporate credentials required.");
-      setScreen(5); // Bring them back to fix authentication text inputs
-      return;
-    }
-    if (password !== confirm) {
-      setError("Passwords do not match.");
-      setScreen(5);
-      return;
-    }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      setScreen(5);
-      return;
-    }
-    
-    // Open terms modal gateway
-    setShowTerms(true);
   };
 
  const handleFinish = async () => {
@@ -321,16 +298,15 @@ export default function BrandOnboarding({ navigate }: Props) {
         </div>
       </div>
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
-{!termsAccepted && (
-  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-    <span>Read & accept Terms and Conditions</span>
-    <span style={{ color: "#555" }}>Required →</span>
-  </div>
-)}
-{termsAccepted && (
-  <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
-)}
-
+      {!termsAccepted && (
+        <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span>Read & accept Terms and Conditions</span>
+          <span style={{ color: "#555" }}>Required →</span>
+        </div>
+      )}
+      {termsAccepted && (
+        <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
+      )}
     </div>,
 
     // Screen 6 — Visual Branding Identification
@@ -411,13 +387,13 @@ export default function BrandOnboarding({ navigate }: Props) {
         {screen === 6 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
-              onClick={loading ? undefined : triggerTermsCheck}
+              onClick={loading ? undefined : handleFinish}
               style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1 }}
             >
               {loading ? "Registering profile..." : "Finish & Initialize →"}
             </div>
             <div
-              onClick={loading ? undefined : triggerTermsCheck}
+              onClick={loading ? undefined : handleFinish}
               style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#444", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}
             >
               Skip configuration
@@ -438,10 +414,10 @@ export default function BrandOnboarding({ navigate }: Props) {
         isOpen={showTerms}
         role="brand"
         onClose={() => setShowTerms(false)}
-     onAccept={() => {
-  setTermsAccepted(true);
-  setShowTerms(false);
-}}
+        onAccept={() => {
+          setTermsAccepted(true);
+          setShowTerms(false);
+        }}
       />
     </div>
   );
