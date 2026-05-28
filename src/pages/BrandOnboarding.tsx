@@ -40,6 +40,7 @@ export default function BrandOnboarding({ navigate }: Props) {
 
   // Modal Control Interceptor State
   const [showTerms, setShowTerms] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const logoRef = useRef<HTMLInputElement>(null);
 
@@ -320,10 +321,16 @@ export default function BrandOnboarding({ navigate }: Props) {
         </div>
       </div>
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
-      <div style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#777", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-  <span>Terms & Conditions will be shown before account creation</span>
-  <span style={{ color: "#555" }}>Required</span>
-</div>
+{!termsAccepted && (
+  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <span>Read & accept Terms and Conditions</span>
+    <span style={{ color: "#555" }}>Required →</span>
+  </div>
+)}
+{termsAccepted && (
+  <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
+)}
+
     </div>,
 
     // Screen 6 — Visual Branding Identification
@@ -349,7 +356,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
     if (screen === 4) return targetTier ? "Continue →" : "Skip step →"; // Corrected condition tracker
-    if (screen === 5) return email.trim() && password.length >= 6 && password === confirm ? "Continue →" : null;
+    if (screen === 5) return email.trim() && password.length >= 6 && password === confirm && termsAccepted ? "Continue →" : null;
     if (screen === 6) return brandLogo ? "Review Agreements & Deploy →" : "Review Agreements & Deploy →";
     return "Continue →";
   };
@@ -431,10 +438,10 @@ export default function BrandOnboarding({ navigate }: Props) {
         isOpen={showTerms}
         role="brand"
         onClose={() => setShowTerms(false)}
-        onAccept={() => {
-          setShowTerms(false);
-          handleFinish(); // Fires original Supabase write flow smoothly
-        }}
+     onAccept={() => {
+  setTermsAccepted(true);
+  setShowTerms(false);
+}}
       />
     </div>
   );
