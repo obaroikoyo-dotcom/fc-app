@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
 
 interface Props { navigate: (p: Page) => void; }
 
@@ -37,6 +38,9 @@ export default function BrandOnboarding({ navigate }: Props) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Modal Control Interceptor State
+  const [showTerms, setShowTerms] = useState(false);
+
   const logoRef = useRef<HTMLInputElement>(null);
 
   const goTo = (next: number) => {
@@ -61,6 +65,29 @@ export default function BrandOnboarding({ navigate }: Props) {
       setLogoFile(file);
       setBrandLogo(URL.createObjectURL(file));
     }
+  };
+
+  // Intercept method to make sure terms are approved right before hitting database
+  const triggerTermsCheck = () => {
+    setError("");
+    if (!email || !password) {
+      setError("Corporate credentials required.");
+      setScreen(5); // Bring them back to fix authentication text inputs
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      setScreen(5);
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      setScreen(5);
+      return;
+    }
+    
+    // Open terms modal gateway
+    setShowTerms(true);
   };
 
  const handleFinish = async () => {
@@ -319,7 +346,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
     if (screen === 4) return targetTier ? "Continue →" : "Skip step →"; // Corrected condition tracker
     if (screen === 5) return email.trim() && password.length >= 6 && password === confirm ? "Continue →" : null;
-    if (screen === 6) return brandLogo ? "Initialize Account →" : "Skip step & Deploy →";
+    if (screen === 6) return brandLogo ? "Review Agreements & Deploy →" : "Review Agreements & Deploy →";
     return "Continue →";
   };
 
@@ -373,13 +400,13 @@ export default function BrandOnboarding({ navigate }: Props) {
         {screen === 6 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
-              onClick={loading ? undefined : handleFinish}
+              onClick={loading ? undefined : triggerTermsCheck}
               style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1 }}
             >
               {loading ? "Registering profile..." : "Finish & Initialize →"}
             </div>
             <div
-              onClick={loading ? undefined : handleFinish}
+              onClick={loading ? undefined : triggerTermsCheck}
               style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#444", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}
             >
               Skip configuration
@@ -394,6 +421,17 @@ export default function BrandOnboarding({ navigate }: Props) {
           </div>
         )}
       </div>
+
+      {/* Terms & Conditions Modal Overlay Interceptor */}
+      <TermsModal 
+        isOpen={showTerms}
+        role="brand"
+        onClose={() => setShowTerms(false)}
+        onAccept={() => {
+          setShowTerms(false);
+          handleFinish(); // Fires original Supabase write flow smoothly
+        }}
+      />
     </div>
   );
 }

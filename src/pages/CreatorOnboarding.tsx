@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import TermsModal from "./TermsModal";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -29,6 +30,8 @@ export default function CreatorOnboarding({ navigate }: Props) {
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+const [showTerms, setShowTerms] = useState(false);
+const [termsAccepted, setTermsAccepted] = useState(false);
 
   const picRef = useRef<HTMLInputElement>(null);
 
@@ -246,6 +249,14 @@ export default function CreatorOnboarding({ navigate }: Props) {
         </div>
       </div>
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+{!termsAccepted && (
+  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", fontSize: "12px", color: "#555", cursor: "pointer", textDecoration: "underline" }}>
+    View & accept Terms and Conditions
+  </div>
+)}
+{termsAccepted && (
+  <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
+)}
     </div>,
 
     // Screen 6 — Profile Photo
@@ -278,7 +289,7 @@ const buttonLabel = () => {
   if (screen === 2) return selectedPlatforms.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 3) return contentTypes.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 4) return Object.values(rates).some(v => v) ? "Continue →" : "Skip for now →";
-  if (screen === 5) return email.trim() && password.length >= 6 && password === confirm ? "Continue →" : null;
+  if (screen === 5) return email.trim() && password.length >= 6 && password === confirm && termsAccepted ? "Continue →" : null;
   if (screen === 6) return profilePic ? "Finish & Go Explore →" : "Skip for now →";
   return "Continue →";
 };
@@ -362,6 +373,12 @@ const buttonLabel = () => {
 </div>
         )}
       </div>
+      <TermsModal
+  isOpen={showTerms}
+  onAccept={() => { setTermsAccepted(true); setShowTerms(false); }}
+  onClose={() => setShowTerms(false)}
+  role="creator"
+/>
     </div>
   );
 }
