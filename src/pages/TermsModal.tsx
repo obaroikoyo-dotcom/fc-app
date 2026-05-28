@@ -52,8 +52,8 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
             Terms & Conditions
           </h3>
           <p style={{ margin: "4px 0 0 0", color: "#555", fontSize: "12px" }}>
-            Please review our platform rules for {role === "brand" ? "Brands" : "Creators"}.
-          </p>
+  You must read and accept these terms before creating your account.
+</p>
         </div>
 
         {/* Scrollable Content */}
@@ -71,7 +71,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#555", fontSize: "11px" }}>Last updated: May 2026</p>
+          <p style={{ marginTop: 0, color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
 
           <p>Welcome to FlipCollab. By creating an account and using our platform, you agree to these Terms & Conditions. Please read them carefully.</p>
 

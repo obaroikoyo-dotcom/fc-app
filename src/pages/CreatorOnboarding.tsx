@@ -250,8 +250,9 @@ const [termsAccepted, setTermsAccepted] = useState(false);
       </div>
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 {!termsAccepted && (
-  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", fontSize: "12px", color: "#555", cursor: "pointer", textDecoration: "underline" }}>
-    View & accept Terms and Conditions
+  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <span>Read & accept Terms and Conditions</span>
+    <span style={{ color: "#555" }}>Required →</span>
   </div>
 )}
 {termsAccepted && (
