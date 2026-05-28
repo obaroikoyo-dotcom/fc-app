@@ -320,6 +320,10 @@ export default function BrandOnboarding({ navigate }: Props) {
         </div>
       </div>
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+      <div style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#777", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+  <span>Terms & Conditions will be shown before account creation</span>
+  <span style={{ color: "#555" }}>Required</span>
+</div>
     </div>,
 
     // Screen 6 — Visual Branding Identification
