@@ -627,7 +627,7 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
               <div onClick={() => setShowPayment(false)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>Cancel</div>
               <div onClick={async () => {
                 setShowPayment(false);
-                const { data: { session } } = await supabase.auth.getSession();
+                await supabase.auth.getSession();
                 const res = await supabase.functions.invoke("create-payment-intent", {
                   body: {
                     amount: campaignBudget,
