@@ -1,6 +1,5 @@
 import { useState } from "react";
 import AuthLayout from "../components/AuthLayout";
-import Logo from "../components/Logo";
 import { type Page } from "../App";
 
 interface Props { navigate: (p: Page) => void; }
@@ -42,14 +41,72 @@ export default function RoleSelect({ navigate }: Props) {
   return (
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "480px" }}>
-        <Logo />
+        
+        {/* Seamless Logo & Brand Name Header Section */}
+        <div style={{ 
+          display: "flex", 
+          flexDirection: "column", 
+          alignItems: "center", 
+          justifyContent: "center", 
+          gap: "12px",
+          marginBottom: "1.5rem"
+        }}>
+          {/* Custom SVG interpretation of your geometric arrows logo */}
+          <svg 
+            width="54" 
+            height="54" 
+            viewBox="0 0 100 100" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            style={{ display: "block" }}
+          >
+            {/* Outer Hex/Rhombus Boundary */}
+            <path 
+              d="M75 25 L45 42 L45 55 L75 38 Z" 
+              fill="#fff" 
+            />
+            <path 
+              d="M25 75 L55 58 L55 45 L25 62 Z" 
+              fill="#fff" 
+            />
+            {/* Directing Lines and Arrows */}
+            <path 
+              d="M25 70 L70 25 M70 25 L58 25 M70 25 L70 37" 
+              stroke="#fff" 
+              strokeWidth="6" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+            />
+            <path 
+              d="M75 30 L30 75 M30 75 L42 75 M30 75 L30 63" 
+              stroke="#fff" 
+              strokeWidth="6" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+            />
+          </svg>
+
+          {/* Optional Typography placeholder for your platform name */}
+          <h1 style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: "22px",
+            fontWeight: 800,
+            color: "#fff",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            margin: 0
+          }}>
+            Ecosystem
+          </h1>
+        </div>
+
         <p style={{
           textAlign: "center",
-          fontSize: "13px",
+          fontSize: "12px",
           color: "#444",
-          letterSpacing: "0.1em",
+          letterSpacing: "0.12em",
           textTransform: "uppercase",
-          marginBottom: "2rem",
+          marginBottom: "2.5rem",
         }}>Who are you?</p>
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
@@ -57,7 +114,7 @@ export default function RoleSelect({ navigate }: Props) {
           {card("creator", "I'm a Creator", "Apply to brand collabs and grow your portfolio.", "◉")}
         </div>
 
-        <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "13px", color: "#444" }}>
+        <p style={{ textAlign: "center", marginTop: "2.5rem", fontSize: "13px", color: "#444" }}>
           Already have an account?{" "}
           <span
             onClick={() => navigate("login")}
