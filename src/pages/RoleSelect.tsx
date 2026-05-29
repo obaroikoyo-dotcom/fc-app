@@ -42,71 +42,44 @@ export default function RoleSelect({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         
-        {/* Seamless Logo & Brand Name Header Section */}
-        <div style={{ 
-          display: "flex", 
-          flexDirection: "column", 
-          alignItems: "center", 
-          justifyContent: "center", 
-          gap: "12px",
-          marginBottom: "1.5rem"
-        }}>
-          {/* Custom SVG interpretation of your geometric arrows logo */}
+        {/* Exact Logo Container Asset */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
           <svg 
-            width="54" 
-            height="54" 
-            viewBox="0 0 100 100" 
+            width="120" 
+            height="74" 
+            viewBox="0 0 120 74" 
             fill="none" 
             xmlns="http://www.w3.org/2000/svg"
-            style={{ display: "block" }}
           >
-            {/* Outer Hex/Rhombus Boundary */}
+            {/* Upper sharp loop piece */}
             <path 
-              d="M75 25 L45 42 L45 55 L75 38 Z" 
-              fill="#fff" 
+              d="M36.5 56.5 L31.5 61.5 L31.5 52 L59.5 24 L79.5 24 L89 33.5 L56.5 33.5 L47 43 L63.5 43 L54.5 52.5 L36.5 56.5 Z" 
+              fill="#FFFFFF" 
             />
+            {/* Lower sharp loop piece matching the image flip */}
             <path 
-              d="M25 75 L55 58 L55 45 L25 62 Z" 
-              fill="#fff" 
+              d="M83.5 17.5 L88.5 12.5 L88.5 22 L60.5 50 L40.5 50 L31 40.5 L63.5 40.5 L73 31 L56.5 31 L65.5 21.5 L83.5 17.5 Z" 
+              fill="#FFFFFF" 
             />
-            {/* Directing Lines and Arrows */}
-            <path 
-              d="M25 70 L70 25 M70 25 L58 25 M70 25 L70 37" 
-              stroke="#fff" 
-              strokeWidth="6" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-            />
-            <path 
-              d="M75 30 L30 75 M30 75 L42 75 M30 75 L30 63" 
-              stroke="#fff" 
-              strokeWidth="6" 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
+            {/* Distinct middle split stroke line */}
+            <line 
+              x1="31" 
+              y1="67" 
+              x2="89" 
+              y2="9" 
+              stroke="#0A0A0A" 
+              strokeWidth="4" 
             />
           </svg>
-
-          {/* Optional Typography placeholder for your platform name */}
-          <h1 style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: "22px",
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-            margin: 0
-          }}>
-            Ecosystem
-          </h1>
         </div>
 
         <p style={{
           textAlign: "center",
-          fontSize: "12px",
+          fontSize: "13px",
           color: "#444",
-          letterSpacing: "0.12em",
+          letterSpacing: "0.1em",
           textTransform: "uppercase",
-          marginBottom: "2.5rem",
+          marginBottom: "2rem",
         }}>Who are you?</p>
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
@@ -114,7 +87,7 @@ export default function RoleSelect({ navigate }: Props) {
           {card("creator", "I'm a Creator", "Apply to brand collabs and grow your portfolio.", "◉")}
         </div>
 
-        <p style={{ textAlign: "center", marginTop: "2.5rem", fontSize: "13px", color: "#444" }}>
+        <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "13px", color: "#444" }}>
           Already have an account?{" "}
           <span
             onClick={() => navigate("login")}
