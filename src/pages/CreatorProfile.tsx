@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+const [walletBalance, setWalletBalance] = useState(0);
+const [transactions, setTransactions] = useState<any[]>([]);
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -117,8 +119,24 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (data) setCampaignFavourites(data);
   };
 
-  useEffect(() => { loadProfile(); loadFavourites(); loadCampaignFavourites(); }, []);
+  const loadWallet = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("transactions")
+      .select("*, campaigns(name)")
+      .eq("creator_id", user.id)
+      .order("created_at", { ascending: false });
+    if (data) {
+      setTransactions(data);
+      const balance = data
+        .filter(t => t.status === "completed")
+        .reduce((sum, t) => sum + t.creator_payout, 0);
+      setWalletBalance(balance);
+    }
+  };
 
+  useEffect(() => { loadProfile(); loadFavourites(); loadCampaignFavourites(); loadWallet(); }, []);
   const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
@@ -526,39 +544,55 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
         <div style={dividerStyle} />
 
         {/* Wallet */}
-        <div style={sectionStyle}>
-          <label style={labelStyle}>Wallet</label>
-          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
-            <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
-              {(["balance", "withdraw"] as const).map(t => (
-                <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
-              ))}
-            </div>
-            {walletTab === "balance" && (
-              <div style={{ padding: "1.5rem", textAlign: "center" }}>
-                <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£0.00</p>
-                <p style={{ fontSize: "12px", color: "#333", marginTop: "8px" }}>Payments from completed collabs appear here</p>
-              </div>
-            )}
-            {walletTab === "withdraw" && (
-              <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+<div style={sectionStyle}>
+  <label style={labelStyle}>Wallet</label>
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
+    <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
+      {(["balance", "withdraw"] as const).map(t => (
+        <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
+      ))}
+    </div>
+    {walletTab === "balance" && (
+      <div style={{ padding: "1.5rem", textAlign: "center" }}>
+        <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance</p>
+        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toFixed(2)}</p>
+        <p style={{ fontSize: "12px", color: "#333", marginTop: "8px" }}>Payments from completed collabs appear here</p>
+        {transactions.length > 0 && (
+          <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
+            {transactions.map((t, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                 <div>
-                  <label style={labelStyle}>Withdraw to</label>
-                  <select style={{ ...inputStyle, appearance: "none" }}>
-                    <option value="">Select method</option>
-                    <option value="paypal">PayPal</option>
-                    <option value="bank">Bank Account</option>
-                  </select>
+                  <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{t.campaigns?.name || "Campaign"}</p>
+                  <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
                 </div>
-                <input style={inputStyle} placeholder="Amount (£)" type="number" />
-                <div style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Withdraw</div>
-                <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 2-3 business days</p>
+                <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>£{(t.creator_payout / 100).toFixed(2)}</p>
               </div>
-            )}
+            ))}
           </div>
+        )}
+      </div>
+    )}
+    {walletTab === "withdraw" && (
+      <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
+          <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
+          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toFixed(2)}</p>
         </div>
-
+        <div>
+          <label style={labelStyle}>Withdraw to</label>
+          <select style={{ ...inputStyle, appearance: "none" }}>
+            <option value="">Select method</option>
+            <option value="paypal">PayPal</option>
+            <option value="bank">Bank Account</option>
+          </select>
+        </div>
+        <input style={inputStyle} placeholder="Amount (£)" type="number" />
+        <div style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 ? "#fff" : "#1a1a1a", color: walletBalance > 0 ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>Withdraw</div>
+        <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 2-3 business days</p>
+      </div>
+    )}
+  </div>
+</div>
         {/* Display Dark Mode Inversion Toggle */}
 <div style={{ ...sectionStyle, display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
   <div>

@@ -15,7 +15,7 @@ export default function Logo() {
         color: "#fff",
         letterSpacing: "-0.02em",
       }}>
-        Flip<span style={{ color: "#fff", opacity: 0.4 }}>Collab</span>
+        Flip<span style={{ color: "#fff" }}>Collab</span>
       </span>
     </div>
   );
