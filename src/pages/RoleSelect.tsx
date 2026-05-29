@@ -1,6 +1,8 @@
 import { useState } from "react";
 import AuthLayout from "../components/AuthLayout";
 import { type Page } from "../App";
+// 1. Import your image file here (adjust the path if your file is in a different folder)
+import logoImg from "../assets/logo.png"; 
 
 interface Props { navigate: (p: Page) => void; }
 
@@ -42,35 +44,17 @@ export default function RoleSelect({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         
-        {/* Exact Logo Container Asset */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
-          <svg 
-            width="120" 
-            height="74" 
-            viewBox="0 0 120 74" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Upper sharp loop piece */}
-            <path 
-              d="M36.5 56.5 L31.5 61.5 L31.5 52 L59.5 24 L79.5 24 L89 33.5 L56.5 33.5 L47 43 L63.5 43 L54.5 52.5 L36.5 56.5 Z" 
-              fill="#FFFFFF" 
-            />
-            {/* Lower sharp loop piece matching the image flip */}
-            <path 
-              d="M83.5 17.5 L88.5 12.5 L88.5 22 L60.5 50 L40.5 50 L31 40.5 L63.5 40.5 L73 31 L56.5 31 L65.5 21.5 L83.5 17.5 Z" 
-              fill="#FFFFFF" 
-            />
-            {/* Distinct middle split stroke line */}
-            <line 
-              x1="31" 
-              y1="67" 
-              x2="89" 
-              y2="9" 
-              stroke="#0A0A0A" 
-              strokeWidth="4" 
-            />
-          </svg>
+        {/* 2. Image Logo Wrapper */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
+          <img 
+            src={logoImg} 
+            alt="Platform Logo" 
+            style={{ 
+              width: "120px",    // Adjust this to make it bigger or smaller
+              height: "auto", 
+              objectFit: "contain" 
+            }} 
+          />
         </div>
 
         <p style={{
