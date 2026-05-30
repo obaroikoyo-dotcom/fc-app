@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { stripePromise } from "../lib/stripe";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { loadStripe } from "@stripe/stripe-js";
-const stripePromise = loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
+
 interface Props {
   navigate: (p: Page) => void;
   role: "brand" | "creator";
@@ -636,7 +637,7 @@ const [campaignBudget, setCampaignBudget] = useState(0);
             }
           });
           if (!res.error) {
-            const stripe = await stripePromise;
+            const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
             if (stripe && res.data.clientSecret) {
               const { error } = await stripe.confirmCardPayment(res.data.clientSecret, {
                 payment_method: {
