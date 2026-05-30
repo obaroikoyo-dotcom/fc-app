@@ -600,6 +600,63 @@ const [campaignBudget, setCampaignBudget] = useState(0);
           </div>
         </>
       )}
+
+{showPayment && paymentApp && (
+  <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", padding: "1.5rem" }}>
+      <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "8px" }}>Confirm Payment</h3>
+      <p style={{ color: "#555", fontSize: "13px", marginBottom: "1.5rem" }}>You're hiring {paymentApp.creator_name} for {paymentApp.campaign_name}</p>
+      
+      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+          <span style={{ color: "#555", fontSize: "13px" }}>Campaign budget</span>
+          <span style={{ color: "#fff", fontSize: "13px" }}>£{(campaignBudget / 100).toFixed(2)}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+          <span style={{ color: "#555", fontSize: "13px" }}>Platform fee (5%)</span>
+          <span style={{ color: "#fff", fontSize: "13px" }}>£{(campaignBudget * 0.05 / 100).toFixed(2)}</span>
+        </div>
+        <div style={{ borderTop: "1px solid #222", paddingTop: "8px", display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>Total</span>
+          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>£{(campaignBudget * 1.05 / 100).toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: "10px" }}>
+        <div onClick={() => setShowPayment(false)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>Cancel</div>
+        <div onClick={async () => {
+          setShowPayment(false);
+          const { data: { session } } = await supabase.auth.getSession();
+          const res = await supabase.functions.invoke("create-payment-intent", {
+            body: {
+              amount: campaignBudget,
+              brand_id: currentUserId,
+              creator_id: paymentApp.creator_id,
+              campaign_id: paymentApp.campaign_id,
+            }
+          });
+          if (!res.error) {
+            const stripe = await stripePromise;
+            if (stripe && res.data.clientSecret) {
+              const { error } = await stripe.confirmCardPayment(res.data.clientSecret, {
+                payment_method: {
+                  card: { token: "tok_visa" }, // test token
+                  billing_details: { name: "Brand" }
+                }
+              });
+              if (!error) {
+                await handleAccept(paymentApp);
+              }
+            }
+          }
+        }} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+          Confirm & Pay
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }  
