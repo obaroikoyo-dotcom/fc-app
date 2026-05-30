@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { stripePromise } from "../lib/stripe";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { loadStripe } from "@stripe/stripe-js";
