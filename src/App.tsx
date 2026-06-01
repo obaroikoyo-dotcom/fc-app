@@ -23,7 +23,6 @@ export type Page =
   | "brand-onboarding" 
   | "creator-signup" 
   | "login" 
-  | "BrandDashboard" 
   | "brand-dashboard" 
   | "creator-dashboard" 
   | "creator-profile" 
@@ -40,7 +39,7 @@ export type Page =
   | "notifications-brand";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile"];
-const BRAND_PAGES: Page[] = ["BrandDashboard", "brand-dashboard" as any, "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
+const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
 
 interface NavProps {
   page: Page;
@@ -109,8 +108,8 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
-  const campaignsActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "campaigns";
-  const postActive = (page === "brand-dashboard" || page === "BrandDashboard") && tab === "post";
+  const campaignsActive = page === "brand-dashboard" && tab === "campaigns";
+  const postActive = page === "brand-dashboard" && tab === "post";
   const searchActive = page === "search-brand";
   const messagesActive = page === "messages-brand" || page === "notifications-brand";
   const profileActive = page === "brand-profile";
@@ -347,8 +346,7 @@ export default function App() {
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
-      case "BrandDashboard":
-      case "brand-dashboard" as any: 
+      case "brand-dashboard": 
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": 
@@ -373,7 +371,6 @@ export default function App() {
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
       case "notifications-creator": 
-        return <Notifications navigate={navigate} />;
       case "notifications-brand": 
         return <Notifications navigate={navigate} />;
       case "search-creator":
