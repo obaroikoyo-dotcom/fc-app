@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+const [walletBalance, setWalletBalance] = useState(0);
+const [transactions, setTransactions] = useState<any[]>([]);
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
