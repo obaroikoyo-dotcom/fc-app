@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-const [walletBalance, setWalletBalance] = useState(0);
-const [transactions, setTransactions] = useState<any[]>([]);
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -17,6 +15,8 @@ const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "Germ
 const AGE_RANGES = ["18-24", "25-34", "35-44", "45+"];
 
 export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
