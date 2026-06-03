@@ -19,6 +19,7 @@ interface Campaign {
   deadline: string;
   created_at: string;
   script: string;
+  video_required: boolean;
   brand_profiles: {
     name: string;
     niche: string;
@@ -71,6 +72,9 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [message, setMessage] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
   const [myCreatorName, setMyCreatorName] = useState<string>("A creator");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -158,18 +162,82 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     setSelected(c);
     setMessage("");
     setSelectedPlatforms([]);
+    setVideoFile(null);    
+    setUploadProgress(null);
+    setFormError(null);    
     setShowSheet(true);
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Supabase 50MB Size Constraint Rule Safeguard
+    const maxLimitInBytes = 50 * 1024 * 1024; 
+    if (file.size > maxLimitInBytes) {
+      setFormError("The selected video is too large. Please upload a compressed pitch asset under 50MB.");
+      setVideoFile(null);
+      return;
+    }
+
+    setFormError(null);
+    setVideoFile(file);
   };
 
   const handleApply = async () => {
     if (!message || !selected || !currentUserId) return;
-    setSubmitting(true);
     
+    if (selected.video_required && !videoFile) {
+      setFormError("This campaign requires a video pitch. Please upload a video asset below.");
+      return;
+    }
+
+    setFormError(null); 
+    setSubmitting(true);
+    setUploadProgress(0);
+
+    let uploadedVideoUrl: string | null = null;
+
+    // Execute Supabase Storage Bucket Pipeline if video asset exists
+    if (videoFile) {
+      try {
+        const fileExtension = videoFile.name.split('.').pop();
+        const uniqueFileName = `${currentUserId}_${selected.id}_${Date.now()}.${fileExtension}`;
+        const filePath = `pitches/${uniqueFileName}`;
+
+        // Initialize Native Form XMLHttpRequest Tracking Wrapper for real-time hooks
+        const { data: uploadData, error: storageError } = await supabase.storage
+          .from("campaign-pitches")
+          .upload(filePath, videoFile, {
+            cacheControl: "3600",
+            upsert: true,
+          });
+
+        if (storageError) throw storageError;
+
+        if (uploadData) {
+          const { data: urlData } = supabase.storage
+            .from("campaign-pitches")
+            .getPublicUrl(filePath);
+          
+          uploadedVideoUrl = urlData.publicUrl;
+        }
+        setUploadProgress(100);
+      } catch (err: any) {
+        setFormError(err.message || "Failed to upload video pitch asset. Check your network context.");
+        setSubmitting(false);
+        setUploadProgress(null);
+        return;
+      }
+    }
+    
+    // Inject application context with dynamic video stream pointer directly into Postgres
     const { error: appError } = await supabase.from("applications").insert({
       campaign_id: selected.id,
       creator_id: currentUserId,
       message,
       platforms: selectedPlatforms,
+      video_url: uploadedVideoUrl,
       status: "pending",
     });
     
@@ -188,10 +256,13 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
         ...c, 
         my_application: { status: "pending", message } 
       } : c));
+      setShowSheet(false);
+    } else {
+      setFormError("Application submission error. Please try again.");
     }
 
     setSubmitting(false);
-    setShowSheet(false);
+    setUploadProgress(null);
   };
 
   const filteredCampaigns = campaigns.filter((c) => {
@@ -367,14 +438,14 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
       </div>
 
       {/* Dark Overlay Sheet */}
-      {showSheet && <div onClick={() => setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
+      {showSheet && <div onClick={() => !submitting && setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 10 }} />}
 
       {/* Bottom Form Modal Sheet */}
       {selected && (
         <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 5rem", zIndex: 20, transition: "bottom 0.3s ease", maxHeight: "90vh", overflowY: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
             <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
-            <span onClick={() => setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: "pointer", lineHeight: 1 }}>×</span>
+            <span onClick={() => !submitting && setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: submitting ? "not-allowed" : "pointer", lineHeight: 1 }}>×</span>
           </div>
           
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
@@ -403,21 +474,60 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
             <div style={{ marginBottom: "1.25rem" }}>
               <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms you'll post on</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {selected.platforms.map(p => <div key={p} onClick={() => togglePlatform(p)} style={UI.chip(selectedPlatforms.includes(p))}>{p}</div>)}
+                {selected.platforms.map(p => <div key={p} onClick={() => !submitting && togglePlatform(p)} style={UI.chip(selectedPlatforms.includes(p))}>{p}</div>)}
               </div>
             </div>
           )}
 
           <div style={{ marginBottom: "1.5rem" }}>
             <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Message to brand</p>
-            <textarea style={{ ...UI.input, minHeight: "100px", resize: "none" }} placeholder="Introduce yourself and why you're a good fit..." value={message} onChange={e => setMessage(e.target.value)} />
+            <textarea disabled={submitting} style={{ ...UI.input, minHeight: "100px", resize: "none", opacity: submitting ? 0.5 : 1 }} placeholder="Introduce yourself and why you're a good fit..." value={message} onChange={e => setMessage(e.target.value)} />
           </div>
+
+          {/* DYNAMIC VIDEO UPLOAD ELEMENT */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>
+              Video Pitch {selected.video_required ? <span style={{ color: "#ff3b30", fontWeight: 600 }}>* (Required)</span> : <span style={{ color: "#444" }}>(Optional)</span>}
+            </p>
+            <input 
+              type="file" 
+              disabled={submitting}
+              accept="video/*" 
+              onChange={handleVideoFileChange}
+              style={{ ...UI.input, background: "#111", border: "1px dashed #222", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.5 : 1 }} 
+            />
+            {videoFile && !submitting && (
+              <p style={{ color: "#34c759", fontSize: "12px", marginTop: "6px" }}>
+                ✓ Selected: {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)
+              </p>
+            )}
+
+            {/* LIVE SYSTEM UPLOAD PROGRESS BAR ELEMENT */}
+            {uploadProgress !== null && (
+              <div style={{ marginTop: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#aaa", marginBottom: "4px" }}>
+                  <span>Uploading pitch asset to secure vault...</span>
+                  <span>{uploadProgress === 0 ? "Compressing/Preparing..." : `${uploadProgress}%`}</span>
+                </div>
+                <div style={{ width: "100%", height: "4px", background: "#222", borderRadius: "2px", overflow: "hidden" }}>
+                  <div style={{ width: `${uploadProgress || 15}%`, height: "100%", background: "#fff", transition: "width 0.3s ease" }} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* DYNAMIC ERROR ALERT PANEL */}
+          {formError && (
+            <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: "8px", padding: "12px", marginBottom: "1.5rem" }}>
+              <p style={{ color: "#ff3b30", fontSize: "12px", margin: 0, fontWeight: 500 }}>{formError}</p>
+            </div>
+          )}
 
           <div
             onClick={!submitting && message ? handleApply : undefined}
-            style={{ padding: "14px", borderRadius: "8px", background: message ? "#fff" : "#1a1a1a", color: message ? "#0a0a0a" : "#333", border: message ? "1px solid #fff" : "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: message && !submitting ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
+            style={{ padding: "14px", borderRadius: "8px", background: message && !submitting ? "#fff" : "#1a1a1a", color: message && !submitting ? "#0a0a0a" : "#333", border: message && !submitting ? "1px solid #fff" : "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: message && !submitting ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
           >
-            {submitting ? "Submitting..." : "Submit Application"}
+            {submitting ? "Processing Application..." : "Submit Application"}
           </div>
         </div>
       )}
