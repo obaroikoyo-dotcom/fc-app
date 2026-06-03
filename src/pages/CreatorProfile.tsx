@@ -344,8 +344,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
         )}
 
         <div style={dividerStyle} />
-
-        {/* Content Types */}
+        
+{/* Content Types */}
         <div style={sectionStyle}>
           <label style={labelStyle}>Content I Create</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -438,24 +438,24 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
               {favourites.map((f, i) => (
                 <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-  <div
-    onClick={() => navigateToProfile(f.creator_id)}
-    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
-  >
-    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
-      {(f.creator_profiles as any)?.avatar_url
-        ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        : "◉"}
-    </div>
-    <div>
-      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
-      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
-    </div>
-  </div>
-  <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-    DM
-  </div>
-</div>
+                  <div
+                    onClick={() => navigateToProfile(f.creator_id)}
+                    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+                  >
+                    <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
+                      {(f.creator_profiles as any)?.avatar_url
+                        ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : "◉"}
+                    </div>
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+                    </div>
+                  </div>
+                  <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    DM
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -467,18 +467,22 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet — bookmark campaigns in Explore</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {campaignFavourites.map((f, i) => (
-                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.campaigns as any)?.name || "Campaign"}</p>
-                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>
-                      {(f.campaigns as any)?.type}{(f.campaigns as any)?.budget ? ` · £${(f.campaigns as any).budget}` : ""}
-                    </span>
+              {campaignFavourites.map((f, i) => {
+                const camp = f.campaigns as any;
+                const baseBudget = parseInt(camp?.budget, 10) || 0;
+                return (
+                  <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{camp?.name || "Campaign"}</p>
+                      <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>
+                        {camp?.type}{camp?.type === "paid" && baseBudget ? ` · Net: £${(baseBudget * 0.9).toLocaleString()}` : camp?.type ? ` · ${camp.type}` : ""}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "12px", color: "#444", marginBottom: "6px" }}>{camp?.brand_profiles?.name || "Brand"}</p>
+                    <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{camp?.description}</p>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#444", marginBottom: "6px" }}>{(f.campaigns as any)?.brand_profiles?.name || "Brand"}</p>
-                  <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{(f.campaigns as any)?.description}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -500,12 +504,19 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
                 const brandName = brandData?.name || "Unknown Brand";
                 const brandPfp = brandData?.logo_url || "";
                 const brandId = campaignData?.brand_id;
+                const baseBudget = parseInt(campaignData?.budget, 10) || 0;
 
                 return (
                   <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                    
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
+                      <div>
+                        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
+                        {campaignData?.type === "paid" && baseBudget > 0 && (
+                          <p style={{ fontSize: "11px", color: "#34c759", fontWeight: 500, marginTop: "2px" }}>
+                            Take-home Pay: £{(baseBudget * 0.9).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
                       <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>
                         {a.status}
                       </span>
@@ -544,65 +555,66 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
         <div style={dividerStyle} />
 
         {/* Wallet */}
-<div style={sectionStyle}>
-  <label style={labelStyle}>Wallet</label>
-  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
-    <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
-      {(["balance", "withdraw"] as const).map(t => (
-        <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
-      ))}
-    </div>
-    {walletTab === "balance" && (
-      <div style={{ padding: "1.5rem", textAlign: "center" }}>
-        <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance</p>
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toFixed(2)}</p>
-        <p style={{ fontSize: "12px", color: "#333", marginTop: "8px" }}>Payments from completed collabs appear here</p>
-        {transactions.length > 0 && (
-          <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
-            {transactions.map((t, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
-                <div>
-                  <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{t.campaigns?.name || "Campaign"}</p>
-                  <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
-                </div>
-                <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>£{(t.creator_payout / 100).toFixed(2)}</p>
+        <div style={sectionStyle}>
+          <label style={labelStyle}>Wallet</label>
+          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
+              {(["balance", "withdraw"] as const).map(t => (
+                <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
+              ))}
+            </div>
+            {walletTab === "balance" && (
+              <div style={{ padding: "1.5rem", textAlign: "center" }}>
+                <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
+                {transactions.length > 0 && (
+                  <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
+                    {transactions.map((t, i) => (
+                      <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
+                        <div>
+                          <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{t.campaigns?.name || "Campaign"}</p>
+                          <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
+                        </div>
+                        <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{t.creator_payout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            ))}
+            )}
+            {walletTab === "withdraw" && (
+              <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
+                  <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
+                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div>
+                  <label style={labelStyle}>Withdraw to</label>
+                  <select style={{ ...inputStyle, appearance: "none" }}>
+                    <option value="">Select method</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="bank">Bank Account</option>
+                  </select>
+                </div>
+                <input style={inputStyle} placeholder="Amount (£)" type="number" />
+                <div style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 ? "#fff" : "#1a1a1a", color: walletBalance > 0 ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>Withdraw</div>
+                <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed instantly via OpenBanking.</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    )}
-    {walletTab === "withdraw" && (
-      <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-          <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toFixed(2)}</p>
         </div>
-        <div>
-          <label style={labelStyle}>Withdraw to</label>
-          <select style={{ ...inputStyle, appearance: "none" }}>
-            <option value="">Select method</option>
-            <option value="paypal">PayPal</option>
-            <option value="bank">Bank Account</option>
-          </select>
-        </div>
-        <input style={inputStyle} placeholder="Amount (£)" type="number" />
-        <div style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 ? "#fff" : "#1a1a1a", color: walletBalance > 0 ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>Withdraw</div>
-        <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 2-3 business days</p>
-      </div>
-    )}
-  </div>
-</div>
+
         {/* Display Dark Mode Inversion Toggle */}
-<div style={{ ...sectionStyle, display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
-  <div>
-    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Inverted Light Mode</p>
-    <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Toggle between clean view types</p>
-  </div>
-  <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-    <div style={{ position: "absolute", top: "3px", left: isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
-  </div>
-</div>
+        <div style={{ ...sectionStyle, display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
+          <div>
+            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Inverted Light Mode</p>
+            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Toggle between clean view types</p>
+          </div>
+          <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div style={{ position: "absolute", top: "3px", left: isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+          </div>
+        </div>
 
         {/* Save */}
         <div

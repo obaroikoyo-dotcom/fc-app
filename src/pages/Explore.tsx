@@ -197,7 +197,10 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const filteredCampaigns = campaigns.filter((c) => {
     if (selectedNiche && c.niche !== selectedNiche) return false;
     if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
-    if (minBudget && (parseInt(c.budget, 10) || 0) < parseInt(minBudget, 10)) return false;
+    
+    const baseBudgetVal = parseInt(c.budget, 10) || 0;
+    const netPayoutVal = baseBudgetVal * 0.90;
+    if (minBudget && netPayoutVal < parseInt(minBudget, 10)) return false;
     
     if (feedTab === "discover" && applied.includes(c.id)) return false;
     if (feedTab === "pitches" && !applied.includes(c.id)) return false;
@@ -252,7 +255,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
           {["Instagram", "TikTok", "YouTube", "Twitter/X"].map(p => <option key={p} value={p}>{p}</option>)}
         </select>
         <select value={minBudget} onChange={e => setMinBudget(e.target.value)} style={UI.dropdown}>
-          <option value="">Any Budget</option>
+          <option value="">Any Payout</option>
           {["50", "100", "250", "500", "1000"].map(v => <option key={v} value={v}>£{v}+</option>)}
         </select>
       </div>
@@ -272,7 +275,9 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
           </div>
         ) : (
           filteredCampaigns.map(c => {
-            const budgetVal = parseInt(c.budget, 10);
+            const baseBudgetVal = parseInt(c.budget, 10) || 0;
+            const netCreatorPayout = baseBudgetVal * 0.90;
+
             return (
               <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
@@ -317,16 +322,26 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                   )}
                 </div>
 
+                {c.platforms && c.platforms.length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                    {c.platforms.map((p: string) => (
+                      <span key={p} style={{ fontSize: "10px", padding: "2px 8px", border: "1px solid #1f1f1f", borderRadius: "20px", color: "#555", background: "#0d0d0d" }}>
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
                   <div>
-                    {c.type === "paid" && budgetVal ? (
+                    {c.type === "paid" && baseBudgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Budget</span>
-                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{budgetVal.toLocaleString()}</span>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout</span>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{netCreatorPayout.toLocaleString()}</span>
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Reward</span>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
                         <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", textTransform: "uppercase" }}>Gifted</span>
                       </div>
                     )}
@@ -361,8 +376,21 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
             <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
             <span onClick={() => setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: "pointer", lineHeight: 1 }}>×</span>
           </div>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
-          <p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>{selected.brand_profiles?.name || "Brand"}</p>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+            <div>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
+              <p style={{ fontSize: "12px", color: "#444" }}>{selected.brand_profiles?.name || "Brand"}</p>
+            </div>
+            {selected.type === "paid" && (
+              <div style={{ textAlign: "right" }}>
+                <span style={{ display: "block", fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Net Take-home</span>
+                <span style={{ fontSize: "16px", fontWeight: 800, color: "#34c759", fontFamily: "'Syne', sans-serif" }}>
+                  £{(parseInt(selected.budget, 10) * 0.90).toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
 
           {selected.script && (
             <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
@@ -371,7 +399,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
             </div>
           )}
 
-          {selected.platforms?.length > 0 && (
+          {selected.platforms && selected.platforms.length > 0 && (
             <div style={{ marginBottom: "1.25rem" }}>
               <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms you'll post on</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>

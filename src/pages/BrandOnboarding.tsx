@@ -30,6 +30,7 @@ export default function BrandOnboarding({ navigate }: Props) {
   const [targetAudience, setTargetAudience] = useState("");
   const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [targetTier, setTargetTier] = useState(""); // Replaced budgetRange state with targetTier
+  const [campaignBudget, setCampaignBudget] = useState(""); // Added campaignBudget state tracking
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -68,7 +69,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     }
   };
 
- const handleFinish = async () => {
+  const handleFinish = async () => {
     setError("");
     if (!email || !password) return setError("Corporate credentials required.");
     if (password !== confirm) return setError("Passwords do not match.");
@@ -134,6 +135,7 @@ export default function BrandOnboarding({ navigate }: Props) {
           target_audience: targetAudience,
           content_types: contentTypes,
           budget_range: targetTier, 
+          campaign_budget: parseFloat(campaignBudget) || 0, // Saves dynamic capital allocation
           logo_url: logoUrl,
           avatar_url: logoUrl,
           onboarding_complete: true,
@@ -173,7 +175,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     fontFamily: "inherit",
   };
 
- const chipStyle = (active: boolean): React.CSSProperties => ({
+  const chipStyle = (active: boolean): React.CSSProperties => ({
     padding: "10px 16px",
     borderRadius: "20px",
     border: `1px solid ${active ? "#fff" : "#222"}`,
@@ -252,12 +254,13 @@ export default function BrandOnboarding({ navigate }: Props) {
       </div>
     </div>,
 
-    // Screen 4 — Strategic Alignment
+    // Screen 4 — Strategic Alignment & Capital Allocation
     <div key={4}>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What is your target creator tier?</h1>
       <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Defining your target allows our algorithm to prioritize the right talent for your brand voice.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
         {CREATOR_TIERS.map(tier => (
           <div 
             key={tier.value} 
@@ -275,6 +278,23 @@ export default function BrandOnboarding({ navigate }: Props) {
             <span style={{ fontSize: "11px", opacity: 0.6, color: targetTier === tier.value ? "#333" : "#555" }}>{tier.sub}</span>
           </div>
         ))}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Initial Escrow Funding ($ USD)</label>
+        <div style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: "16px", top: "13px", color: "#555", fontSize: "15px" }}>$</span>
+          <input 
+            type="number"
+            style={{ ...inputStyle, paddingLeft: "32px" }} 
+            placeholder="e.g. 1500" 
+            value={campaignBudget} 
+            onChange={e => setCampaignBudget(e.target.value)} 
+          />
+        </div>
+        <p style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>
+          * This capital secures the escrow contract framework. Funds unlock only upon milestone verification.
+        </p>
       </div>
     </div>,
 
@@ -331,7 +351,7 @@ export default function BrandOnboarding({ navigate }: Props) {
     if (screen === 1) return (selectedIndustry || location.trim()) ? "Continue →" : "Skip step →";
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
-    if (screen === 4) return targetTier ? "Continue →" : "Skip step →"; // Corrected condition tracker
+    if (screen === 4) return (targetTier && campaignBudget.trim()) ? "Continue →" : "Provide parameters to proceed"; 
     if (screen === 5) return email.trim() && password.length >= 6 && password === confirm && termsAccepted ? "Continue →" : null;
     if (screen === 6) return brandLogo ? "Review Agreements & Deploy →" : "Review Agreements & Deploy →";
     return "Continue →";

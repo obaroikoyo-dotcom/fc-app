@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import PaymentContractModal from "../components/PaymentContractModal"; // Imported from components folder
 
 interface Props {
   navigate: (p: Page) => void;
@@ -26,7 +27,6 @@ interface Campaign {
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 
-// Foolproof global deadline formatter: Splits YYYY-MM-DD to avoid browser timezone shifts
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
   const [year, month, day] = dateString.split("-");
@@ -38,7 +38,6 @@ const formatDeadline = (dateString: string) => {
   return `${parseInt(day, 10)} ${months[monthIndex]} ${year}`;
 };
 
-// Live auto-updating relative time engine
 const formatRelativeTime = (dateString: string, now: Date) => {
   if (!dateString) return "";
   const postedDate = new Date(dateString);
@@ -66,9 +65,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [posted, setPosted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
-  
-  // Drives the minute-by-minute dynamic text updates
   const [now, setNow] = useState(new Date());
+
+  // --- ESCROW PAYMENT MODAL STATES ---
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedCampaignForPayment, setSelectedCampaignForPayment] = useState<Campaign | null>(null);
+  const [selectedCreatorForPayment, setSelectedCreatorForPayment] = useState<{ id: string; name: string } | null>(null);
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -91,7 +93,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   useEffect(() => { 
     fetchCampaigns(); 
 
-    // Ticks every 60 seconds to refresh text across the dashboard seamlessly
     const clockInterval = setInterval(() => {
       setNow(new Date());
     }, 60000);
@@ -125,11 +126,21 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setTimeout(() => { setPosted(false); setTab("campaigns"); }, 1500);
   };
 
-  // Your new delete function
   const deleteCampaign = async (id: string) => {
     if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
     await supabase.from("campaigns").delete().eq("id", id);
     setCampaigns(prev => prev.filter(c => c.id !== id));
+  };
+
+  // --- ACTIONS TO OPEN THE CONTRACT MODAL ---
+  const handleOpenPaymentWindow = (campaign: Campaign, creator: { id: string; name: string }) => {
+    setSelectedCampaignForPayment(campaign);
+    setSelectedCreatorForPayment(creator);
+    setIsPaymentModalOpen(true);
+  };
+
+  const handleExecuteEscrowFunding = async (totalAmount: number) => {
+    console.log(`Initiating secure payment flow for: £${totalAmount}`);
   };
 
   const inputStyle: React.CSSProperties = {
@@ -166,6 +177,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     transition: "all 0.15s",
   });
 
+  // --- PLATFORM FEE MARKETPLACE MATH MATRIX CALCULATIONS ---
+  const numericBudget = parseInt(form.budget, 10) || 0;
+  const brandPlatformFee = numericBudget * 0.05; // Brand adds 5%
+  const totalBrandEscrowAuthorization = numericBudget + brandPlatformFee; // Total brand cost (£105 on £100)
+  const creatorCardPayoutPreview = numericBudget * 0.90; // Creator take-home after 10% cut (£90 on £100)
+
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
@@ -199,6 +216,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const brandLogo = (c as any).brand_profiles?.logo_url;
                 const brandName = (c as any).brand_profiles?.name;
                 const budgetVal = parseInt(c.budget, 10);
+                const currentCampaignFee = budgetVal * 0.05;
+                const currentTotalCost = budgetVal + currentCampaignFee;
 
                 return (
                   <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
@@ -217,12 +236,20 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         {isOwn ? (
-                          <span 
-                            onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }} 
-                            style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
-                          >
-                            Delete
-                          </span>
+                          <div style={{ display: "flex", gap: "8px" }}>
+                            <span 
+                              onClick={(e) => { e.stopPropagation(); handleOpenPaymentWindow(c, { id: "sample-id", name: "Example Creator" }); }} 
+                              style={{ fontSize: "11px", color: "#34c759", cursor: "pointer", fontWeight: 500, background: "rgba(52, 199, 89, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(52, 199, 89, 0.15)" }}
+                            >
+                              Test Contract
+                            </span>
+                            <span 
+                              onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }} 
+                              style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
+                            >
+                              Delete
+                            </span>
+                          </div>
                         ) : (
                           <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             {c.type}
@@ -266,10 +293,15 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
                       {c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Budget</span>
+                          <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
                           <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
                             £{budgetVal.toLocaleString()}
                           </span>
+                          {isOwn && (
+                            <span style={{ fontSize: "10px", color: "#666", marginTop: "4px", lineHeight: 1.3 }}>
+                              Total Gross Cost: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% Platform Fee of £{currentCampaignFee.toLocaleString()} included)
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -300,8 +332,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               <input style={inputStyle} placeholder="e.g. Summer Collection Launch" value={form.name} onChange={set("name")} />
             </div>
             <div>
-              <label style={labelStyle}>Description</label>
-              <textarea style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }} placeholder="What do you need creators to do?" value={form.description} onChange={set("description")} />
+              <label style={labelStyle}>Description / Deliverables Required</label>
+              <textarea style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }} placeholder="List the specific assets or content you need creators to make..." value={form.description} onChange={set("description")} />
             </div>
             <div>
               <label style={labelStyle}>Collab Type</label>
@@ -313,12 +345,38 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 ))}
               </div>
             </div>
+            
             {form.type === "paid" && (
               <div>
-                <label style={labelStyle}>Budget (£)</label>
-                <input style={inputStyle} placeholder="e.g. 150" type="number" value={form.budget} onChange={set("budget")} />
+                <label style={labelStyle}>Base Budget (£)</label>
+                <input style={inputStyle} placeholder="e.g. 100" type="number" value={form.budget} onChange={set("budget")} />
+                
+                {/* Brand Processing Fee Live Estimate Board */}
+                {numericBudget > 0 && (
+                  <div style={{ background: "#111", border: "1px solid #1a1a1a", padding: "14px", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
+                      <span>Base Budget:</span>
+                      <span style={{ color: "#aaa" }}>£{numericBudget.toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
+                      <span>Platform Posting Fee (+5%):</span>
+                      <span style={{ color: "#aaa" }}>£{brandPlatformFee.toLocaleString()}</span>
+                    </div>
+                    <hr style={{ border: "0", borderTop: "1px solid #222", margin: "4px 0" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "14px", color: "#fff" }}>
+                      <span>Total Authorized Cost:</span>
+                      <span style={{ color: "#34c759" }}>£{totalBrandEscrowAuthorization.toLocaleString()}</span>
+                    </div>
+                    <hr style={{ border: "0", borderTop: "1px dashed #1a1a1a", margin: "4px 0" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#444" }}>
+                      <span>Creator Card Payout View (-10% Cut):</span>
+                      <span style={{ color: "#888", fontWeight: 500 }}>£{creatorCardPayoutPreview.toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
+            
             <div>
               <label style={labelStyle}>Niche / Category</label>
               <input style={inputStyle} placeholder="e.g. Beauty, Fashion, Fitness" value={form.niche} onChange={set("niche")} />
@@ -346,6 +404,27 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           </div>
         )}
       </div>
+
+      {/* --- RENDER PAYMENT CONTRACT MODAL OVERLAY --- */}
+      {selectedCampaignForPayment && selectedCreatorForPayment && (
+        <PaymentContractModal
+          isOpen={isPaymentModalOpen}
+          campaign={{
+            id: selectedCampaignForPayment.id,
+            name: selectedCampaignForPayment.name,
+            description: selectedCampaignForPayment.description,
+            budget: selectedCampaignForPayment.budget,
+            deadline: selectedCampaignForPayment.deadline,
+            platforms: selectedCampaignForPayment.platforms || []
+          }}
+          creator={{
+            id: selectedCreatorForPayment.id,
+            name: selectedCreatorForPayment.name
+          }}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onConfirmFunding={handleExecuteEscrowFunding}
+        />
+      )}
     </div>
   );
 }
