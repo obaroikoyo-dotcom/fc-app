@@ -144,7 +144,7 @@ export default function Messages({ navigate, role }: Props) {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-          
+
         return { 
           ...c, 
           other_name: otherName, 
@@ -561,11 +561,11 @@ return (
         </div>
       )}
 
-      {/* Chat View Component */}
+     {/* Chat View Component */}
       {view === "chat" && (
         <>
           {/* IN-CHAT DEAL DESK WIDGET */}
-          {activeConvo?.application_id && (activeConvo.application_status === "chatting" || activeConvo.application_status === "pending") && (
+          {activeConvo?.application_id && (
             <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
                 <p style={{ textTransform: "uppercase", fontSize: "9px", color: "#444", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
@@ -574,44 +574,72 @@ return (
 
               {role === "brand" ? (
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                  <button
-                    onClick={() => {
-                      setCampaignBudget((activeConvo.campaign_budget || 0) * 100);
-                      setPaymentApp({
-                        id: activeConvo.application_id!,
-                        campaign_id: activeConvo.campaign_id!,
-                        creator_id: activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1,
-                        status: activeConvo.application_status!,
-                        message: "", platforms: [], created_at: "",
-                        creator_name: activeConvo.other_name,
-                        campaign_name: activeConvo.campaign_name
-                      });
-                      setShowPayment(true);
-                    }}
-                    style={{ background: "#fff", color: "#0a0a0a", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
-                  >
-                    Lock Deal & Pay
-                  </button>
-                  <button
-                    onClick={async () => {
-                      if (!activeConvo.application_id) return;
-                      await supabase.from("applications").update({ status: "rejected" }).eq("id", activeConvo.application_id);
-                      setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
-                      loadConversations();
-                    }}
-                    style={{ background: "transparent", color: "#ff3b30", border: "1px solid #222", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
-                  >
-                    Decline Creator
-                  </button>
+                  {activeConvo.application_status !== "rejected" ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setCampaignBudget((activeConvo.campaign_budget || 0) * 100);
+                          setPaymentApp({
+                            id: activeConvo.application_id!,
+                            campaign_id: activeConvo.campaign_id!,
+                            creator_id: activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1,
+                            status: activeConvo.application_status!,
+                            message: "", platforms: [], created_at: "",
+                            creator_name: activeConvo.other_name,
+                            campaign_name: activeConvo.campaign_name
+                          });
+                          setShowPayment(true);
+                        }}
+                        style={{ background: "#fff", color: "#0a0a0a", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
+                      >
+                        Lock Deal & Pay
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!activeConvo.application_id) return;
+                          await supabase.from("applications").update({ status: "rejected" }).eq("id", activeConvo.application_id);
+                          setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
+                          loadConversations();
+                        }}
+                        style={{ background: "transparent", color: "#ff3b30", border: "1px solid #222", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
+                      >
+                        Decline Creator
+                      </button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: "11px", color: "#444", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
+                      Folder Closed (Declined)
+                    </span>
+                  )}
                 </div>
               ) : (
-                <span style={{ fontSize: "11px", color: "#666", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
-                  ⚠️ Pending Terms Review (Brand can screen out)
-                </span>
+                /* Creator Side Logic */
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", flexShrink: 0 }}>
+                  {activeConvo.application_status === "rejected" ? (
+                    <>
+                      <span style={{ fontSize: "11px", color: "#ff3b30", background: "#221111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a1a1a", fontWeight: 500 }}>
+                        Application Screened Out
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#666", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                        The brand decided to pass on this specific campaign brief. Keep your head up! Landing the right brand partnerships takes time—keep refining your pitch and the right match will click.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: "11px", color: "#666", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
+                        ⚠️ Pending Terms Review
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#444", margin: 0, textAlign: "right", maxWidth: "240px", lineHeight: "1.4" }}>
+                        Brands can screen you out whenever they choose. Always sound professional even if you aren't their exact target.
+                      </p>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           )}
 
+          {/* CHAT MESSAGES STREAM */}
           <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "7rem", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
@@ -629,17 +657,26 @@ return (
             <div ref={bottomRef} />
           </div>
 
+          {/* INPUT BAR CONTROLLER */}
           <div style={{ position: "fixed", bottom: "72px", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center" }}>
-            <input
-              style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "24px", padding: "10px 16px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit" }}
-              placeholder="Message..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && send()}
-            />
-            <div onClick={send} style={{ width: "38px", height: "38px", borderRadius: "50%", background: input ? "#fff" : "#111", border: input ? "none" : "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", cursor: input ? "pointer" : "default", fontSize: "16px", color: input ? "#0a0a0a" : "#333", transition: "all 0.2s", flexShrink: 0 }}>
-              ↑
-            </div>
+            {activeConvo?.application_status === "rejected" ? (
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
+                🔒 Messaging disabled (application finalized)
+              </div>
+            ) : (
+              <>
+                <input
+                  style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "24px", padding: "10px 16px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit" }}
+                  placeholder="Message..."
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && send()}
+                />
+                <div onClick={send} style={{ width: "38px", height: "38px", borderRadius: "50%", background: input ? "#fff" : "#111", border: input ? "none" : "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", cursor: input ? "pointer" : "default", fontSize: "16px", color: input ? "#0a0a0a" : "#333", transition: "all 0.2s", flexShrink: 0 }}>
+                  ↑
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
