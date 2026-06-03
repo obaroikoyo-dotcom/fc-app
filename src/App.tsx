@@ -253,7 +253,7 @@ export default function App() {
         }
       } else if (profile.role === "creator") {
         const { data: creatorProfile } = await supabase
-          .from("creator_profiles")
+          .from("profiles")
           .select("onboarding_complete")
           .eq("id", userId)
           .maybeSingle();
