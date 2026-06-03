@@ -52,7 +52,7 @@ interface Campaign {
   applications: Application[];
 }
 
-export default function Messages({ navigate, role, navigateToProfile }: Props) {
+export default function Messages({ navigate, role }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -136,7 +136,6 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
         
         // Match live app link properties to conversational items to maintain in-chat actions
         const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
-        const brandSearchId = profile?.role === "brand" ? otherId : user.id;
         
         const { data: linkedApp } = await supabase
           .from("applications")
@@ -145,7 +144,7 @@ export default function Messages({ navigate, role, navigateToProfile }: Props) {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-
+          
         return { 
           ...c, 
           other_name: otherName, 
