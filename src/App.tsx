@@ -252,25 +252,18 @@ export default function App() {
           setPage("brand-onboarding");
         }
       } else if (profile.role === "creator") {
-        const { data: creatorProfile } = await supabase
-          .from("profiles")
-          .select("onboarding_complete")
-          .eq("id", userId)
-          .maybeSingle();
-          
-        if (creatorProfile?.onboarding_complete) {
-          setPage("explore");
-        } else {
-          setPage("creator-onboarding");
-        }
-      } else {
-        setPage("role-select");
-      }
-    } catch (err) {
-      console.log("Routing error:", err);
-      setPage("role-select");
-    }
-  };
+  const { data: creatorProfile } = await supabase
+    .from("creator_profiles")
+    .select("onboarding_complete")
+    .eq("id", userId)
+    .maybeSingle();
+    
+  if (creatorProfile?.onboarding_complete) {
+    setPage("explore");
+  } else {
+    setPage("creator-onboarding");
+  }
+}
 
   useEffect(() => {
     let isMounted = true;
