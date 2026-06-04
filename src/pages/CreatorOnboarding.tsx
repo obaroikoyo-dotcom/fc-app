@@ -101,7 +101,7 @@ const [termsAccepted, setTermsAccepted] = useState(false);
         }
       }
 
-      await supabase.from("creator_profiles").insert({
+      await supabase.from("profiles").insert({
         id: data.user.id,
         name,
         niche,

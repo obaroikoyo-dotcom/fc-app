@@ -18,7 +18,7 @@ interface Application {
   platforms: string[];
   status: "pending" | "approved" | "declined";
   video_url: string | null;
-  creator_profiles: {
+  profiles: {
     name: string;
     niche: string;
     avatar_url?: string;
@@ -105,7 +105,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           *,
           applications (
             id, campaign_id, creator_id, message, platforms, status, video_url,
-            creator_profiles (name, niche, avatar_url)
+            profiles (name, niche, avatar_url)
           )
         `)
         .order("created_at", { ascending: false });
@@ -145,7 +145,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         ...form,
         platforms: selectedPlatforms,
         video_required: videoRequired,
-      }).select("*, applications(id, campaign_id, creator_id, message, platforms, status, video_url, creator_profiles(name, niche, avatar_url))").single();
+      }).select("*, applications(id, campaign_id, creator_id, message, platforms, status, video_url, profiles(name, niche, avatar_url))").single();
       
       if (data) setCampaigns(prev => [data as unknown as Campaign, ...prev]);
     }
@@ -392,11 +392,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                                   {/* Profile Block */}
                                   <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                                     <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "#111", border: "1px solid #222", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                      {app.creator_profiles?.avatar_url ? <img src={app.creator_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                                      {app.profiles?.avatar_url ? <img src={app.profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
                                     </div>
                                     <div>
-                                      <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", margin: 0 }}>{app.creator_profiles?.name || "Anonymous Creator"}</p>
-                                      <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>{app.creator_profiles?.niche || "Creator"}</p>
+                                      <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", margin: 0 }}>{app.profiles?.name || "Anonymous Creator"}</p>
+                                      <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>{app.profiles?.niche || "Creator"}</p>
                                     </div>
                                   </div>
 
@@ -425,7 +425,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                                         </span>
                                         {c.type === "paid" && (
                                           <button 
-                                            onClick={() => handleOpenPaymentWindow(c, { id: app.creator_id, name: app.creator_profiles?.name || "Creator" })}
+                                            onClick={() => handleOpenPaymentWindow(c, { id: app.creator_id, name: app.profiles?.name || "Creator" })}
                                             style={{ ...buttonStyle("primary"), background: "#34c759", color: "#000" }}
                                           >
                                             Secure Contract

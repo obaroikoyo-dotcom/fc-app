@@ -53,7 +53,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (!user) return;
     setUserId(user.id);
 
-    const { data } = await supabase.from("creator_profiles").select("*").eq("id", user.id).single();
+    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     if (data) {
       setName(data.name || "");
       setBio(data.bio || "");
@@ -104,7 +104,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (!user) return;
     const { data } = await supabase
       .from("favourites")
-      .select("creator_id, creator_profiles(name, niche, avatar_url)")
+      .select("creator_id, profiles(name, niche, avatar_url)")
       .eq("user_id", user.id);
     if (data) setFavourites(data);
   };
@@ -148,11 +148,11 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       setProfilePic(data.publicUrl);
       setAvatarUrl(data.publicUrl);
 
-      const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
+      const { data: existing } = await supabase.from("profiles").select("id").eq("id", userId).single();
       if (existing) {
-        await supabase.from("creator_profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
+        await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
       } else {
-        await supabase.from("creator_profiles").insert({ id: userId, avatar_url: data.publicUrl });
+        await supabase.from("profiles").insert({ id: userId, avatar_url: data.publicUrl });
       }
     }
   };
@@ -197,12 +197,12 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       avatar_url: avatarUrl,
     };
 
-    const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
+    const { data: existing } = await supabase.from("profiles").select("id").eq("id", userId).single();
 
     if (existing) {
-      await supabase.from("creator_profiles").update(profileData).eq("id", userId);
+      await supabase.from("profiles").update(profileData).eq("id", userId);
     } else {
-      await supabase.from("creator_profiles").insert(profileData);
+      await supabase.from("profiles").insert(profileData);
     }
 
     setSaving(false);
@@ -260,7 +260,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             if (!confirmed) return;
             if (userId) {
   console.log("Deleting user:", userId);
-  await supabase.from("creator_profiles").delete().eq("id", userId);
+  await supabase.from("profiles").delete().eq("id", userId);
               await supabase.from("profiles").delete().eq("id", userId);
               await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
               await supabase.auth.signOut();
@@ -443,13 +443,13 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
                     style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
                   >
                     <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333", overflow: "hidden" }}>
-                      {(f.creator_profiles as any)?.avatar_url
-                        ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      {(f.profiles as any)?.avatar_url
+                        ? <img src={(f.profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         : "◉"}
                     </div>
                     <div>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
-                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.profiles as any)?.name || "Creator"}</p>
+                      <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.profiles as any)?.niche || ""}</p>
                     </div>
                   </div>
                   <div onClick={() => navigate("messages-creator")} style={{ padding: "6px 12px", border: "1px solid #333", borderRadius: "6px", fontSize: "11px", color: "#fff", cursor: "pointer", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>

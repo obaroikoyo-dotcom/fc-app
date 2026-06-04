@@ -111,11 +111,11 @@ export default function Messages({ navigate, role }: Props) {
 
     const { data: myProfile } = await supabase
       .from("profiles")
-      .select("creator_profiles(name), brand_profiles(name)")
+      .select("profiles(name), brand_profiles(name)")
       .eq("id", user.id)
       .single();
     if (myProfile) {
-      const myName = (myProfile as any)?.creator_profiles?.name || (myProfile as any)?.brand_profiles?.name || "Someone";
+      const myName = (myProfile as any)?.profiles?.name || (myProfile as any)?.brand_profiles?.name || "Someone";
       setCurrentUserName(myName);
     }
 
@@ -130,9 +130,9 @@ export default function Messages({ navigate, role }: Props) {
         const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
         
         // Fetch counter-party information
-        const { data: profile } = await supabase.from("profiles").select("role, creator_profiles(name, avatar_url), brand_profiles(name, avatar_url)").eq("id", otherId).single();
-        const otherName = (profile as any)?.creator_profiles?.name || (profile as any)?.brand_profiles?.name || "Unknown";
-        const otherAvatar = (profile as any)?.creator_profiles?.avatar_url || (profile as any)?.brand_profiles?.avatar_url || null;
+        const { data: profile } = await supabase.from("profiles").select("role, profiles(name, avatar_url), brand_profiles(name, avatar_url)").eq("id", otherId).single();
+        const otherName = (profile as any)?.profiles?.name || (profile as any)?.brand_profiles?.name || "Unknown";
+        const otherAvatar = (profile as any)?.profiles?.avatar_url || (profile as any)?.brand_profiles?.avatar_url || null;
         
         // Match live app link properties to conversational items to maintain in-chat actions
         const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
@@ -211,7 +211,7 @@ export default function Messages({ navigate, role }: Props) {
         .order("created_at", { ascending: false });
 
       const enrichedApps = await Promise.all((apps || []).map(async (app) => {
-        const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", app.creator_id).single();
+        const { data: cp } = await supabase.from("profiles").select("name, avatar_url").eq("id", app.creator_id).single();
         return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar_url || null, campaign_name: camp.name };
       }));
 

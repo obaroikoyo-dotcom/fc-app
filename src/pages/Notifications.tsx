@@ -61,7 +61,7 @@ export default function Notifications({ navigate, setTargetData }: Props) {
       .select(`
         *,
         actor_profiles:profiles(
-          creator_profiles(name, avatar_url),
+          profiles(name, avatar_url),
           brand_profiles(name, avatar_url)
         )
       `)
@@ -70,7 +70,7 @@ export default function Notifications({ navigate, setTargetData }: Props) {
 
     if (!error && data) {
       const parsed = data.map((n: any) => {
-        const creator = n.actor_profiles?.creator_profiles;
+        const creator = n.actor_profiles?.profiles;
         const brand = n.actor_profiles?.brand_profiles;
         return {
           ...n,

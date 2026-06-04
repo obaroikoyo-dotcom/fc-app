@@ -109,7 +109,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     if (!user) return null;
     setCurrentUserId(user.id);
 
-    const { data } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", user.id).single();
+    const { data } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
     if (data) {
       if (data.avatar_url) setMyAvatar(data.avatar_url);
       if (data.name) setMyCreatorName(data.name);

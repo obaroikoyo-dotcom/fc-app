@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; }
 interface Profile {
   id: string; role: string; email: string;
-  creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; followers?: number; rate?: number; } | null;
+  profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; followers?: number; rate?: number; } | null;
   brand_profiles?: { name: string; niche: string; location: string; avatar_url?: string; budget?: number; } | null;
 }
 
@@ -36,7 +36,7 @@ export default function Search({ navigate, navigateToProfile }: Props) {
           setFilter(data.role === "brand" ? "creators" : "brands"); 
         }
       }
-      const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
+      const { data: profiles } = await supabase.from("profiles").select(`*, profiles(*), brand_profiles(*)`);
       if (profiles) setAllProfiles(profiles);
       setLoading(false);
     })();
@@ -54,7 +54,7 @@ export default function Search({ navigate, navigateToProfile }: Props) {
     if (filter === "creators" && p.role !== "creator") return false;
     if (filter === "brands" && p.role !== "brand") return false;
 
-    const cp = p.creator_profiles, bp = p.brand_profiles;
+    const cp = p.profiles, bp = p.brand_profiles;
     const name = cp?.name || bp?.name || "", nch = cp?.niche || bp?.niche || "", txt = query.toLowerCase();
     
     if (query && !name.toLowerCase().includes(txt) && !nch.toLowerCase().includes(txt) && !(cp?.hashtags || []).some(h => h.toLowerCase().includes(txt))) return false;
@@ -116,7 +116,7 @@ export default function Search({ navigate, navigateToProfile }: Props) {
         {loading ? <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading...</p> : 
          filtered.length === 0 ? <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p> : 
          filtered.map(p => {
-           const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;
+           const isC = p.role === "creator", cp = p.profiles, bp = p.brand_profiles;
            return (
              <div key={p.id} onClick={() => navigateToProfile(p.id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
                <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
