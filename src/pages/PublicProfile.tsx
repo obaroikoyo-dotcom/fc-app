@@ -51,10 +51,10 @@ export default function PublicProfile({ navigate, profileId, goBack }: Props) {
 }
 
     const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", profileId)
-      .single();
+  .from("creator_profiles")
+  .select("*")
+  .eq("id", profileId)
+  .single();
 
     if (data) setCreator(data);
     setLoading(false);

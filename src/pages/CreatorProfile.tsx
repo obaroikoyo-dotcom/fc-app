@@ -53,7 +53,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (!user) return;
     setUserId(user.id);
 
-    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+    const { data } = await supabase.from("creator_profiles").select("*").eq("id", user.id).single();
     if (data) {
       setName(data.name || "");
       setBio(data.bio || "");
@@ -148,12 +148,12 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       setProfilePic(data.publicUrl);
       setAvatarUrl(data.publicUrl);
 
-      const { data: existing } = await supabase.from("profiles").select("id").eq("id", userId).single();
-      if (existing) {
-        await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
-      } else {
-        await supabase.from("profiles").insert({ id: userId, avatar_url: data.publicUrl });
-      }
+      const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
+if (existing) {
+  await supabase.from("creator_profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
+} else {
+  await supabase.from("creator_profiles").insert({ id: userId, avatar_url: data.publicUrl });
+}
     }
   };
 
@@ -197,13 +197,13 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       avatar_url: avatarUrl,
     };
 
-    const { data: existing } = await supabase.from("profiles").select("id").eq("id", userId).single();
+    const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
 
-    if (existing) {
-      await supabase.from("profiles").update(profileData).eq("id", userId);
-    } else {
-      await supabase.from("profiles").insert(profileData);
-    }
+if (existing) {
+  await supabase.from("creator_profiles").update(profileData).eq("id", userId);
+} else {
+  await supabase.from("creator_profiles").insert(profileData);
+}
 
     setSaving(false);
     setSaved(true);
