@@ -100,15 +100,15 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       
       // Select nested query data matching the real structural applications array
       const { data } = await supabase
-        .from("campaigns")
-        .select(`
-          *,
-          applications (
-            id, campaign_id, creator_id, message, platforms, status, video_url,
-            profiles!applications_creator_id_fkey (name, niche, avatar_url)
-          )
-        `)
-        .order("created_at", { ascending: false });
+  .from("campaigns")
+  .select(`
+    *,
+    applications (
+      id, campaign_id, creator_id, message, platforms, status, video_url,
+      profiles!applications_creator_id_fkey (name, niche, avatar_url)
+    )
+  `)
+  .order("created_at", { ascending: false });
         
       if (data) {
         const mine = data.filter(c => c.brand_id === user.id);
@@ -140,14 +140,14 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setPosting(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { data } = await supabase.from("campaigns").insert({
+      const { error } = await supabase.from("campaigns").insert({
         brand_id: user.id,
         ...form,
         platforms: selectedPlatforms,
         video_required: videoRequired,
-      }).select("*, applications(id, campaign_id, creator_id, message, platforms, status, video_url, profiles(name, niche, avatar_url))").single();
+      });
       
-      if (data) setCampaigns(prev => [data as unknown as Campaign, ...prev]);
+      if (!error) await fetchCampaigns();
     }
     setForm({ name: "", description: "", budget: "", type: "paid", niche: "", deadline: "", script: "" });
     setSelectedPlatforms([]);
