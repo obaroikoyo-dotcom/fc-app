@@ -7,6 +7,8 @@ interface Props {
   navigate: (p: Page) => void;
   role: "brand" | "creator";
   navigateToProfile?: (id: string) => void;
+  openConvoId?: string | null;
+  onConvoOpened?: () => void;
 }
 
 interface Conversation {
@@ -52,7 +54,7 @@ interface Campaign {
   applications: Application[];
 }
 
-export default function Messages({ navigate, role }: Props) {
+export default function Messages({ navigate, role, openConvoId, onConvoOpened }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -158,6 +160,13 @@ export default function Messages({ navigate, role }: Props) {
         };
       }));
       setConversations(enriched);
+      if (openConvoId) {
+        const target = enriched.find(c => c.id === openConvoId);
+        if (target) {
+          openChat(target);
+          onConvoOpened?.();
+        }
+      }
     }
     fetchUnreadMessages(user.id);
     setLoading(false);

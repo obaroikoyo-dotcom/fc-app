@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; }
+interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
   id: string; role: string; email: string;
   creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; followers?: number; rate?: number; } | null;
@@ -15,7 +15,7 @@ const UI = {
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" })
 };
 
-export default function Search({ navigate, navigateToProfile }: Props) {
+export default function Search({ navigate, navigateToProfile, navigateToMessages }: Props) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "creators" | "brands">("all");
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
@@ -43,12 +43,18 @@ export default function Search({ navigate, navigateToProfile }: Props) {
   }, []);
 
   const startDM = async (recId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase.from("conversations").select("id").or(`and(participant_1.eq.${user.id},participant_2.eq.${recId}),and(participant_1.eq.${recId},participant_2.eq.${user.id})`).single();
-    if (!data) await supabase.from("conversations").insert({ participant_1: user.id, participant_2: recId });
-    navigate(userRole === "brand" ? "messages-brand" as any : "messages-creator");
-  };
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data: existing } = await supabase.from("conversations").select("id").or(`and(participant_1.eq.${user.id},participant_2.eq.${recId}),and(participant_1.eq.${recId},participant_2.eq.${user.id})`).single();
+  let convoId: string;
+  if (existing) {
+    convoId = existing.id;
+  } else {
+    const { data: newConvo } = await supabase.from("conversations").insert({ participant_1: user.id, participant_2: recId }).select().single();
+    convoId = newConvo!.id;
+  }
+  navigateToMessages(userRole === "brand" ? "messages-brand" : "messages-creator", convoId);
+};
 
   const filtered = allProfiles.filter(p => {
     if (filter === "creators" && p.role !== "creator") return false;

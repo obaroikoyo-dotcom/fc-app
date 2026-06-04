@@ -6,6 +6,7 @@ interface Props {
   navigate: (p: Page) => void;
   profileId: string;
   goBack: () => void;
+  navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void;
 }
 
 interface CreatorData {
@@ -29,7 +30,7 @@ interface CreatorData {
   collabs: { brand: string; description: string }[];
 }
 
-export default function PublicProfile({ navigate, profileId, goBack }: Props) {
+export default function PublicProfile({ navigate, profileId, goBack, navigateToMessages }: Props) {
   const [creator, setCreator] = useState<CreatorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [favourited, setFavourited] = useState(false);
@@ -75,24 +76,26 @@ export default function PublicProfile({ navigate, profileId, goBack }: Props) {
   };
 
 const startDM = async () => {
-    if (!currentUserId) return;
-
-    const { data: existing } = await supabase
+  if (!currentUserId) return;
+  const { data: existing } = await supabase
+    .from("conversations")
+    .select("id")
+    .or(`and(participant_1.eq.${currentUserId},participant_2.eq.${profileId}),and(participant_1.eq.${profileId},participant_2.eq.${currentUserId})`)
+    .single();
+  let convoId: string;
+  if (existing) {
+    convoId = existing.id;
+  } else {
+    const { data: newConvo } = await supabase
       .from("conversations")
-      .select("id")
-      .or(`and(participant_1.eq.${currentUserId},participant_2.eq.${profileId}),and(participant_1.eq.${profileId},participant_2.eq.${currentUserId})`)
+      .insert({ participant_1: currentUserId, participant_2: profileId })
+      .select()
       .single();
-
-    if (!existing) {
-      await supabase.from("conversations").insert({
-        participant_1: currentUserId,
-        participant_2: profileId,
-      });
-    }
-
-    navigate("messages-creator");
-  };
-
+    convoId = newConvo!.id;
+  }
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", currentUserId).single();
+  navigateToMessages(profile?.role === "brand" ? "messages-brand" : "messages-creator", convoId);
+};
   const toggleFavourite = async () => {
     if (!currentUserId) return;
     if (favourited) {

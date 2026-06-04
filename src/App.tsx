@@ -173,6 +173,7 @@ export default function App() {
   const [viewingProfileId, setViewingProfileId] = useState<string | null>(null);
   const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); 
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [openConvoId, setOpenConvoId] = useState<string | null>(null);
   
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -200,7 +201,12 @@ export default function App() {
     });
   };
 
-  const navigateToProfile = (id: string) => {
+  const navigateToMessages = (p: "messages-creator" | "messages-brand", convoId: string) => {
+  setOpenConvoId(convoId);
+  navigate(p);
+};
+
+const navigateToProfile = (id: string) => {
     setViewingProfileId(id);
     setPage("public-profile");
   };
@@ -368,23 +374,24 @@ export default function App() {
           />
         );
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; 
-      case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} />;
-      case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} />;
+      case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
+      case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
       case "notifications-creator": 
       case "notifications-brand": 
         return <Notifications navigate={navigate} />;
       case "search-creator":
-      case "search-brand": 
-        return <Search navigate={navigate} navigateToProfile={navigateToProfile} />;
+case "search-brand": 
+  return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToMessages={navigateToMessages} />;
       case "public-profile": {
-        return (
-          <PublicProfile 
-            navigate={navigate} 
-            profileId={viewingProfileId || ""} 
-            goBack={goBack} 
-          />
-        );
-      }
+  return (
+    <PublicProfile 
+      navigate={navigate} 
+      profileId={viewingProfileId || ""} 
+      goBack={goBack}
+      navigateToMessages={navigateToMessages}
+    />
+  );
+}
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; 
       default: return <RoleSelect navigate={navigate} />;
