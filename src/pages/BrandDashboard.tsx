@@ -241,7 +241,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Header Bar */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
@@ -257,7 +257,26 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {tab === "campaigns" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {loading ? (
-              <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading...</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {[1,2,3].map(i => (
+                  <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                        <div style={{ width: "80px", height: "11px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                      </div>
+                      <div style={{ width: "50px", height: "22px", borderRadius: "6px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                    </div>
+                    <div style={{ width: "60%", height: "16px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "8px" }} />
+                    <div style={{ width: "90%", height: "11px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "6px" }} />
+                    <div style={{ width: "70%", height: "11px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "16px" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px" }}>
+                      <div style={{ width: "80px", height: "32px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                      <div style={{ width: "60px", height: "14px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : campaigns.length === 0 ? (
               <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
