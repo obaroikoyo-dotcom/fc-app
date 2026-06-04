@@ -99,16 +99,15 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       setCurrentUserId(user.id);
       
       // Select nested query data matching the real structural applications array
-      const { data } = await supabase
-  .from("campaigns")
-  .select(`
-    *,
-    applications (
-      id, campaign_id, creator_id, message, platforms, status, video_url,
-      profiles!applications_creator_id_fkey (name, niche, avatar_url)
-    )
-  `)
-  .order("created_at", { ascending: false });
+     const { data } = await supabase
+        .from("campaigns")
+        .select(`
+          *,
+          applications (
+            id, campaign_id, creator_id, message, platforms, status, video_url
+          )
+        `)
+        .order("created_at", { ascending: false });
         
       if (data) {
         const mine = data.filter(c => c.brand_id === user.id);
