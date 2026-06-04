@@ -111,15 +111,14 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened }:
     if (!user) { setLoading(false); return; }
     setCurrentUserId(user.id);
 
-    const { data: myProfile } = await supabase
-      .from("profiles")
-      .select("profiles(name), brand_profiles(name)")
-      .eq("id", user.id)
-      .single();
-    if (myProfile) {
-      const myName = (myProfile as any)?.profiles?.name || (myProfile as any)?.brand_profiles?.name || "Someone";
-      setCurrentUserName(myName);
-    }
+    const { data: myRole } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+if (myRole?.role === "creator") {
+  const { data: cp } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
+  setCurrentUserName(cp?.name || "Someone");
+} else {
+  const { data: bp } = await supabase.from("brand_profiles").select("name").eq("id", user.id).single();
+  setCurrentUserName(bp?.name || "Someone");
+}
 
     const { data } = await supabase
       .from("conversations")
@@ -132,9 +131,18 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened }:
         const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
         
         // Fetch counter-party information
-        const { data: profile } = await supabase.from("profiles").select("role, profiles(name, avatar_url), brand_profiles(name, avatar_url)").eq("id", otherId).single();
-        const otherName = (profile as any)?.profiles?.name || (profile as any)?.brand_profiles?.name || "Unknown";
-        const otherAvatar = (profile as any)?.profiles?.avatar_url || (profile as any)?.brand_profiles?.avatar_url || null;
+        const { data: profile } = await supabase.from("profiles").select("role").eq("id", otherId).single();
+let otherName = "Unknown";
+let otherAvatar = null;
+if (profile?.role === "creator") {
+  const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", otherId).single();
+  otherName = cp?.name || "Unknown";
+  otherAvatar = cp?.avatar_url || null;
+} else {
+  const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url").eq("id", otherId).single();
+  otherName = bp?.name || "Unknown";
+  otherAvatar = bp?.avatar_url || null;
+}
         
         // Match live app link properties to conversational items to maintain in-chat actions
         const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
