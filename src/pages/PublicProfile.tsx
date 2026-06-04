@@ -37,26 +37,40 @@ export default function PublicProfile({ navigate, profileId, goBack }: Props) {
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
-  const loadProfile = async () => {
+ const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-  setCurrentUserId(user.id);
-  const { data: fav } = await supabase
-    .from("favourites")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("creator_id", profileId)
-    .single();
-  setFavourited(!!fav);
-}
+      setCurrentUserId(user.id);
+      const { data: fav } = await supabase
+        .from("favourites")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("creator_id", profileId)
+        .single();
+      setFavourited(!!fav);
+    }
 
-    const { data } = await supabase
-  .from("creator_profiles")
-  .select("*")
-  .eq("id", profileId)
-  .single();
+    // Try creator_profiles first
+    const { data: creatorData } = await supabase
+      .from("creator_profiles")
+      .select("*")
+      .eq("id", profileId)
+      .single();
 
-    if (data) setCreator(data);
+    if (creatorData) {
+      setCreator(creatorData);
+      setLoading(false);
+      return;
+    }
+
+    // Fall back to brand_profiles
+    const { data: brandData } = await supabase
+      .from("brand_profiles")
+      .select("*")
+      .eq("id", profileId)
+      .single();
+
+    if (brandData) setCreator(brandData);
     setLoading(false);
   };
 
