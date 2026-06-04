@@ -16,6 +16,7 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import Notifications from "./pages/Notifications"; 
 import { supabase } from "./lib/supabase";
+import EnterpriseSubscriptionPage from "./pages/enterprise";
 
 export type Page = 
   | "role-select" 
@@ -36,7 +37,8 @@ export type Page =
   | "creator-onboarding"
   | "brand-public-profile" 
   | "notifications-creator"
-  | "notifications-brand";
+  | "notifications-brand"
+  | "enterprise";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
@@ -202,11 +204,11 @@ export default function App() {
   };
 
   const navigateToMessages = (p: "messages-creator" | "messages-brand", convoId: string) => {
-  setOpenConvoId(convoId);
-  navigate(p);
-};
+    setOpenConvoId(convoId);
+    navigate(p);
+  };
 
-const navigateToProfile = (id: string) => {
+  const navigateToProfile = (id: string) => {
     setViewingProfileId(id);
     setPage("public-profile");
   };
@@ -380,20 +382,21 @@ const navigateToProfile = (id: string) => {
       case "notifications-brand": 
         return <Notifications navigate={navigate} />;
       case "search-creator":
-case "search-brand": 
-  return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToMessages={navigateToMessages} />;
+      case "search-brand": 
+        return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToMessages={navigateToMessages} />;
       case "public-profile": {
-  return (
-    <PublicProfile 
-      navigate={navigate} 
-      profileId={viewingProfileId || ""} 
-      goBack={goBack}
-      navigateToMessages={navigateToMessages}
-    />
-  );
-}
+        return (
+          <PublicProfile 
+            navigate={navigate} 
+            profileId={viewingProfileId || ""} 
+            goBack={goBack}
+            navigateToMessages={navigateToMessages}
+          />
+        );
+      }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; 
+      case "enterprise": return <EnterpriseSubscriptionPage navigate={navigate} />;
       default: return <RoleSelect navigate={navigate} />;
     }
   };

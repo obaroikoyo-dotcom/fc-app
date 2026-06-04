@@ -1,5 +1,5 @@
 
-export default function EnterpriseSubscriptionPage() {
+export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (page: any) => void }) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
       {/* Premium subtle gradient background background blur */}
