@@ -105,7 +105,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           *,
           applications (
             id, campaign_id, creator_id, message, platforms, status, video_url,
-            profiles (name, niche, avatar_url)
+            profiles!applications_creator_id_fkey (name, niche, avatar_url)
           )
         `)
         .order("created_at", { ascending: false });
