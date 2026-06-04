@@ -36,7 +36,7 @@ export default function Search({ navigate, navigateToProfile }: Props) {
           setFilter(data.role === "brand" ? "creators" : "brands"); 
         }
       }
-      const { data: profiles } = await supabase.from("profiles").select(`*, brand_profiles(*)`);
+      const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
       if (profiles) setAllProfiles(profiles);
       setLoading(false);
     })();

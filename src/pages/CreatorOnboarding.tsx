@@ -90,31 +90,26 @@ const [termsAccepted, setTermsAccepted] = useState(false);
     if (data.user) {
       await supabase.from("profiles").insert({ id: data.user.id, role: "creator", email });
 
-      let avatarUrl = null;
-      if (profileFile) {
-        const fileExt = profileFile.name.split(".").pop()?.toLowerCase();
-        const filePath = `creators/${data.user.id}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, profileFile, { upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          avatarUrl = urlData.publicUrl;
-        }
-      }
+let avatarUrl = null;
+if (profileFile) {
+  const fileExt = profileFile.name.split(".").pop()?.toLowerCase();
+  const filePath = `creators/${data.user.id}.${fileExt}`;
+  const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, profileFile, { upsert: true });
+  if (!uploadError) {
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
+    avatarUrl = urlData.publicUrl;
+  }
+}
 
-      await supabase.from("profiles").insert({
-        id: data.user.id,
-        name,
-        niche,
-        location,
-        platforms: selectedPlatforms,
-        social_links: socialLinks,
-        follower_counts: followerCounts,
-        content_types: contentTypes,
-        rates,
-        avatar_url: avatarUrl,
-        onboarding_complete: true,
-        available: true,
-      });
+await supabase.from("creator_profiles").insert({
+  id: data.user.id,
+  name,
+  niche,
+  location,
+  avatar_url: avatarUrl,
+  available: true,
+  onboarding_complete: true,
+});
     }
 
     setLoading(false);
