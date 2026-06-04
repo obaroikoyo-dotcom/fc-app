@@ -1,4 +1,3 @@
-import { useState } from 'react'; // if you use states, otherwise leave it completely blank
 
 export default function EnterpriseSubscriptionPage() {
   return (
