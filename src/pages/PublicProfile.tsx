@@ -30,7 +30,7 @@ interface CreatorData {
   collabs: { brand: string; description: string }[];
 }
 
-export default function PublicProfile({ navigate, profileId, goBack, navigateToMessages }: Props) {
+export default function PublicProfile({ profileId, goBack, navigateToMessages }: Props) {
   const [creator, setCreator] = useState<CreatorData | null>(null);
   const [loading, setLoading] = useState(true);
   const [favourited, setFavourited] = useState(false);

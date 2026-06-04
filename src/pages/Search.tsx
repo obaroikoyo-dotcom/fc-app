@@ -15,7 +15,7 @@ const UI = {
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" })
 };
 
-export default function Search({ navigate, navigateToProfile, navigateToMessages }: Props) {
+export default function Search({ navigateToProfile, navigateToMessages }: Props) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "creators" | "brands">("all");
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
