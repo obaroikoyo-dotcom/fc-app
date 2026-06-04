@@ -524,12 +524,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       <span style={{ color: "#888", fontWeight: 500 }}>£{creatorCardPayoutPreview.toLocaleString()}</span>
                     </div>
                     <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px dashed #1a1a1a" }}>
-                      <p style={{ fontSize: "12px", color: "#444", margin: "0 0 4px 0" }}>
-                        Bypass platform fees for you and your creators by upgrading to{" "}
-                        <span style={{ color: "#fff", fontWeight: 600 }}>FlipCollab Enterprise</span>.*
-                      </p>
-                      <p style={{ fontSize: "10px", color: "#333", margin: 0 }}>*Subject to subscription terms.</p>
-                    </div>
+  <p style={{ fontSize: "12px", color: "#444", margin: "0 0 4px 0" }}>
+    Bypass platform fees for you and your creators by upgrading to{" "}
+    <span style={{ color: "#fff", fontWeight: 600 }}>FlipCollab Enterprise</span>.*
+  </p>
+  <p style={{ fontSize: "10px", color: "#333", margin: 0 }}>*Subject to subscription terms.</p>
+</div>
                   </div>
                 )}
               </div>
