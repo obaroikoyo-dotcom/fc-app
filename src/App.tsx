@@ -368,14 +368,13 @@ export default function App() {
           />
         );
       case "brand-profile": 
-        return (
-          <BrandProfile 
-            navigate={navigate} 
-            targetProfileId={viewingProfileId} 
-            toggleTheme={toggleTheme} 
-            isInverted={isInverted} 
-          />
-        );
+  return (
+    <BrandProfile 
+      navigate={navigate} 
+      toggleTheme={toggleTheme} 
+      isInverted={isInverted} 
+    />
+  );
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; 
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
