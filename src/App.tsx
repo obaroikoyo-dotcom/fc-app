@@ -15,8 +15,9 @@ import Explore from "./pages/Explore";
 import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import Notifications from "./pages/Notifications"; 
+import EnterpriseSubscriptionPage from "./pages/EnterpriseSubscriptionPage";
 import { supabase } from "./lib/supabase";
-import EnterpriseSubscriptionPage from "./pages/enterprise";
+
 
 export type Page = 
   | "role-select" 
@@ -378,9 +379,11 @@ export default function App() {
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; 
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
-      case "notifications-creator": 
-      case "notifications-brand": 
-        return <Notifications navigate={navigate} />;
+      case "notifications-creator":
+case "notifications-brand":
+  return <Notifications navigate={navigate} />;
+case "enterprise":
+  return <EnterpriseSubscriptionPage navigate={navigate} />;
       case "search-creator":
       case "search-brand": 
         return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToMessages={navigateToMessages} />;
