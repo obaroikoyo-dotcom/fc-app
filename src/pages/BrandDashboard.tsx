@@ -82,6 +82,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [posted, setPosted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [isEnterprise, setIsEnterprise] = useState(false);
   const [now, setNow] = useState(new Date());
 
   // --- ESCROW PAYMENT MODAL STATES ---
@@ -97,6 +98,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setCurrentUserId(user.id);
+      const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise").eq("id", user.id).single();
+      if (bp?.is_enterprise) setIsEnterprise(true);
       
       // Select nested query data matching the real structural applications array
      const { data } = await supabase
@@ -235,9 +238,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
   // --- PLATFORM FEE MARKETPLACE MATH MATRIX CALCULATIONS ---
   const numericBudget = parseInt(form.budget, 10) || 0;
-  const brandPlatformFee = numericBudget * 0.05; // Brand adds 5%
-  const totalBrandEscrowAuthorization = numericBudget + brandPlatformFee; // Total brand cost (£105 on £100)
-  const creatorCardPayoutPreview = numericBudget * 0.90; // Creator take-home after 10% cut (£90 on £100)
+  const brandPlatformFee = isEnterprise ? 0 : numericBudget * 0.05;
+  const totalBrandEscrowAuthorization = numericBudget + brandPlatformFee;
+  const creatorCardPayoutPreview = isEnterprise ? numericBudget : numericBudget * 0.90;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
@@ -510,8 +513,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       <span style={{ color: "#aaa" }}>£{numericBudget.toLocaleString()}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
-                      <span>Platform Posting Fee (+5%):</span>
-                      <span style={{ color: "#aaa" }}>£{brandPlatformFee.toLocaleString()}</span>
+                      <span>Platform Posting Fee {isEnterprise ? "(Enterprise — 0%)" : "(+5%)"}:</span>
+                      <span style={{ color: isEnterprise ? "#34c759" : "#aaa" }}>£{brandPlatformFee.toLocaleString()}</span>
                     </div>
                     <hr style={{ border: "0", borderTop: "1px solid #222", margin: "4px 0" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "14px", color: "#fff" }}>
@@ -520,8 +523,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     </div>
                     <hr style={{ border: "0", borderTop: "1px dashed #1a1a1a", margin: "4px 0" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#444" }}>
-                      <span>Creator Card Payout View (-10% Cut):</span>
-                      <span style={{ color: "#888", fontWeight: 500 }}>£{creatorCardPayoutPreview.toLocaleString()}</span>
+                      <span>Creator Card Payout View {isEnterprise ? "(Enterprise — 0% Cut)" : "(-10% Cut)"}:</span>
+                      <span style={{ color: isEnterprise ? "#34c759" : "#888", fontWeight: 500 }}>£{creatorCardPayoutPreview.toLocaleString()}</span>
                     </div>
                     <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px dashed #1a1a1a" }}>
   <p style={{ fontSize: "12px", color: "#444", margin: "0 0 4px 0" }}>

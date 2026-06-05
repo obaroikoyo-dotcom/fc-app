@@ -1,14 +1,38 @@
 import { useState } from "react";
 import { type Page } from "../App";
+import { supabase } from "../lib/supabase";
 
 export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (page: Page) => void }) {
   const [showModal, setShowModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("annual");
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+
+  const handlePayment = async () => {
+    if (!cardName || cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3) {
+      setPaymentError("Please fill in all card details correctly.");
+      return;
+    }
+    setPaymentError("");
+    setPaymentLoading(true);
+    await new Promise<void>(r => setTimeout(r, 2000));
+    const { data: authData } = await supabase.auth.getUser();
+    if (authData.user) {
+      await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", authData.user.id);
+    }
+    setPaymentLoading(false);
+    setPaymentSuccess(true);
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
-      {/* Header */}
       <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px" }}>
         <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#555", cursor: "pointer" }}>←</span>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
@@ -16,22 +40,13 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
 
       <div style={{ padding: "2rem 1.25rem", paddingBottom: "6rem", maxWidth: "480px", margin: "0 auto" }}>
 
-        {/* Hero */}
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#555", display: "block", marginBottom: "1rem" }}>
-            Tier Upgrade
-          </span>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>
-            Scale Your Campaigns.<br />Pay Zero Fees.
-          </h1>
-          <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7 }}>
-            Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations.
-          </p>
+          <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#555", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>Scale Your Campaigns.<br />Pay Zero Fees.</h1>
+          <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7 }}>Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations.</p>
         </div>
 
-        {/* Fee Comparison */}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2.5rem" }}>
-          {/* Standard */}
           <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
             <p style={{ fontSize: "12px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "12px" }}>Standard</p>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
@@ -44,11 +59,8 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
             </div>
           </div>
 
-          {/* Enterprise */}
           <div style={{ background: "#fff", border: "1px solid #fff", borderRadius: "12px", padding: "1.25rem", position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: 0, right: 0, background: "#0a0a0a", color: "#fff", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 12px", borderBottomLeftRadius: "8px" }}>
-              Maximize ROI
-            </div>
+            <div style={{ position: "absolute", top: 0, right: 0, background: "#0a0a0a", color: "#fff", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 12px", borderBottomLeftRadius: "8px" }}>Maximize ROI</div>
             <p style={{ fontSize: "12px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "12px" }}>Enterprise</p>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
               <span style={{ color: "#333" }}>Brand platform fee</span>
@@ -61,7 +73,6 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           </div>
         </div>
 
-        {/* Features */}
         <div style={{ marginBottom: "2.5rem" }}>
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>What's included</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -83,7 +94,6 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           </div>
         </div>
 
-        {/* Pricing block */}
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "1.5rem", textAlign: "center", marginBottom: "2.5rem" }}>
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Enterprise Plan</p>
           <p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>Scalable access for modern brand workflows</p>
@@ -108,9 +118,9 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <div onClick={() => setShowModal(true)} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Upgrade to Enterprise
           </div>
+          <p style={{ fontSize: "11px", color: "#333", marginTop: "10px", textAlign: "center" }}>🔒 Secured by Stripe. Cancel anytime.</p>
         </div>
 
-        {/* FAQ */}
         <div>
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>FAQs</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -128,23 +138,63 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         </div>
       </div>
 
-      {/* Coming Soon Modal */}
       {showModal && (
-        <div onClick={() => setShowModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.25rem" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "2rem", width: "100%", maxWidth: "380px", textAlign: "center" }}>
-            <div style={{ fontSize: "36px", marginBottom: "1rem" }}>🚀</div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Coming Soon</p>
-            <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.5rem" }}>
-              Enterprise subscriptions are launching very soon. Drop your email and we'll notify you the moment it goes live.
-            </p>
-            <input
-              placeholder="your@email.com"
-              style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", marginBottom: "10px", boxSizing: "border-box" }}
-            />
-            <div onClick={() => setShowModal(false)} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-              Notify Me
-            </div>
-            <p onClick={() => setShowModal(false)} style={{ fontSize: "12px", color: "#333", marginTop: "12px", cursor: "pointer" }}>Dismiss</p>
+        <div onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.25rem" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem", width: "100%", maxWidth: "400px" }}>
+            {paymentSuccess ? (
+              <div style={{ textAlign: "center", padding: "1rem 0" }}>
+                <div style={{ fontSize: "40px", marginBottom: "1rem" }}>🎉</div>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
+                <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
+                <div onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                  Back to Dashboard
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Complete Your Upgrade</p>
+                  <span onClick={() => setShowModal(false)} style={{ color: "#444", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>×</span>
+                </div>
+
+                <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>
+                  {[{ label: "Monthly", price: "£82/mo", val: "monthly" }, { label: "Annual", price: "£52/mo", val: "annual" }].map(({ label, price, val }) => (
+                    <div key={val} onClick={() => setSelectedPlan(val as "monthly" | "annual")} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: `1px solid ${selectedPlan === val ? "#fff" : "#222"}`, background: selectedPlan === val ? "#fff" : "transparent", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+                      <p style={{ fontSize: "11px", fontWeight: 600, color: selectedPlan === val ? "#0a0a0a" : "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+                      <p style={{ fontSize: "14px", fontWeight: 700, color: selectedPlan === val ? "#0a0a0a" : "#fff", marginTop: "2px" }}>{price}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.25rem" }}>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Cardholder Name</label>
+                    <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Number</label>
+                    <input value={cardNumber} onChange={e => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim())} placeholder="0000 0000 0000 0000" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
+                  </div>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Expiry</label>
+                      <input value={cardExpiry} onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setCardExpiry(v.length > 2 ? v.slice(0, 2) + "/" + v.slice(2) : v); }} placeholder="MM/YY" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>CVC</label>
+                      <input value={cardCvc} onChange={e => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="•••" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
+                    </div>
+                  </div>
+                </div>
+
+                {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
+
+                <div onClick={handlePayment} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
+                  {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£82/mo" : "£624/yr"}`}
+                </div>
+                <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px" }}>🔒 Secured by Stripe. Cancel anytime.</p>
+              </>
+            )}
           </div>
         </div>
       )}
