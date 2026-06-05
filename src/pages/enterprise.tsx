@@ -1,12 +1,25 @@
-
 export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (page: any) => void }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white relative">
       {/* Premium subtle gradient background background blur */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] bg-gradient-to-b from-indigo-900/20 via-transparent to-transparent blur-3xl pointer-events-none" />
 
+      {/* Navigation Header with Back Button */}
+      <header className="relative max-w-7xl mx-auto px-6 pt-6 flex justify-between items-center z-10">
+        <button 
+          onClick={() => navigate("brand-dashboard")}
+          className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white font-medium transition-colors duration-200 cursor-pointer bg-transparent border-none p-0"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Back to Dashboard
+        </button>
+      </header>
+
       {/* Hero Section */}
-      <section className="relative max-w-5xl mx-auto px-6 pt-24 pb-16 text-center">
+      <section className="relative max-w-5xl mx-auto px-6 pt-16 pb-16 text-center">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-indigo-400 bg-indigo-950/50 border border-indigo-800/50 rounded-full mb-6">
           FlipCollab Tier Upgrade
         </span>
@@ -72,7 +85,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         <div className="grid sm:grid-cols-2 gap-6">
           <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800/60">
             <h4 className="text-lg font-semibold text-slate-200 mb-2">Zero Platform Fees</h4>
-            <p className="text-slate-400 text-sm leading-relaxed">完全 eliminate percentages on your campaign budgets. What you assign goes completely to the media deal.</p>
+            <p className="text-slate-400 text-sm leading-relaxed">Completely eliminate percentages on your campaign budgets. What you assign goes completely to the media deal.</p>
           </div>
           <div className="p-6 bg-slate-900/30 rounded-xl border border-slate-800/60">
             <h4 className="text-lg font-semibold text-slate-200 mb-2">Unlimited Workflows</h4>
