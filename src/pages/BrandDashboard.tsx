@@ -1,28 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
-import PaymentContractModal from "../components/PaymentContractModal";
 
 interface Props {
   navigate: (p: Page) => void;
   tab: "campaigns" | "post";
   setTab: (t: "campaigns" | "post") => void;
   navigateToProfile?: (id: string) => void;
-}
-
-interface Application {
-  id: string;
-  campaign_id: string;
-  creator_id: string;
-  message: string;
-  platforms: string[];
-  status: "pending" | "approved" | "declined";
-  video_url: string | null;
-  profiles: {
-    name: string;
-    niche: string;
-    avatar_url?: string;
-  } | null;
 }
 
 interface Campaign {
@@ -38,7 +22,7 @@ interface Campaign {
   deadline: string;
   created_at: string;
   script: string;
-  applications: Application[]; // Altered signature from number to structural list objects array
+  applications: { id: string }[];
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
@@ -47,27 +31,20 @@ const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
   const [year, month, day] = dateString.split("-");
   if (!year || !month || !day) return dateString;
-
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const monthIndex = parseInt(month, 10) - 1;
-
-  return `${parseInt(day, 10)} ${months[monthIndex]} ${year}`;
+  return `${parseInt(day, 10)} ${months[parseInt(month, 10) - 1]} ${year}`;
 };
 
 const formatRelativeTime = (dateString: string, now: Date) => {
   if (!dateString) return "";
-  const postedDate = new Date(dateString);
-  const diffMs = now.getTime() - postedDate.getTime();
+  const diffMs = now.getTime() - new Date(dateString).getTime();
   const diffMins = Math.floor(diffMs / 60000);
-
   if (diffMins < 1) return "under 1 minute ago";
   if (diffMins === 1) return "1 minute ago";
   if (diffMins < 60) return `${diffMins} minutes ago`;
-
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours === 1) return "1 hour ago";
   if (diffHours < 24) return `${diffHours} hours ago`;
-
   const diffDays = Math.floor(diffHours / 24);
   if (diffDays === 1) return "1 day ago";
   return `${diffDays} days ago`;
@@ -85,14 +62,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [now, setNow] = useState(new Date());
 
-  // --- ESCROW PAYMENT MODAL STATES ---
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [selectedCampaignForPayment, setSelectedCampaignForPayment] = useState<Campaign | null>(null);
-  const [selectedCreatorForPayment, setSelectedCreatorForPayment] = useState<{ id: string; name: string } | null>(null);
-
-  // --- NATIVE INTEGRATED MULTIMEDIA PLAYER OVERLAY STATE ---
-  const [activeVideoUrl, setActiveVideoUrl] = useState<string | null>(null);
-
   const fetchCampaigns = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -100,18 +69,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       setCurrentUserId(user.id);
       const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise").eq("id", user.id).single();
       if (bp?.is_enterprise) setIsEnterprise(true);
-      
-      // Select nested query data matching the real structural applications array
-     const { data } = await supabase
+
+      const { data } = await supabase
         .from("campaigns")
-        .select(`
-          *,
-          applications (
-            id, campaign_id, creator_id, message, platforms, status, video_url
-          )
-        `)
+        .select(`*, applications(id)`)
         .order("created_at", { ascending: false });
-        
+
       if (data) {
         const mine = data.filter(c => c.brand_id === user.id);
         const others = data.filter(c => c.brand_id !== user.id);
@@ -121,13 +84,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setLoading(false);
   };
 
-  useEffect(() => { 
-    fetchCampaigns(); 
-
-    const clockInterval = setInterval(() => {
-      setNow(new Date());
-    }, 60000);
-
+  useEffect(() => {
+    fetchCampaigns();
+    const clockInterval = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(clockInterval);
   }, []);
 
@@ -148,7 +107,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         platforms: selectedPlatforms,
         video_required: videoRequired,
       });
-      
       if (!error) await fetchCampaigns();
     }
     setForm({ name: "", description: "", budget: "", type: "paid", niche: "", deadline: "", script: "" });
@@ -165,78 +123,25 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setCampaigns(prev => prev.filter(c => c.id !== id));
   };
 
-  // --- ACTIONS TO CHANGE APPLICATION RECRUITMENT STATUSES ---
-  const handleUpdateStatus = async (appId: string, status: "approved" | "declined") => {
-    const { error } = await supabase
-      .from("applications")
-      .update({ status })
-      .eq("id", appId);
-
-    if (!error) {
-      fetchCampaigns(); // Refresh state list data instantly
-    }
-  };
-
-  // --- ACTIONS TO OPEN THE CONTRACT MODAL ---
-  const handleOpenPaymentWindow = (campaign: Campaign, creator: { id: string; name: string }) => {
-    setSelectedCampaignForPayment(campaign);
-    setSelectedCreatorForPayment(creator);
-    setIsPaymentModalOpen(true);
-  };
-
-  const handleExecuteEscrowFunding = async (totalAmount: number) => {
-    console.log(`Initiating secure payment flow for: £${totalAmount}`);
-  };
-
   const inputStyle: React.CSSProperties = {
-    background: "#111",
-    border: "1px solid #222",
-    borderRadius: "8px",
-    padding: "11px 14px",
-    color: "#fff",
-    fontSize: "14px",
-    outline: "none",
-    width: "100%",
-    fontFamily: "inherit",
+    background: "#111", border: "1px solid #222", borderRadius: "8px",
+    padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none",
+    width: "100%", fontFamily: "inherit",
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: "11px",
-    fontWeight: 500,
-    letterSpacing: "0.1em",
-    textTransform: "uppercase",
-    color: "#555",
-    marginBottom: "6px",
-    display: "block",
+    fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em",
+    textTransform: "uppercase", color: "#555", marginBottom: "6px", display: "block",
   };
 
   const chipStyle = (active: boolean): React.CSSProperties => ({
-    padding: "8px 14px",
-    borderRadius: "20px",
+    padding: "8px 14px", borderRadius: "20px",
     border: `1px solid ${active ? "#fff" : "#222"}`,
     background: active ? "#fff" : "transparent",
     color: active ? "#0a0a0a" : "#555",
-    fontSize: "12px",
-    fontWeight: 500,
-    cursor: "pointer",
-    transition: "all 0.15s",
+    fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
   });
 
-  const buttonStyle = (variant: "primary" | "secondary" | "danger"): React.CSSProperties => ({
-    padding: "6px 12px",
-    borderRadius: "6px",
-    fontSize: "11px",
-    fontWeight: 600,
-    cursor: "pointer",
-    border: "none",
-    fontFamily: "inherit",
-    letterSpacing: "0.02em",
-    background: variant === "primary" ? "#fff" : variant === "danger" ? "rgba(255, 59, 48, 0.1)" : "#222",
-    color: variant === "primary" ? "#0a0a0a" : variant === "danger" ? "#ff3b30" : "#fff",
-    borderRight: variant === "danger" ? "1px solid rgba(255, 59, 48, 0.2)" : "none",
-  });
-
-  // --- PLATFORM FEE MARKETPLACE MATH MATRIX CALCULATIONS ---
   const numericBudget = parseInt(form.budget, 10) || 0;
   const brandPlatformFee = isEnterprise ? 0 : numericBudget * 0.05;
   const totalBrandEscrowAuthorization = numericBudget + brandPlatformFee;
@@ -246,7 +151,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
-      {/* Header Bar */}
+      {/* Header */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
           {tab === "campaigns" ? "My Campaigns" : "Post Campaign"}
@@ -254,14 +159,14 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
       </div>
 
-      {/* Main Content Area */}
       <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem" }}>
 
+        {/* Campaigns Tab */}
         {tab === "campaigns" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {loading ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                {[1,2,3].map(i => (
+                {[1, 2, 3].map(i => (
                   <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -294,14 +199,13 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const brandLogo = (c as any).brand_profiles?.logo_url;
                 const brandName = (c as any).brand_profiles?.name;
                 const budgetVal = parseInt(c.budget, 10);
-                const currentCampaignFee = budgetVal * 0.05;
-                const currentTotalCost = budgetVal + currentCampaignFee;
+                const currentTotalCost = budgetVal + budgetVal * 0.05;
                 const appCount = c.applications?.length || 0;
 
                 return (
                   <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
-                    
-                    {/* Header Row & Delete Trigger */}
+
+                    {/* Header Row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div
                         onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
@@ -312,17 +216,15 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         </div>
                         <span style={{ fontSize: "12px", color: "#555" }}>{brandName || "Brand"}</span>
                       </div>
-                      
+
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         {isOwn ? (
-                          <div style={{ display: "flex", gap: "8px" }}>
-                            <span 
-                              onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }} 
-                              style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
-                            >
-                              Delete
-                            </span>
-                          </div>
+                          <span
+                            onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
+                            style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
+                          >
+                            Delete
+                          </span>
                         ) : (
                           <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             {c.type}
@@ -342,8 +244,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         </span>
                       )}
                     </div>
-                    
-                    {/* Live Tracking Time Metadata Block */}
+
                     <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#555", marginBottom: "12px" }}>
                       {c.niche && <span style={{ borderRight: "1px solid #222", paddingRight: "14px" }}>{c.niche}</span>}
                       <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -371,8 +272,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
                     )}
 
-                    {/* Bottom Metadata Divider Row */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px", marginBottom: "1rem" }}>
+                    {/* Bottom Row */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
                       {c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
@@ -381,16 +282,14 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           </span>
                           {isOwn && (
                             <span style={{ fontSize: "10px", color: "#666", marginTop: "4px", lineHeight: 1.3 }}>
-                              Total Gross Cost: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% Fee included)
+                              Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% fee)
                             </span>
                           )}
                         </div>
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>
-                            Gifted
-                          </span>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
                         </div>
                       )}
 
@@ -399,78 +298,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
                     </div>
 
-                    {/* --- EXPANDED CREATOR APPLICATIONS LIST (Visible to Campaign Owner) --- */}
-                    {isOwn && (
-                      <div style={{ borderTop: "1px dashed #1a1a1a", paddingTop: "1rem", marginTop: "0.5rem" }}>
-                        {!c.applications || c.applications.length === 0 ? (
-                          <p style={{ color: "#333", fontSize: "12px", fontStyle: "italic", margin: 0 }}>No creators have pitched to this project tier yet.</p>
-                        ) : (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                            {c.applications.map((app) => (
-                              <div key={app.id} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px" }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                                  
-                                  {/* Profile Block */}
-                                  <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                                    <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "#111", border: "1px solid #222", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                      {app.profiles?.avatar_url ? <img src={app.profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
-                                    </div>
-                                    <div>
-                                      <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", margin: 0 }}>{app.profiles?.name || "Anonymous Creator"}</p>
-                                      <p style={{ fontSize: "11px", color: "#444", margin: 0 }}>{app.profiles?.niche || "Creator"}</p>
-                                    </div>
-                                  </div>
-
-                                  {/* Media Action Toolbars */}
-                                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                    {app.video_url ? (
-                                      <button 
-                                        onClick={() => setActiveVideoUrl(app.video_url)}
-                                        style={{ ...buttonStyle("secondary"), background: "rgba(52,199,89,0.08)", color: "#34c759", border: "1px solid rgba(52,199,89,0.15)" }}
-                                      >
-                                        ▶ Watch Pitch
-                                      </button>
-                                    ) : (
-                                      <span style={{ fontSize: "10px", color: "#333", background: "#0d0d0d", padding: "5px 8px", borderRadius: "4px" }}>No Video</span>
-                                    )}
-
-                                    {app.status === "pending" ? (
-                                      <>
-                                        <button onClick={() => handleUpdateStatus(app.id, "approved")} style={buttonStyle("primary")}>Approve</button>
-                                        <button onClick={() => handleUpdateStatus(app.id, "declined")} style={buttonStyle("danger")}>Decline</button>
-                                      </>
-                                    ) : app.status === "approved" ? (
-                                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                        <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", color: "#34c759", padding: "4px 8px" }}>
-                                          Approved
-                                        </span>
-                                        {c.type === "paid" && (
-                                          <button 
-                                            onClick={() => handleOpenPaymentWindow(c, { id: app.creator_id, name: app.profiles?.name || "Creator" })}
-                                            style={{ ...buttonStyle("primary"), background: "#34c759", color: "#000" }}
-                                          >
-                                            Secure Contract
-                                          </button>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <span style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", color: "#ff3b30", padding: "4px 8px" }}>
-                                        Declined
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <p style={{ fontSize: "12px", color: "#aaa", margin: "10px 0 0 0", lineHeight: 1.5, background: "#111", padding: "8px 12px", borderRadius: "6px" }}>
-                                  {app.message}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                   </div>
                 );
               })
@@ -478,7 +305,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           </div>
         )}
 
-        {/* Form Submission Builder */}
+        {/* Post Tab */}
         {tab === "post" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <div>
@@ -499,13 +326,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 ))}
               </div>
             </div>
-            
+
             {form.type === "paid" && (
               <div>
                 <label style={labelStyle}>Base Budget (£)</label>
                 <input style={inputStyle} placeholder="e.g. 100" type="number" value={form.budget} onChange={set("budget")} />
-                
-                {/* Brand Processing Fee Live Estimate Board */}
                 {numericBudget > 0 && (
                   <div style={{ background: "#111", border: "1px solid #1a1a1a", padding: "14px", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
@@ -513,31 +338,31 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       <span style={{ color: "#aaa" }}>£{numericBudget.toLocaleString()}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
-                      <span>Platform Posting Fee {isEnterprise ? "(Enterprise — 0%)" : "(+5%)"}:</span>
+                      <span>Platform Fee {isEnterprise ? "(Enterprise — 0%)" : "(+5%)"}:</span>
                       <span style={{ color: isEnterprise ? "#34c759" : "#aaa" }}>£{brandPlatformFee.toLocaleString()}</span>
                     </div>
                     <hr style={{ border: "0", borderTop: "1px solid #222", margin: "4px 0" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "14px", color: "#fff" }}>
-                      <span>Total Authorized Cost:</span>
+                      <span>Total Cost:</span>
                       <span style={{ color: "#34c759" }}>£{totalBrandEscrowAuthorization.toLocaleString()}</span>
                     </div>
                     <hr style={{ border: "0", borderTop: "1px dashed #1a1a1a", margin: "4px 0" }} />
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#444" }}>
-                      <span>Creator Card Payout View {isEnterprise ? "(Enterprise — 0% Cut)" : "(-10% Cut)"}:</span>
+                      <span>Creator Payout {isEnterprise ? "(Enterprise — 0% Cut)" : "(-10% Cut)"}:</span>
                       <span style={{ color: isEnterprise ? "#34c759" : "#888", fontWeight: 500 }}>£{creatorCardPayoutPreview.toLocaleString()}</span>
                     </div>
                     <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px dashed #1a1a1a" }}>
-  <p style={{ fontSize: "12px", color: "#444", margin: "0 0 4px 0" }}>
-    Bypass platform fees for you and your creators by upgrading to{" "}
-    <span onClick={() => navigate("enterprise" as any)} style={{ color: "#fff", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>FlipCollab Enterprise</span>.*
-  </p>
-  <p style={{ fontSize: "10px", color: "#333", margin: 0 }}>*Subject to subscription terms.</p>
-</div>
+                      <p style={{ fontSize: "12px", color: "#444", margin: "0 0 4px 0" }}>
+                        Bypass platform fees by upgrading to{" "}
+                        <span onClick={() => navigate("enterprise")} style={{ color: "#fff", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>FlipCollab Enterprise</span>.*
+                      </p>
+                      <p style={{ fontSize: "10px", color: "#333", margin: 0 }}>*Subject to subscription terms.</p>
+                    </div>
                   </div>
                 )}
               </div>
-            )} 
-            
+            )}
+
             <div>
               <label style={labelStyle}>Niche / Category</label>
               <input style={inputStyle} placeholder="e.g. Beauty, Fashion, Fitness" value={form.niche} onChange={set("niche")} />
@@ -556,39 +381,25 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               <label style={labelStyle}>Script / Brief <span style={{ color: "#333", fontWeight: 400, fontSize: "10px", textTransform: "none", letterSpacing: 0 }}>optional</span></label>
               <textarea style={{ ...inputStyle, minHeight: "120px", resize: "vertical" }} placeholder="Add talking points, dos and don'ts, or a full script..." value={form.script} onChange={set("script")} />
             </div>
-            {/* REQUIRE VIDEO TOGGLE */}
-            <div style={{ 
-              display: "flex", 
-              alignItems: "center", 
-              gap: "12px", 
-              margin: "0.5rem 0 1rem 0", 
-              background: "#111", 
-              padding: "14px 16px", 
-              borderRadius: "8px", 
-              border: "1px solid #222" 
-            }}>
-              <input 
-                type="checkbox" 
+
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "0.5rem 0 1rem 0", background: "#111", padding: "14px 16px", borderRadius: "8px", border: "1px solid #222" }}>
+              <input
+                type="checkbox"
                 id="videoRequired"
-                checked={videoRequired} 
+                checked={videoRequired}
                 onChange={(e) => setVideoRequired(e.target.checked)}
-                style={{ 
-                  cursor: "pointer", 
-                  width: "16px", 
-                  height: "16px", 
-                  accentColor: "#fff",
-                  margin: 0 
-                }}
+                style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#fff", margin: 0 }}
               />
               <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                 <label htmlFor="videoRequired" style={{ color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   Require Video Pitch
                 </label>
                 <p style={{ color: "#444", fontSize: "11px", margin: 0 }}>
-                  Creators must upload a custom video asset to apply for this brief.
+                  Creators must upload a video to apply for this brief.
                 </p>
               </div>
             </div>
+
             <div
               onClick={postCampaign}
               style={{ padding: "14px", borderRadius: "8px", background: posted ? "#1a1a1a" : "#fff", color: posted ? "#555" : "#0a0a0a", border: posted ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
@@ -598,51 +409,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           </div>
         )}
       </div>
-
-      {/* --- RENDER PAYMENT CONTRACT MODAL OVERLAY --- */}
-      {selectedCampaignForPayment && selectedCreatorForPayment && (
-        <PaymentContractModal
-          isOpen={isPaymentModalOpen}
-          campaign={{
-            id: selectedCampaignForPayment.id,
-            name: selectedCampaignForPayment.name,
-            description: selectedCampaignForPayment.description,
-            budget: selectedCampaignForPayment.budget,
-            deadline: selectedCampaignForPayment.deadline,
-            platforms: selectedCampaignForPayment.platforms || []
-          }}
-          creator={{
-            id: selectedCreatorForPayment.id,
-            name: selectedCreatorForPayment.name
-          }}
-          onClose={() => setIsPaymentModalOpen(false)}
-          onConfirmFunding={handleExecuteEscrowFunding}
-        />
-      )}
-
-      {/* --- LIGHTBOX POPUP MODAL: VIDEO STREAM PLAYER --- */}
-      {activeVideoUrl && (
-        <div 
-          onClick={() => setActiveVideoUrl(null)} 
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1.5rem" }}
-        >
-          <div 
-            onClick={e => e.stopPropagation()} 
-            style={{ width: "100%", maxWidth: "420px", background: "#111", borderRadius: "12px", overflow: "hidden", border: "1px solid #222" }}
-          >
-            <video 
-              src={activeVideoUrl} 
-              controls 
-              autoPlay 
-              style={{ width: "100%", display: "block", maxHeight: "70vh", background: "#000" }}
-            />
-            <div style={{ padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Pitch Asset Review</span>
-              <button onClick={() => setActiveVideoUrl(null)} style={{ ...buttonStyle("secondary"), background: "#222" }}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

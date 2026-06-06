@@ -46,6 +46,7 @@ interface Application {
   creator_name?: string;
   creator_avatar?: string;
   campaign_name?: string;
+  video_url?: string | null;
 }
 
 interface Campaign {
@@ -228,8 +229,8 @@ if (profile?.role === "creator") {
         .order("created_at", { ascending: false });
 
       const enrichedApps = await Promise.all((apps || []).map(async (app) => {
-        const { data: cp } = await supabase.from("profiles").select("name, avatar_url").eq("id", app.creator_id).single();
-        return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar_url || null, campaign_name: camp.name };
+        const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", app.creator_id).single();
+return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar_url || null, campaign_name: camp.name };
       }));
 
       return { ...camp, applications: enrichedApps };
@@ -479,7 +480,12 @@ return (
             <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Their message</p>
             <p style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>{activeApplication.message}</p>
           </div>
-
+{activeApplication.video_url && (
+  <div style={{ marginBottom: "1.5rem" }}>
+    <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Video Pitch</p>
+    <video src={activeApplication.video_url} controls style={{ width: "100%", borderRadius: "10px", background: "#000", maxHeight: "280px" }} />
+  </div>
+)}
           {activeApplication.platforms?.length > 0 && (
             <div style={{ marginBottom: "1.5rem" }}>
               <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms</p>

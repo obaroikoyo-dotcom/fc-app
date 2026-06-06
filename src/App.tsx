@@ -398,8 +398,6 @@ case "enterprise":
       }
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; 
-      case "enterprise": return <EnterpriseSubscriptionPage navigate={navigate} />;
-      default: return <RoleSelect navigate={navigate} />;
     }
   };
 
