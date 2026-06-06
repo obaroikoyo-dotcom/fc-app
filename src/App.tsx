@@ -403,10 +403,19 @@ case "enterprise":
 
   return (
     <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", minHeight: "100vh" }}>
-      <style>{isInverted ? `img { filter: invert(1) hue-rotate(180deg); }` : ""}</style>
-      <div style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "6rem" : "0px" }}>
-        {renderPage()}
-      </div>
+      <style>{`
+  ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); }` : ""}
+  @keyframes pageEnter {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .page-enter {
+    animation: pageEnter 0.18s ease-out forwards;
+  }
+`}</style>
+      <div key={page} className="page-enter" style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "6rem" : "0px" }}>
+  {renderPage()}
+</div>
       {CREATOR_PAGES.includes(page) && (
         <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none" }}>
           <CreatorNav page={page} navigate={navigate} isInverted={isInverted} unreadCount={unreadCount} />

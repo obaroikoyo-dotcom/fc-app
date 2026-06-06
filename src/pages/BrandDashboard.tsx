@@ -163,7 +163,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+  <div key="campaigns" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {loading ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (
@@ -307,7 +307,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
         {/* Post Tab */}
         {tab === "post" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+  <div key="post" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <div>
               <label style={labelStyle}>Campaign Name</label>
               <input style={inputStyle} placeholder="e.g. Summer Collection Launch" value={form.name} onChange={set("name")} />
