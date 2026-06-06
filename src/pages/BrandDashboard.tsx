@@ -239,9 +239,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         <p style={{ fontSize: "13px", color: "#444", marginBottom: "12px", lineHeight: 1.5 }}>{c.description}</p>
                       </div>
                       {c.video_required && (
-                        <span style={{ flexShrink: 0, fontSize: "10px", color: "#ff3b30", background: "rgba(255,59,48,0.06)", border: "1px solid rgba(255,59,48,0.15)", padding: "3px 8px", borderRadius: "4px", fontWeight: 500 }}>
-                          🔒 Video Pitch Required
-                        </span>
+                        <span style={{ flexShrink: 0, fontSize: "10px", color: "#555", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
+  Video Pitch Required
+</span>
                       )}
                     </div>
 
