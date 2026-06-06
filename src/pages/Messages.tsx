@@ -79,21 +79,28 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened }:
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    loadConversations();
-    if (role === "brand") loadApplications();
+  loadConversations();
+  if (role === "brand") loadApplications();
 
-    // Listen live for incoming notification rows to update badges instantly
-    const channel = supabase
-      .channel("messages-badge-sync")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
-        fetchUnreadMessages();
-      })
-      .subscribe();
+  const channel = supabase
+    .channel("messages-badge-sync")
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
+      fetchUnreadMessages();
+    })
+    .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentUserId]);
+  const convoChannel = supabase
+    .channel("conversations-reorder")
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, () => {
+      loadConversations();
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+    supabase.removeChannel(convoChannel);
+  };
+}, [currentUserId]);
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -263,6 +270,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     
     await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text });
     await supabase.from("conversations").update({ last_message: text, last_message_at: new Date().toISOString() }).eq("id", activeConvo.id);
+loadConversations();
 
     const receiverId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
 
