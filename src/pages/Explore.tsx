@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -31,11 +31,6 @@ interface Campaign {
     message: string;
   };
 }
-
-const UI = {
-  input: { background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" },
-  chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", transition: "all 0.15s" })
-};
 
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
@@ -103,23 +98,13 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showSheet, setShowSheet] = useState(false);
-  const [selected, setSelected] = useState<Campaign | null>(null);
   const [applied, setApplied] = useState<string[]>([]);
   const [bookmarked, setBookmarked] = useState<string[]>([]);
-  const [message, setMessage] = useState("");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [formError, setFormError] = useState<string | null>(null);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
-  const [myCreatorName, setMyCreatorName] = useState<string>("A creator");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [now, setNow] = useState(new Date());
-  const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchMyProfile().then((userId) => {
@@ -149,7 +134,6 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     const { data } = await supabase.from("profiles").select("name, avatar_url").eq("id", user.id).single();
     if (data) {
       if (data.avatar_url) setMyAvatar(data.avatar_url);
-      if (data.name) setMyCreatorName(data.name);
     }
 
     const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
@@ -189,105 +173,6 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       await supabase.from("campaign_favourites").insert({ user_id: currentUserId, campaign_id: campaignId });
       setBookmarked(prev => [...prev, campaignId]);
     }
-  };
-
-  const togglePlatform = (p: string) =>
-    setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
-
-  const openSheet = (c: Campaign) => {
-    setSelected(c);
-    setMessage("");
-    setSelectedPlatforms([]);
-    setVideoFile(null);
-    setUploadProgress(null);
-    setFormError(null);
-    setShowSheet(true);
-    setTimeout(() => sheetRef.current?.scrollTo({ top: 0 }), 50);
-  };
-
-  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const maxLimitInBytes = 50 * 1024 * 1024;
-    if (file.size > maxLimitInBytes) {
-      setFormError("The selected video is too large. Please upload a compressed pitch asset under 50MB.");
-      setVideoFile(null);
-      return;
-    }
-    setFormError(null);
-    setVideoFile(file);
-  };
-
-  const handleApply = async () => {
-    if (!message || !selected || !currentUserId) return;
-
-    if (selected.video_required && !videoFile) {
-      setFormError("This campaign requires a video pitch. Please upload a video asset below.");
-      return;
-    }
-
-    setFormError(null);
-    setSubmitting(true);
-    setUploadProgress(0);
-
-    let uploadedVideoUrl: string | null = null;
-
-    if (videoFile) {
-      try {
-        const fileExtension = videoFile.name.split('.').pop();
-        const uniqueFileName = `${currentUserId}_${selected.id}_${Date.now()}.${fileExtension}`;
-        const filePath = `pitches/${uniqueFileName}`;
-
-        const { data: uploadData, error: storageError } = await supabase.storage
-          .from("campaign-pitches")
-          .upload(filePath, videoFile, { cacheControl: "3600", upsert: true });
-
-        if (storageError) throw storageError;
-
-        if (uploadData) {
-          const { data: urlData } = supabase.storage.from("campaign-pitches").getPublicUrl(filePath);
-          uploadedVideoUrl = urlData.publicUrl;
-        }
-        setUploadProgress(100);
-      } catch (err: any) {
-        setFormError(err.message || "Failed to upload video pitch asset.");
-        setSubmitting(false);
-        setUploadProgress(null);
-        return;
-      }
-    }
-
-    const { error: appError } = await supabase.from("applications").insert({
-      campaign_id: selected.id,
-      creator_id: currentUserId,
-      message,
-      platforms: selectedPlatforms,
-      video_url: uploadedVideoUrl,
-      status: "pending",
-    });
-
-    if (!appError) {
-      await supabase.from("notifications").insert({
-        user_id: selected.brand_id,
-        actor_id: currentUserId,
-        type: "campaign_application",
-        title: "New Application 📩",
-        body: `${myCreatorName} applied to your campaign "${selected.name}".`,
-        data: { campaign_id: selected.id }
-      });
-
-      setApplied(prev => [...prev, selected.id]);
-      setCampaigns(prev => prev.map(c => c.id === selected.id ? {
-        ...c,
-        my_application: { status: "pending", message }
-      } : c));
-      setShowSheet(false);
-    } else {
-      setFormError("Application submission error. Please try again.");
-    }
-
-    setSubmitting(false);
-    setUploadProgress(null);
   };
 
   const filteredCampaigns = campaigns.filter((c) => {
@@ -444,7 +329,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                     </div>
                   ) : (
                     <div
-                      onClick={() => navigateToApply ? navigateToApply(c.id) : openSheet(c)}
+                      onClick={() => navigateToApply && navigateToApply(c.id)}
                       style={{ padding: "7px 16px", background: "#fff", color: "#0a0a0a", border: "1px solid #fff", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
                     >
                       Apply
@@ -456,97 +341,6 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
           })
         )}
       </div>
-
-      {/* Overlay */}
-      {showSheet && <div onClick={() => !submitting && setShowSheet(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 199 }} />}
-
-      {/* Apply Sheet */}
-      {selected && (
-        <div ref={sheetRef} style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 6rem", zIndex: 200, transition: "bottom 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)", minHeight: "85vh", maxHeight: "92vh", overflowY: "auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
-            <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
-            <span onClick={() => !submitting && setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: submitting ? "not-allowed" : "pointer", lineHeight: 1 }}>×</span>
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-            <div>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Apply to {selected.name}</p>
-              <p style={{ fontSize: "12px", color: "#444" }}>{selected.brand_profiles?.name || "Brand"}</p>
-            </div>
-            {selected.type === "paid" && (
-              <div style={{ textAlign: "right" }}>
-                <span style={{ display: "block", fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Net Take-home</span>
-                <span style={{ fontSize: "16px", fontWeight: 800, color: "#34c759", fontFamily: "'Syne', sans-serif" }}>
-                  £{(parseInt(selected.budget, 10) * 0.90).toLocaleString()}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {selected.script && (
-            <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
-              <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Brief / Script</p>
-              <p style={{ fontSize: "12px", color: "#777", lineHeight: 1.7, whiteSpace: "pre-line" }}>{selected.script}</p>
-            </div>
-          )}
-
-          {selected.platforms && selected.platforms.length > 0 && (
-            <div style={{ marginBottom: "1.25rem" }}>
-              <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms you'll post on</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {selected.platforms.map(p => <div key={p} onClick={() => !submitting && togglePlatform(p)} style={UI.chip(selectedPlatforms.includes(p))}>{p}</div>)}
-              </div>
-            </div>
-          )}
-
-          <div style={{ marginBottom: "1.5rem" }}>
-            <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Message to brand</p>
-            <textarea disabled={submitting} style={{ ...UI.input, minHeight: "100px", resize: "none", opacity: submitting ? 0.5 : 1 }} placeholder="Introduce yourself and why you're a good fit..." value={message} onChange={e => setMessage(e.target.value)} />
-          </div>
-
-          <div style={{ marginBottom: "1.5rem" }}>
-            <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>
-              Video Pitch {selected.video_required ? <span style={{ color: "#ff3b30", fontWeight: 600 }}>* (Required)</span> : <span style={{ color: "#444" }}>(Optional)</span>}
-            </p>
-            <input
-              type="file"
-              disabled={submitting}
-              accept="video/*"
-              onChange={handleVideoFileChange}
-              style={{ ...UI.input, background: "#111", border: "1px dashed #222", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.5 : 1 }}
-            />
-            {videoFile && !submitting && (
-              <p style={{ color: "#34c759", fontSize: "12px", marginTop: "6px" }}>
-                ✓ Selected: {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)
-              </p>
-            )}
-            {uploadProgress !== null && (
-              <div style={{ marginTop: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#aaa", marginBottom: "4px" }}>
-                  <span>Uploading pitch asset...</span>
-                  <span>{uploadProgress === 0 ? "Preparing..." : `${uploadProgress}%`}</span>
-                </div>
-                <div style={{ width: "100%", height: "4px", background: "#222", borderRadius: "2px", overflow: "hidden" }}>
-                  <div style={{ width: `${uploadProgress || 15}%`, height: "100%", background: "#fff", transition: "width 0.3s ease" }} />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {formError && (
-            <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: "8px", padding: "12px", marginBottom: "1.5rem" }}>
-              <p style={{ color: "#ff3b30", fontSize: "12px", margin: 0, fontWeight: 500 }}>{formError}</p>
-            </div>
-          )}
-
-          <div
-            onClick={!submitting && message ? handleApply : undefined}
-            style={{ padding: "14px", borderRadius: "8px", background: message && !submitting ? "#fff" : "#1a1a1a", color: message && !submitting ? "#0a0a0a" : "#333", border: message && !submitting ? "1px solid #fff" : "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: message && !submitting ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
-          >
-            {submitting ? "Processing Application..." : "Submit Application"}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
