@@ -43,7 +43,7 @@ export type Page =
   | "enterprise"
   | "apply-campaign";
 
-const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile"];
+const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "apply-campaign"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
 
 interface NavProps {
@@ -387,6 +387,7 @@ case "notifications-brand":
 case "enterprise":
   return <EnterpriseSubscriptionPage navigate={navigate} />;
 case "apply-campaign":
+  console.log("apply-campaign route hit, id:", applyingCampaignId);
   return <ApplyCampaign navigate={navigate} campaignId={applyingCampaignId || ""} goBack={goBack} />;
       case "search-creator":
       case "search-brand": 
