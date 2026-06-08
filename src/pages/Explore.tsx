@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -118,6 +118,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [now, setNow] = useState(new Date());
+  const sheetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchMyProfile().then((userId) => {
@@ -200,6 +201,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
     setUploadProgress(null);
     setFormError(null);
     setShowSheet(true);
+    setTimeout(() => sheetRef.current?.scrollTo({ top: 0 }), 50);
   };
 
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -459,7 +461,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
 
       {/* Apply Sheet */}
       {selected && (
-        <div style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 6rem", zIndex: 200, transition: "bottom 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)", minHeight: "70vh", maxHeight: "92vh", overflowY: "auto" }}>
+        <div ref={sheetRef} style={{ position: "fixed", bottom: showSheet ? 0 : "-100%", left: 0, right: 0, background: "#111", borderTop: "1px solid #222", borderRadius: "20px 20px 0 0", padding: "1.5rem 1.25rem 6rem", zIndex: 200, transition: "bottom 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)", minHeight: "85vh", maxHeight: "92vh", overflowY: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.5rem" }}>
             <div style={{ width: "36px", height: "4px", background: "#333", borderRadius: "2px" }} />
             <span onClick={() => !submitting && setShowSheet(false)} style={{ fontSize: "22px", color: "#444", cursor: submitting ? "not-allowed" : "pointer", lineHeight: 1 }}>×</span>
