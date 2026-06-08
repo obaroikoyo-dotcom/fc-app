@@ -16,6 +16,7 @@ import Messages from "./pages/Messages";
 import Search from "./pages/Search";
 import Notifications from "./pages/Notifications"; 
 import EnterpriseSubscriptionPage from "./pages/EnterpriseSubscriptionPage";
+import ApplyCampaign from "./pages/ApplyCampaign";
 import { supabase } from "./lib/supabase";
 
 
@@ -39,7 +40,8 @@ export type Page =
   | "brand-public-profile" 
   | "notifications-creator"
   | "notifications-brand"
-  | "enterprise";
+  | "enterprise"
+  | "apply-campaign";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
@@ -177,6 +179,7 @@ export default function App() {
   const [viewingBrandId, setViewingBrandId] = useState<string | null>(null); 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [openConvoId, setOpenConvoId] = useState<string | null>(null);
+  const [applyingCampaignId, setApplyingCampaignId] = useState<string | null>(null);
   
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -375,7 +378,7 @@ export default function App() {
       isInverted={isInverted} 
     />
   );
-      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} />; 
+      case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} navigateToApply={(id) => { setApplyingCampaignId(id); navigate("apply-campaign"); }} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
       case "notifications-creator":
@@ -383,6 +386,8 @@ case "notifications-brand":
   return <Notifications navigate={navigate} />;
 case "enterprise":
   return <EnterpriseSubscriptionPage navigate={navigate} />;
+case "apply-campaign":
+  return <ApplyCampaign navigate={navigate} campaignId={applyingCampaignId || ""} goBack={goBack} />;
       case "search-creator":
       case "search-brand": 
         return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToMessages={navigateToMessages} />;

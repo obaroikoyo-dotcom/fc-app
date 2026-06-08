@@ -4,7 +4,8 @@ import { supabase } from "../lib/supabase";
 
 interface Props { 
   navigate: (p: Page) => void; 
-  navigateToProfile?: (id: string) => void; 
+  navigateToProfile?: (id: string) => void;
+  navigateToApply?: (campaignId: string) => void;
 }
 
 interface Campaign {
@@ -98,7 +99,7 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
   );
 }
 
-export default function Explore({ navigate, navigateToProfile }: Props) {
+export default function Explore({ navigate, navigateToProfile, navigateToApply }: Props) {
   const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -443,7 +444,7 @@ export default function Explore({ navigate, navigateToProfile }: Props) {
                     </div>
                   ) : (
                     <div
-                      onClick={() => openSheet(c)}
+                      onClick={() => navigateToApply ? navigateToApply(c.id) : openSheet(c)}
                       style={{ padding: "7px 16px", background: "#fff", color: "#0a0a0a", border: "1px solid #fff", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
                     >
                       Apply
