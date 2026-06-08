@@ -195,8 +195,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       await supabase.from("creator_profiles").insert(profileData);
     }
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+setSaved(true);
+await loadProfile();
+setTimeout(() => setSaved(false), 2000);
   };
 
   const inputStyle: React.CSSProperties = {
