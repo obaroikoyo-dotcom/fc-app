@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import CreateCampaign from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -251,7 +251,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {tab === "post" && (
           <div key="post" className="page-enter">
             <CreateCampaign
-              navigate={navigate}
               isEnterprise={isEnterprise}
               onPosted={async () => {
                 await fetchCampaigns();

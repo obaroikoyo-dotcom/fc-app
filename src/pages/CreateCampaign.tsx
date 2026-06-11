@@ -1,10 +1,8 @@
 // src/pages/CreateCampaign.tsx
 import React, { useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
-import { type Page } from "../App";
 
 interface Props {
-  navigate: (p: Page) => void;
   onPosted: () => void;
   isEnterprise: boolean;
 }
@@ -87,7 +85,7 @@ const iconBubble = (bg: string, color: string): React.CSSProperties => ({
   flexShrink: 0,
 });
 
-export default function CreateCampaign({ navigate, onPosted, isEnterprise }: Props) {
+export default function CreateCampaign({ onPosted, isEnterprise }: Props) {
   // Section 1 — Mechanics
   const [name, setName] = useState("");
   const [objective, setObjective] = useState("");
@@ -98,7 +96,7 @@ export default function CreateCampaign({ navigate, onPosted, isEnterprise }: Pro
   const [niche, setNiche] = useState("");
   const [deliverables, setDeliverables] = useState<string[]>([]);
   const [videoRequired, setVideoRequired] = useState(false);
-  const [platforms, setPlatforms] = useState<string[]>([]);
+  const [platforms] = useState<string[]>([]);
 
   // Section 2 — Creative Brief
   const [vibe, setVibe] = useState("");
