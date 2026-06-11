@@ -739,6 +739,7 @@ return (
               <div onClick={async () => {
                 setShowPayment(false);
                 await supabase.auth.getSession();
+                console.log("Calling edge function with:", { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id });
                 const res = await supabase.functions.invoke("create-payment-intent", {
                   body: {
                     amount: campaignBudget,
@@ -747,7 +748,8 @@ return (
                     campaign_id: paymentApp.campaign_id,
                   }
                 });
-                if (!res.error && res.data.clientSecret) {
+                console.log("Edge function response:", res);
+if (!res.error && res.data.clientSecret) {
                   const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
                   if (stripe) {
                     const { error, paymentIntent } = await stripe.confirmCardPayment(res.data.clientSecret, {
