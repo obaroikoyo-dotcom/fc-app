@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import CreateCampaign from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -24,8 +25,6 @@ interface Campaign {
   script: string;
   applications: { id: string }[];
 }
-
-const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
@@ -53,12 +52,7 @@ const formatRelativeTime = (dateString: string, now: Date) => {
 export default function BrandDashboard({ navigate, tab, setTab, navigateToProfile }: Props) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
-  const [form, setForm] = useState({ name: "", description: "", budget: "", type: "paid" as "paid" | "gifted", niche: "", deadline: "", script: "" });
-  const [videoRequired, setVideoRequired] = useState<boolean>(false);
-  const [posted, setPosted] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [posting, setPosting] = useState(false);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [now, setNow] = useState(new Date());
 
@@ -90,62 +84,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     return () => clearInterval(clockInterval);
   }, []);
 
-  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm(f => ({ ...f, [k]: e.target.value }));
-
-  const togglePlatform = (p: string) =>
-    setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
-
-  const postCampaign = async () => {
-    if (!form.name || !form.description) return;
-    setPosting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { error } = await supabase.from("campaigns").insert({
-        brand_id: user.id,
-        ...form,
-        platforms: selectedPlatforms,
-        video_required: videoRequired,
-      });
-      if (!error) await fetchCampaigns();
-    }
-    setForm({ name: "", description: "", budget: "", type: "paid", niche: "", deadline: "", script: "" });
-    setSelectedPlatforms([]);
-    setVideoRequired(false);
-    setPosted(true);
-    setPosting(false);
-    setTimeout(() => { setPosted(false); setTab("campaigns"); }, 1500);
-  };
-
   const deleteCampaign = async (id: string) => {
     if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
     await supabase.from("campaigns").delete().eq("id", id);
     setCampaigns(prev => prev.filter(c => c.id !== id));
   };
-
-  const inputStyle: React.CSSProperties = {
-    background: "#111", border: "1px solid #222", borderRadius: "8px",
-    padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none",
-    width: "100%", fontFamily: "inherit",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em",
-    textTransform: "uppercase", color: "#555", marginBottom: "6px", display: "block",
-  };
-
-  const chipStyle = (active: boolean): React.CSSProperties => ({
-    padding: "8px 14px", borderRadius: "20px",
-    border: `1px solid ${active ? "#fff" : "#222"}`,
-    background: active ? "#fff" : "transparent",
-    color: active ? "#0a0a0a" : "#555",
-    fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
-  });
-
-  const numericBudget = parseInt(form.budget, 10) || 0;
-  const brandPlatformFee = isEnterprise ? 0 : numericBudget * 0.05;
-  const totalBrandEscrowAuthorization = numericBudget + brandPlatformFee;
-  const creatorCardPayoutPreview = isEnterprise ? numericBudget : numericBudget * 0.90;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
@@ -163,7 +106,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
-  <div key="campaigns" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div key="campaigns" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {loading ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (
@@ -240,8 +183,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
                       {c.video_required && (
                         <span style={{ flexShrink: 0, fontSize: "10px", color: "#555", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
-  Video Pitch Required
-</span>
+                          Video Pitch Required
+                        </span>
                       )}
                     </div>
 
@@ -292,7 +235,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
                         </div>
                       )}
-
                       <div style={{ fontSize: "11px", color: "#666", fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase" }}>
                         {appCount} application{appCount !== 1 ? "s" : ""}
                       </div>
@@ -307,107 +249,18 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
         {/* Post Tab */}
         {tab === "post" && (
-  <div key="post" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div>
-              <label style={labelStyle}>Campaign Name</label>
-              <input style={inputStyle} placeholder="e.g. Summer Collection Launch" value={form.name} onChange={set("name")} />
-            </div>
-            <div>
-              <label style={labelStyle}>Description / Deliverables Required</label>
-              <textarea style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }} placeholder="List the specific assets or content you need creators to make..." value={form.description} onChange={set("description")} />
-            </div>
-            <div>
-              <label style={labelStyle}>Collab Type</label>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {(["paid", "gifted"] as const).map(t => (
-                  <div key={t} onClick={() => setForm(f => ({ ...f, type: t }))} style={chipStyle(form.type === t)}>
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {form.type === "paid" && (
-              <div>
-                <label style={labelStyle}>Base Budget (£)</label>
-                <input style={inputStyle} placeholder="e.g. 100" type="number" value={form.budget} onChange={set("budget")} />
-                {numericBudget > 0 && (
-                  <div style={{ background: "#111", border: "1px solid #1a1a1a", padding: "14px", borderRadius: "10px", marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
-                      <span>Base Budget:</span>
-                      <span style={{ color: "#aaa" }}>£{numericBudget.toLocaleString()}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "#555", fontSize: "13px" }}>
-                      <span>Platform Fee {isEnterprise ? "(Enterprise — 0%)" : "(+5%)"}:</span>
-                      <span style={{ color: isEnterprise ? "#34c759" : "#aaa" }}>£{brandPlatformFee.toLocaleString()}</span>
-                    </div>
-                    <hr style={{ border: "0", borderTop: "1px solid #222", margin: "4px 0" }} />
-                    <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600, fontSize: "14px", color: "#fff" }}>
-                      <span>Total Cost:</span>
-                      <span style={{ color: "#34c759" }}>£{totalBrandEscrowAuthorization.toLocaleString()}</span>
-                    </div>
-                    <hr style={{ border: "0", borderTop: "1px dashed #1a1a1a", margin: "4px 0" }} />
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#444" }}>
-                      <span>Creator Payout {isEnterprise ? "(Enterprise — 0% Cut)" : "(-10% Cut)"}:</span>
-                      <span style={{ color: isEnterprise ? "#34c759" : "#888", fontWeight: 500 }}>£{creatorCardPayoutPreview.toLocaleString()}</span>
-                    </div>
-                    <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px dashed #1a1a1a" }}>
-                      <p style={{ fontSize: "12px", color: "#444", margin: "0 0 4px 0" }}>
-                        Bypass platform fees by upgrading to{" "}
-                        <span onClick={() => navigate("enterprise")} style={{ color: "#fff", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>FlipCollab Enterprise</span>.*
-                      </p>
-                      <p style={{ fontSize: "10px", color: "#333", margin: 0 }}>*Subject to subscription terms.</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div>
-              <label style={labelStyle}>Niche / Category</label>
-              <input style={inputStyle} placeholder="e.g. Beauty, Fashion, Fitness" value={form.niche} onChange={set("niche")} />
-            </div>
-            <div>
-              <label style={labelStyle}>Platforms Needed</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {PLATFORMS.map(p => <div key={p} onClick={() => togglePlatform(p)} style={chipStyle(selectedPlatforms.includes(p))}>{p}</div>)}
-              </div>
-            </div>
-            <div>
-              <label style={labelStyle}>Deadline</label>
-              <input style={inputStyle} type="date" value={form.deadline} onChange={set("deadline")} />
-            </div>
-            <div>
-              <label style={labelStyle}>Script / Brief <span style={{ color: "#333", fontWeight: 400, fontSize: "10px", textTransform: "none", letterSpacing: 0 }}>optional</span></label>
-              <textarea style={{ ...inputStyle, minHeight: "120px", resize: "vertical" }} placeholder="Add talking points, dos and don'ts, or a full script..." value={form.script} onChange={set("script")} />
-            </div>
-
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "0.5rem 0 1rem 0", background: "#111", padding: "14px 16px", borderRadius: "8px", border: "1px solid #222" }}>
-              <input
-                type="checkbox"
-                id="videoRequired"
-                checked={videoRequired}
-                onChange={(e) => setVideoRequired(e.target.checked)}
-                style={{ cursor: "pointer", width: "16px", height: "16px", accentColor: "#fff", margin: 0 }}
-              />
-              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                <label htmlFor="videoRequired" style={{ color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                  Require Video Pitch
-                </label>
-                <p style={{ color: "#444", fontSize: "11px", margin: 0 }}>
-                  Creators must upload a video to apply for this brief.
-                </p>
-              </div>
-            </div>
-
-            <div
-              onClick={postCampaign}
-              style={{ padding: "14px", borderRadius: "8px", background: posted ? "#1a1a1a" : "#fff", color: posted ? "#555" : "#0a0a0a", border: posted ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
-            >
-              {posting ? "Posting..." : posted ? "Posted ✓" : "Post Campaign"}
-            </div>
+          <div key="post" className="page-enter">
+            <CreateCampaign
+              navigate={navigate}
+              isEnterprise={isEnterprise}
+              onPosted={async () => {
+                await fetchCampaigns();
+                setTab("campaigns");
+              }}
+            />
           </div>
         )}
+
       </div>
     </div>
   );
