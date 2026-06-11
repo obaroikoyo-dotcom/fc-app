@@ -393,7 +393,7 @@ setTimeout(() => setSaved(false), 2000);
         {settingsRow("Edit Profile", "Name, bio, niche, location, platforms", () => setSettingsSection("edit-profile"))}
         {settingsRow("Niche Selection", "Choose your content categories", () => setSettingsSection("niche-selection"))}
         {settingsRow("Manage Accounts", "Link TikTok, Instagram and more", () => setSettingsSection("manage-accounts"))}
-        {settingsRow("Payouts", `Balance: £${walletBalance.toFixed(2)}`, () => setSettingsSection("payouts"))}
+        {settingsRow("Payouts", `Balance: £${(walletBalance / 100).toFixed(2)}`, () => setSettingsSection("payouts"))}
         {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"))}
         {settingsRow("Visibility", "Control what others see", () => setSettingsSection("visibility"))}
         {settingsRow("Share Profile", "Get your shareable link", () => setSettingsSection("share-profile"))}
@@ -588,7 +588,7 @@ setTimeout(() => setSaved(false), 2000);
           {walletTab === "balance" && (
             <div style={{ padding: "1.5rem", textAlign: "center" }}>
               <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <p style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
               {transactions.length > 0 && (
                 <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
@@ -598,7 +598,7 @@ setTimeout(() => setSaved(false), 2000);
                         <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>Campaign</p>
                         <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
                       </div>
-                      <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{t.creator_payout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
                   ))}
                 </div>
@@ -609,7 +609,7 @@ setTimeout(() => setSaved(false), 2000);
             <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
                 <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               </div>
               <div>
                 <label style={labelStyle}>Withdraw to</label>
