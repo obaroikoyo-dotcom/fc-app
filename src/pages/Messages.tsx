@@ -747,20 +747,34 @@ return (
                     campaign_id: paymentApp.campaign_id,
                   }
                 });
-                if (!res.error) {
+                if (!res.error && res.data.clientSecret) {
                   const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
-                  if (stripe && res.data.clientSecret) {
-                    const { error } = await stripe.confirmCardPayment(res.data.clientSecret, {
+                  if (stripe) {
+                    const { error, paymentIntent } = await stripe.confirmCardPayment(res.data.clientSecret, {
                       payment_method: {
                         card: { token: "tok_visa" },
                         billing_details: { name: "Brand" }
                       }
                     });
-                    if (!error) {
+                    if (!error && paymentIntent?.status === "succeeded") {
+                      await supabase
+                        .from("transactions")
+                        .update({ status: "completed" })
+                        .eq("stripe_payment_intent_id", paymentIntent.id);
+                      await supabase.from("notifications").insert({
+                        user_id: paymentApp.creator_id,
+                        actor_id: currentUserId,
+                        type: "payment_received",
+                        title: "Payment Received",
+                        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow.`,
+                        data: { campaign_id: paymentApp.campaign_id }
+                      });
                       await handleAccept(paymentApp);
                       if (activeConvo) {
                         setActiveConvo(prev => prev ? { ...prev, application_status: "accepted" } : null);
                       }
+                    } else if (error) {
+                      console.error("Payment failed:", error.message);
                     }
                   }
                 }
