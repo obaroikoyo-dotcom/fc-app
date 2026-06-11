@@ -17,7 +17,21 @@ interface Campaign {
   script: string;
   video_required: boolean;
   platforms: string[];
-  brand_profiles: { name: string } | null;
+  vibe: string;
+  objective: string;
+  niche: string;
+  deadline: string;
+  deliverables: string[];
+  dos: string[];
+  donts: string[];
+  promo_code: string;
+  landing_link: string;
+  utm_code: string;
+  asset_logos: string[];
+  asset_overlays: string[];
+  asset_style_videos: string[];
+  asset_broll: string[];
+  brand_profiles: { name: string; logo_url?: string } | null;
 }
 
 const UI = {
@@ -45,7 +59,11 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
         const { data } = await supabase.from("profiles").select("name").eq("id", user.id).single();
         if (data?.name) setMyCreatorName(data.name);
       }
-      const { data } = await supabase.from("campaigns").select("*, brand_profiles(name)").eq("id", campaignId).single();
+      const { data } = await supabase
+  .from("campaigns")
+  .select("*, brand_profiles(name, logo_url)")
+  .eq("id", campaignId)
+  .single();
       if (data) setCampaign(data);
       setLoading(false);
     };
@@ -168,37 +186,130 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           )}
         </div>
 
-        {/* Script */}
-        {campaign.script && (
-          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-            <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Brief / Script</p>
-            <p style={{ fontSize: "12px", color: "#777", lineHeight: 1.7, whiteSpace: "pre-line" }}>{campaign.script}</p>
-          </div>
-        )}
-
-        {/* Platforms */}
-        {campaign.platforms?.length > 0 && (
-          <div>
-            <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms you'll post on</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {campaign.platforms.map(p => (
-                <div key={p} onClick={() => !submitting && togglePlatform(p)} style={UI.chip(selectedPlatforms.includes(p))}>{p}</div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Message */}
-        <div>
-          <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Message to brand</p>
-          <textarea
-            disabled={submitting}
-            style={{ ...UI.input, minHeight: "120px", resize: "none", opacity: submitting ? 0.5 : 1 }}
-            placeholder="Introduce yourself and why you're a good fit..."
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-          />
+       {/* Brief */}
+{(campaign.vibe || campaign.objective || campaign.niche || campaign.deadline) && (
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+    <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>Campaign brief</p>
+    {campaign.objective && (
+      <div>
+        <p style={{ fontSize: "10px", color: "#333", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 3px 0" }}>Objective</p>
+        <p style={{ fontSize: "13px", color: "#aaa", margin: 0 }}>{campaign.objective}</p>
+      </div>
+    )}
+    {campaign.vibe && (
+      <div>
+        <p style={{ fontSize: "10px", color: "#333", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 3px 0" }}>Vibe</p>
+        <p style={{ fontSize: "13px", color: "#aaa", margin: 0, lineHeight: 1.6 }}>{campaign.vibe}</p>
+      </div>
+    )}
+    <div style={{ display: "flex", gap: "10px" }}>
+      {campaign.niche && (
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: "10px", color: "#333", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 3px 0" }}>Niche</p>
+          <p style={{ fontSize: "13px", color: "#aaa", margin: 0 }}>{campaign.niche}</p>
         </div>
+      )}
+      {campaign.deadline && (
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: "10px", color: "#333", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 3px 0" }}>Deadline</p>
+          <p style={{ fontSize: "13px", color: "#aaa", margin: 0 }}>{new Date(campaign.deadline).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+{/* Deliverables */}
+{campaign.deliverables?.length > 0 && (
+  <div>
+    <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Deliverables</p>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+      {campaign.deliverables.map(d => (
+        <div key={d} style={{ padding: "5px 10px", borderRadius: "4px", border: "1px solid #1a1a1a", background: "#111", fontSize: "11px", color: "#777" }}>{d}</div>
+      ))}
+    </div>
+  </div>
+)}
+
+{/* Dos and Don'ts */}
+{(campaign.dos?.filter(d => d).length > 0 || campaign.donts?.filter(d => d).length > 0) && (
+  <div style={{ display: "flex", gap: "10px" }}>
+    {campaign.dos?.filter(d => d).length > 0 && (
+      <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+        <p style={{ fontSize: "10px", color: "#444", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px 0" }}>Do's</p>
+        {campaign.dos.filter(d => d).map((d, i) => (
+          <p key={i} style={{ fontSize: "12px", color: "#666", margin: "0 0 4px 0", lineHeight: 1.5 }}>— {d}</p>
+        ))}
+      </div>
+    )}
+    {campaign.donts?.filter(d => d).length > 0 && (
+      <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+        <p style={{ fontSize: "10px", color: "#444", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px 0" }}>Don'ts</p>
+        {campaign.donts.filter(d => d).map((d, i) => (
+          <p key={i} style={{ fontSize: "12px", color: "#666", margin: "0 0 4px 0", lineHeight: 1.5 }}>— {d}</p>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
+{/* CTA info */}
+{(campaign.promo_code || campaign.landing_link || campaign.utm_code) && (
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
+    <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", margin: 0 }}>Call to action</p>
+    {campaign.promo_code && (
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+        <span style={{ color: "#444" }}>Promo code</span>
+        <span style={{ color: "#aaa", fontWeight: 600 }}>{campaign.promo_code}</span>
+      </div>
+    )}
+    {campaign.landing_link && (
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+        <span style={{ color: "#444" }}>Link</span>
+        <a href={campaign.landing_link} target="_blank" rel="noreferrer" style={{ color: "#aaa", maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{campaign.landing_link}</a>
+      </div>
+    )}
+    {campaign.utm_code && (
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+        <span style={{ color: "#444" }}>UTM</span>
+        <span style={{ color: "#555", fontSize: "11px", maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{campaign.utm_code}</span>
+      </div>
+    )}
+  </div>
+)}
+
+{/* Asset Kit */}
+{(campaign.asset_logos?.length > 0 || campaign.asset_overlays?.length > 0 || campaign.asset_style_videos?.length > 0 || campaign.asset_broll?.length > 0) && (
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+    <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 10px 0" }}>Media asset kit</p>
+    {[
+      { label: "Logos", files: campaign.asset_logos },
+      { label: "Overlays", files: campaign.asset_overlays },
+      { label: "Ref videos", files: campaign.asset_style_videos },
+      { label: "B-roll", files: campaign.asset_broll },
+    ].filter(g => g.files?.length > 0).map(group => (
+      <div key={group.label} style={{ marginBottom: "8px" }}>
+        <p style={{ fontSize: "10px", color: "#333", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 5px 0" }}>{group.label}</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+          {group.files.map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noreferrer"
+              style={{ fontSize: "11px", color: "#555", textDecoration: "none", padding: "5px 8px", background: "#0a0a0a", border: "1px solid #161616", borderRadius: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>
+              {group.label.toLowerCase()}-{i + 1} — view file
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+{/* Script (legacy fallback) */}
+{campaign.script && (
+  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+    <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Script</p>
+    <p style={{ fontSize: "12px", color: "#777", lineHeight: 1.7, whiteSpace: "pre-line", margin: 0 }}>{campaign.script}</p>
+  </div>
+)}
 
         {/* Video */}
         <div>
