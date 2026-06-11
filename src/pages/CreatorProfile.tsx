@@ -147,7 +147,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const loadWallet = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data, error } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("transactions").select("*").eq("creator_id", user.id).order("created_at", { ascending: false });
     console.log("Wallet data:", data, "Error:", error);
     if (data) {
       setTransactions(data);
@@ -595,7 +595,7 @@ setTimeout(() => setSaved(false), 2000);
                   {transactions.map((t, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                       <div>
-                        <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{t.campaigns?.name || "Campaign"}</p>
+                        <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>Campaign</p>
                         <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
                       </div>
                       <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{t.creator_payout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
