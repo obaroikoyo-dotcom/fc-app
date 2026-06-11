@@ -628,6 +628,7 @@ return (
                       <button
                         onClick={async () => {
                           if (!activeConvo.application_id) return;
+                          await supabase.from("applications").update({ status: "rejected" }).eq("id", activeConvo.application_id);
                           setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
                           loadConversations();
                         }}
@@ -758,10 +759,6 @@ if (!res.error && res.data.clientSecret) {
                       }
                     });
                     if (!error && paymentIntent?.status === "succeeded") {
-                      await supabase
-                        .from("transactions")
-                        .update({ status: "completed" })
-                        .eq("stripe_payment_intent_id", paymentIntent.id);
                       await supabase.from("notifications").insert({
                         user_id: paymentApp.creator_id,
                         actor_id: currentUserId,
