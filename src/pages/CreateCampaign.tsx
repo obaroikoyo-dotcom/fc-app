@@ -315,7 +315,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 </div>
                 {!isEnterprise && (
                   <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #161616", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "11px", color: "#2a2a2a" }}>Bypass platform fees by upgrading to</span><span style={{ fontSize: "11px", color: "#2a2a2a" }}>Waive all fees with</span>
+                    <span style={{ fontSize: "11px", color: "#2a2a2a" }}>Bypass platform fees by upgrading to{" "}</span>
                     <span
                       onClick={() => onNavigateEnterprise?.()}
                       style={{ fontSize: "11px", color: "#666", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em", borderBottom: "1px solid #2a2a2a", paddingBottom: "1px", transition: "color 0.15s" }}
