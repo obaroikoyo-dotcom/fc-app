@@ -82,6 +82,15 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     loadFavourites();
     loadCampaignFavourites();
     loadWallet();
+
+    const channel = supabase
+      .channel("wallet-updates")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "transactions" }, () => {
+        loadWallet();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const loadProfile = async () => {
