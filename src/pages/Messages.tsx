@@ -628,7 +628,6 @@ return (
                       <button
                         onClick={async () => {
                           if (!activeConvo.application_id) return;
-                          await supabase.from("applications").update({ status: "rejected" }).eq("id", activeConvo.application_id);
                           setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
                           loadConversations();
                         }}
