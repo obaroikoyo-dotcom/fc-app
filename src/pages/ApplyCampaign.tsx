@@ -311,6 +311,30 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   </div>
 )}
 
+        {/* Platforms */}
+        {campaign.platforms?.length > 0 && (
+          <div>
+            <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms you'll post on</p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {campaign.platforms.map(p => (
+                <div key={p} onClick={() => !submitting && togglePlatform(p)} style={UI.chip(selectedPlatforms.includes(p))}>{p}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Message */}
+        <div>
+          <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Message to brand</p>
+          <textarea
+            disabled={submitting}
+            style={{ ...UI.input, minHeight: "120px", resize: "none", opacity: submitting ? 0.5 : 1 }}
+            placeholder="Introduce yourself and why you're a good fit..."
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+          />
+        </div>
+
         {/* Video */}
         <div>
           <p style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>
