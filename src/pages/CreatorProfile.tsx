@@ -147,7 +147,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const loadWallet = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
+    console.log("Wallet data:", data, "Error:", error);
     if (data) {
       setTransactions(data);
       setWalletBalance(data.filter(t => t.status === "completed").reduce((sum, t) => sum + t.creator_payout, 0));
