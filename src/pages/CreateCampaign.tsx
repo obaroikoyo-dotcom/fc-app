@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 interface Props {
   onPosted: () => void;
   isEnterprise: boolean;
+  onNavigateEnterprise?: () => void;
 }
 
 interface AssetFile {
@@ -59,7 +60,7 @@ const sectionTitle = (label: string, sub: string) => (
   </div>
 );
 
-export default function CreateCampaign({ onPosted, isEnterprise }: Props) {
+export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnterprise }: Props) {
   const [name, setName] = useState("");
   const [objective, setObjective] = useState("");
   const [objectiveOther, setObjectiveOther] = useState("");
@@ -312,6 +313,19 @@ export default function CreateCampaign({ onPosted, isEnterprise }: Props) {
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
                   <span>£{creatorPayout.toLocaleString()}</span>
                 </div>
+                {!isEnterprise && (
+                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #161616", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "11px", color: "#2a2a2a" }}>Waive all fees with</span>
+                    <span
+                      onClick={() => onNavigateEnterprise?.()}
+                      style={{ fontSize: "11px", color: "#666", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em", borderBottom: "1px solid #2a2a2a", paddingBottom: "1px", transition: "color 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "#666")}
+                    >
+                      FlipCollab Enterprise
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>

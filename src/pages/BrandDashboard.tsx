@@ -256,6 +256,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 await fetchCampaigns();
                 setTab("campaigns");
               }}
+              onNavigateEnterprise={() => navigate("enterprise")}
             />
           </div>
         )}
