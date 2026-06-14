@@ -57,7 +57,7 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
-const [changePlan, setChangePlan] = useState<"monthly" | "annual">("monthly");
+const [changePlan] = useState<"monthly" | "annual">("monthly");
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
@@ -107,30 +107,6 @@ const [changePlan, setChangePlan] = useState<"monthly" | "annual">("monthly");
       return;
     }
     setIsEnterprise(false);
-    setShowCancelModal(false);
-  } catch {
-    setCancelError("Something went wrong. Try again.");
-  }
-  setCancelLoading(false);
-};
-
-const handleChangePlan = async () => {
-  if (!userId) return;
-  setCancelLoading(true);
-  setCancelError("");
-  try {
-    // Cancel current then resubscribe on new plan
-    await supabase.functions.invoke("cancel-subscription", { body: { brand_id: userId } });
-    const res = await supabase.functions.invoke("create-subscription", {
-      body: { brand_id: userId, email: (await supabase.auth.getUser()).data.user?.email, plan: changePlan }
-    });
-    if (res.error || !res.data?.subscriptionId) {
-      setCancelError("Failed to switch plan. Please contact support.");
-      setCancelLoading(false);
-      return;
-    }
-    await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", userId);
-    setIsEnterprise(true);
     setShowCancelModal(false);
   } catch {
     setCancelError("Something went wrong. Try again.");
