@@ -57,7 +57,6 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
-const [changePlan] = useState<"monthly" | "annual">("monthly");
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
