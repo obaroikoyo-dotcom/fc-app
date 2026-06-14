@@ -286,14 +286,14 @@ loadConversations();
 
   const handleAccept = async (app: Application) => {
     setActionLoading(app.id);
-    setActiveApplication(prev => prev ? { ...prev, status: "chatting" } : null);
+    setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
     
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
     if (!userId) { setActionLoading(null); return; }
 
     // Swap instant approval to chatting phase so terms can be negotiated inside messages first
-    await supabase.from("applications").update({ status: "chatting" }).eq("id", app.id);
+    await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
 
     const { data: existing } = await supabase
       .from("conversations")
@@ -357,7 +357,7 @@ loadConversations();
       ...prev,
       applications: prev.applications.map(a => a.id === app.id ? { ...a, status: "chatting" } : a)
     } : null);
-    setActiveApplication(prev => prev ? { ...prev, status: "chatting" } : null);
+    setActiveApplication(prev => prev ? { ...prev, status: "accepted" } : null);
   };
 
   const handleReject = async (app: Application) => {
@@ -605,7 +605,7 @@ return (
 
               {role === "brand" ? (
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                  {activeConvo.application_status !== "rejected" ? (
+                  {activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" ? (
                     <>
                       <button
                         onClick={() => {
@@ -637,6 +637,10 @@ return (
                         Decline Creator
                       </button>
                     </>
+                  ) : activeConvo.application_status === "paid" ? (
+                    <span style={{ fontSize: "11px", color: "#34c759", background: "#0a1f0a", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a3a1a" }}>
+                      Deal Locked — Paid
+                    </span>
                   ) : (
                     <span style={{ fontSize: "11px", color: "#444", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
                       Folder Closed (Declined)
@@ -739,7 +743,6 @@ return (
               <div onClick={async () => {
                 setShowPayment(false);
                 await supabase.auth.getSession();
-                console.log("Calling edge function with:", { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id });
                 const res = await supabase.functions.invoke("create-payment-intent", {
                   body: {
                     amount: campaignBudget,
@@ -748,7 +751,6 @@ return (
                     campaign_id: paymentApp.campaign_id,
                   }
                 });
-                console.log("Edge function response:", res);
 if (!res.error && res.data.clientSecret) {
                   const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
                   if (stripe) {
@@ -759,18 +761,17 @@ if (!res.error && res.data.clientSecret) {
                       }
                     });
                     if (!error && paymentIntent?.status === "succeeded") {
+                      await supabase.from("applications").update({ status: "paid" }).eq("id", paymentApp.id);
                       await supabase.from("notifications").insert({
                         user_id: paymentApp.creator_id,
                         actor_id: currentUserId,
                         type: "payment_received",
                         title: "Payment Received",
-                        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow.`,
+                        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Check your wallet.`,
                         data: { campaign_id: paymentApp.campaign_id }
                       });
-                      await handleAccept(paymentApp);
-                      if (activeConvo) {
-                        setActiveConvo(prev => prev ? { ...prev, application_status: "accepted" } : null);
-                      }
+                      setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : null);
+                      await loadConversations();
                     } else if (error) {
                       console.error("Payment failed:", error.message);
                     }

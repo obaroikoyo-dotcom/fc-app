@@ -74,6 +74,15 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [rateVisible, setRateVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [withdrawMethod, setWithdrawMethod] = useState("");
+const [withdrawAmount, setWithdrawAmount] = useState("");
+const [withdrawPaypal, setWithdrawPaypal] = useState("");
+const [withdrawBankName, setWithdrawBankName] = useState("");
+const [withdrawAccountNumber, setWithdrawAccountNumber] = useState("");
+const [withdrawSortCode, setWithdrawSortCode] = useState("");
+const [withdrawing, setWithdrawing] = useState(false);
+const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+const [withdrawError, setWithdrawError] = useState("");
 
   const picRef = useRef<HTMLInputElement>(null);
 
@@ -148,7 +157,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data, error } = await supabase.from("transactions").select("*").eq("creator_id", user.id).order("created_at", { ascending: false });
-    console.log("Wallet data:", data, "Error:", error);
     if (data) {
       setTransactions(data);
       setWalletBalance(data.filter(t => t.status === "completed").reduce((sum, t) => sum + t.creator_payout, 0));
@@ -179,7 +187,47 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const toggleLanguage = (l: string) => setLanguages(prev => prev.includes(l) ? prev.filter(x => x !== l) : [...prev, l]);
   const toggleAgeRange = (a: string) => setAudienceAgeRanges(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
   const updateCollab = (i: number, k: string, v: string) => setCollabs(prev => prev.map((c, idx) => idx === i ? { ...c, [k]: v } : c));
-
+  
+  const handleWithdraw = async () => {
+    if (!userId || !withdrawAmount || !withdrawMethod) return;
+    const amount = parseFloat(withdrawAmount);
+    if (amount <= 0 || amount > walletBalance / 100) {
+      setWithdrawError("Invalid amount.");
+      return;
+    }
+    if (withdrawMethod === "paypal" && !withdrawPaypal) {
+      setWithdrawError("Enter your PayPal email.");
+      return;
+    }
+    if (withdrawMethod === "bank" && (!withdrawBankName || !withdrawAccountNumber || !withdrawSortCode)) {
+      setWithdrawError("Fill in all bank details.");
+      return;
+    }
+    setWithdrawing(true);
+    setWithdrawError("");
+    const { error } = await supabase.from("withdrawal_requests").insert({
+      creator_id: userId,
+      amount: Math.round(amount * 100),
+      method: withdrawMethod,
+      paypal_email: withdrawMethod === "paypal" ? withdrawPaypal : null,
+      bank_name: withdrawMethod === "bank" ? withdrawBankName : null,
+      account_number: withdrawMethod === "bank" ? withdrawAccountNumber : null,
+      sort_code: withdrawMethod === "bank" ? withdrawSortCode : null,
+      status: "pending",
+    });
+    setWithdrawing(false);
+    if (error) {
+      setWithdrawError("Failed to submit. Try again.");
+    } else {
+      setWithdrawSuccess(true);
+      setWithdrawAmount("");
+      setWithdrawPaypal("");
+      setWithdrawBankName("");
+      setWithdrawAccountNumber("");
+      setWithdrawSortCode("");
+      setTimeout(() => setWithdrawSuccess(false), 3000);
+    }
+  };
   const saveProfile = async () => {
     if (!userId) return;
     setSaving(true);
@@ -606,28 +654,56 @@ setTimeout(() => setSaved(false), 2000);
             </div>
           )}
           {walletTab === "withdraw" && (
-            <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-                <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              </div>
-              <div>
-                <label style={labelStyle}>Withdraw to</label>
-                <select style={{ ...inputStyle, appearance: "none" }}>
-                  <option value="">Select method</option>
-                  <option value="paypal">PayPal</option>
-                  <option value="bank">Bank Account</option>
-                </select>
-              </div>
-              <input style={inputStyle} placeholder="Amount (£)" type="number" />
-              <div style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 ? "#fff" : "#1a1a1a", color: walletBalance > 0 ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>Withdraw</div>
-              <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed instantly via OpenBanking.</p>
-            </div>
-          )}
+  <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
+      <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+    </div>
+    <div>
+      <label style={labelStyle}>Withdraw to</label>
+      <select style={{ ...inputStyle, appearance: "none" }} value={withdrawMethod} onChange={e => { setWithdrawMethod(e.target.value); setWithdrawError(""); }}>
+        <option value="">Select method</option>
+        <option value="paypal">PayPal</option>
+        <option value="bank">Bank Account</option>
+      </select>
+    </div>
+    {withdrawMethod === "paypal" && (
+      <div>
+        <label style={labelStyle}>PayPal Email</label>
+        <input style={inputStyle} placeholder="your@paypal.com" type="email" value={withdrawPaypal} onChange={e => setWithdrawPaypal(e.target.value)} />
+      </div>
+    )}
+    {withdrawMethod === "bank" && (
+      <>
+        <div>
+          <label style={labelStyle}>Bank Name</label>
+          <input style={inputStyle} placeholder="e.g. Barclays" value={withdrawBankName} onChange={e => setWithdrawBankName(e.target.value)} />
+        </div>
+        <div>
+          <label style={labelStyle}>Account Number</label>
+          <input style={inputStyle} placeholder="12345678" value={withdrawAccountNumber} onChange={e => setWithdrawAccountNumber(e.target.value)} />
+        </div>
+        <div>
+          <label style={labelStyle}>Sort Code</label>
+          <input style={inputStyle} placeholder="00-00-00" value={withdrawSortCode} onChange={e => setWithdrawSortCode(e.target.value)} />
+        </div>
+      </>
+    )}
+    <input style={inputStyle} placeholder="Amount (£)" type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} />
+    {withdrawError && <p style={{ fontSize: "12px", color: "#ff4444", margin: 0 }}>{withdrawError}</p>}
+    {withdrawSuccess && <p style={{ fontSize: "12px", color: "#34c759", margin: 0 }}>Request submitted. We'll process it within 24 hours.</p>}
+    <div onClick={!withdrawing ? handleWithdraw : undefined} style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 && withdrawMethod && withdrawAmount ? "#fff" : "#1a1a1a", color: walletBalance > 0 && withdrawMethod && withdrawAmount ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 && withdrawMethod && withdrawAmount ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      {withdrawing ? "Submitting..." : "Request Withdrawal"}
+    </div>
+    <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 24 hours.</p>
+  </div>
+)}
         </div>
       </div>
     </div>
   );
+
+  // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
 
   // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
   const renderNotifications = () => (
