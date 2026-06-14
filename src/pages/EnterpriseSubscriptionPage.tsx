@@ -30,28 +30,9 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         body: { brand_id: user.id, email: user.email, plan: selectedPlan }
       });
 
-      const clientSecret = res.data?.clientSecret;
-
-      if (res.error || !clientSecret) {
+      if (res.error || !res.data?.subscriptionId) {
         console.error("Subscription error:", res.error, res.data);
         setPaymentError("Failed to start subscription. Try again.");
-        setPaymentLoading(false);
-        return;
-      }
-
-      const { loadStripe } = await import("@stripe/stripe-js");
-      const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
-      if (!stripe) { setPaymentLoading(false); return; }
-
-      const { error } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: { token: "tok_visa" },
-          billing_details: { name: cardName }
-        }
-      });
-
-      if (error) {
-        setPaymentError(error.message || "Payment failed.");
         setPaymentLoading(false);
         return;
       }
