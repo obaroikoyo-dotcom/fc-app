@@ -20,13 +20,47 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
     }
     setPaymentError("");
     setPaymentLoading(true);
-    await new Promise<void>(r => setTimeout(r, 2000));
-    const { data: authData } = await supabase.auth.getUser();
-    if (authData.user) {
-      await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", authData.user.id);
+
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData.user;
+      if (!user) { setPaymentLoading(false); return; }
+
+      const res = await supabase.functions.invoke("create-subscription", {
+        body: { brand_id: user.id, email: user.email, plan: selectedPlan }
+      });
+
+      if (res.error || !res.data.clientSecret) {
+        setPaymentError("Failed to start subscription. Try again.");
+        setPaymentLoading(false);
+        return;
+      }
+
+      const { loadStripe } = await import("@stripe/stripe-js");
+      const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
+      if (!stripe) { setPaymentLoading(false); return; }
+
+      const { error } = await stripe.confirmCardPayment(res.data.clientSecret, {
+        payment_method: {
+          card: { token: "tok_visa" },
+          billing_details: { name: cardName }
+        }
+      });
+
+      if (error) {
+        setPaymentError(error.message || "Payment failed.");
+        setPaymentLoading(false);
+        return;
+      }
+
+      await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", user.id);
+      setPaymentLoading(false);
+      setPaymentSuccess(true);
+
+    } catch (err) {
+      setPaymentError("Something went wrong. Try again.");
+      setPaymentLoading(false);
     }
-    setPaymentLoading(false);
-    setPaymentSuccess(true);
   };
 
   return (

@@ -812,7 +812,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── APPLICATIONS ─────────────────────────────────────────────────────────
   const renderApplications = () => {
-    const filtered = appFilter === "all" ? appliedCampaigns : appliedCampaigns.filter(a => a.status === appFilter);
+    const filtered = appFilter === "all" ? appliedCampaigns : appFilter === "accepted" ? appliedCampaigns.filter(a => a.status === "accepted" || a.status === "paid") : appliedCampaigns.filter(a => a.status === appFilter);
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
         {renderSettingsHeader("Applications", () => setSettingsSection("main"))}
@@ -832,7 +832,7 @@ setTimeout(() => setSaved(false), 2000);
               <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
-                  <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>{a.status}</span>
+                  <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>{a.status === "paid" ? "paid out" : a.status}</span>
                 </div>
                 {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "#34c759", marginBottom: "4px" }}>Take-home: £{(baseBudget * 0.9).toLocaleString()}</p>}
                 <p style={{ fontSize: "12px", color: "#444" }}>{brandData?.name || "Brand"}</p>
