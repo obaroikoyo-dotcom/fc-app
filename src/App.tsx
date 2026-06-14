@@ -60,7 +60,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   return (
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0 2.5rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -120,7 +120,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   const profileActive = page === "brand-profile";
 
   return (
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0 1.5rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.75rem 0 2.5rem 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -419,7 +419,7 @@ case "apply-campaign":
     animation: pageEnter 0.18s ease-out forwards;
   }
 `}</style>
-      <div key={page} className="page-enter" style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "7.5rem" : "0px" }}>
+      <div key={page} className="page-enter" style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "9rem" : "0px" }}>
   {renderPage()}
 </div>
       {CREATOR_PAGES.includes(page) && (

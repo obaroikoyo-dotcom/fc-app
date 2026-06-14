@@ -117,10 +117,10 @@ const loadFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase
-      .from("favourites")
-      .select("creator_id, profiles(name, niche, avatar_url)")
-      .eq("user_id", user.id);
-    if (data) setFavouritedCreators(data);
+  .from("favourites")
+  .select("creator_id, creator_profiles(name, niche, avatar_url)")
+  .eq("user_id", user.id);
+if (data) setFavouritedCreators(data);
   };
 
   const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -565,13 +565,13 @@ const loadFavourites = async () => {
             {favouritedCreators.map((f, i) => (
               <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {(f.profiles as any)?.avatar_url
-                    ? <img src={(f.profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    : "◉"}
-                </div>
-                <div>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.profiles as any)?.name || "Creator"}</p>
-                  <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.profiles as any)?.niche || ""}</p>
+                  {(f.creator_profiles as any)?.avatar_url
+  ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+  : "◉"}
+</div>
+<div>
+  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+  <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
                 </div>
               </div>
             ))}
