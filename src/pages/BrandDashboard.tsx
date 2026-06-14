@@ -55,6 +55,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [loading, setLoading] = useState(true);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [feedTab, setFeedTab] = useState<"yours" | "discover">("yours");
+  const [selectedNiche, setSelectedNiche] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState("");
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -84,6 +87,45 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     return () => clearInterval(clockInterval);
   }, []);
 
+  function CustomDropdown({ value, onChange, options, placeholder }: {
+    value: string;
+    onChange: (v: string) => void;
+    options: string[];
+    placeholder: string;
+  }) {
+    const [open, setOpen] = useState(false);
+    return (
+      <div style={{ position: "relative", flex: 1 }}>
+        <div
+          onClick={() => setOpen(p => !p)}
+          style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+        >
+          <span>{value || placeholder}</span>
+          <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
+        </div>
+        {open && (
+          <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
+            <div
+              onClick={() => { onChange(""); setOpen(false); }}
+              style={{ padding: "10px 14px", fontSize: "13px", color: !value ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: !value ? "#1a1a1a" : "transparent" }}
+            >
+              {placeholder}
+            </div>
+            {options.map(o => (
+              <div
+                key={o}
+                onClick={() => { onChange(o); setOpen(false); }}
+                style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
+              >
+                {o}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const deleteCampaign = async (id: string) => {
     if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
     await supabase.from("campaigns").delete().eq("id", id);
@@ -97,15 +139,35 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       {/* Header */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-    {tab === "campaigns" ? "My Campaigns" : "Post Campaign"}
-  </span>
-  {isEnterprise && (
-    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
-  )}
-</div>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+            {tab === "campaigns" ? "Campaigns" : "Post Campaign"}
+          </span>
+          {isEnterprise && (
+            <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
+          )}
+        </div>
         <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
       </div>
+
+      {/* Feed Tabs */}
+      {tab === "campaigns" && (
+        <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+          <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+            Your Campaigns
+          </button>
+          <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+            Market
+          </button>
+        </div>
+      )}
+
+      {/* Filters */}
+      {tab === "campaigns" && (
+        <div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px" }}>
+          <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
+          <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
+        </div>
+      )}
 
       <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem" }}>
 
@@ -141,8 +203,31 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                   Post a Campaign
                 </div>
               </div>
-            ) : (
-              campaigns.map(c => {
+            ) : (() => {
+              const filtered = campaigns.filter(c => {
+                const isOwn = c.brand_id === currentUserId;
+                if (feedTab === "yours" && !isOwn) return false;
+                if (feedTab === "discover" && isOwn) return false;
+                if (selectedNiche && c.niche !== selectedNiche) return false;
+                if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
+                return true;
+              });
+              if (filtered.length === 0) return (
+                <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
+                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+                    {feedTab === "yours" ? "No campaigns yet" : "No campaigns found"}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7 }}>
+                    {feedTab === "yours" ? "Post your first campaign and start finding creators." : "Try adjusting your filters."}
+                  </p>
+                  {feedTab === "yours" && (
+                    <div onClick={() => setTab("post")} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                      Post a Campaign
+                    </div>
+                  )}
+                </div>
+              );
+              return <>{filtered.map(c => {
                 const isOwn = c.brand_id === currentUserId;
                 const brandLogo = (c as any).brand_profiles?.logo_url;
                 const brandName = (c as any).brand_profiles?.name;
@@ -246,9 +331,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     </div>
 
                   </div>
-                );
-              })
-            )}
+               );
+              })}</>;
+            })()}
           </div>
         )}
 
