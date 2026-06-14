@@ -137,7 +137,8 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <div onClick={() => setShowModal(true)} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Upgrade to Enterprise
           </div>
-          <p style={{ fontSize: "11px", color: "#333", marginTop: "10px", textAlign: "center" }}>🔒 Secured by Stripe. Cancel anytime.</p>
+          <p style={{ fontSize: "11px", color: "#333", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime.</p>
+          <p style={{ fontSize: "11px", color: "#333", marginTop: "6px", textAlign: "center" }}>Plan cannot be changed after subscribing. Cancel and resubscribe to switch.</p>
         </div>
 
         <div>

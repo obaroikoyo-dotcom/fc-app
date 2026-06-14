@@ -351,34 +351,18 @@ const loadFavourites = async () => {
             </div>
             <div
               onClick={() => setShowCancelModal(true)}
-              style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}
+              style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.4)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#6366f1", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Manage Subscription
             </div>
 
             {showCancelModal && (
-              <div onClick={() => !cancelLoading && setShowCancelModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "1.25rem" }}>
+              <div onClick={() => !cancelLoading && setShowCancelModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1.25rem", paddingTop: "4rem" }}>
                 <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem", width: "100%", maxWidth: "480px", marginBottom: "1rem" }}>
                   <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>Manage Your Plan</p>
                   <p style={{ fontSize: "13px", color: "#555", marginBottom: "1.5rem", lineHeight: 1.6 }}>Switch billing periods or cancel your Enterprise subscription. Changes take effect immediately.</p>
 
-                  <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, marginBottom: "10px" }}>Switch Billing Period</p>
-                  <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>
-                    {[{ label: "Monthly", price: "£97/mo", val: "monthly" as const }, { label: "Annual", price: "£82/mo", val: "annual" as const }].map(({ label, price, val }) => (
-                      <div key={val} onClick={() => setChangePlan(val)} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: `1px solid ${changePlan === val ? "#fff" : "#222"}`, background: changePlan === val ? "#fff" : "transparent", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
-                        <p style={{ fontSize: "11px", fontWeight: 600, color: changePlan === val ? "#0a0a0a" : "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
-                        <p style={{ fontSize: "14px", fontWeight: 700, color: changePlan === val ? "#0a0a0a" : "#fff", marginTop: "2px" }}>{price}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div onClick={!cancelLoading ? handleChangePlan : undefined} style={{ padding: "13px", borderRadius: "8px", background: cancelLoading ? "#1a1a1a" : "#fff", color: cancelLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: cancelLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px", transition: "all 0.2s" }}>
-                    {cancelLoading ? "Processing..." : "Confirm Plan Change"}
-                  </div>
-
-                  <div style={{ height: "1px", background: "#1a1a1a", margin: "1rem 0" }} />
-
-                  <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px", lineHeight: 1.6 }}>To fully cancel your Enterprise subscription and revert to standard fees, tap below. This cannot be undone.</p>
+                  <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px", lineHeight: 1.6 }}>To cancel your Enterprise subscription and revert to standard platform fees, tap below. This cannot be undone.</p>
                   <div onClick={!cancelLoading ? handleCancelSubscription : undefined} style={{ padding: "13px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: cancelLoading ? "default" : "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
                     {cancelLoading ? "Processing..." : "Cancel Subscription"}
                   </div>
