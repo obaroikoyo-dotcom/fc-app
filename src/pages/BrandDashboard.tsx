@@ -96,9 +96,14 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
       {/* Header */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-          {tab === "campaigns" ? "My Campaigns" : "Post Campaign"}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+    {tab === "campaigns" ? "My Campaigns" : "Post Campaign"}
+  </span>
+  {isEnterprise && (
+    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
+  )}
+</div>
         <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
       </div>
 

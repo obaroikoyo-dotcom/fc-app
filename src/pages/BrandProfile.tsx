@@ -54,6 +54,10 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isEnterprise, setIsEnterprise] = useState(false);
+const [cancelLoading, setCancelLoading] = useState(false);
+const [cancelError, setCancelError] = useState("");
+const [showCancelModal, setShowCancelModal] = useState(false);
+const [changePlan, setChangePlan] = useState<"monthly" | "annual">("monthly");
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
@@ -89,7 +93,52 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
     }
   };
 
-  const loadFavourites = async () => {
+  const handleCancelSubscription = async () => {
+  if (!userId) return;
+  setCancelLoading(true);
+  setCancelError("");
+  try {
+    const res = await supabase.functions.invoke("cancel-subscription", {
+      body: { brand_id: userId }
+    });
+    if (res.error || !res.data?.success) {
+      setCancelError("Failed to cancel. Please contact support.");
+      setCancelLoading(false);
+      return;
+    }
+    setIsEnterprise(false);
+    setShowCancelModal(false);
+  } catch {
+    setCancelError("Something went wrong. Try again.");
+  }
+  setCancelLoading(false);
+};
+
+const handleChangePlan = async () => {
+  if (!userId) return;
+  setCancelLoading(true);
+  setCancelError("");
+  try {
+    // Cancel current then resubscribe on new plan
+    await supabase.functions.invoke("cancel-subscription", { body: { brand_id: userId } });
+    const res = await supabase.functions.invoke("create-subscription", {
+      body: { brand_id: userId, email: (await supabase.auth.getUser()).data.user?.email, plan: changePlan }
+    });
+    if (res.error || !res.data?.subscriptionId) {
+      setCancelError("Failed to switch plan. Please contact support.");
+      setCancelLoading(false);
+      return;
+    }
+    await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", userId);
+    setIsEnterprise(true);
+    setShowCancelModal(false);
+  } catch {
+    setCancelError("Something went wrong. Try again.");
+  }
+  setCancelLoading(false);
+};
+
+const loadFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase
@@ -292,13 +341,53 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
           </div>
         )}
         {isEnterprise && (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
-            <div>
-              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Enterprise Plan Active</p>
-              <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>0% platform fees enabled</p>
+          <>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
+              <div>
+                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Enterprise Plan Active</p>
+                <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>0% platform fees enabled</p>
+              </div>
+              <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Active</span>
             </div>
-            <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Active</span>
-          </div>
+            <div
+              onClick={() => setShowCancelModal(true)}
+              style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}
+            >
+              Manage Subscription
+            </div>
+
+            {showCancelModal && (
+              <div onClick={() => !cancelLoading && setShowCancelModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "1.25rem" }}>
+                <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem", width: "100%", maxWidth: "480px", marginBottom: "1rem" }}>
+                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>Manage Your Plan</p>
+                  <p style={{ fontSize: "13px", color: "#555", marginBottom: "1.5rem", lineHeight: 1.6 }}>Switch billing periods or cancel your Enterprise subscription. Changes take effect immediately.</p>
+
+                  <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600, marginBottom: "10px" }}>Switch Billing Period</p>
+                  <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>
+                    {[{ label: "Monthly", price: "£97/mo", val: "monthly" as const }, { label: "Annual", price: "£82/mo", val: "annual" as const }].map(({ label, price, val }) => (
+                      <div key={val} onClick={() => setChangePlan(val)} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: `1px solid ${changePlan === val ? "#fff" : "#222"}`, background: changePlan === val ? "#fff" : "transparent", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+                        <p style={{ fontSize: "11px", fontWeight: 600, color: changePlan === val ? "#0a0a0a" : "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
+                        <p style={{ fontSize: "14px", fontWeight: 700, color: changePlan === val ? "#0a0a0a" : "#fff", marginTop: "2px" }}>{price}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div onClick={!cancelLoading ? handleChangePlan : undefined} style={{ padding: "13px", borderRadius: "8px", background: cancelLoading ? "#1a1a1a" : "#fff", color: cancelLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: cancelLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px", transition: "all 0.2s" }}>
+                    {cancelLoading ? "Processing..." : "Confirm Plan Change"}
+                  </div>
+
+                  <div style={{ height: "1px", background: "#1a1a1a", margin: "1rem 0" }} />
+
+                  <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px", lineHeight: 1.6 }}>To fully cancel your Enterprise subscription and revert to standard fees, tap below. This cannot be undone.</p>
+                  <div onClick={!cancelLoading ? handleCancelSubscription : undefined} style={{ padding: "13px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: cancelLoading ? "default" : "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
+                    {cancelLoading ? "Processing..." : "Cancel Subscription"}
+                  </div>
+
+                  {cancelError && <p style={{ fontSize: "12px", color: "#ff4444", marginTop: "10px", textAlign: "center" }}>{cancelError}</p>}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
