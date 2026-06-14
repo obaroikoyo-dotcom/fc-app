@@ -30,7 +30,10 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         body: { brand_id: user.id, email: user.email, plan: selectedPlan }
       });
 
-      if (res.error || !res.data.clientSecret) {
+      const clientSecret = res.data?.clientSecret;
+
+      if (res.error || !clientSecret) {
+        console.error("Subscription error:", res.error, res.data);
         setPaymentError("Failed to start subscription. Try again.");
         setPaymentLoading(false);
         return;
@@ -40,7 +43,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
       if (!stripe) { setPaymentLoading(false); return; }
 
-      const { error } = await stripe.confirmCardPayment(res.data.clientSecret, {
+      const { error } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: { token: "tok_visa" },
           billing_details: { name: cardName }
@@ -58,6 +61,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       setPaymentSuccess(true);
 
     } catch (err) {
+      console.error("Payment exception:", err);
       setPaymentError("Something went wrong. Try again.");
       setPaymentLoading(false);
     }
@@ -135,7 +139,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
             <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "10px", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ textAlign: "left" }}>
                 <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Monthly</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£82<span style={{ fontSize: "13px", color: "#555", fontWeight: 400 }}>/mo</span></p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£97<span style={{ fontSize: "13px", color: "#555", fontWeight: 400 }}>/mo</span></p>
               </div>
               <span style={{ fontSize: "11px", color: "#555", border: "1px solid #222", borderRadius: "20px", padding: "4px 10px" }}>Cancel anytime</span>
             </div>
@@ -143,10 +147,10 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <div style={{ position: "absolute", top: 0, right: 0, background: "#fff", color: "#0a0a0a", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 10px", borderBottomLeftRadius: "6px" }}>Best Value</div>
               <div style={{ textAlign: "left" }}>
                 <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Annual</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£52<span style={{ fontSize: "13px", color: "#555", fontWeight: 400 }}>/mo</span></p>
-                <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>£624 billed annually</p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£82<span style={{ fontSize: "13px", color: "#555", fontWeight: 400 }}>/mo</span></p>
+                <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>£984 billed annually</p>
               </div>
-              <span style={{ fontSize: "11px", color: "#fff", border: "1px solid #333", borderRadius: "20px", padding: "4px 10px" }}>Save £360/yr</span>
+              <span style={{ fontSize: "11px", color: "#fff", border: "1px solid #333", borderRadius: "20px", padding: "4px 10px" }}>Save £180/yr</span>
             </div>
           </div>
           <div onClick={() => setShowModal(true)} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -192,7 +196,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
                 </div>
 
                 <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>
-                  {[{ label: "Monthly", price: "£82/mo", val: "monthly" }, { label: "Annual", price: "£52/mo", val: "annual" }].map(({ label, price, val }) => (
+                  {[{ label: "Monthly", price: "£97/mo", val: "monthly" }, { label: "Annual", price: "£82/mo", val: "annual" }].map(({ label, price, val }) => (
                     <div key={val} onClick={() => setSelectedPlan(val as "monthly" | "annual")} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: `1px solid ${selectedPlan === val ? "#fff" : "#222"}`, background: selectedPlan === val ? "#fff" : "transparent", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
                       <p style={{ fontSize: "11px", fontWeight: 600, color: selectedPlan === val ? "#0a0a0a" : "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
                       <p style={{ fontSize: "14px", fontWeight: 700, color: selectedPlan === val ? "#0a0a0a" : "#fff", marginTop: "2px" }}>{price}</p>
@@ -224,7 +228,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
                 {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
 
                 <div onClick={handlePayment} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
-                  {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£82/mo" : "£624/yr"}`}
+                  {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
                 </div>
                 <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px" }}>🔒 Secured by Stripe. Cancel anytime.</p>
               </>
