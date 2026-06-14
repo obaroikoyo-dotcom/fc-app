@@ -137,7 +137,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Header */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
             {tab === "campaigns" ? "Campaigns" : "Post Campaign"}
@@ -151,7 +151,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
       {/* Feed Tabs */}
       {tab === "campaigns" && (
-        <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d", position: "fixed", top: "57px", left: 0, right: 0, zIndex: 99 }}>
           <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
             Your Campaigns
           </button>
@@ -163,13 +163,13 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
       {/* Filters */}
       {tab === "campaigns" && (
-        <div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px" }}>
+        <div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px", position: "fixed", top: "106px", left: 0, right: 0, background: "#0a0a0a", zIndex: 98 }}>
           <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
           <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
         </div>
       )}
 
-      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem" }}>
+      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: "11rem" }}>
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (

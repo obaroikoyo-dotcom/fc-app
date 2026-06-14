@@ -299,7 +299,7 @@ setTimeout(() => setSaved(false), 2000);
         </div>
       </div>
 
-      <div style={{ padding: "1.5rem 1.25rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingTop: "5rem" }}>
         {/* Avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333" }}>
