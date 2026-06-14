@@ -389,7 +389,7 @@ return (
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Header Bar */}
-      <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", position: "fixed", top: 0, left: 0, right: 0, zIndex: 100 }}>
+      <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 100 }}>
         {view !== "list" && (
           <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>
             ←
@@ -417,7 +417,7 @@ return (
 
       {/* Applications Tab */}
       {role === "brand" && view === "list" && brandTab === "applications" && (
-        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem", paddingTop: "4rem" }}>
+        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
           {campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
@@ -542,7 +542,7 @@ return (
 
       {/* Messages Tab List View */}
       {(role === "creator" || (role === "brand" && brandTab === "messages")) && view === "list" && (
-        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem", paddingTop: "4rem" }}>
+        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
           {loading ? (
             <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading...</p>
           ) : conversations.length === 0 ? (
@@ -675,7 +675,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "7rem", paddingTop: "4rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "7rem", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
