@@ -408,7 +408,7 @@ case "apply-campaign":
   };
 
   return (
-    <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", minHeight: "100vh" }}>
+    <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", height: "100vh", overflow: "hidden" }}>
       <style>{`
   ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); }` : ""}
   @keyframes pageEnter {
@@ -419,7 +419,7 @@ case "apply-campaign":
     animation: pageEnter 0.18s ease-out forwards;
   }
 `}</style>
-      <div key={page} className="page-enter" style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "9rem" : "0px" }}>
+      <div key={page} className="page-enter" style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "9rem" : "0px", height: "100%", overflow: page === "messages-brand" || page === "messages-creator" ? "hidden" : "auto" }}>
   {renderPage()}
 </div>
       {CREATOR_PAGES.includes(page) && (
