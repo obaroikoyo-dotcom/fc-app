@@ -596,7 +596,7 @@ return (
       {view === "chat" && (
         <>
           {/* IN-CHAT DEAL DESK WIDGET */}
-          {activeConvo?.application_id && (
+          {activeConvo?.application_id && activeConvo?.other_role === "brand" && (
             <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
                 <p style={{ textTransform: "uppercase", fontSize: "9px", color: "#444", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
@@ -693,7 +693,7 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div style={{ flexShrink: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", marginBottom: "5rem" }}>
+          <div style={{ flexShrink: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", marginBottom: "6.5rem" }}>
             {activeConvo?.application_status === "rejected" ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
                 🔒 Messaging disabled (application finalized)

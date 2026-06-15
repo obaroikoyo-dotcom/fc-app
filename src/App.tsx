@@ -194,18 +194,20 @@ export default function App() {
   };
 
   const navigate = (p: Page) => {
-    setHistory(prev => [...prev, page]);
-    setPage(p);
-  };
+  setHistory(prev => [...prev, page]);
+  setPage(p);
+  window.scrollTo(0, 0);
+};
 
   const goBack = () => {
-    setHistory(prev => {
-      const newHistory = [...prev];
-      const last = newHistory.pop();
-      if (last) setPage(last);
-      return newHistory;
-    });
-  };
+  setHistory(prev => {
+    const newHistory = [...prev];
+    const last = newHistory.pop();
+    if (last) setPage(last);
+    return newHistory;
+  });
+  window.scrollTo(0, 0);
+};
 
   const navigateToMessages = (p: "messages-creator" | "messages-brand", convoId: string) => {
     setOpenConvoId(convoId);
@@ -412,9 +414,9 @@ case "apply-campaign":
       <style>{`
   ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); }` : ""}
   @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: translateX(0); }
+}
   .page-enter {
     animation: pageEnter 0.18s ease-out forwards;
   }
