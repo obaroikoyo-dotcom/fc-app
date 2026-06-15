@@ -154,14 +154,16 @@ if (profile?.role === "creator") {
         
         // Match live app link properties to conversational items to maintain in-chat actions
         const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
-        
-        const { data: linkedApp } = await supabase
-          .from("applications")
-          .select("id, status, campaign_id, campaigns(name, budget)")
-          .eq("creator_id", creatorSearchId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+const brandSearchId = profile?.role === "brand" ? otherId : user.id;
+
+const { data: linkedApp } = await supabase
+  .from("applications")
+  .select("id, status, campaign_id, campaigns(name, budget, brand_id)")
+  .eq("creator_id", creatorSearchId)
+  .eq("campaigns.brand_id", brandSearchId)
+  .order("created_at", { ascending: false })
+  .limit(1)
+  .maybeSingle();
 
         return { 
           ...c, 
@@ -596,7 +598,7 @@ return (
       {view === "chat" && (
         <>
           {/* IN-CHAT DEAL DESK WIDGET */}
-          {activeConvo?.application_id && activeConvo?.other_role === "brand" && (
+          {activeConvo?.application_id && role === "brand" && (
             <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
                 <p style={{ textTransform: "uppercase", fontSize: "9px", color: "#444", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
