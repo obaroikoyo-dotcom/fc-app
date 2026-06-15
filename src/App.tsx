@@ -419,7 +419,7 @@ case "apply-campaign":
     animation: pageEnter 0.18s ease-out forwards;
   }
 `}</style>
-      <div key={page} className="page-enter" style={{ paddingBottom: BRAND_PAGES.includes(page) || CREATOR_PAGES.includes(page) ? "9rem" : "0px", height: "100%", overflow: page === "messages-brand" || page === "messages-creator" ? "hidden" : "auto" }}>
+     <div key={page} className="page-enter" style={{ height: "100%", overflow: page === "messages-brand" || page === "messages-creator" ? "hidden" : "auto" }}>
   {renderPage()}
 </div>
       {CREATOR_PAGES.includes(page) && (
