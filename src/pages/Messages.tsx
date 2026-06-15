@@ -385,11 +385,11 @@ loadConversations();
     else if (view === "app-detail") setView("campaign-apps");
   };
 return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Header Bar */}
-      <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 100 }}>
+      <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", flexShrink: 0, zIndex: 100 }}>
         {view !== "list" && (
           <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>
             ←
@@ -675,7 +675,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "12rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -693,7 +693,7 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div style={{ position: "fixed", bottom: "110px", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center" }}>
+          <div style={{ flexShrink: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", marginBottom: "5rem" }}>
             {activeConvo?.application_status === "rejected" ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
                 🔒 Messaging disabled (application finalized)
