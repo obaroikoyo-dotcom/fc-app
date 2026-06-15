@@ -675,7 +675,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "9rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "12rem", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -693,7 +693,7 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div style={{ position: "fixed", bottom: "90px", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center" }}>
+          <div style={{ position: "fixed", bottom: "110px", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center" }}>
             {activeConvo?.application_status === "rejected" ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
                 🔒 Messaging disabled (application finalized)
