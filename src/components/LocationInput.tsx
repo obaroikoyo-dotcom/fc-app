@@ -7,9 +7,8 @@ interface Props {
   inputStyle: React.CSSProperties;
 }
 
-export default function LocationInput({ value, onChange, placeholder, inputStyle }: Props) {
+export default function LocationInput({ onChange, inputStyle }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!containerRef.current || !(window as any).google) return;
@@ -21,7 +20,11 @@ export default function LocationInput({ value, onChange, placeholder, inputStyle
       types: ["(cities)"],
     });
 
-    autocomplete.style.width = "100%";
+    Object.assign(autocomplete.style, {
+      ...inputStyle,
+      width: "100%",
+      display: "block",
+    });
 
     autocomplete.addEventListener("gmp-placeselect", (e: any) => {
       const place = e.placePrediction.toPlace();
@@ -35,7 +38,5 @@ export default function LocationInput({ value, onChange, placeholder, inputStyle
     };
   }, []);
 
-  return (
-    <div ref={containerRef} style={{ width: "100%" }} />
-  );
+  return <div ref={containerRef} style={{ width: "100%" }} />;
 }
