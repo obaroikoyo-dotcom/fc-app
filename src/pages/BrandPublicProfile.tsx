@@ -194,7 +194,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
         )}
 
 {/* Empty state */}
-          {!brand.bio && !brand.industry && !brand.target_audience && !brand.budget_range && !brand.content_types?.length && !brand.website && !brand.instagram && !brand.tiktok && (
+          {!brand.industry && !brand.target_audience && !brand.budget_range && !brand.content_types?.length && !brand.website && !brand.instagram && !brand.tiktok && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "14px", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◈</div>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No details added yet</p>
