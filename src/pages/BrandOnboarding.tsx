@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
@@ -214,7 +215,7 @@ export default function BrandOnboarding({ navigate }: Props) {
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div>
           <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Headquarters Location</label>
-          <input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} />
+          <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
         </div>
       </div>
     </div>,

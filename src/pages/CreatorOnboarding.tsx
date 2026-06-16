@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -164,7 +165,7 @@ await supabase.from("creator_profiles").insert({
         </div>
         <div>
           <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Location</label>
-          <input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} />
+          <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
         </div>
       </div>
     </div>,
