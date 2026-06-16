@@ -12,7 +12,7 @@ interface Notification {
   type: string;
   title: string;
   body: string;
-  is_read: boolean;
+  read: boolean;
   created_at: string;
   data: {
     conversation_id?: string;
@@ -89,9 +89,9 @@ export default function Notifications({ navigate, setTargetData }: Props) {
 
     await supabase
       .from("notifications")
-      .update({ is_read: true })
+      .update({ read: true })
       .eq("user_id", user.id)
-      .eq("is_read", false);
+      .eq("read", false);
   };
 
   const handleNotificationClick = (notif: Notification) => {
@@ -134,13 +134,13 @@ export default function Notifications({ navigate, setTargetData }: Props) {
                 gap: "12px", 
                 padding: "1.1rem 1.25rem", 
                 borderBottom: "1px solid #111", 
-                background: n.is_read ? "transparent" : "rgba(255, 255, 255, 0.03)", 
+                background: n.read ? "transparent" : "rgba(255, 255, 255, 0.03)",
                 cursor: n.data ? "pointer" : "default",
                 position: "relative"
               }}
             >
               {/* Visible Unread Flag Indicator Dot */}
-              {!n.is_read && (
+              {!n.read && (
                 <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fff", position: "absolute", left: "6px", top: "50%", transform: "translateY(-50%)" }} />
               )}
 
@@ -154,7 +154,7 @@ export default function Notifications({ navigate, setTargetData }: Props) {
               </div>
 
               {/* Body Text Context Area */}
-              <div style={{ flex: 1, minWidth: 0, paddingLeft: !n.is_read ? "4px" : "0px" }}>
+              <div style={{ flex: 1, minWidth: 0, paddingLeft: !n.read ? "4px" : "0px" }}>
                 <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "3px" }}>{n.title}</p>
                 <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.4 }}>{n.body}</p>
                 <p style={{ color: "#333", fontSize: "10px", marginTop: "6px" }}>

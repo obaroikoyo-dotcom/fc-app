@@ -198,7 +198,7 @@ const { data: linkedApp } = await supabase
       .select("id, data")
       .eq("user_id", userId)
       .eq("type", "new_message")
-      .eq("is_read", false);
+      .eq("read", false);
 
     if (data) {
       const ids = data
@@ -215,7 +215,7 @@ const { data: linkedApp } = await supabase
       .select("id, data")
       .eq("user_id", currentUserId)
       .eq("type", "new_message")
-      .eq("is_read", false);
+      .eq("read", false);
 
     if (notifs) {
       const toMark = notifs.filter(n => n.data?.conversation_id === convoId).map(n => n.id);
