@@ -96,11 +96,12 @@ const [withdrawError, setWithdrawError] = useState("");
     loadWithdrawalRequests();
 
     const channel = supabase
-      .channel("wallet-updates")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "transactions" }, () => {
-        loadWallet();
-      })
-      .subscribe();
+  .channel("wallet-updates")
+  .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => {
+    loadWallet();
+    loadWithdrawalRequests();
+  })
+  .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, []);
