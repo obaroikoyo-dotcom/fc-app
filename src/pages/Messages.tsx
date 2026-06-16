@@ -195,27 +195,34 @@ const { data: linkedApp } = await supabase
     if (!userId) return;
     const { data } = await supabase
       .from("notifications")
-      .select("data")
+      .select("id, data")
       .eq("user_id", userId)
       .eq("type", "new_message")
       .eq("is_read", false);
 
     if (data) {
-      const ids = data.map(n => n.data?.conversation_id).filter(Boolean);
-      setUnreadConvoIds(ids);
+      const ids = data
+        .map(n => n.data?.conversation_id)
+        .filter(Boolean);
+      setUnreadConvoIds([...new Set(ids)]);
     }
   };
 
   const clearUnreadForConvo = async (convoId: string) => {
     if (!currentUserId) return;
-    await supabase
+    const { data: notifs } = await supabase
       .from("notifications")
-      .update({ is_read: true })
+      .select("id, data")
       .eq("user_id", currentUserId)
       .eq("type", "new_message")
-      .eq("is_read", false)
-      .containedBy("data", { conversation_id: convoId });
+      .eq("is_read", false);
 
+    if (notifs) {
+      const toMark = notifs.filter(n => n.data?.conversation_id === convoId).map(n => n.id);
+      if (toMark.length > 0) {
+        await supabase.from("notifications").update({ is_read: true }).in("id", toMark);
+      }
+    }
     setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
   };
 
