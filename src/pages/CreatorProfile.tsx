@@ -101,8 +101,10 @@ const [withdrawError, setWithdrawError] = useState("");
     loadWallet();
     loadWithdrawalRequests();
   })
+  .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
+    loadWallet();
+  })
   .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, []);
 
