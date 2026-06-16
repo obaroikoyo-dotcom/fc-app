@@ -7,6 +7,7 @@ interface Props {
   navigate: (p: Page) => void;
   role: "brand" | "creator";
   navigateToProfile?: (id: string) => void;
+  navigateToBrandProfile?: (id: string) => void;
   openConvoId?: string | null;
   onConvoOpened?: () => void;
 }
@@ -55,7 +56,7 @@ interface Campaign {
   applications: Application[];
 }
 
-export default function Messages({ navigate, role, openConvoId, onConvoOpened }: Props) {
+export default function Messages({ navigate, role, openConvoId, onConvoOpened, navigateToProfile, navigateToBrandProfile }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -397,9 +398,28 @@ return (
             ←
           </div>
         )}
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
-          {getHeader()}
-        </h1>
+        {view === "chat" && activeConvo ? (
+  <div
+    onClick={() => {
+      const otherId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+      if (activeConvo.other_role === "brand") {
+        navigateToBrandProfile?.(otherId);
+      } else {
+        navigateToProfile?.(otherId);
+      }
+    }}
+    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+  >
+    <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
+      {activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
+    </div>
+    <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{activeConvo.other_name}</h1>
+  </div>
+) : (
+  <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+    {getHeader()}
+  </h1>
+)}
       </div>
 
       {/* Brand Tabs Toggle */}
