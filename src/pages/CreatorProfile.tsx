@@ -185,14 +185,17 @@ const [withdrawError, setWithdrawError] = useState("");
   };
 
   const loadWallet = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase.from("transactions").select("*").eq("creator_id", user.id).order("created_at", { ascending: false });
-    if (data) {
-      setTransactions(data);
-      setWalletBalance(data.filter(t => t.status === "completed").reduce((sum, t) => sum + t.creator_payout, 0));
-    }
-  };
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const { data } = await supabase.from("transactions").select("*").eq("creator_id", user.id).order("created_at", { ascending: false });
+  const { data: withdrawals } = await supabase.from("withdrawal_requests").select("amount, status").eq("creator_id", user.id);
+  if (data) {
+    setTransactions(data);
+    const earned = data.filter(t => t.status === "completed").reduce((sum, t) => sum + t.creator_payout, 0);
+    const withdrawn = withdrawals ? withdrawals.filter(w => w.status === "completed" || w.status === "pending").reduce((sum, w) => sum + w.amount, 0) : 0;
+    setWalletBalance(earned - withdrawn);
+  }
+};
 
   const loadWithdrawalRequests = async () => {
     const { data: { user } } = await supabase.auth.getUser();
