@@ -46,14 +46,6 @@ export type Page =
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "apply-campaign"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
 
-interface Props {
-  navigate: (p: Page) => void;
-  role: "brand" | "creator";
-  navigateToProfile?: (id: string) => void;
-  navigateToBrandProfile?: (id: string) => void;
-  openConvoId?: string | null;
-  onConvoOpened?: () => void;
-}
 
 interface NavProps {
   page: Page;
