@@ -65,7 +65,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   // Settings-specific data
   const [walletBalance, setWalletBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [walletTab, setWalletTab] = useState<"balance" | "withdraw">("balance");
+  const [walletTab, setWalletTab] = useState<"balance" | "withdraw" | "history">("balance");
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
   const [appliedCampaigns, setAppliedCampaigns] = useState<any[]>([]);
@@ -75,6 +75,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [rateVisible, setRateVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [payoutHistoryTab, setPayoutHistoryTab] = useState<"balance" | "withdraw" | "history">("balance");
+  const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
   const [withdrawMethod, setWithdrawMethod] = useState("");
 const [withdrawAmount, setWithdrawAmount] = useState("");
 const [withdrawPaypal, setWithdrawPaypal] = useState("");
@@ -92,6 +94,7 @@ const [withdrawError, setWithdrawError] = useState("");
     loadFavourites();
     loadCampaignFavourites();
     loadWallet();
+    loadWithdrawalRequests();
 
     const channel = supabase
       .channel("wallet-updates")
@@ -182,11 +185,22 @@ const [withdrawError, setWithdrawError] = useState("");
   const loadWallet = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase.from("transactions").select("*").eq("creator_id", user.id).order("created_at", { ascending: false });
+    const { data } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
     if (data) {
       setTransactions(data);
       setWalletBalance(data.filter(t => t.status === "completed").reduce((sum, t) => sum + t.creator_payout, 0));
     }
+  };
+
+  const loadWithdrawalRequests = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("withdrawal_requests")
+      .select("*")
+      .eq("creator_id", user.id)
+      .order("created_at", { ascending: false });
+    if (data) setWithdrawalRequests(data);
   };
 
   const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -655,9 +669,9 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.25rem" }}>
         <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
-            {(["balance", "withdraw"] as const).map(t => (
-              <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
-            ))}
+            {(["balance", "withdraw", "history"] as const).map(t => (
+  <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
+))}
           </div>
           {walletTab === "balance" && (
             <div style={{ padding: "1.5rem", textAlign: "center" }}>
@@ -669,7 +683,7 @@ setTimeout(() => setSaved(false), 2000);
                   {transactions.map((t, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                       <div>
-                        <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>Campaign</p>
+                        <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{(t as any).campaigns?.name || "Campaign"}</p>
                         <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
                       </div>
                       <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
@@ -724,6 +738,21 @@ setTimeout(() => setSaved(false), 2000);
     <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 24 hours.</p>
   </div>
 )}
+          {walletTab === "history" && (
+            <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+              {withdrawalRequests.length === 0 ? (
+                <p style={{ fontSize: "12px", color: "#444", textAlign: "center", padding: "2rem" }}>No withdrawal requests yet</p>
+              ) : withdrawalRequests.map((r, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
+                  <div>
+                    <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>£{(r.amount / 100).toFixed(2)}</p>
+                    <p style={{ fontSize: "10px", color: "#444", textTransform: "uppercase", letterSpacing: "0.06em" }}>{r.method} · {new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                  </div>
+                  <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: `1px solid ${r.status === "completed" ? "#34c759" : r.status === "rejected" ? "#ff4444" : "#555"}`, color: r.status === "completed" ? "#34c759" : r.status === "rejected" ? "#ff4444" : "#777", textTransform: "uppercase" }}>{r.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
