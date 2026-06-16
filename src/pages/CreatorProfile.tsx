@@ -60,6 +60,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [favTab, setFavTab] = useState<"creators" | "campaigns">("campaigns");
 
   // Settings-specific data
   const [walletBalance, setWalletBalance] = useState(0);
@@ -142,7 +143,7 @@ const [withdrawError, setWithdrawError] = useState("");
   const loadFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase.from("favourites").select("creator_id, profiles(name, niche, avatar_url)").eq("user_id", user.id);
+    const { data } = await supabase.from("favourites").select("creator_id, creator_profiles(name, niche, avatar_url)").eq("user_id", user.id);
     if (data) setFavourites(data);
   };
 
@@ -764,30 +765,16 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── FAVOURITES ───────────────────────────────────────────────────────────
   const renderFavourites = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
-      {renderSettingsHeader("Favourites", () => setSettingsSection("main"))}
-      <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Creators</p>
-        {favourites.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px", marginBottom: "1.5rem" }}>No creators favourited yet</p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
-            {favourites.map((f, i) => (
-              <div key={i} onClick={() => navigateToProfile(f.creator_id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {(f.profiles as any)?.avatar_url ? <img src={(f.profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
-                </div>
-                <div>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.profiles as any)?.name || "Creator"}</p>
-                  <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.profiles as any)?.niche || ""}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Campaigns</p>
-        {campaignFavourites.length === 0 ? (
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    {renderSettingsHeader("Favourites", () => setSettingsSection("main"))}
+    <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
+      {(["campaigns", "creators"] as const).map(t => (
+        <div key={t} onClick={() => setFavTab(t)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: favTab === t ? "#fff" : "#444", borderBottom: favTab === t ? "2px solid #fff" : "2px solid transparent" }}>{t}</div>
+      ))}
+    </div>
+    <div style={{ padding: "1.25rem" }}>
+      {favTab === "campaigns" && (
+        campaignFavourites.length === 0 ? (
           <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -805,10 +792,30 @@ setTimeout(() => setSaved(false), 2000);
               );
             })}
           </div>
-        )}
-      </div>
+        )
+      )}
+      {favTab === "creators" && (
+        favourites.length === 0 ? (
+          <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No creators favourited yet</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {favourites.map((f, i) => (
+              <div key={i} onClick={() => navigateToProfile(f.creator_id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {(f.creator_profiles as any)?.avatar_url ? <img src={(f.creator_profiles as any).avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                </div>
+                <div>
+                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || "Creator"}</p>
+                  <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      )}
     </div>
-  );
+  </div>
+);
 
   // ─── APPLICATIONS ─────────────────────────────────────────────────────────
   const renderApplications = () => {

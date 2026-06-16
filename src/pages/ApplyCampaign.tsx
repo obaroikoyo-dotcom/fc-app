@@ -163,12 +163,12 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Header */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div onClick={goBack} style={{ cursor: "pointer", color: "#555", fontSize: "20px", lineHeight: 1 }}>←</div>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Apply</span>
       </div>
 
-      <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "8rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "8rem", paddingTop: "5rem" }}>
 
         {/* Campaign title */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
