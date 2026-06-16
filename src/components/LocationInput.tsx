@@ -8,27 +8,34 @@ interface Props {
 }
 
 export default function LocationInput({ value, onChange, placeholder, inputStyle }: Props) {
-  const ref = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!ref.current || !(window as any).google) return;
-    const autocomplete = new (window as any).google.maps.places.Autocomplete(ref.current, {
+    if (!containerRef.current || !(window as any).google) return;
+
+    const { PlaceAutocompleteElement } = (window as any).google.maps.places;
+    if (!PlaceAutocompleteElement) return;
+
+    const autocomplete = new PlaceAutocompleteElement({
       types: ["(cities)"],
-      fields: ["formatted_address", "name"],
     });
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-      onChange(place.formatted_address || place.name || "");
+
+    autocomplete.style.width = "100%";
+
+    autocomplete.addEventListener("gmp-placeselect", (e: any) => {
+      const place = e.placePrediction.toPlace();
+      onChange(place.displayName || "");
     });
+
+    containerRef.current.appendChild(autocomplete);
+
+    return () => {
+      if (containerRef.current) containerRef.current.innerHTML = "";
+    };
   }, []);
 
   return (
-    <input
-      ref={ref}
-      style={inputStyle}
-      placeholder={placeholder || "e.g. London, UK"}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-    />
+    <div ref={containerRef} style={{ width: "100%" }} />
   );
 }
