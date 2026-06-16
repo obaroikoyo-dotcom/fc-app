@@ -75,7 +75,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [rateVisible, setRateVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
-  const [payoutHistoryTab, setPayoutHistoryTab] = useState<"balance" | "withdraw" | "history">("balance");
   const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
   const [withdrawMethod, setWithdrawMethod] = useState("");
 const [withdrawAmount, setWithdrawAmount] = useState("");
