@@ -141,11 +141,36 @@ const [withdrawError, setWithdrawError] = useState("");
   };
 
   const loadFavourites = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase.from("favourites").select("creator_id, profiles(name, avatar_url), creator_profiles(name, niche, avatar_url)").eq("user_id", user.id);
-    if (data) setFavourites(data);
-  };
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data } = await supabase
+    .from("favourites")
+    .select("creator_id")
+    .eq("user_id", user.id);
+
+  if (!data) return;
+
+  const enriched = await Promise.all(data.map(async (f) => {
+    const { data: cp } = await supabase
+      .from("creator_profiles")
+      .select("name, niche, avatar_url")
+      .eq("id", f.creator_id)
+      .single();
+
+    if (cp) return { ...f, display: cp };
+
+    const { data: p } = await supabase
+      .from("profiles")
+      .select("name, avatar_url")
+      .eq("id", f.creator_id)
+      .single();
+
+    return { ...f, display: p || { name: "Creator", avatar_url: null, niche: "" } };
+  }));
+
+  setFavourites(enriched);
+};
 
   const loadCampaignFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -802,11 +827,11 @@ setTimeout(() => setSaved(false), 2000);
             {favourites.map((f, i) => (
               <div key={i} onClick={() => navigateToProfile(f.creator_id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {((f.creator_profiles as any)?.avatar_url || (f.profiles as any)?.avatar_url) ? <img src={(f.creator_profiles as any)?.avatar_url || (f.profiles as any)?.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                  {(f as any).display?.avatar_url ? <img src={(f as any).display.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
                 </div>
                 <div>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f.creator_profiles as any)?.name || (f.profiles as any)?.name || "Creator"}</p>
-<p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f.creator_profiles as any)?.niche || ""}</p>
+                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f as any).display?.name || "Creator"}</p>
+<p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f as any).display?.niche || ""}</p>
                 </div>
               </div>
             ))}
