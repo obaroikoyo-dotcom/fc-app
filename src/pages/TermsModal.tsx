@@ -117,32 +117,47 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Prohibited Content</span>
-            <span>Users may not post content that is illegal, hateful, sexually explicit, discriminatory, or misleading. FlipCollab reserves the right to remove content and suspend or delete accounts that violate this policy without notice.</span>
-          </div>
+  <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Payment Processing & Delays</span>
+  <span>During scheduled maintenance, software updates, or technical incidents, payment processing may be temporarily delayed. All funds held in escrow are guaranteed to be processed and delivered to the intended recipient once normal operations resume. FlipCollab is not liable for delays caused by third-party payment processors including Stripe.</span>
+</div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Intellectual Property</span>
+  <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Prohibited Content</span>
+  <span>Users may not post content that is illegal, hateful, sexually explicit, discriminatory, or misleading. FlipCollab reserves the right to remove content and suspend, delete, or permanently restrict accounts that violate this policy without notice. In cases of serious violations including but not limited to fraud, harassment, or illegal activity, FlipCollab reserves the right to permanently withhold any funds held in the offending account pending investigation, with no obligation to release them.</span>
+</div>
+
+          <div>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. Intellectual Property</span>
             <span>Creators retain ownership of their content. By completing a campaign, creators grant the brand a non-exclusive licence to use the content for promotional purposes as agreed in the campaign brief.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. Privacy</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>8. Privacy</span>
             <span>We collect your name, email, profile information, and payment data to operate the platform. We use Supabase for data storage, Stripe for payments, and Vercel for hosting. We do not sell your personal data. For full details see our Privacy Policy.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>8. Limitation of Liability</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>9. Limitation of Liability</span>
             <span>FlipCollab is not liable for any indirect or consequential loss arising from use of the platform, including disputes between brands and creators.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>9. Governing Law</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Governing Law</span>
             <span>These terms are governed by the laws of England and Wales.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Contact</span>
+  <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>11. In-App Purchases</span>
+  <span>FlipCollab offers subscription plans and campaign payment processing as in-app purchases. All purchases are final unless otherwise required by applicable law. Subscription fees are charged on a recurring basis and can be cancelled at any time. Cancellation takes effect at the end of the current billing period. No refunds are issued for partial periods.</span>
+</div>
+
+<div>
+  <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. App Store Compliance</span>
+  <span>FlipCollab is distributed through the Apple App Store and Google Play Store. Use of the app is also subject to the respective platform's terms of service. Apple Inc. and Google LLC are not responsible for the app or its content. Any claims relating to the app must be directed to FlipCollab, not to Apple or Google.</span>
+</div>
+
+          <div>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>13. Contact</span>
             <span>For any questions or disputes email us at <strong style={{ color: "#fff" }}>Flipcollab@hotmail.com</strong></span>
           </div>
 
