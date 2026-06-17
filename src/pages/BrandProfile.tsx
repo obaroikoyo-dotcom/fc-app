@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -421,7 +422,7 @@ if (data) setFavouritedCreators(data);
 
         <div><label style={labelStyle}>Brand Name</label><input style={inputStyle} placeholder="Your brand name" value={name} onChange={e => setName(e.target.value)} /></div>
         <div><label style={labelStyle}>Industry / Niche</label><input style={inputStyle} placeholder="e.g. Beauty, Fashion" value={industry} onChange={e => setIndustry(e.target.value)} /></div>
-        <div><label style={labelStyle}>Location</label><input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} /></div>
+        <div><label style={labelStyle}>Location</label><LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} /></div>
         <div><label style={labelStyle}>Bio</label><textarea style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }} placeholder="Tell creators about your brand..." value={bio} onChange={e => setBio(e.target.value)} /></div>
 
         <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "1rem" }}>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
@@ -554,7 +555,7 @@ setTimeout(() => setSaved(false), 2000);
 
         <div><label style={labelStyle}>Full Name</label><input style={inputStyle} placeholder="Your name" value={name} onChange={e => setName(e.target.value)} /></div>
         <div><label style={labelStyle}>Niche</label><input style={inputStyle} placeholder="e.g. Lifestyle, Beauty" value={niche} onChange={e => setNiche(e.target.value)} /></div>
-        <div><label style={labelStyle}>Location</label><input style={inputStyle} placeholder="e.g. London, UK" value={location} onChange={e => setLocation(e.target.value)} /></div>
+        <div><label style={labelStyle}>Location</label><LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} /></div>
         <div style={{ display: "flex", gap: "8px" }}>
           <div style={{ flex: 1 }}><label style={labelStyle}>Age</label><input style={inputStyle} placeholder="e.g. 22" type="number" value={age} onChange={e => setAge(e.target.value)} /></div>
           <div style={{ flex: 1 }}>
