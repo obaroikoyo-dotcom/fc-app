@@ -80,28 +80,37 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-  loadConversations();
-  if (role === "brand") loadApplications();
+  const init = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setCurrentUserId(user.id);
 
-  const channel = supabase
-    .channel("messages-badge-sync")
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
-      fetchUnreadMessages();
-    })
-    .subscribe();
+    await loadConversations();
+    if (role === "brand") loadApplications();
+    await fetchUnreadMessages(user.id);
 
-  const convoChannel = supabase
-    .channel("conversations-reorder")
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, () => {
-      loadConversations();
-    })
-    .subscribe();
+    const channel = supabase
+      .channel("messages-badge-sync")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
+        fetchUnreadMessages(user.id); // use local var, not state
+      })
+      .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-    supabase.removeChannel(convoChannel);
+    const convoChannel = supabase
+      .channel("conversations-reorder")
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, () => {
+        loadConversations();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(convoChannel);
+    };
   };
-}, [currentUserId]);
+
+  init();
+}, []);
 
   useEffect(() => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -209,22 +218,22 @@ const { data: linkedApp } = await supabase
   };
 
   const clearUnreadForConvo = async (convoId: string) => {
-    if (!currentUserId) return;
-    const { data: notifs } = await supabase
-      .from("notifications")
-      .select("id, data")
-      .eq("user_id", currentUserId)
-      .eq("type", "new_message")
-      .eq("read", false);
+  if (!currentUserId) return;
+  const { data: notifs } = await supabase
+    .from("notifications")
+    .select("id, data")
+    .eq("user_id", currentUserId)
+    .eq("type", "new_message")
+    .eq("read", false);
 
-    if (notifs) {
-      const toMark = notifs.filter(n => n.data?.conversation_id === convoId).map(n => n.id);
-      if (toMark.length > 0) {
-        await supabase.from("notifications").update({ is_read: true }).in("id", toMark);
-      }
+  if (notifs) {
+    const toMark = notifs.filter(n => n.data?.conversation_id === convoId).map(n => n.id);
+    if (toMark.length > 0) {
+      await supabase.from("notifications").update({ read: true }).in("id", toMark); // fixed: was is_read
     }
-    setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
-  };
+  }
+  setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
+};
 
   const loadApplications = async () => {
     const { data: { user } } = await supabase.auth.getUser();
