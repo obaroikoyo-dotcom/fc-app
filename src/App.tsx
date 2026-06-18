@@ -386,7 +386,7 @@ export default function App() {
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
       case "notifications-creator":
 case "notifications-brand":
-  return <Notifications navigate={navigate} />;
+  return <Notifications navigate={navigate} onRead={fetchGlobalUnreadCount} />;
 case "enterprise":
   return <EnterpriseSubscriptionPage navigate={navigate} />;
 case "apply-campaign":

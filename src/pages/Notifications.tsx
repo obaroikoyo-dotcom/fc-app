@@ -4,7 +4,8 @@ import { supabase } from "../lib/supabase";
 
 interface Props {
   navigate: (p: Page) => void;
-  setTargetData?: (data: any) => void; 
+  setTargetData?: (data: any) => void;
+  onRead?: () => void;
 }
 
 interface Notification {
@@ -22,15 +23,16 @@ interface Notification {
   actor_avatar?: string | null;
 }
 
-export default function Notifications({ navigate, setTargetData }: Props) {
+export default function Notifications({ navigate, setTargetData, onRead }: Props) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // 1. Initial run fetches historical notifications as they stand
     fetchNotifications().then(() => {
-      // 2. Mark them read *after* data loads so indicators are visible on this view session
-      markAllAsRead();
+      markAllAsRead().then(() => {
+        if (onRead) onRead();
+      });
     });
 
     // Subscribe to new incoming notifications live
