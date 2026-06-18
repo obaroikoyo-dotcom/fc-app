@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 interface PrivacyModalProps {
   isOpen: boolean;
@@ -8,6 +8,15 @@ interface PrivacyModalProps {
 export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const textContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setHasScrolledToBottom(false);
+      if (textContainerRef.current) {
+        textContainerRef.current.scrollTop = 0;
+      }
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -59,6 +68,8 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           style={{
             padding: "1.25rem",
             overflowY: "auto",
+            flex: 1,
+            minHeight: 0,
             color: "#aaa",
             fontSize: "13px",
             lineHeight: "1.6",
