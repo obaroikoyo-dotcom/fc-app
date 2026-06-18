@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -43,6 +44,7 @@ export default function BrandOnboarding({ navigate }: Props) {
   // Modal Control Interceptor State
   const [showTerms, setShowTerms] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const logoRef = useRef<HTMLInputElement>(null);
 
@@ -328,6 +330,10 @@ export default function BrandOnboarding({ navigate }: Props) {
       {termsAccepted && (
         <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
       )}
+      <div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+  <span>Read Privacy Policy</span>
+  <span style={{ color: "#555" }}>View →</span>
+</div>
     </div>,
 
     // Screen 6 — Visual Branding Identification
@@ -440,6 +446,7 @@ export default function BrandOnboarding({ navigate }: Props) {
           setShowTerms(false);
         }}
       />
+      <PrivacyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
     </div>
   );
 }
