@@ -299,7 +299,7 @@ loadConversations();
       type: "new_message",
       title: "New Message",
       body: `${currentUserName} sent you a message: "${text.substring(0, 40)}${text.length > 40 ? "..." : ""}"`,
-      data: JSON.stringify({ conversation_id: activeConvo.id })
+      data: { conversation_id: activeConvo.id }
     });
   };
 
