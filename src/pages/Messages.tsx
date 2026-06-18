@@ -260,7 +260,7 @@ const { data: linkedApp } = await supabase
       .from("campaigns")
       .select("id, name")
       .eq("brand_id", user.id)
-      .order("updated_at", { ascending: false });
+      .order("created_at", { ascending: false });
 
     if (!campaignData) return;
 
