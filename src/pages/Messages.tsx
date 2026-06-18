@@ -77,6 +77,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   
   // Track unread conversation IDs locally to place red dots on chats
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
+  const [seenCampaignIds, setSeenCampaignIds] = useState<string[]>([]);
   
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -492,13 +493,13 @@ return (
             </div>
           ) : (
             campaigns.map(camp => (
-              <div key={camp.id} onClick={() => { setActiveCampaign(camp); setView("campaign-apps"); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
+              <div key={camp.id} onClick={() => { setActiveCampaign(camp); setView("campaign-apps"); setSeenCampaignIds(prev => [...prev, camp.id]); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
                 <div>
                   <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{camp.name}</p>
                   <p style={{ color: "#444", fontSize: "12px" }}>{camp.applications.length} application{camp.applications.length !== 1 ? "s" : ""}</p>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  {camp.applications.filter(a => a.status === "pending").length > 0 && (
+                  {camp.applications.filter(a => a.status === "pending").length > 0 && !seenCampaignIds.includes(camp.id) && (
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
                   )}
                   <span style={{ color: "#444", fontSize: "16px" }}>›</span>
