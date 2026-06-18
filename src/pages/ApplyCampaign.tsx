@@ -56,7 +56,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setCurrentUserId(user.id);
-        const { data } = await supabase.from("profiles").select("name").eq("id", user.id).single();
+        const { data } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
         if (data?.name) setMyCreatorName(data.name);
       }
       const { data } = await supabase
@@ -131,7 +131,6 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     if (!appError) {
       await supabase.from("notifications").insert({
         user_id: campaign.brand_id,
-        actor_id: currentUserId,
         type: "campaign_application",
         title: "New Application 📩",
         body: `${myCreatorName} applied to your campaign "${campaign.name}".`,

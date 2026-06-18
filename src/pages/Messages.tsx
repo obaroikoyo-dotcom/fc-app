@@ -494,7 +494,7 @@ return (
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   {camp.applications.filter(a => a.status === "pending").length > 0 && (
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
                   )}
                   <span style={{ color: "#444", fontSize: "16px" }}>›</span>
                 </div>
