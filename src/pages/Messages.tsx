@@ -969,7 +969,7 @@ return (
               currentUserId={currentUserId}
               savedCard={savedCard}
               onClose={() => setShowPayment(false)}
-              onSuccess={async (app) => {
+              onSuccess={async (_app) => {
                 setShowPayment(false);
                 setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : null);
                 await loadConversations();
