@@ -146,7 +146,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     setLoading(true);
     const { data, error } = await supabase
       .from("campaigns")
-      .select(`*, brand_profiles(name, niche, avatar_url), applications(creator_id, status, message)`)
+      .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise), applications(creator_id, status, message)`)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
@@ -253,7 +253,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         ) : (
           filteredCampaigns.map(c => {
             const baseBudgetVal = parseInt(c.budget, 10) || 0;
-            const netCreatorPayout = baseBudgetVal * 0.90;
+            const brandIsEnterprise = (c.brand_profiles as any)?.is_enterprise;
+            const netCreatorPayout = brandIsEnterprise ? baseBudgetVal : baseBudgetVal * 0.90;
 
             return (
               <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
@@ -311,7 +312,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                   <div>
                     {c.type === "paid" && baseBudgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout</span>
+                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {brandIsEnterprise ? "(0% cut)" : "(-10%)"}</span>
                         <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{netCreatorPayout.toLocaleString()}</span>
                       </div>
                     ) : (

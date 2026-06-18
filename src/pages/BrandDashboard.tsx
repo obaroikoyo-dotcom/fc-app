@@ -315,7 +315,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           </span>
                           {isOwn && (
                             <span style={{ fontSize: "10px", color: "#666", marginTop: "4px", lineHeight: 1.3 }}>
-                              Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% fee)
+                              {isEnterprise
+                                ? <span style={{ color: "#34c759", fontWeight: 500 }}>0% platform fee (Enterprise)</span>
+                                : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% fee)</>
+                              }
                             </span>
                           )}
                         </div>

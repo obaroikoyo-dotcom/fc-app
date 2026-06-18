@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
-import { loadStripe } from "@stripe/stripe-js";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { stripePromise } from "../lib/stripe";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -57,6 +58,149 @@ interface Campaign {
   applications: Application[];
 }
 
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: { fontSize: "14px", color: "#fff", fontFamily: "'DM Sans', sans-serif", "::placeholder": { color: "#555" } },
+    invalid: { color: "#ff3b30" },
+  },
+};
+
+interface PaymentModalProps {
+  paymentApp: Application;
+  campaignBudget: number;
+  isEnterprise: boolean;
+  currentUserId: string | null;
+  savedCard: { last4: string; brand: string; pm_id: string } | null;
+  onSuccess: (app: Application) => void;
+  onClose: () => void;
+}
+
+function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, currentUserId, savedCard, onSuccess, onClose }: PaymentModalProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [useNewCard, setUseNewCard] = useState(!savedCard);
+  const [cardName, setCardName] = useState("");
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState("");
+
+  const brandFee = isEnterprise ? 0 : Math.round(campaignBudget * 0.05);
+  const totalCharge = campaignBudget + brandFee;
+
+  const handlePay = async () => {
+    if (!stripe || !currentUserId) return;
+    setProcessing(true);
+    setError("");
+
+    const res = await supabase.functions.invoke("create-payment-intent", {
+      body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, is_enterprise: isEnterprise }
+    });
+
+    if (res.error || !res.data?.clientSecret) {
+      setError("Failed to create payment. Try again.");
+      setProcessing(false);
+      return;
+    }
+
+    let confirmResult;
+    if (!useNewCard && savedCard) {
+      confirmResult = await stripe.confirmCardPayment(res.data.clientSecret, { payment_method: savedCard.pm_id });
+    } else {
+      const cardElement = elements?.getElement(CardElement);
+      if (!cardElement) { setError("Card details missing."); setProcessing(false); return; }
+      confirmResult = await stripe.confirmCardPayment(res.data.clientSecret, {
+        payment_method: { card: cardElement, billing_details: { name: cardName } },
+      });
+    }
+
+    if (confirmResult.error) {
+      setError(confirmResult.error.message || "Payment failed.");
+      setProcessing(false);
+      return;
+    }
+
+    if (confirmResult.paymentIntent?.status === "succeeded") {
+      await supabase.from("applications").update({ status: "paid" }).eq("id", paymentApp.id);
+      await supabase.from("notifications").insert({
+        user_id: paymentApp.creator_id,
+        type: "payment_received",
+        title: "Payment Received 💰",
+        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow.`,
+        data: { campaign_id: paymentApp.campaign_id }
+      });
+      setProcessing(false);
+      onSuccess(paymentApp);
+    }
+  };
+
+  return (
+    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", padding: "1.5rem" }}>
+      <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "8px" }}>Confirm Deal & Pay</h3>
+      <p style={{ color: "#555", fontSize: "13px", marginBottom: "1.5rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
+
+      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+          <span style={{ color: "#555", fontSize: "13px" }}>Creator Payout {isEnterprise ? "(100%)" : "(90%)"}</span>
+          <span style={{ color: "#fff", fontSize: "13px" }}>£{((campaignBudget * (isEnterprise ? 1 : 0.90)) / 100).toFixed(2)}</span>
+        </div>
+        {!isEnterprise && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <span style={{ color: "#555", fontSize: "13px" }}>Platform Fee (5%)</span>
+            <span style={{ color: "#fff", fontSize: "13px" }}>£{(brandFee / 100).toFixed(2)}</span>
+          </div>
+        )}
+        <div style={{ borderTop: "1px solid #222", paddingTop: "8px", display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>Total</span>
+          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>£{(totalCharge / 100).toFixed(2)}</span>
+        </div>
+      </div>
+
+      {savedCard && (
+        <div style={{ marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div onClick={() => setUseNewCard(false)} style={{ display: "flex", alignItems: "center", gap: "12px", background: !useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${!useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "12px 14px", cursor: "pointer" }}>
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${!useNewCard ? "#fff" : "#444"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {!useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />}
+            </div>
+            <div>
+              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{savedCard.brand.charAt(0).toUpperCase() + savedCard.brand.slice(1)} •••• {savedCard.last4}</p>
+              <p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>Saved card</p>
+            </div>
+          </div>
+          <div onClick={() => setUseNewCard(true)} style={{ display: "flex", alignItems: "center", gap: "12px", background: useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "12px 14px", cursor: "pointer" }}>
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${useNewCard ? "#fff" : "#444"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />}
+            </div>
+            <p style={{ color: useNewCard ? "#fff" : "#555", fontSize: "13px", fontWeight: 600 }}>Use a different card</p>
+          </div>
+        </div>
+      )}
+
+      {useNewCard && (
+        <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div>
+            <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Cardholder Name</label>
+            <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+          </div>
+          <div>
+            <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Details</label>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "13px 14px" }}>
+              <CardElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "10px" }}>{error}</p>}
+
+      <div style={{ display: "flex", gap: "10px" }}>
+        <div onClick={onClose} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>Cancel</div>
+        <div onClick={!processing ? handlePay : undefined} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: processing ? "#1a1a1a" : "#fff", color: processing ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const, transition: "all 0.2s" }}>
+          {processing ? "Processing..." : `Pay £${(totalCharge / 100).toFixed(2)}`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Messages({ navigate, role, openConvoId, onConvoOpened, navigateToProfile, navigateToBrandProfile, onRead }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
@@ -74,6 +218,8 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [showPayment, setShowPayment] = useState(false);
   const [paymentApp, setPaymentApp] = useState<Application | null>(null);
   const [campaignBudget, setCampaignBudget] = useState(0);
+  const [isEnterprise, setIsEnterprise] = useState(false);
+  const [savedCard, setSavedCard] = useState<{ last4: string; brand: string; pm_id: string } | null>(null);
   
   // Track unread conversation IDs locally to place red dots on chats
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
@@ -87,6 +233,13 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     if (!user) return;
     setCurrentUserId(user.id);
 
+    if (role === "brand") {
+      const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single();
+      if (bp?.is_enterprise) setIsEnterprise(true);
+      if (bp?.stripe_payment_method_id && bp?.card_last4) {
+        setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
+      }
+    }
     await loadConversations();
     if (role === "brand") {
       loadApplications();
@@ -493,7 +646,18 @@ return (
             </div>
           ) : (
             campaigns.map(camp => (
-              <div key={camp.id} onClick={() => { setActiveCampaign(camp); setView("campaign-apps"); setSeenCampaignIds(prev => [...prev, camp.id]); }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
+              <div key={camp.id} onClick={async () => { 
+                setActiveCampaign(camp); 
+                setView("campaign-apps"); 
+                setSeenCampaignIds(prev => [...prev, camp.id]);
+                if (currentUserId) {
+                  await supabase.from("notifications").update({ read: true })
+                    .eq("user_id", currentUserId)
+                    .eq("type", "campaign_application")
+                    .eq("read", false);
+                  if (onRead) onRead();
+                }
+              }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
                 <div>
                   <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{camp.name}</p>
                   <p style={{ color: "#444", fontSize: "12px" }}>{camp.applications.length} application{camp.applications.length !== 1 ? "s" : ""}</p>
@@ -795,71 +959,23 @@ return (
         </>
       )}
 
-      {/* 10% Market Split Escrow Modal */}
       {showPayment && paymentApp && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-          <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", padding: "1.5rem" }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "8px" }}>Confirm Deal & Pay</h3>
-            <p style={{ color: "#555", fontSize: "13px", marginBottom: "1.5rem" }}>You're locking in terms with {paymentApp.creator_name} for the campaign "{paymentApp.campaign_name}"</p>
-            
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#555", fontSize: "13px" }}>Creator Payout (90%)</span>
-                <span style={{ color: "#fff", fontSize: "13px" }}>£{((campaignBudget * 0.90) / 100).toFixed(2)}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <span style={{ color: "#555", fontSize: "13px" }}>Marketplace Matching Fee (10%)</span>
-                <span style={{ color: "#fff", fontSize: "13px" }}>£{((campaignBudget * 0.10) / 100).toFixed(2)}</span>
-              </div>
-              <div style={{ borderTop: "1px solid #222", paddingTop: "8px", display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>Total Brand Invoice Cost</span>
-                <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>£{(campaignBudget / 100).toFixed(2)}</span>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: "10px" }}>
-              <div onClick={() => setShowPayment(false)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>Cancel</div>
-              <div onClick={async () => {
+          <Elements stripe={stripePromise}>
+            <PaymentModalContent
+              paymentApp={paymentApp}
+              campaignBudget={campaignBudget}
+              isEnterprise={isEnterprise}
+              currentUserId={currentUserId}
+              savedCard={savedCard}
+              onClose={() => setShowPayment(false)}
+              onSuccess={async (app) => {
                 setShowPayment(false);
-                await supabase.auth.getSession();
-                const res = await supabase.functions.invoke("create-payment-intent", {
-                  body: {
-                    amount: campaignBudget,
-                    brand_id: currentUserId,
-                    creator_id: paymentApp.creator_id,
-                    campaign_id: paymentApp.campaign_id,
-                  }
-                });
-if (!res.error && res.data.clientSecret) {
-                  const stripe = await loadStripe("pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j");
-                  if (stripe) {
-                    const { error, paymentIntent } = await stripe.confirmCardPayment(res.data.clientSecret, {
-                      payment_method: {
-                        card: { token: "tok_visa" },
-                        billing_details: { name: "Brand" }
-                      }
-                    });
-                    if (!error && paymentIntent?.status === "succeeded") {
-                      await supabase.from("applications").update({ status: "paid" }).eq("id", paymentApp.id);
-                      await supabase.from("notifications").insert({
-                        user_id: paymentApp.creator_id,
-                        type: "payment_received",
-                        title: "Payment Received",
-                        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Check your wallet.`,
-                        data: { campaign_id: paymentApp.campaign_id }
-                      });
-                      setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : null);
-                      await loadConversations();
-                    } else if (error) {
-                      console.error("Payment failed:", error.message);
-                    }
-                  }
-                }
-              }} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
-                Confirm & Pay
-              </div>
-            </div>
-          </div>
+                setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : null);
+                await loadConversations();
+              }}
+            />
+          </Elements>
         </div>
       )}
 

@@ -1,52 +1,105 @@
 import { useState } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { stripePromise } from "../lib/stripe";
+
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      fontSize: "14px",
+      color: "#fff",
+      fontFamily: "'DM Sans', sans-serif",
+      "::placeholder": { color: "#555" },
+    },
+    invalid: { color: "#ff3b30" },
+  },
+};
+
+interface SubscriptionFormProps {
+  selectedPlan: "monthly" | "annual";
+  onSuccess: () => void;
+  onLoadingChange: (v: boolean) => void;
+  onError: (e: string) => void;
+  paymentLoading: boolean;
+  paymentError: string;
+}
+
+function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, paymentLoading, paymentError }: SubscriptionFormProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [cardName, setCardName] = useState("");
+
+  const handlePayment = async () => {
+    if (!stripe || !elements) return;
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) return;
+
+    if (!cardName.trim()) { onError("Please enter the cardholder name."); return; }
+
+    onError("");
+    onLoadingChange(true);
+
+    const { error, paymentMethod } = await stripe.createPaymentMethod({
+      type: "card",
+      card: cardElement,
+      billing_details: { name: cardName },
+    });
+
+    if (error) {
+      onError(error.message || "Card error.");
+      onLoadingChange(false);
+      return;
+    }
+
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (!user) { onLoadingChange(false); return; }
+
+    const res = await supabase.functions.invoke("create-subscription", {
+      body: { brand_id: user.id, email: user.email, plan: selectedPlan, payment_method_id: paymentMethod.id }
+    });
+
+    if (res.error || !res.data?.subscriptionId) {
+      onError("Failed to start subscription. Try again.");
+      onLoadingChange(false);
+      return;
+    }
+
+    await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", user.id);
+    onLoadingChange(false);
+    onSuccess();
+  };
+
+  return (
+    <>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.25rem" }}>
+        <div>
+          <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Cardholder Name</label>
+          <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+        </div>
+        <div>
+          <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Details</label>
+          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "13px 14px" }}>
+            <CardElement options={CARD_ELEMENT_OPTIONS} />
+          </div>
+        </div>
+      </div>
+      {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
+      <div onClick={!paymentLoading ? handlePayment : undefined} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
+        {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
+      </div>
+      <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px" }}>🔒 Secured by Stripe. Cancel anytime.</p>
+    </>
+  );
+}
 
 export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (page: Page) => void }) {
   const [showModal, setShowModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "annual">("annual");
-  const [cardName, setCardName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState("");
-
-  const handlePayment = async () => {
-    if (!cardName || cardNumber.replace(/\s/g, "").length < 16 || cardExpiry.length < 5 || cardCvc.length < 3) {
-      setPaymentError("Please fill in all card details correctly.");
-      return;
-    }
-    setPaymentError("");
-    setPaymentLoading(true);
-
-    try {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData.user;
-      if (!user) { setPaymentLoading(false); return; }
-
-      const res = await supabase.functions.invoke("create-subscription", {
-        body: { brand_id: user.id, email: user.email, plan: selectedPlan }
-      });
-
-      if (res.error || !res.data?.subscriptionId) {
-        console.error("Subscription error:", res.error, res.data);
-        setPaymentError("Failed to start subscription. Try again.");
-        setPaymentLoading(false);
-        return;
-      }
-
-      await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", user.id);
-      setPaymentLoading(false);
-      setPaymentSuccess(true);
-
-    } catch (err) {
-      console.error("Payment exception:", err);
-      setPaymentError("Something went wrong. Try again.");
-      setPaymentLoading(false);
-    }
-  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
@@ -186,33 +239,16 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
                   ))}
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.25rem" }}>
-                  <div>
-                    <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Cardholder Name</label>
-                    <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Number</label>
-                    <input value={cardNumber} onChange={e => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim())} placeholder="0000 0000 0000 0000" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
-                  </div>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Expiry</label>
-                      <input value={cardExpiry} onChange={e => { const v = e.target.value.replace(/\D/g, "").slice(0, 4); setCardExpiry(v.length > 2 ? v.slice(0, 2) + "/" + v.slice(2) : v); }} placeholder="MM/YY" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>CVC</label>
-                      <input value={cardCvc} onChange={e => setCardCvc(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="•••" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" }} />
-                    </div>
-                  </div>
-                </div>
-
-                {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
-
-                <div onClick={handlePayment} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
-                  {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
-                </div>
-                <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px" }}>🔒 Secured by Stripe. Cancel anytime.</p>
+                <Elements stripe={stripePromise}>
+                  <SubscriptionForm
+                    selectedPlan={selectedPlan}
+                    onSuccess={() => setPaymentSuccess(true)}
+                    onLoadingChange={setPaymentLoading}
+                    onError={setPaymentError}
+                    paymentLoading={paymentLoading}
+                    paymentError={paymentError}
+                  />
+                </Elements>
               </>
             )}
           </div>
