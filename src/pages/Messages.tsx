@@ -295,7 +295,6 @@ loadConversations();
 
     await supabase.from("notifications").insert({
       user_id: receiverId,
-      actor_id: currentUserId,
       type: "new_message",
       title: "New Message",
       body: `${currentUserName} sent you a message: "${text.substring(0, 40)}${text.length > 40 ? "..." : ""}"`,
@@ -361,7 +360,6 @@ loadConversations();
 
     await supabase.from("notifications").insert({
       user_id: app.creator_id,
-      actor_id: userId,
       type: "campaign_chatting",
       title: "Chat Opened! 💬",
       body: `${currentUserName} initiated a discussion for your "${app.campaign_name}" pitch.`,
@@ -813,7 +811,6 @@ if (!res.error && res.data.clientSecret) {
                       await supabase.from("applications").update({ status: "paid" }).eq("id", paymentApp.id);
                       await supabase.from("notifications").insert({
                         user_id: paymentApp.creator_id,
-                        actor_id: currentUserId,
                         type: "payment_received",
                         title: "Payment Received",
                         body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Check your wallet.`,
