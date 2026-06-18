@@ -612,15 +612,6 @@ if (data) setFavouritedCreators(data);
   );
 
   // ─── PRIVACY / TERMS ──────────────────────────────────────────────────────
-  const renderDoc = (title: string, content: string) => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-      {renderSettingsHeader(title, () => setSettingsSection("main"))}
-      <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.8 }}>{content}</p>
-        <p style={{ fontSize: "12px", color: "#333", marginTop: "1.5rem" }}>For the full document, visit flipcollab.app or email Flipcollab@hotmail.com</p>
-      </div>
-    </div>
-  );
 
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   if (view === "profile") return (
