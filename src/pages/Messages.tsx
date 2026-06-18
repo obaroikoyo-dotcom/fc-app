@@ -97,7 +97,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       .subscribe();
 
     if (role === "brand") {
-      const appsChannel = supabase
+      supabase
         .channel("applications-update")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "applications" }, () => {
           loadApplications();
