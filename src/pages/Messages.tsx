@@ -96,6 +96,15 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       })
       .subscribe();
 
+    if (role === "brand") {
+      const appsChannel = supabase
+        .channel("applications-update")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "applications" }, () => {
+          loadApplications();
+        })
+        .subscribe();
+    }
+
     const convoChannel = supabase
       .channel("conversations-reorder")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, (payload) => {
@@ -112,6 +121,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     return () => {
       supabase.removeChannel(channel);
       supabase.removeChannel(convoChannel);
+      supabase.removeChannel(supabase.channel("applications-update"));
     };
   };
 
