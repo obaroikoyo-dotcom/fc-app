@@ -60,26 +60,16 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
 
     const { data, error } = await supabase
       .from("notifications")
-      .select(`
-        *,
-        actor_profiles:profiles(
-          profiles(name, avatar_url),
-          brand_profiles(name, avatar_url)
-        )
-      `)
+      .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (!error && data) {
-      const parsed = data.map((n: any) => {
-        const creator = n.actor_profiles?.profiles;
-        const brand = n.actor_profiles?.brand_profiles;
-        return {
-          ...n,
-          actor_name: creator?.name || brand?.name || "Someone",
-          actor_avatar: creator?.avatar_url || brand?.avatar_url || null
-        };
-      });
+      const parsed = data.map((n: any) => ({
+        ...n,
+        actor_name: "Someone",
+        actor_avatar: null
+      }));
       setNotifications(parsed);
     }
     setLoading(false);

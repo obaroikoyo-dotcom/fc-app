@@ -98,8 +98,14 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
     const convoChannel = supabase
       .channel("conversations-reorder")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, () => {
-        loadConversations();
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, (payload) => {
+        const updated = payload.new as Conversation;
+        setConversations(prev => {
+          const exists = prev.find(c => c.id === updated.id);
+          if (!exists) { loadConversations(); return prev; }
+          const merged = prev.map(c => c.id === updated.id ? { ...c, last_message: updated.last_message, last_message_at: updated.last_message_at } : c);
+          return merged.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+        });
       })
       .subscribe();
 
