@@ -212,7 +212,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       </div>
 
       {showModal && (
-        <div onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center", padding: "1.25rem", paddingBottom: "3rem" }}>
+        <div onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "1.25rem" }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem", width: "100%", maxWidth: "400px", maxHeight: "85vh", overflowY: "auto" }}>
             {paymentSuccess ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
