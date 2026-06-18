@@ -58,8 +58,6 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
-const [showTermsModal, setShowTermsModal] = useState(false);
-const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
@@ -689,8 +687,6 @@ const renderTerms = () => (
       {settingsSection === "favourites" && renderFavourites()}
       {settingsSection === "help" && renderHelp()}
       {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
-{settingsSection === "terms" && renderTerms()}
-   {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
 {settingsSection === "terms" && renderTerms()}
     </>
   );
