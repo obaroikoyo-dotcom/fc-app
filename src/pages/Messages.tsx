@@ -10,6 +10,7 @@ interface Props {
   navigateToBrandProfile?: (id: string) => void;
   openConvoId?: string | null;
   onConvoOpened?: () => void;
+  onRead?: () => void;
 }
 
 interface Conversation {
@@ -56,7 +57,7 @@ interface Campaign {
   applications: Application[];
 }
 
-export default function Messages({ navigate, role, openConvoId, onConvoOpened, navigateToProfile, navigateToBrandProfile }: Props) {
+export default function Messages({ navigate, role, openConvoId, onConvoOpened, navigateToProfile, navigateToBrandProfile, onRead }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -86,7 +87,11 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     setCurrentUserId(user.id);
 
     await loadConversations();
-    if (role === "brand") loadApplications();
+    if (role === "brand") {
+      loadApplications();
+      await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
+      if (onRead) onRead();
+    }
     await fetchUnreadMessages(user.id);
 
     const channel = supabase

@@ -383,7 +383,7 @@ export default function App() {
   );
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} navigateToApply={(id) => { setApplyingCampaignId(id); navigate("apply-campaign"); }} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
-      case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} />;
+      case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} onRead={fetchGlobalUnreadCount} />;
       case "notifications-creator":
 case "notifications-brand":
   return <Notifications navigate={navigate} onRead={fetchGlobalUnreadCount} />;
