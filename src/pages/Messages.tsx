@@ -187,7 +187,8 @@ const { data: linkedApp } = await supabase
           campaign_budget: parseInt((linkedApp?.campaigns as any)?.budget, 10) || 0
         };
       }));
-      setConversations(enriched);
+      const sorted = enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+      setConversations(sorted);
       if (openConvoId) {
         const target = enriched.find(c => c.id === openConvoId);
         if (target) {
@@ -243,7 +244,7 @@ const { data: linkedApp } = await supabase
       .from("campaigns")
       .select("id, name")
       .eq("brand_id", user.id)
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false });
 
     if (!campaignData) return;
 
@@ -312,6 +313,7 @@ loadConversations();
 
     // Swap instant approval to chatting phase so terms can be negotiated inside messages first
     await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
+    await supabase.from("campaigns").update({ updated_at: new Date().toISOString() }).eq("id", app.campaign_id);
 
     const { data: existing } = await supabase
       .from("conversations")
