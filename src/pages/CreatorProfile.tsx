@@ -1,6 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import TermsModal from "./TermsModal";
-import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -88,8 +86,6 @@ const [withdrawSortCode, setWithdrawSortCode] = useState("");
 const [withdrawing, setWithdrawing] = useState(false);
 const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 const [withdrawError, setWithdrawError] = useState("");
-const [showTermsModal, setShowTermsModal] = useState(false);
-const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const picRef = useRef<HTMLInputElement>(null);
 
@@ -507,8 +503,8 @@ setTimeout(() => setSaved(false), 2000);
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://flipcollab.app/about", "_blank"))}
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
-        {settingsRow("Privacy Policy", "How we use your data", () => setShowPrivacyModal(true))}
-        {settingsRow("Terms of Service", "Platform rules", () => setShowTermsModal(true))}
+        {settingsRow("Privacy Policy", "How we use your data", () => setSettingsSection("privacy-policy"))}
+{settingsRow("Terms of Service", "Platform rules", () => setSettingsSection("terms"))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -1006,7 +1002,65 @@ setTimeout(() => setSaved(false), 2000);
   );
 
   // ─── PRIVACY POLICY / TERMS ───────────────────────────────────────────────
+const renderPrivacyPolicy = () => (
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    {renderSettingsHeader("Privacy Policy", () => setSettingsSection("main"))}
+    <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
+      <p>This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.</p>
+      {[
+        { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: Flipcollab@hotmail.com" },
+        { t: "2. Data We Collect", b: "Name, email, profile info, payment data via Stripe, messages, campaign content, and device/usage data." },
+        { t: "3. How We Use Your Data", b: "To run your account, match brands with creators, process payments, send transactional emails, resolve disputes, and comply with legal obligations." },
+        { t: "4. Legal Basis", b: "Contract performance, legitimate interests (security, fraud prevention), and legal obligation." },
+        { t: "5. Third-Party Services", b: "Supabase (database/auth, EU), Stripe (payments, PCI-DSS), Vercel (hosting). We do not sell your data." },
+        { t: "6. Data Retention", b: "Retained while your account is active. Deleted within 30 days of account deletion, except payment records kept 6 years under UK law." },
+        { t: "7. Your Rights", b: "Access, correction, deletion, objection, portability, and the right to complain to the ICO (ico.org.uk). Email us to exercise these." },
+        { t: "8. Cookies", b: "Essential cookies only. No tracking or advertising cookies." },
+        { t: "9. Security", b: "HTTPS, Supabase auth, and Stripe PCI compliance. Contact us immediately if you suspect unauthorised access." },
+        { t: "10. Children", b: "Not for under 18s. Accounts found to belong to minors are deleted immediately." },
+        { t: "11. Changes", b: "We'll notify you of significant changes via email or in-app notice." },
+        { t: "12. Contact", b: "Flipcollab@hotmail.com" },
+      ].map(({ t, b }) => (
+        <div key={t}>
+          <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
+          <span>{b}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
+const renderTerms = () => (
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    {renderSettingsHeader("Terms of Service", () => setSettingsSection("main"))}
+    <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
+      <p>By using FlipCollab you agree to these Terms. You must be at least 18 years old.</p>
+      {[
+        { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
+        { t: "2. Your Account", b: "Keep credentials secure. FlipCollab isn't liable for unauthorised access. You can delete your account anytime from settings." },
+        { t: "3. Creator Responsibilities", b: "Deliver content as described within the agreed timeframe. Don't accept payment outside FlipCollab to bypass fees — this results in immediate termination." },
+        { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved. Disputes must be raised within 7 days to Flipcollab@hotmail.com." },
+        { t: "5. Payment Delays", b: "Delays may occur during maintenance or incidents. All escrow funds are guaranteed to be processed once normal operations resume." },
+        { t: "6. Platform Fees", b: "FlipCollab deducts a 10% fee from creator earnings per completed collab." },
+        { t: "7. Prohibited Content", b: "No illegal, hateful, explicit, discriminatory, or misleading content. Violations result in account suspension or termination." },
+        { t: "8. Intellectual Property", b: "Creators retain content ownership. Completing a campaign grants the brand a non-exclusive licence for promotional use as agreed." },
+        { t: "9. Privacy", b: "We collect name, email, profile info, and payment data. We use Supabase, Stripe, and Vercel. We don't sell your data." },
+        { t: "10. Limitation of Liability", b: "FlipCollab isn't liable for indirect or consequential losses, including brand-creator disputes." },
+        { t: "11. Governing Law", b: "Governed by the laws of England and Wales." },
+        { t: "12. In-App Purchases", b: "Subscription fees are recurring and cancellable anytime. No refunds for partial periods." },
+        { t: "13. App Store Compliance", b: "Claims must be directed to FlipCollab, not Apple or Google." },
+        { t: "14. Contact", b: "Flipcollab@hotmail.com" },
+      ].map(({ t, b }) => (
+        <div key={t}>
+          <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
+          <span>{b}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   if (view === "profile") return (
     <>
@@ -1031,13 +1085,8 @@ setTimeout(() => setSaved(false), 2000);
       {settingsSection === "audience-data" && renderAudienceData()}
       {settingsSection === "past-collabs" && renderPastCollabs()}
       {settingsSection === "help" && renderHelp()}
-      <TermsModal
-  isOpen={showTermsModal}
-  onAccept={() => setShowTermsModal(false)}
-  onClose={() => setShowTermsModal(false)}
-  role="creator"
-/>
-<PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
+{settingsSection === "privacy-policy" && renderPrivacyPolicy()}
+{settingsSection === "terms" && renderTerms()}
     </>
   );
 }
