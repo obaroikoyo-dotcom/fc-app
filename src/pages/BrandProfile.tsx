@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import TermsModal from "./TermsModal";
+import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -58,6 +60,8 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
+const [showTermsModal, setShowTermsModal] = useState(false);
+const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
@@ -375,8 +379,8 @@ if (data) setFavouritedCreators(data);
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://flipcollab.app/about", "_blank"))}
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
-        {settingsRow("Privacy Policy", "How we use your data", () => setSettingsSection("privacy-policy"))}
-        {settingsRow("Terms of Service", "Platform rules", () => setSettingsSection("terms"))}
+        {settingsRow("Privacy Policy", "How we use your data", () => setShowPrivacyModal(true))}
+{settingsRow("Terms of Service", "Platform rules", () => setShowTermsModal(true))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div
@@ -637,8 +641,13 @@ if (data) setFavouritedCreators(data);
       {settingsSection === "share-profile" && renderShareProfile()}
       {settingsSection === "favourites" && renderFavourites()}
       {settingsSection === "help" && renderHelp()}
-      {settingsSection === "privacy-policy" && renderDoc("Privacy Policy", "FlipCollab collects your brand name, email, profile information, and payment data to operate the platform. We use Supabase for data storage, Stripe for payments, and Vercel for hosting. We do not sell your data to third parties. Data is retained for as long as your account is active. You may request deletion at any time.")}
-      {settingsSection === "terms" && renderDoc("Terms of Service", "By using FlipCollab you agree to our Terms & Conditions. Brands agree to post accurate campaign information and pay creators as agreed. A 5% platform fee is added to brand payments and a 10% fee is deducted from creator earnings. Enterprise brands receive 0% fees. All payments are processed through Stripe with escrow protection. FlipCollab is governed by the laws of England and Wales.")}
+      <TermsModal
+  isOpen={showTermsModal}
+  onAccept={() => setShowTermsModal(false)}
+  onClose={() => setShowTermsModal(false)}
+  role="brand"
+/>
+<PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </>
   );
 }

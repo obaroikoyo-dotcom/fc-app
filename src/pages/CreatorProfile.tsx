@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import TermsModal from "./TermsModal";
+import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -86,6 +88,8 @@ const [withdrawSortCode, setWithdrawSortCode] = useState("");
 const [withdrawing, setWithdrawing] = useState(false);
 const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 const [withdrawError, setWithdrawError] = useState("");
+const [showTermsModal, setShowTermsModal] = useState(false);
+const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const picRef = useRef<HTMLInputElement>(null);
 
@@ -503,8 +507,8 @@ setTimeout(() => setSaved(false), 2000);
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://flipcollab.app/about", "_blank"))}
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
-        {settingsRow("Privacy Policy", "How we use your data", () => setSettingsSection("privacy-policy"))}
-        {settingsRow("Terms of Service", "Platform rules", () => setSettingsSection("terms"))}
+        {settingsRow("Privacy Policy", "How we use your data", () => setShowPrivacyModal(true))}
+        {settingsRow("Terms of Service", "Platform rules", () => setShowTermsModal(true))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -1036,8 +1040,13 @@ setTimeout(() => setSaved(false), 2000);
       {settingsSection === "audience-data" && renderAudienceData()}
       {settingsSection === "past-collabs" && renderPastCollabs()}
       {settingsSection === "help" && renderHelp()}
-      {settingsSection === "privacy-policy" && renderDoc("Privacy Policy", "FlipCollab collects your name, email, profile information, and payment data to operate the platform. We use Supabase for data storage, Stripe for payments, and Vercel for hosting. We do not sell your personal data to third parties. Data is retained for as long as your account is active. You may request deletion at any time.")}
-      {settingsSection === "terms" && renderDoc("Terms of Service", "By using FlipCollab you agree to our Terms & Conditions. You must be 18 or over. Brands agree to post accurate campaign information. Creators agree to deliver content as described. A 10% platform fee is deducted from creator earnings and a 5% fee is added to brand payments. All payments are processed through Stripe with escrow protection. FlipCollab is governed by the laws of England and Wales.")}
+      <TermsModal
+  isOpen={showTermsModal}
+  onAccept={() => setShowTermsModal(false)}
+  onClose={() => setShowTermsModal(false)}
+  role="creator"
+/>
+<PrivacyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </>
   );
 }
