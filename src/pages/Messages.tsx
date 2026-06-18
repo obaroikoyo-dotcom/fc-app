@@ -263,7 +263,11 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       return { ...camp, applications: enrichedApps };
     }));
 
-    setCampaigns(campaignsWithApps);
+    setCampaigns(campaignsWithApps.sort((a, b) => {
+      const aLatest = a.applications[0]?.created_at || "0";
+      const bLatest = b.applications[0]?.created_at || "0";
+      return new Date(bLatest).getTime() - new Date(aLatest).getTime();
+    }));
   };
 
   const openChat = async (convo: Conversation) => {
@@ -288,9 +292,13 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     const text = input;
     setInput("");
     
+    const now = new Date().toISOString();
     await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text });
-    await supabase.from("conversations").update({ last_message: text, last_message_at: new Date().toISOString() }).eq("id", activeConvo.id);
-loadConversations();
+    await supabase.from("conversations").update({ last_message: text, last_message_at: now }).eq("id", activeConvo.id);
+    setConversations(prev => {
+      const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: text, last_message_at: now } : c);
+      return updated.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+    });
 
     const receiverId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
 
