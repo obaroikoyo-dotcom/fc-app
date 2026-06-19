@@ -92,8 +92,8 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     setError("");
 
     const res = await supabase.functions.invoke("create-payment-intent", {
-      body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, is_enterprise: isEnterprise }
-    });
+  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, is_enterprise: isEnterprise, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null }
+});
 
     if (res.error || !res.data?.clientSecret) {
       setError("Failed to create payment. Try again.");
