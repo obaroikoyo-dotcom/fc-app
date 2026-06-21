@@ -394,7 +394,9 @@ const { data: linkedApp } = await supabase
   };
 
   const clearUnreadForConvo = async (convoId: string) => {
-  if (!currentUserId) return;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  const currentUserId = user.id;
   const { data: notifs } = await supabase
     .from("notifications")
     .select("id, data")
