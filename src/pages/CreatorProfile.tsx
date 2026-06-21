@@ -185,6 +185,17 @@ const [withdrawError, setWithdrawError] = useState("");
     if (data) setCampaignFavourites(data);
   };
 
+  const loadWithdrawalRequests = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("withdrawal_requests")
+      .select("*")
+      .eq("creator_id", user.id)
+      .order("created_at", { ascending: false });
+    if (data) setWithdrawalRequests(data);
+  };
+
   const loadWallet = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
@@ -197,17 +208,6 @@ const [withdrawError, setWithdrawError] = useState("");
     setWalletBalance(earned - withdrawn);
   }
 };
-
-  const loadWithdrawalRequests = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase
-      .from("withdrawal_requests")
-      .select("*")
-      .eq("creator_id", user.id)
-      .order("created_at", { ascending: false });
-    if (data) setWithdrawalRequests(data);
-  };
 
   const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -265,6 +265,8 @@ const [withdrawError, setWithdrawError] = useState("");
     if (error) {
       setWithdrawError("Failed to submit. Try again.");
     } else {
+      setWalletBalance(prev => prev - Math.round(amount * 100));
+      await loadWithdrawalRequests();
       setWithdrawSuccess(true);
       setWithdrawAmount("");
       setWithdrawPaypal("");
