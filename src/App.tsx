@@ -302,8 +302,12 @@ export default function App() {
         if (!isMounted) return;
 
         if (session?.user) {
-          await syncUserRoute(session.user.id);
-          fetchGlobalUnreadCount();
+          if (!session.user.email_confirmed_at) {
+            setPage("verify-email");
+          } else {
+            await syncUserRoute(session.user.id);
+            fetchGlobalUnreadCount();
+          }
         } else {
           setPage("role-select");
         }
