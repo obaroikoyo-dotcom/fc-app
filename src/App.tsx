@@ -334,9 +334,19 @@ export default function App() {
         setPage("role-select");
         setUnreadCount(0);
         setLoading(false);
-      } else if (event === "USER_UPDATED" && session?.user) {
+      } else if (event === "SIGNED_IN" && session?.user) {
+        if (!session.user.email_confirmed_at) {
+          setPage("verify-email");
+          setLoading(false);
+          return;
+        }
         await syncUserRoute(session.user.id);
         fetchGlobalUnreadCount();
+      } else if (event === "USER_UPDATED" && session?.user) {
+        if (session.user.email_confirmed_at) {
+          await syncUserRoute(session.user.id);
+          fetchGlobalUnreadCount();
+        }
       }
     });
 
