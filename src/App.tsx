@@ -17,6 +17,7 @@ import Search from "./pages/Search";
 import Notifications from "./pages/Notifications"; 
 import EnterpriseSubscriptionPage from "./pages/EnterpriseSubscriptionPage";
 import ApplyCampaign from "./pages/ApplyCampaign";
+import VerifyEmail from "./pages/VerifyEmail";
 import { supabase } from "./lib/supabase";
 
 
@@ -41,7 +42,8 @@ export type Page =
   | "notifications-creator"
   | "notifications-brand"
   | "enterprise"
-  | "apply-campaign";
+  | "apply-campaign"
+  | "verify-email";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "apply-campaign"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
@@ -405,6 +407,7 @@ case "apply-campaign":
           />
         );
       }
+      case "verify-email": return <VerifyEmail navigate={navigate} />;
       case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
       case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; 
     }
