@@ -58,6 +58,7 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
+const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
@@ -90,6 +91,7 @@ const [showCancelModal, setShowCancelModal] = useState(false);
       setLogo(data.logo_url || data.avatar_url || null);
       setLogoUrl(data.logo_url || data.avatar_url || null);
       setIsEnterprise(data.is_enterprise || false);
+setCancelledAtPeriodEnd(data.subscription_cancel_at_period_end || false);
     }
   };
 
@@ -106,8 +108,8 @@ const [showCancelModal, setShowCancelModal] = useState(false);
       setCancelLoading(false);
       return;
     }
-    setIsEnterprise(false);
-    setShowCancelModal(false);
+    setCancelledAtPeriodEnd(true);
+setShowCancelModal(false);
   } catch {
     setCancelError("Something went wrong. Try again.");
   }
@@ -325,12 +327,19 @@ if (data) setFavouritedCreators(data);
               </div>
               <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Active</span>
             </div>
-            <div
-              onClick={() => setShowCancelModal(true)}
-              style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.4)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#6366f1", letterSpacing: "0.08em", textTransform: "uppercase" }}
-            >
-              Manage Subscription
-            </div>
+           {cancelledAtPeriodEnd ? (
+  <div style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid #1a1a1a", fontSize: "13px", fontWeight: 500, textAlign: "center", color: "#444", lineHeight: 1.5 }}>
+    <p style={{ margin: 0, marginBottom: "2px", color: "#fff", fontWeight: 600 }}>Cancellation Scheduled</p>
+    <p style={{ margin: 0, fontSize: "12px" }}>Your plan remains active until the end of your billing period.</p>
+  </div>
+) : (
+  <div
+    onClick={() => setShowCancelModal(true)}
+    style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.4)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#6366f1", letterSpacing: "0.08em", textTransform: "uppercase" }}
+  >
+    Manage Subscription
+  </div>
+)}
 
             {showCancelModal && (
               <div onClick={() => !cancelLoading && setShowCancelModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1.25rem", paddingTop: "4rem" }}>
