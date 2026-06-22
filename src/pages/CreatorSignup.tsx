@@ -38,7 +38,7 @@ export default function CreatorSignup({ navigate }: Props) {
     }
 
     setLoading(false);
-    navigate("explore");
+    navigate("verify-email");
   };
 
   return (
