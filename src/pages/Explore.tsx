@@ -29,7 +29,7 @@ interface Campaign {
     status: "pending" | "approved" | "declined";
     message: string;
   };
-}S
+}
 
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
