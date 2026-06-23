@@ -36,7 +36,8 @@ const formatDeadline = (dateString: string) => {
 
 const formatRelativeTime = (dateString: string, now: Date) => {
   if (!dateString) return "";
-  const diffMs = now.getTime() - new Date(dateString).getTime();
+  const utcDate = new Date(dateString.endsWith("Z") ? dateString : dateString + "Z");
+  const diffMs = now.getTime() - utcDate.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   if (diffMins < 1) return "under 1 minute ago";
   if (diffMins === 1) return "1 minute ago";

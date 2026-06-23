@@ -7,7 +7,6 @@ interface Props {
   navigateToProfile?: (id: string) => void;
   navigateToApply?: (campaignId: string) => void;
 }
-
 interface Campaign {
   id: string;
   brand_id: string;
@@ -30,7 +29,7 @@ interface Campaign {
     status: "pending" | "approved" | "declined";
     message: string;
   };
-}
+}S
 
 const formatDeadline = (dateString: string) => {
   if (!dateString) return "";
@@ -42,8 +41,8 @@ const formatDeadline = (dateString: string) => {
 
 const formatRelativeTime = (dateString: string, now: Date) => {
   if (!dateString) return "";
-  const postedDate = new Date(dateString);
-  const diffMins = Math.floor((now.getTime() - postedDate.getTime()) / 60000);
+  const utcDate = new Date(dateString.endsWith("Z") ? dateString : dateString + "Z");
+  const diffMins = Math.floor((now.getTime() - utcDate.getTime()) / 60000);
   if (diffMins < 1) return "under 1 minute ago";
   if (diffMins === 1) return "1 minute ago";
   if (diffMins < 60) return `${diffMins} minutes ago`;
