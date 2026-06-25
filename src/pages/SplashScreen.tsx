@@ -5,12 +5,12 @@ interface Props {
 }
 
 export default function SplashScreen({ onComplete }: Props) {
-  const [phase, setPhase] = useState<"fadein" | "shake" | "fadeout">("fadein");
+  const [phase, setPhase] = useState<"fadein" | "glitch" | "fadeout">("fadein");
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("shake"), 1000);
-    const t2 = setTimeout(() => setPhase("fadeout"), 2800);
-    const t3 = setTimeout(() => onComplete(), 3500);
+    const t1 = setTimeout(() => setPhase("glitch"), 1200);
+    const t2 = setTimeout(() => setPhase("fadeout"), 2200);
+    const t3 = setTimeout(() => onComplete(), 3000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
@@ -20,93 +20,98 @@ export default function SplashScreen({ onComplete }: Props) {
       display: "flex", alignItems: "center", justifyContent: "center",
       zIndex: 9999,
       opacity: phase === "fadeout" ? 0 : 1,
-      transition: phase === "fadeout" ? "opacity 0.8s ease" : "none",
+      transition: phase === "fadeout" ? "opacity 0.9s ease" : "none",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Sans:wght@400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap');
 
         @keyframes fadein {
-          from { opacity: 0; transform: scale(0.9); }
+          from { opacity: 0; transform: scale(0.92); }
           to   { opacity: 1; transform: scale(1); }
         }
 
-        @keyframes rumble {
-          0%   { transform: translate(0, 0) rotate(0deg); }
-          10%  { transform: translate(-3px, 1px) rotate(-1deg); }
-          20%  { transform: translate(3px, -1px) rotate(1deg); }
-          30%  { transform: translate(-2px, 2px) rotate(-0.5deg); }
-          40%  { transform: translate(4px, -2px) rotate(1.5deg); }
-          50%  { transform: translate(-4px, 1px) rotate(-1deg); }
-          60%  { transform: translate(2px, 3px) rotate(0.5deg); }
-          70%  { transform: translate(-3px, -1px) rotate(-1.5deg); }
-          80%  { transform: translate(3px, 2px) rotate(1deg); }
-          90%  { transform: translate(-1px, -2px) rotate(-0.5deg); }
-          100% { transform: translate(0, 0) rotate(0deg); }
+        @keyframes glitch {
+          0%   { clip-path: inset(0 0 100% 0); transform: translate(0, 0); }
+          5%   { clip-path: inset(10% 0 60% 0); transform: translate(-4px, 0); }
+          10%  { clip-path: inset(50% 0 20% 0); transform: translate(4px, 0); }
+          15%  { clip-path: inset(20% 0 70% 0); transform: translate(-3px, 0); }
+          20%  { clip-path: inset(70% 0 5% 0);  transform: translate(3px, 0); }
+          25%  { clip-path: inset(0 0 0 0);      transform: translate(0, 0); }
+          30%  { clip-path: inset(30% 0 40% 0); transform: translate(5px, 0); }
+          35%  { clip-path: inset(0 0 0 0);      transform: translate(0, 0); }
+          40%  { clip-path: inset(5% 0 80% 0);  transform: translate(-5px, 0); }
+          45%  { clip-path: inset(0 0 0 0);      transform: translate(0, 0); }
+          100% { clip-path: inset(0 0 0 0);      transform: translate(0, 0); }
         }
 
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.6; }
+        @keyframes glitchRed {
+          0%   { clip-path: inset(0 0 100% 0); transform: translate(0, 0); opacity: 0; }
+          5%   { clip-path: inset(10% 0 60% 0); transform: translate(4px, 0); opacity: 0.4; }
+          10%  { clip-path: inset(50% 0 20% 0); transform: translate(-4px, 0); opacity: 0.3; }
+          15%  { clip-path: inset(20% 0 70% 0); transform: translate(3px, 0); opacity: 0.4; }
+          20%  { clip-path: inset(70% 0 5% 0);  transform: translate(-3px, 0); opacity: 0.3; }
+          25%  { opacity: 0; }
+          30%  { clip-path: inset(30% 0 40% 0); transform: translate(-5px, 0); opacity: 0.4; }
+          35%  { opacity: 0; }
+          40%  { clip-path: inset(5% 0 80% 0);  transform: translate(5px, 0); opacity: 0.3; }
+          45%  { opacity: 0; }
+          100% { opacity: 0; }
         }
 
         .logo-fadein {
-          animation: fadein 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          animation: fadein 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .logo-rumble {
-          animation: rumble 0.08s linear infinite, pulse 0.4s ease-in-out infinite;
+        .logo-glitch {
+          animation: glitch 0.6s steps(1) forwards;
+        }
+
+        .logo-glitch-red {
+          animation: glitchRed 0.6s steps(1) forwards;
+          position: absolute;
+          inset: 0;
+          filter: hue-rotate(200deg) saturate(3);
+          pointer-events: none;
         }
 
         .splash-text {
           opacity: 0;
-          transform: translateY(8px);
-          transition: opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s;
+          transform: translateY(6px);
+          transition: opacity 0.5s ease 0.5s, transform 0.5s ease 0.5s;
         }
 
         .splash-text.visible {
           opacity: 1;
           transform: translateY(0);
         }
-
-        .splash-tagline {
-          opacity: 0;
-          transition: opacity 0.5s ease 0.7s;
-        }
-
-        .splash-tagline.visible {
-          opacity: 1;
-        }
       `}</style>
 
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "28px" }}>
-        <img
-          src="/logo.png"
-          className={phase === "fadein" ? "logo-fadein" : phase === "shake" ? "logo-rumble" : ""}
-          style={{ width: "130px", height: "130px", objectFit: "contain" }}
-        />
-
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
-          <p className={`splash-text${phase !== "fadein" ? " visible" : ""}`} style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: "26px",
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: "-0.02em",
-            margin: 0,
-          }}>
-            FlipCollab
-          </p>
-          <p className={`splash-tagline${phase !== "fadein" ? " visible" : ""}`} style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "11px",
-            color: "#444",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            margin: 0,
-          }}>
-            Creator × Brand
-          </p>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "24px" }}>
+        <div style={{ position: "relative", width: 120, height: 120 }}>
+          <img
+            src="/logo.png"
+            className={phase === "fadein" ? "logo-fadein" : phase === "glitch" ? "logo-glitch" : ""}
+            style={{ width: "120px", height: "120px", objectFit: "contain", display: "block" }}
+          />
+          {phase === "glitch" && (
+            <img
+              src="/logo.png"
+              className="logo-glitch-red"
+              style={{ width: "120px", height: "120px", objectFit: "contain" }}
+            />
+          )}
         </div>
+
+        <p className={`splash-text${phase !== "fadein" ? " visible" : ""}`} style={{
+          fontFamily: "'Syne', sans-serif",
+          fontSize: "26px",
+          fontWeight: 800,
+          color: "#fff",
+          letterSpacing: "-0.02em",
+          margin: 0,
+        }}>
+          FlipCollab
+        </p>
       </div>
     </div>
   );
