@@ -42,7 +42,7 @@ export default function RoleSelect({ navigate }: Props) {
   return (
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "480px" }}>
-        <img src={logo} style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
+        <img src={logo} className="no-reinvert" style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "2rem" }}>FlipCollab</p>
         <p style={{
           textAlign: "center",
