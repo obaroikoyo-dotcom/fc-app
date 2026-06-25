@@ -1,3 +1,4 @@
+import SplashScreen from "./pages/SplashScreen";
 import BrandOnboarding from "./pages/BrandOnboarding";
 import PublicProfile from "./pages/PublicProfile";
 import CreatorOnboarding from "./pages/CreatorOnboarding";
@@ -183,6 +184,8 @@ export default function App() {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [openConvoId, setOpenConvoId] = useState<string | null>(null);
   const [applyingCampaignId, setApplyingCampaignId] = useState<string | null>(null);
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashDone, setSplashDone] = useState(false);
   
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -362,7 +365,11 @@ export default function App() {
     };
   }, []);
 
-  if (loading) {
+  if (showSplash) {
+    return <SplashScreen onComplete={() => { setShowSplash(false); setSplashDone(true); }} />;
+  }
+
+  if (loading || !splashDone) {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "#333", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
