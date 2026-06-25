@@ -28,17 +28,17 @@ export default function SplashScreen({ onComplete }: Props) {
     let frame = 0;
     const interval = setInterval(() => {
       setGlitchFrame(++frame);
-      if (frame > 18) clearInterval(interval);
-    }, 50);
+      if (frame > 25) clearInterval(interval);
+    }, 30);
     return () => clearInterval(interval);
   }, [phase]);
 
   const isGlitching = phase === "glitch" && glitchFrame > 0 && glitchFrame <= 18;
-  const intensity = Math.sin((glitchFrame / 18) * Math.PI);
+  const intensity = Math.sin((glitchFrame / 25) * Math.PI);
   const sliceY1 = 30 + (glitchFrame * 17) % 80;
   const sliceY2 = 100 + (glitchFrame * 31) % 70;
-  const shiftX = glitchFrame % 2 === 0 ? -8 * intensity : 10 * intensity;
-  const shiftX2 = glitchFrame % 2 === 0 ? 6 * intensity : -12 * intensity;
+  const shiftX = glitchFrame % 2 === 0 ? -18 * intensity : 22 * intensity;
+const shiftX2 = glitchFrame % 2 === 0 ? 14 * intensity : -20 * intensity;
 
   const svgPaths = (color = "#ffffff") =>
     PATHS.map((d, i) => <path key={i} d={d} fill={color} />);
@@ -94,7 +94,7 @@ export default function SplashScreen({ onComplete }: Props) {
             <svg viewBox="0 0 365 219" width="120" height="72" style={{
               position: "absolute", top: 0,
               left: shiftX,
-              opacity: 0.45 * intensity,
+              opacity: 0.75 * intensity,
               mixBlendMode: "screen",
               clipPath: `inset(${sliceY1}% 0 ${100 - sliceY1 - 15}% 0)`,
             }}>
@@ -107,14 +107,13 @@ export default function SplashScreen({ onComplete }: Props) {
             <svg viewBox="0 0 365 219" width="120" height="72" style={{
               position: "absolute", top: 0,
               left: shiftX2,
-              opacity: 0.35 * intensity,
+              opacity: 0.6 * intensity,
               mixBlendMode: "screen",
               clipPath: `inset(${sliceY2}% 0 ${100 - sliceY2 - 12}% 0)`,
             }}>
               {svgPaths("#00eeff")}
             </svg>
           )}
-
           {/* Slice displacement */}
           {isGlitching && glitchFrame % 3 === 0 && (
             <svg viewBox="0 0 365 219" width="120" height="72" style={{
