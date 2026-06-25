@@ -55,7 +55,7 @@ export default function SplashScreen({ onComplete }: Props) {
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
         <img
-          src="/logo.png"
+          src="./logo.png"
           className={`splash-logo${phase === "glitch" ? " glitching" : ""}`}
           style={{ width: "90px", height: "90px", objectFit: "contain" }}
         />
