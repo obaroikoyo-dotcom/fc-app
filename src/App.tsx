@@ -23,6 +23,7 @@ import { supabase } from "./lib/supabase";
 
 
 export type Page = 
+  | "splash"
   | "role-select" 
   | "brand-signup" 
   | "brand-onboarding" 
@@ -175,7 +176,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
 }
 
 export default function App() {
-  const [page, setPage] = useState<Page>("role-select");
+  const [page, setPage] = useState<Page>("splash");
   const [, setHistory] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
   const [brandTab, setBrandTab] = useState<"campaigns" | "post">("campaigns");
@@ -184,8 +185,6 @@ export default function App() {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [openConvoId, setOpenConvoId] = useState<string | null>(null);
   const [applyingCampaignId, setApplyingCampaignId] = useState<string | null>(null);
-  const [showSplash, setShowSplash] = useState(true);
-  const [splashDone, setSplashDone] = useState(false);
   
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -300,6 +299,7 @@ export default function App() {
     }, 3500);
 
     const initializeAuth = async () => {
+      await new Promise(resolve => setTimeout(resolve, 3000));
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
@@ -365,11 +365,7 @@ export default function App() {
     };
   }, []);
 
-  if (showSplash) {
-    return <SplashScreen onComplete={() => { setShowSplash(false); setSplashDone(true); }} />;
-  }
-
-  if (loading || !splashDone) {
+  if (loading) {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "#333", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
@@ -379,6 +375,7 @@ export default function App() {
 
   const renderPage = () => {
     switch (page) {
+      case "splash": return <SplashScreen navigate={navigate} />;
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
