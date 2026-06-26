@@ -365,7 +365,7 @@ export default function App() {
     };
   }, []);
 
-  if (loading) {
+  if (loading && page !== "splash") {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "#333", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
