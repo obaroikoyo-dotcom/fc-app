@@ -5,14 +5,14 @@ import TermsModal from "./TermsModal";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 
-interface Props { navigate: (p: Page) => void; }
+interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
 const NICHES = ["Tech", "Beauty", "Fitness", "Gaming", "Fashion", "Food", "Travel", "Lifestyle", "Finance", "Parenting", "Education", "Sports", "Music", "Comedy", "Art", "Wellness", "Pets", "DIY", "Business", "Automotive"];
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
 const TOTAL_SCREENS = 8;
 
-export default function CreatorOnboarding({ navigate }: Props) {
+export default function CreatorOnboarding({ navigate, setPendingEmail }: Props) {
   const [screen, setScreen] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [animating, setAnimating] = useState(false);
@@ -134,7 +134,8 @@ await supabase.from("creator_profiles").insert({
     }
 
     setLoading(false);
-    navigate("explore");
+    setPendingEmail(email);
+    navigate("verify-email");
   };
 
   const inputStyle: React.CSSProperties = {
@@ -395,7 +396,7 @@ const buttonLabel = () => {
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1.25rem 1.5rem 2rem", background: "linear-gradient(to top, #0a0a0a 60%, transparent)" }}>
         {isLastScreen ? (
           <div
-            onClick={() => navigate("explore")}
+            onClick={() => navigate("verify-email")}
             style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
             Start Exploring →

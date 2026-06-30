@@ -5,7 +5,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
 
-interface Props { navigate: (p: Page) => void; }
+interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
 const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home", "Jewellery & Accessories", "Skincare", "Haircare", "Travel & Hospitality", "Parenting & Family", "Pet Care", "Finance & Fintech", "Education & E-learning", "Gaming", "Automotive", "Sports & Outdoors", "Luxury Goods", "Sustainability & Eco", "Alcohol & Beverages", "Subscription Boxes", "Home & Garden", "Art & Creative Tools"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Aires", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos"];
@@ -18,7 +18,7 @@ const CREATOR_TIERS = [
 ];
 const TOTAL_SCREENS = 7;
 
-export default function BrandOnboarding({ navigate }: Props) {
+export default function BrandOnboarding({ navigate, setPendingEmail }: Props) {
   const [screen, setScreen] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [animating, setAnimating] = useState(false);
@@ -173,9 +173,10 @@ niche: selectedIndustries.join(", "),
         return;
       }
 
-      // 4. Structural transaction verified. Proceed to dashboard layout.
+      // 4. Structural transaction verified. Proceed to verification.
       setLoading(false);
-      navigate("brand-dashboard");
+      setPendingEmail(email);
+      navigate("verify-email");
 
     } catch (catchErr) {
       console.error("Onboarding pipeline crash intercepted:", catchErr);

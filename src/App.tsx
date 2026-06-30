@@ -185,6 +185,7 @@ export default function App() {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [openConvoId, setOpenConvoId] = useState<string | null>(null);
   const [applyingCampaignId, setApplyingCampaignId] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string>("");
   
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -306,6 +307,7 @@ export default function App() {
 
         if (session?.user) {
           if (!session.user.email_confirmed_at) {
+            setPendingEmail(session.user.email || "");
             setPage("verify-email");
           } else {
             await syncUserRoute(session.user.id);
@@ -343,6 +345,7 @@ export default function App() {
         setLoading(false);
       } else if (event === "SIGNED_IN" && session?.user) {
         if (!session.user.email_confirmed_at) {
+          setPendingEmail(session.user.email || "");
           setPage("verify-email");
           setLoading(false);
           return;
@@ -378,7 +381,7 @@ export default function App() {
       case "splash": return <SplashScreen navigate={navigate} />;
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
-      case "brand-onboarding": return <BrandOnboarding navigate={navigate} />; 
+      case "brand-onboarding": return <BrandOnboarding navigate={navigate} setPendingEmail={setPendingEmail} />;
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
       case "brand-dashboard": 
@@ -425,8 +428,8 @@ case "apply-campaign":
           />
         );
       }
-      case "verify-email": return <VerifyEmail navigate={navigate} />;
-      case "creator-onboarding": return <CreatorOnboarding navigate={navigate} />;
+      case "verify-email": return <VerifyEmail navigate={navigate} email={pendingEmail} />;
+      case "creator-onboarding": return <CreatorOnboarding navigate={navigate} setPendingEmail={setPendingEmail} />;
       case "brand-public-profile": return <BrandPublicProfile navigate={navigate} profileId={viewingBrandId || ""} goBack={goBack} />; 
     }
   };
