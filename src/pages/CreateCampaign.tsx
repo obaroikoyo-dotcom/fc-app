@@ -89,7 +89,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const numericBudget = parseInt(budget, 10) || 0;
+  const numericBudget = Math.max(0, parseInt(budget, 10) || 0);
   const platformFee = isEnterprise ? 0 : numericBudget * 0.05;
   const totalCost = numericBudget + platformFee;
   const creatorPayout = isEnterprise ? numericBudget : numericBudget * 0.9;
@@ -119,7 +119,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       const ext = asset.file.name.split(".").pop();
       const path = `campaign-assets/${userId}/${campaignId}/${folder}/${Date.now()}-${Math.random()}.${ext}`;
       const { error: uploadError } = await supabase.storage.from("campaign-assets").upload(path, asset.file, { upsert: true });
-      if (!uploadError) {
+      if (uploadError) {
+        console.error(`Failed to upload ${asset.file.name}:`, uploadError);
+      } else {
         const { data } = supabase.storage.from("campaign-assets").getPublicUrl(path);
         urls.push(data.publicUrl);
       }
@@ -129,34 +131,44 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
   const postCampaign = async () => {
     if (!name.trim()) { setError("Campaign title is required."); return; }
+    if (objective === "Other" && !objectiveOther.trim()) { setError("Please describe your objective."); return; }
+    if (campaignType === "paid" && numericBudget <= 0) { setError("Enter a budget for paid campaigns."); return; }
     setError(null);
     setPosting(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setPosting(false); return; }
-    const finalObjective = objective === "Other" ? objectiveOther : objective;
-    const { data: campaign, error: insertError } = await supabase.from("campaigns").insert({
-      brand_id: user.id, name, description: vibe, budget, type: campaignType,
-      niche, platforms, deadline, video_required: videoRequired,
-      objective: finalObjective, deliverables, vibe,
-      dos: dos.filter(d => d.trim()), donts: donts.filter(d => d.trim()),
-      promo_code: promoCode, landing_link: landingLink, utm_code: utmCode, script: "",
-    }).select().single();
-    if (insertError || !campaign) { setError("Failed to post campaign. Please try again."); setPosting(false); return; }
-    const [logoUrls, overlayUrls, styleVideoUrls, brollUrls] = await Promise.all([
-      uploadAssets(user.id, campaign.id, logos, "logos"),
-      uploadAssets(user.id, campaign.id, overlays, "overlays"),
-      uploadAssets(user.id, campaign.id, styleVideos, "style-videos"),
-      uploadAssets(user.id, campaign.id, broll, "broll"),
-    ]);
-    if (logoUrls.length || overlayUrls.length || styleVideoUrls.length || brollUrls.length) {
-      await supabase.from("campaigns").update({
-        asset_logos: logoUrls, asset_overlays: overlayUrls,
-        asset_style_videos: styleVideoUrls, asset_broll: brollUrls,
-      }).eq("id", campaign.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setError("You must be logged in to post a campaign."); return; }
+      const finalObjective = objective === "Other" ? objectiveOther : objective;
+      const { data: campaign, error: insertError } = await supabase.from("campaigns").insert({
+        brand_id: user.id, name, description: vibe,
+        budget: campaignType === "paid" ? numericBudget : 0,
+        type: campaignType,
+        niche, platforms, deadline, video_required: videoRequired,
+        objective: finalObjective, deliverables, vibe,
+        dos: dos.filter(d => d.trim()), donts: donts.filter(d => d.trim()),
+        promo_code: promoCode, landing_link: landingLink, utm_code: utmCode, script: "",
+      }).select().single();
+      if (insertError || !campaign) { setError("Failed to post campaign. Please try again."); return; }
+      const [logoUrls, overlayUrls, styleVideoUrls, brollUrls] = await Promise.all([
+        uploadAssets(user.id, campaign.id, logos, "logos"),
+        uploadAssets(user.id, campaign.id, overlays, "overlays"),
+        uploadAssets(user.id, campaign.id, styleVideos, "style-videos"),
+        uploadAssets(user.id, campaign.id, broll, "broll"),
+      ]);
+      if (logoUrls.length || overlayUrls.length || styleVideoUrls.length || brollUrls.length) {
+        await supabase.from("campaigns").update({
+          asset_logos: logoUrls, asset_overlays: overlayUrls,
+          asset_style_videos: styleVideoUrls, asset_broll: brollUrls,
+        }).eq("id", campaign.id);
+      }
+      setPosted(true);
+      setTimeout(() => { setPosted(false); onPosted(); }, 1500);
+    } catch (e) {
+      console.error(e);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setPosting(false);
     }
-    setPosted(true);
-    setPosting(false);
-    setTimeout(() => { setPosted(false); onPosted(); }, 1500);
   };
 
   const typeChip = (t: "paid" | "gifted") => (
