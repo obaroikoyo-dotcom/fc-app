@@ -254,8 +254,8 @@ export default function App() {
         .maybeSingle();
 
       if (profileError || !profile) {
-        await supabase.auth.signOut();
-        setPage("role-select");
+        // No profile row yet — user is mid-onboarding (handled by the
+        // onboarding component itself). Don't sign out or redirect.
         return;
       }
 
