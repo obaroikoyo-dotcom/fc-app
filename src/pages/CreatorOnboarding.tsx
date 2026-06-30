@@ -7,6 +7,7 @@ import { supabase } from "../lib/supabase";
 
 interface Props { navigate: (p: Page) => void; }
 
+const NICHES = ["Tech", "Beauty", "Fitness", "Gaming", "Fashion", "Food", "Travel", "Lifestyle", "Finance", "Parenting", "Education", "Sports", "Music", "Comedy", "Art", "Wellness", "Pets", "DIY", "Business", "Automotive"];
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
 const TOTAL_SCREENS = 8;
@@ -18,7 +19,9 @@ export default function CreatorOnboarding({ navigate }: Props) {
 
   // Form data
   const [name, setName] = useState("");
-  const [niche, setNiche] = useState("");
+  const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
+const [nicheInput, setNicheInput] = useState("");
+const [showNicheDropdown, setShowNicheDropdown] = useState(false);
   const [location, setLocation] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [socialLinks, setSocialLinks] = useState<Record<string, string>>({});
@@ -56,6 +59,21 @@ const [showPrivacy, setShowPrivacy] = useState(false);
 
   const toggleContent = (c: string) =>
     setContentTypes(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+  const addNiche = (n: string) => {
+    const trimmed = n.trim();
+    if (trimmed && !selectedNiches.includes(trimmed)) {
+      setSelectedNiches(prev => [...prev, trimmed]);
+    }
+    setNicheInput("");
+    setShowNicheDropdown(false);
+  };
+
+  const removeNiche = (n: string) =>
+    setSelectedNiches(prev => prev.filter(x => x !== n));
+
+  const filteredNiches = NICHES.filter(n =>
+    n.toLowerCase().includes(nicheInput.toLowerCase()) && !selectedNiches.includes(n)
+  );
 
   const handlePic = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -107,7 +125,7 @@ if (profileFile) {
 await supabase.from("creator_profiles").insert({
   id: data.user.id,
   name,
-  niche,
+  niche: selectedNiches.join(", "),
   location,
   avatar_url: avatarUrl,
   available: true,
@@ -161,10 +179,40 @@ await supabase.from("creator_profiles").insert({
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you create?</h1>
       <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Brands search by niche to find the right creators.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Niche</label>
-          <input style={inputStyle} placeholder="e.g. Beauty, Fitness, Lifestyle" value={niche} onChange={e => setNiche(e.target.value)} />
+        <div style={{ position: "relative" }}>
+  <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Niche</label>
+
+  {selectedNiches.length > 0 && (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
+      {selectedNiches.map(n => (
+        <div key={n} onClick={() => removeNiche(n)} style={{ padding: "6px 10px", borderRadius: "16px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+          {n} <span>×</span>
         </div>
+      ))}
+    </div>
+  )}
+
+  <input
+    style={inputStyle}
+    placeholder="Type to search or add your own"
+    value={nicheInput}
+    onChange={e => { setNicheInput(e.target.value); setShowNicheDropdown(true); }}
+    onFocus={() => setShowNicheDropdown(true)}
+    onBlur={() => setTimeout(() => setShowNicheDropdown(false), 150)}
+    onKeyDown={e => { if (e.key === "Enter" && nicheInput.trim()) { e.preventDefault(); addNiche(nicheInput); } }}
+  />
+
+  {showNicheDropdown && nicheInput && (
+    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#111", border: "1px solid #222", borderRadius: "10px", maxHeight: "180px", overflowY: "auto", zIndex: 20 }}>
+      {filteredNiches.map(n => (
+        <div key={n} onMouseDown={() => addNiche(n)} style={{ padding: "10px 14px", fontSize: "13px", color: "#fff", cursor: "pointer" }}>{n}</div>
+      ))}
+      <div onMouseDown={() => addNiche(nicheInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#555", cursor: "pointer", borderTop: filteredNiches.length ? "1px solid #1a1a1a" : "none" }}>
+        Add "{nicheInput}"
+      </div>
+    </div>
+  )}
+</div>
         <div>
           <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Location</label>
           <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
@@ -288,7 +336,7 @@ await supabase.from("creator_profiles").insert({
 
 const buttonLabel = () => {
   if (screen === 0) return name.trim() ? "Continue →" : null;
-  if (screen === 1) return (niche.trim() || location.trim()) ? "Continue →" : "Skip for now →";
+  if (screen === 1) return (selectedNiches.length > 0 || location.trim()) ? "Continue →" : "Skip for now →";
   if (screen === 2) return selectedPlatforms.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 3) return contentTypes.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 4) return Object.values(rates).some(v => v) ? "Continue →" : "Skip for now →";
