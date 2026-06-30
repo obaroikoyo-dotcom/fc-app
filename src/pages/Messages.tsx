@@ -123,7 +123,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       await supabase.from("notifications").insert({
         user_id: paymentApp.creator_id,
         type: "payment_received",
-        title: "Payment Received 💰",
+        title: "Payment Received",
         body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
@@ -220,6 +220,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [campaignBudget, setCampaignBudget] = useState(0);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [savedCard, setSavedCard] = useState<{ last4: string; brand: string; pm_id: string } | null>(null);
+  const [paymentPopup, setPaymentPopup] = useState<{ title: string; body: string } | null>(null);
   
   // Track unread conversation IDs locally to place red dots on chats
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
@@ -250,8 +251,12 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
     const channel = supabase
       .channel("messages-badge-sync")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, (payload) => {
         fetchUnreadMessages(user.id); // use local var, not state
+        const n = payload.new as { user_id: string; type: string; title: string; body: string };
+        if (role === "creator" && n.user_id === user.id && n.type === "payment_received") {
+          setPaymentPopup({ title: n.title, body: n.body });
+        }
       })
       .subscribe();
 
@@ -959,6 +964,18 @@ return (
             )}
           </div>
         </>
+      )}
+
+      {paymentPopup && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={() => setPaymentPopup(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "360px", padding: "1.5rem", textAlign: "center" }}>
+            <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "10px" }}>{paymentPopup.title}</p>
+            <p style={{ color: "#888", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>{paymentPopup.body}</p>
+            <div onClick={() => setPaymentPopup(null)} style={{ padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
+              Got it
+            </div>
+          </div>
+        </div>
       )}
 
       {showPayment && paymentApp && (
