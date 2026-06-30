@@ -114,6 +114,7 @@ const [showOtp, setShowOtp] = useState(false);
     }
 
     setLoading(false);
+    setPendingEmail(email);
     setShowOtp(true);
   };
 

@@ -123,6 +123,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       }
 
       setLoading(false);
+      setPendingEmail(email);
       setShowOtp(true);
     } catch (catchErr) {
       console.error("Signup pipeline crash intercepted:", catchErr);
