@@ -7,7 +7,7 @@ import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same fold
 
 interface Props { navigate: (p: Page) => void; }
 
-const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home"];
+const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home", "Jewellery & Accessories", "Skincare", "Haircare", "Travel & Hospitality", "Parenting & Family", "Pet Care", "Finance & Fintech", "Education & E-learning", "Gaming", "Automotive", "Sports & Outdoors", "Luxury Goods", "Sustainability & Eco", "Alcohol & Beverages", "Subscription Boxes", "Home & Garden", "Art & Creative Tools"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Aires", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos"];
 const CREATOR_TIERS = [
   { label: "Nano-Tier Scale", sub: "Under 10k: High-engagement niche focus", value: "nano" },
@@ -25,7 +25,9 @@ export default function BrandOnboarding({ navigate }: Props) {
 
   // Corporate Onboarding Form State
   const [companyName, setCompanyName] = useState("");
-  const [selectedIndustry, setSelectedIndustry] = useState("");
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+const [industryInput, setIndustryInput] = useState("");
+const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
   const [location, setLocation] = useState("");
   const [website, setWebsite] = useState("");
   const [bio, setBio] = useState("");
@@ -63,6 +65,22 @@ export default function BrandOnboarding({ navigate }: Props) {
 
   const toggleContent = (c: string) =>
     setContentTypes(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+  
+const addIndustry = (ind: string) => {
+  const trimmed = ind.trim();
+  if (trimmed && !selectedIndustries.includes(trimmed)) {
+    setSelectedIndustries(prev => [...prev, trimmed]);
+  }
+  setIndustryInput("");
+  setShowIndustryDropdown(false);
+};
+
+const removeIndustry = (ind: string) =>
+  setSelectedIndustries(prev => prev.filter(x => x !== ind));
+
+const filteredIndustries = INDUSTRIES.filter(ind =>
+  ind.toLowerCase().includes(industryInput.toLowerCase()) && !selectedIndustries.includes(ind)
+);
 
   const handleLogo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -130,8 +148,8 @@ export default function BrandOnboarding({ navigate }: Props) {
           id: targetUser.id, // Explicitly anchor the row identifier
           company_name: companyName,
           name: companyName,
-          industry: selectedIndustry,
-          niche: selectedIndustry,
+          industry: selectedIndustries.join(", "),
+niche: selectedIndustries.join(", "),
           location,
           website,
           bio,
@@ -207,19 +225,44 @@ export default function BrandOnboarding({ navigate }: Props) {
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Market Segment</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Select sector alignment</h1>
       <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Creators categorize partnership offers by operational fields.</p>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
-        {INDUSTRIES.map(ind => (
-          <div key={ind} onClick={() => setSelectedIndustry(ind)} style={chipStyle(selectedIndustry === ind)}>
-            {ind}
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Headquarters Location</label>
-          <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
+      <div style={{ position: "relative", marginBottom: "1.5rem" }}>
+  {selectedIndustries.length > 0 && (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
+      {selectedIndustries.map(ind => (
+        <div key={ind} onClick={() => removeIndustry(ind)} style={{ padding: "6px 10px", borderRadius: "16px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+          {ind} <span>×</span>
         </div>
+      ))}
+    </div>
+  )}
+
+  <input
+    style={inputStyle}
+    placeholder="Type to search or add your own sector"
+    value={industryInput}
+    onChange={e => { setIndustryInput(e.target.value); setShowIndustryDropdown(true); }}
+    onFocus={() => setShowIndustryDropdown(true)}
+    onBlur={() => setTimeout(() => setShowIndustryDropdown(false), 150)}
+    onKeyDown={e => { if (e.key === "Enter" && industryInput.trim()) { e.preventDefault(); addIndustry(industryInput); } }}
+  />
+
+  {showIndustryDropdown && industryInput && (
+    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#111", border: "1px solid #222", borderRadius: "10px", maxHeight: "180px", overflowY: "auto", zIndex: 20 }}>
+      {filteredIndustries.map(ind => (
+        <div key={ind} onMouseDown={() => addIndustry(ind)} style={{ padding: "10px 14px", fontSize: "13px", color: "#fff", cursor: "pointer" }}>{ind}</div>
+      ))}
+      <div onMouseDown={() => addIndustry(industryInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#555", cursor: "pointer", borderTop: filteredIndustries.length ? "1px solid #1a1a1a" : "none" }}>
+        Add "{industryInput}"
       </div>
+    </div>
+  )}
+</div>
+<div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+  <div>
+    <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Headquarters Location</label>
+    <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
+  </div>
+</div>
     </div>,
 
     // Screen 2 — Web Presence & Description
@@ -355,7 +398,7 @@ export default function BrandOnboarding({ navigate }: Props) {
 
   const buttonLabel = () => {
     if (screen === 0) return companyName.trim() ? "Continue →" : null;
-    if (screen === 1) return (selectedIndustry || location.trim()) ? "Continue →" : "Skip step →";
+    if (screen === 1) return (selectedIndustries.length > 0 || location.trim()) ? "Continue →" : "Skip step →";
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
     if (screen === 4) return (targetTier && campaignBudget.trim()) ? "Continue →" : "Provide parameters to proceed"; 

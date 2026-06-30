@@ -9,7 +9,7 @@ interface Props {
   isInverted: boolean;
 }
 
-const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home"];
+const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home", "Jewellery & Accessories", "Skincare", "Haircare", "Travel & Hospitality", "Parenting & Family", "Pet Care", "Finance & Fintech", "Education & E-learning", "Gaming", "Automotive", "Sports & Outdoors", "Luxury Goods", "Sustainability & Eco", "Alcohol & Beverages", "Subscription Boxes", "Home & Garden", "Art & Creative Tools"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Reels", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos", "Stories", "Unboxings"];
 const CREATOR_TIERS = [
   { label: "Nano-Tier Scale", sub: "Under 10k", value: "nano" },
