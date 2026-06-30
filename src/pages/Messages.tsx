@@ -119,16 +119,34 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     }
 
     if (confirmResult.paymentIntent?.status === "succeeded") {
-      await supabase.from("applications").update({ status: "paid" }).eq("id", paymentApp.id);
-      await supabase.from("notifications").insert({
+      const { error: updateError } = await supabase
+        .from("applications")
+        .update({ status: "paid" })
+        .eq("id", paymentApp.id);
+
+      if (updateError) {
+        console.error("Failed to update application status:", updateError);
+        setError("Payment succeeded but we couldn't update your records. Contact support.");
+        setProcessing(false);
+        return;
+      }
+
+      const { error: notifError } = await supabase.from("notifications").insert({
         user_id: paymentApp.creator_id,
         type: "payment_received",
         title: "Payment Received",
         body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
+
+      if (notifError) console.error("Failed to insert notification:", notifError);
+
       setProcessing(false);
       onSuccess(paymentApp);
+    } else {
+      console.warn("Payment not yet succeeded, status:", confirmResult.paymentIntent?.status);
+      setError(`Payment status: ${confirmResult.paymentIntent?.status || "unknown"}. Please try again.`);
+      setProcessing(false);
     }
   };
 

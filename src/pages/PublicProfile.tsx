@@ -178,7 +178,7 @@ const startDM = async () => {
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name || "Creator"}</span>
       </div>
 
-      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ padding: "2.25rem 1.25rem 8rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ width: "100%", maxWidth: "480px" }}>
 
           {/* Header */}
