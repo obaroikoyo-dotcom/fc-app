@@ -120,10 +120,10 @@ const loadFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const { data } = await supabase
-  .from("favourites")
-  .select("creator_id, creator_profiles(name, niche, avatar_url)")
-  .eq("user_id", user.id);
-if (data) setFavouritedCreators(data);
+      .from("favourites")
+      .select("creator_id, creator_profiles(name, niche, avatar_url)")
+      .eq("user_id", user.id);
+    if (data) setFavouritedCreators(data);
   };
 
   const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {

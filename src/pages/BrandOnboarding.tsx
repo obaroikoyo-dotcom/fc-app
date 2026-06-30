@@ -65,7 +65,7 @@ const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
 
   const toggleContent = (c: string) =>
     setContentTypes(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
-  
+
 const addIndustry = (ind: string) => {
   const trimmed = ind.trim();
   if (trimmed && !selectedIndustries.includes(trimmed)) {
@@ -177,7 +177,7 @@ niche: selectedIndustries.join(", "),
       setLoading(false);
       navigate("brand-dashboard");
 
-    } catch (catchErr: any) {
+    } catch (catchErr) {
       console.error("Onboarding pipeline crash intercepted:", catchErr);
       setError("A network transaction interruption occurred. Please re-verify entries.");
       setLoading(false);
