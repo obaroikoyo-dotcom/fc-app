@@ -481,6 +481,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         }
         .slide-forward { animation: slideInForward 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         .slide-back { animation: slideInBack 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .tap-btn { -webkit-tap-highlight-color: transparent; transition: transform 0.1s ease; }
+        .tap-btn:active { transform: scale(0.96); }
       `}</style>
 
       {/* Progress Bar */}
@@ -524,10 +526,11 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           </div>
         ) : (
           <div
-            onClick={buttonLabel() ? (screen === 5 ? handleSignup : next) : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: buttonLabel() ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222" }}
+            className="tap-btn"
+            onClick={(!loading && buttonLabel()) ? (screen === 5 ? handleSignup : next) : undefined}
+            style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && buttonLabel()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
-            {buttonLabel() || "Provide name to proceed"}
+            {screen === 5 && loading ? "Sending code..." : (buttonLabel() || "Provide name to proceed")}
           </div>
         )}
       </div>

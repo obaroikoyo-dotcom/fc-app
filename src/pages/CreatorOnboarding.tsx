@@ -430,6 +430,8 @@ const buttonLabel = () => {
         }
         .slide-forward { animation: slideInForward 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         .slide-back { animation: slideInBack 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+        .tap-btn { -webkit-tap-highlight-color: transparent; transition: transform 0.1s ease; }
+        .tap-btn:active { transform: scale(0.96); }
       `}</style>
 
       {/* Progress Bar */}
@@ -480,11 +482,12 @@ const buttonLabel = () => {
           </div>
         ) : (
           <div
-         onClick={buttonLabel() ? (screen === 5 ? handleSignup : next) : undefined}
-  style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: buttonLabel() ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222" }}
->
-  {buttonLabel() || "Enter your name to continue"}
-</div>
+            className="tap-btn"
+            onClick={(!loading && buttonLabel()) ? (screen === 5 ? handleSignup : next) : undefined}
+            style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && buttonLabel()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
+          >
+            {screen === 5 && loading ? "Sending code..." : (buttonLabel() || "Enter your name to continue")}
+          </div>
         )}
       </div>
       <TermsModal
@@ -532,8 +535,9 @@ const buttonLabel = () => {
       {otpLoading && <p style={{ fontSize: "12px", color: "#555", marginBottom: "1rem" }}>Verifying...</p>}
 
       <div
+        className="tap-btn"
         onClick={otpResending ? undefined : handleOtpResend}
-        style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#34c759" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+        style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#34c759" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: otpResending ? "none" : "auto" }}
       >
         {otpResending ? "Sending..." : otpResent ? "Code resent" : "Resend code"}
       </div>
