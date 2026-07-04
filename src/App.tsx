@@ -300,7 +300,6 @@ export default function App() {
     }, 3500);
 
     const initializeAuth = async () => {
-      await new Promise(resolve => setTimeout(resolve, 3000));
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;

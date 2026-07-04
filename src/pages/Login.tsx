@@ -21,26 +21,35 @@ export default function Login({ navigate }: Props) {
     if (!form.email || !form.password) return setError("Email and password required.");
 
     setLoading(true);
-    const { data, error: loginError } = await supabase.auth.signInWithPassword({
-      email: form.email,
-      password: form.password,
-    });
+    try {
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
 
-    if (loginError) {
-  if (loginError.message.toLowerCase().includes("invalid") || loginError.message.toLowerCase().includes("credentials")) {
-    setError("Account not found or incorrect password. Try signing up instead.");
-  } else {
-    setError(loginError.message);
-  }
-  setLoading(false);
-  return;
-}
+      if (loginError) {
+        if (loginError.message.toLowerCase().includes("invalid") || loginError.message.toLowerCase().includes("credentials")) {
+          setError("Account not found or incorrect password. Try signing up instead.");
+        } else {
+          setError(loginError.message);
+        }
+        return;
+      }
 
-    if (data.user) {
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+      if (data.user) {
+        const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+        if (profileError) {
+          setError("Signed in, but couldn't load your profile. Please try again.");
+          return;
+        }
+        if (profile?.role === "brand") navigate("brand-dashboard");
+        else navigate("explore");
+      }
+    } catch (e) {
+      setError("Something went wrong signing in. Please check your connection and try again.");
+      console.log("Login error:", e);
+    } finally {
       setLoading(false);
-      if (profile?.role === "brand") navigate("brand-dashboard");
-      else navigate("explore");
     }
   };
 
