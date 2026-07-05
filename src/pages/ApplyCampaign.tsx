@@ -31,7 +31,7 @@ interface Campaign {
   asset_overlays: string[];
   asset_style_videos: string[];
   asset_broll: string[];
-  brand_profiles: { name: string; logo_url?: string } | null;
+  brand_profiles: { name: string; logo_url?: string; is_enterprise?: boolean } | null;
 }
 
 const UI = {
@@ -61,7 +61,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       }
       const { data } = await supabase
   .from("campaigns")
-  .select("*, brand_profiles(name, logo_url)")
+  .select("*, brand_profiles(name, logo_url, is_enterprise)")
   .eq("id", campaignId)
   .single();
       if (data) setCampaign(data);
@@ -199,9 +199,11 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           </div>
           {campaign.type === "paid" && (
             <div style={{ textAlign: "right" }}>
-              <span style={{ display: "block", fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>Net Take-home</span>
+              <span style={{ display: "block", fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Net Take-home {campaign.brand_profiles?.is_enterprise ? "(0% cut)" : "(-10%)"}
+              </span>
               <span style={{ fontSize: "16px", fontWeight: 800, color: "#34c759", fontFamily: "'Syne', sans-serif" }}>
-                £{(parseInt(campaign.budget, 10) * 0.90).toLocaleString()}
+                £{(parseInt(campaign.budget, 10) * (campaign.brand_profiles?.is_enterprise ? 1 : 0.90)).toLocaleString()}
               </span>
             </div>
           )}
