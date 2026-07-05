@@ -221,7 +221,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
               <span onClick={() => onRemove(i)} style={{ color: "#2a2a2a", cursor: "pointer", fontSize: "16px", lineHeight: 1, flexShrink: 0, padding: "0 4px", transition: "color 0.1s" }}
                 onMouseEnter={e => (e.currentTarget.style.color = "#ff4d4d")}
                 onMouseLeave={e => (e.currentTarget.style.color = "#2a2a2a")}
-              >├ù</span>
+              >×</span>
             )}
           </div>
         ))}
@@ -260,7 +260,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           {files.map(f => (
             <div key={f.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0a0a0a", border: "1px solid #161616", borderRadius: "4px", padding: "4px 8px" }}>
               <span style={{ fontSize: "10px", color: "#444", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "85%" }}>{f.file.name}</span>
-              <span onClick={() => removeAsset(f.id, setter)} style={{ fontSize: "13px", color: "#333", cursor: "pointer", flexShrink: 0, marginLeft: "6px" }}>├ù</span>
+              <span onClick={() => removeAsset(f.id, setter)} style={{ fontSize: "13px", color: "#333", cursor: "pointer", flexShrink: 0, marginLeft: "6px" }}>×</span>
             </div>
           ))}
         </div>
@@ -271,13 +271,13 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
 
-      {/* Section 1 ÔÇö Mechanics */}
+      {/* Section 1 — Mechanics */}
       <div style={card}>
         {sectionTitle("Campaign mechanics", "Core details and deliverables")}
 
         <div style={{ marginBottom: "12px" }}>
           <label style={lbl}>Campaign title</label>
-          <input style={inp} placeholder="e.g. Summer drop launch ÔÇö June 2026" value={name} onChange={e => setName(e.target.value)} />
+          <input style={inp} placeholder="e.g. Summer drop launch — June 2026" value={name} onChange={e => setName(e.target.value)} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
@@ -306,24 +306,24 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
         {campaignType === "paid" && (
           <div style={{ marginBottom: "12px" }}>
-            <label style={lbl}>Base budget (┬ú)</label>
+            <label style={lbl}>Base budget (£)</label>
             <input style={inp} type="number" placeholder="500" value={budget} onChange={e => setBudget(e.target.value)} />
             {numericBudget > 0 && (
               <div style={{ background: "#0a0a0a", border: "1px solid #161616", borderRadius: "6px", padding: "10px 12px", marginTop: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#444", marginBottom: "4px" }}>
-                  <span>Base budget</span><span>┬ú{numericBudget.toLocaleString()}</span>
+                  <span>Base budget</span><span>£{numericBudget.toLocaleString()}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#444", marginBottom: "4px" }}>
                   <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
-                  <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>┬ú{platformFee.toLocaleString()}</span>
+                  <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>£{platformFee.toLocaleString()}</span>
                 </div>
                 <hr style={{ border: "0", borderTop: "1px solid #161616", margin: "6px 0" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
-                  <span>Total</span><span style={{ color: "#34c759" }}>┬ú{totalCost.toLocaleString()}</span>
+                  <span>Total</span><span style={{ color: "#34c759" }}>£{totalCost.toLocaleString()}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#333", marginTop: "4px" }}>
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                  <span>┬ú{creatorPayout.toLocaleString()}</span>
+                  <span>£{creatorPayout.toLocaleString()}</span>
                 </div>
                 {!isEnterprise && (
                   <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #161616", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -371,7 +371,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         </div>
       </div>
 
-      {/* Section 2 ÔÇö Creative Brief */}
+      {/* Section 2 — Creative Brief */}
       <div style={card}>
         {sectionTitle("Creative brief", "Direction, dos and don'ts for creators")}
 
@@ -393,7 +393,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         </div>
       </div>
 
-      {/* Section 3 ÔÇö Media Assets */}
+      {/* Section 3 — Media Assets */}
       <div style={card}>
         {sectionTitle("Media asset kit", "Assets creators can use in their content")}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -404,7 +404,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         </div>
       </div>
 
-      {/* Section 4 ÔÇö CTA */}
+      {/* Section 4 — CTA */}
       <div style={card}>
         {sectionTitle("Call to action", "Links, codes, and trackable assets")}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -442,7 +442,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           transition: "all 0.2s", marginBottom: "1rem",
         }}
       >
-        {posting ? "Posting..." : posted ? "Posted Ô£ô" : "Post Campaign"}
+        {posting ? "Posting..." : posted ? "Posted ✓" : "Post Campaign"}
       </div>
 
     </div>
