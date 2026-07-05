@@ -8,15 +8,6 @@ import { supabase } from "../lib/supabase";
 
 interface Props { navigate: (p: Page) => void; }
 
-class TimeoutError extends Error {}
-
-function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
-  return Promise.race([
-    Promise.resolve(promise),
-    new Promise<T>((_, reject) => setTimeout(() => reject(new TimeoutError()), ms)),
-  ]);
-}
-
 export default function Login({ navigate }: Props) {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -31,13 +22,10 @@ export default function Login({ navigate }: Props) {
 
     setLoading(true);
     try {
-      const { data, error: loginError } = await withTimeout(
-        supabase.auth.signInWithPassword({
-          email: form.email,
-          password: form.password,
-        }),
-        10000
-      );
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      });
 
       if (loginError) {
         if (loginError.message.toLowerCase().includes("invalid") || loginError.message.toLowerCase().includes("credentials")) {
@@ -49,10 +37,7 @@ export default function Login({ navigate }: Props) {
       }
 
       if (data.user) {
-        const { data: profile, error: profileError } = await withTimeout(
-          supabase.from("profiles").select("role").eq("id", data.user.id).single(),
-          10000
-        );
+        const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
         if (profileError) {
           setError("Signed in, but couldn't load your profile. Please try again.");
           return;
@@ -61,11 +46,7 @@ export default function Login({ navigate }: Props) {
         else navigate("explore");
       }
     } catch (e) {
-      if (e instanceof TimeoutError) {
-        setError("Sign in is taking too long. If you have an ad blocker or privacy extension, try disabling it for this site and try again.");
-      } else {
-        setError("Something went wrong signing in. Please check your connection and try again.");
-      }
+      setError("Something went wrong signing in. Please check your connection and try again.");
       console.log("Login error:", e);
     } finally {
       setLoading(false);
