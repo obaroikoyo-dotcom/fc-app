@@ -55,6 +55,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [isEnterprise, setIsEnterprise] = useState(false);
+  const [myLogo, setMyLogo] = useState<string | null>(null);
   const [now, setNow] = useState(new Date());
   const [feedTab, setFeedTab] = useState<"yours" | "discover">("yours");
   const [selectedNiche, setSelectedNiche] = useState("");
@@ -65,8 +66,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setCurrentUserId(user.id);
-      const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise").eq("id", user.id).single();
+      const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, logo_url").eq("id", user.id).single();
       if (bp?.is_enterprise) setIsEnterprise(true);
+      if (bp?.logo_url) setMyLogo(bp.logo_url);
 
       const { data } = await supabase
         .from("campaigns")
@@ -147,7 +149,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
           )}
         </div>
-        <span onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ fontSize: "12px", color: "#555", cursor: "pointer" }}>Sign out</span>
+        <div onClick={() => navigate("brand-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
+          {myLogo ? <img src={myLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
+        </div>
       </div>
 
       {/* Feed Tabs */}
