@@ -199,7 +199,7 @@ const [withdrawError, setWithdrawError] = useState("");
   const loadWallet = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
-  const { data } = await supabase.from("transactions").select("*").eq("creator_id", user.id).order("created_at", { ascending: false });
+  const { data } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
   const { data: withdrawals } = await supabase.from("withdrawal_requests").select("amount, status").eq("creator_id", user.id);
   if (data) {
     setTransactions(data);
