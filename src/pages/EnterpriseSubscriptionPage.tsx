@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -6,6 +6,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { stripePromise } from "../lib/stripe";
 
 const CARD_ELEMENT_OPTIONS = {
+  hidePostalCode: true,
   style: {
     base: {
       fontSize: "14px",
@@ -16,6 +17,9 @@ const CARD_ELEMENT_OPTIONS = {
     invalid: { color: "#ff3b30" },
   },
 };
+
+const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
+const fieldInput: React.CSSProperties = { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const };
 
 interface SubscriptionFormProps {
   selectedPlan: "monthly" | "annual";
@@ -30,6 +34,22 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
   const stripe = useStripe();
   const elements = useElements();
   const [cardName, setCardName] = useState("");
+  const [billingOpen, setBillingOpen] = useState(false);
+  const [billingLine1, setBillingLine1] = useState("");
+  const [billingLine2, setBillingLine2] = useState("");
+  const [billingCity, setBillingCity] = useState("");
+  const [billingState, setBillingState] = useState("");
+  const [billingPostalCode, setBillingPostalCode] = useState("");
+  const [billingCountry, setBillingCountry] = useState("GB");
+  const billingRef = useRef<HTMLDivElement>(null);
+
+  const toggleBilling = () => {
+    setBillingOpen(prev => {
+      const next = !prev;
+      if (next) setTimeout(() => billingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+      return next;
+    });
+  };
 
   const handlePayment = async () => {
     if (!stripe || !elements) return;
@@ -44,7 +64,17 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: "card",
       card: cardElement,
-      billing_details: { name: cardName },
+      billing_details: {
+        name: cardName,
+        address: {
+          line1: billingLine1 || undefined,
+          line2: billingLine2 || undefined,
+          city: billingCity || undefined,
+          state: billingState || undefined,
+          postal_code: billingPostalCode || undefined,
+          country: billingCountry || undefined,
+        },
+      },
     });
 
     if (error) {
@@ -58,7 +88,20 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     if (!user) { onLoadingChange(false); return; }
 
     const res = await supabase.functions.invoke("create-subscription", {
-      body: { brand_id: user.id, email: user.email, plan: selectedPlan, payment_method_id: paymentMethod.id }
+      body: {
+        brand_id: user.id,
+        email: user.email,
+        plan: selectedPlan,
+        payment_method_id: paymentMethod.id,
+        billing_address: {
+          line1: billingLine1,
+          line2: billingLine2,
+          city: billingCity,
+          state: billingState,
+          postal_code: billingPostalCode,
+          country: billingCountry,
+        },
+      }
     });
 
     if (res.error || !res.data?.subscriptionId) {
@@ -76,15 +119,63 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.25rem" }}>
         <div>
-          <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Cardholder Name</label>
-          <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+          <label style={fieldLabel}>Cardholder Name</label>
+          <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={fieldInput} />
         </div>
         <div>
-          <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Details</label>
+          <label style={fieldLabel}>Card Details</label>
           <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "13px 14px" }}>
             <CardElement options={CARD_ELEMENT_OPTIONS} />
           </div>
         </div>
+
+        <div
+          className="tap-btn"
+          onClick={toggleBilling}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "8px", border: "1px solid #222", background: "transparent", cursor: "pointer" }}
+        >
+          <span style={{ fontSize: "12px", color: "#aaa", fontWeight: 500 }}>Billing address <span style={{ color: "#444" }}>(optional)</span></span>
+          <span style={{ fontSize: "11px", color: "#555", transform: billingOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}>▼</span>
+        </div>
+
+        {billingOpen && (
+          <div ref={billingRef} className="billing-address-in" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div>
+              <label style={fieldLabel}>Address Line 1</label>
+              <input value={billingLine1} onChange={e => setBillingLine1(e.target.value)} placeholder="123 High Street" style={fieldInput} />
+            </div>
+            <div>
+              <label style={fieldLabel}>Address Line 2</label>
+              <input value={billingLine2} onChange={e => setBillingLine2(e.target.value)} placeholder="Apartment, suite, etc. (optional)" style={fieldInput} />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div>
+                <label style={fieldLabel}>City</label>
+                <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="London" style={fieldInput} />
+              </div>
+              <div>
+                <label style={fieldLabel}>County / State</label>
+                <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="Greater London" style={fieldInput} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div>
+                <label style={fieldLabel}>Postal Code</label>
+                <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="SE1 9GF" style={fieldInput} />
+              </div>
+              <div>
+                <label style={fieldLabel}>Country</label>
+                <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ ...fieldInput, cursor: "pointer" }}>
+                  <option value="GB">United Kingdom</option>
+                  <option value="US">United States</option>
+                  <option value="IE">Ireland</option>
+                  <option value="CA">Canada</option>
+                  <option value="AU">Australia</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
       <div className="tap-btn" onClick={!paymentLoading ? handlePayment : undefined} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
@@ -112,6 +203,8 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         .enterprise-modal-card { animation: enterpriseModalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .tap-btn { transition: transform 0.12s ease; }
         .tap-btn:active { transform: scale(0.96); }
+        @keyframes billingAddressIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        .billing-address-in { animation: billingAddressIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}</style>
 
       <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -221,14 +314,14 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       </div>
 
       {showModal && createPortal(
-  <div className="enterprise-modal-overlay" onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.85)", zIndex: 99999, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}>
+  <div className="enterprise-modal-overlay" onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.85)", zIndex: 99999, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
   <div className="enterprise-modal-card" onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "750px", width: "95%", margin: "20px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem" }}>
             {paymentSuccess ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <div style={{ fontSize: "40px", marginBottom: "1rem" }}>🎉</div>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
                 <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
-                <div onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                <div className="tap-btn" onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Back to Dashboard
                 </div>
               </div>
@@ -236,12 +329,12 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
                   <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Complete Your Upgrade</p>
-                  <span onClick={() => setShowModal(false)} style={{ color: "#444", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>×</span>
+                  <span className="tap-btn" onClick={() => setShowModal(false)} style={{ color: "#444", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>×</span>
                 </div>
 
                 <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>
                   {[{ label: "Monthly", price: "£97/mo", val: "monthly" }, { label: "Annual", price: "£82/mo", val: "annual" }].map(({ label, price, val }) => (
-                    <div key={val} onClick={() => setSelectedPlan(val as "monthly" | "annual")} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: `1px solid ${selectedPlan === val ? "#fff" : "#222"}`, background: selectedPlan === val ? "#fff" : "transparent", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
+                    <div key={val} className="tap-btn" onClick={() => setSelectedPlan(val as "monthly" | "annual")} style={{ flex: 1, padding: "10px", borderRadius: "8px", border: `1px solid ${selectedPlan === val ? "#fff" : "#222"}`, background: selectedPlan === val ? "#fff" : "transparent", cursor: "pointer", textAlign: "center", transition: "all 0.15s" }}>
                       <p style={{ fontSize: "11px", fontWeight: 600, color: selectedPlan === val ? "#0a0a0a" : "#555", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</p>
                       <p style={{ fontSize: "14px", fontWeight: 700, color: selectedPlan === val ? "#0a0a0a" : "#fff", marginTop: "2px" }}>{price}</p>
                     </div>
