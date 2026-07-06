@@ -301,7 +301,15 @@ export default function App() {
 
     const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const sessionPromise = supabase.auth.getSession();
+        const minSplashDuration = new Promise<void>(resolve => setTimeout(resolve, 3000));
+
+        const { data: { session } } = await sessionPromise;
+        if (!isMounted) return;
+
+        // Don't swap away from the splash page until its own animation
+        // has had time to finish, but don't add this on top of network time.
+        await minSplashDuration;
         if (!isMounted) return;
 
         if (session?.user) {
