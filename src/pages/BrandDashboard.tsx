@@ -70,7 +70,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
       const { data } = await supabase
         .from("campaigns")
-        .select(`*, applications(id)`)
+        .select(`*, applications(id), brand_profiles(name, logo_url)`)
         .order("created_at", { ascending: false });
 
       if (data) {
