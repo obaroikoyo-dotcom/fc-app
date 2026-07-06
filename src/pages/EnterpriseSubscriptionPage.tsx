@@ -58,6 +58,13 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
 
     if (!cardName.trim()) { onError("Please enter the cardholder name."); return; }
 
+    if (!billingLine1.trim() || !billingCity.trim() || !billingPostalCode.trim() || !billingCountry.trim()) {
+      onError("Please fill in your billing address.");
+      if (!billingOpen) setBillingOpen(true);
+      setTimeout(() => billingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+      return;
+    }
+
     onError("");
     onLoadingChange(true);
 
@@ -134,7 +141,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
           onClick={toggleBilling}
           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "8px", border: "1px solid #222", background: "transparent", cursor: "pointer" }}
         >
-          <span style={{ fontSize: "12px", color: "#aaa", fontWeight: 500 }}>Billing address <span style={{ color: "#444" }}>(optional)</span></span>
+          <span style={{ fontSize: "12px", color: "#aaa", fontWeight: 500 }}>Billing address <span style={{ color: "#ff3b30" }}>*</span></span>
           <span style={{ fontSize: "11px", color: "#555", transform: billingOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}>▼</span>
         </div>
 
