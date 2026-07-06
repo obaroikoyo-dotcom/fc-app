@@ -203,7 +203,7 @@ const [withdrawError, setWithdrawError] = useState("");
   const { data: withdrawals } = await supabase.from("withdrawal_requests").select("amount, status").eq("creator_id", user.id);
   if (data) {
     setTransactions(data);
-    const earned = data.filter(t => t.status === "completed").reduce((sum, t) => sum + t.creator_payout, 0);
+    const earned = data.filter(t => t.status !== "failed").reduce((sum, t) => sum + t.creator_payout, 0);
     const withdrawn = withdrawals ? withdrawals.filter(w => w.status === "completed" || w.status === "pending").reduce((sum, w) => sum + w.amount, 0) : 0;
     setWalletBalance(earned - withdrawn);
   }
