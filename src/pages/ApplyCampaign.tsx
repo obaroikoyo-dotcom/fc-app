@@ -111,8 +111,8 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           uploadedVideoUrl = urlData.publicUrl;
         }
         setUploadProgress(100);
-      } catch (err: any) {
-        setFormError(err.message || "Failed to upload video.");
+      } catch (err) {
+        setFormError(err instanceof Error ? err.message : "Failed to upload video.");
         setSubmitting(false);
         setUploadProgress(null);
         return;

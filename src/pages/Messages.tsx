@@ -131,6 +131,15 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         return;
       }
 
+      // Mark the transaction completed immediately rather than waiting on the
+      // Stripe webhook, so the creator's payout balance updates right away.
+      const { error: txError } = await supabase
+        .from("transactions")
+        .update({ status: "completed" })
+        .eq("stripe_payment_intent_id", confirmResult.paymentIntent.id);
+
+      if (txError) console.error("Failed to mark transaction completed:", txError);
+
       const { error: notifError } = await supabase.from("notifications").insert({
         user_id: paymentApp.creator_id,
         type: "payment_received",

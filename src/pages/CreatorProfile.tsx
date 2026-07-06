@@ -140,7 +140,7 @@ const [withdrawError, setWithdrawError] = useState("");
 
     const { data: apps } = await supabase
       .from("applications")
-      .select(`*, campaigns(id, name, description, type, budget, brand_id, brand_profiles(name, logo_url))`)
+      .select(`*, campaigns(id, name, description, type, budget, brand_id, brand_profiles(name, logo_url, is_enterprise))`)
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false });
     if (apps) setAppliedCampaigns(apps);
@@ -181,7 +181,7 @@ const [withdrawError, setWithdrawError] = useState("");
   const loadCampaignFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase.from("campaign_favourites").select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name))").eq("user_id", user.id);
+    const { data } = await supabase.from("campaign_favourites").select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name, is_enterprise))").eq("user_id", user.id);
     if (data) setCampaignFavourites(data);
   };
 
@@ -843,11 +843,12 @@ setTimeout(() => setSaved(false), 2000);
             {campaignFavourites.map((f, i) => {
               const camp = f.campaigns as any;
               const baseBudget = parseInt(camp?.budget, 10) || 0;
+              const campIsEnterprise = camp?.brand_profiles?.is_enterprise;
               return (
                 <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{camp?.name || "Campaign"}</p>
-                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * 0.9).toLocaleString()}` : ""}</span>
+                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * (campIsEnterprise ? 1 : 0.9)).toLocaleString()}` : ""}</span>
                   </div>
                   <p style={{ fontSize: "12px", color: "#444" }}>{camp?.brand_profiles?.name || "Brand"}</p>
                 </div>
@@ -897,13 +898,14 @@ setTimeout(() => setSaved(false), 2000);
             const campaignData = a.campaigns as any;
             const brandData = campaignData?.brand_profiles as any;
             const baseBudget = parseInt(campaignData?.budget, 10) || 0;
+            const brandIsEnterprise = brandData?.is_enterprise;
             return (
               <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
                   <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>{a.status === "paid" ? "paid out" : a.status}</span>
                 </div>
-                {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "#34c759", marginBottom: "4px" }}>Take-home: £{(baseBudget * 0.9).toLocaleString()}</p>}
+                {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "#34c759", marginBottom: "4px" }}>Take-home: £{(baseBudget * (brandIsEnterprise ? 1 : 0.9)).toLocaleString()}</p>}
                 <p style={{ fontSize: "12px", color: "#444" }}>{brandData?.name || "Brand"}</p>
               </div>
             );

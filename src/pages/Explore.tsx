@@ -184,7 +184,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
   const getStatusStyle = (status?: string): React.CSSProperties => {
     switch (status) {
-      case "approved": return { color: "#34c759", background: "rgba(52,199,89,0.1)" };
+      case "approved":
+      case "paid": return { color: "#34c759", background: "rgba(52,199,89,0.1)" };
       case "declined": return { color: "#ff3b30", background: "rgba(255,59,48,0.1)" };
       default: return { color: "#ff9500", background: "rgba(255,149,0,0.1)" };
     }
