@@ -391,7 +391,7 @@ const loadFavourites = async () => {
         {settingsRow("Favourited Creators", `${favouritedCreators.length} saved`, () => setSettingsSection("favourites"))}
 
         {sectionHeader("General")}
-        {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://flipcollab.app/about", "_blank"))}
+        {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"))}
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
         {settingsRow("Privacy Policy", "How we use your data", () => setSettingsSection("privacy-policy"))}
 {settingsRow("Terms of Service", "Platform rules", () => setSettingsSection("terms"))}

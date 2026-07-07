@@ -1,3 +1,4 @@
+import AboutPage from "./pages/AboutPage";
 import SplashScreen from "./pages/SplashScreen";
 import BrandOnboarding from "./pages/BrandOnboarding";
 import PublicProfile from "./pages/PublicProfile";
@@ -176,6 +177,10 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
 }
 
 export default function App() {
+  if (window.location.hostname.split(".")[0] === "about") {
+    return <AboutPage />;
+  }
+
   const [page, setPage] = useState<Page>("splash");
   const [, setHistory] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
