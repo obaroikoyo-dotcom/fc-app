@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
@@ -36,27 +37,58 @@ function DateDropdown({ value, onChange, options, placeholder }: {
   placeholder: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+
+  const updateRect = () => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setRect({ top: r.bottom + 6, left: r.left, width: r.width });
+  };
+
+  const toggleOpen = () => {
+    if (!open) updateRect();
+    setOpen(p => !p);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    updateRect();
+    window.addEventListener("scroll", updateRect, true);
+    window.addEventListener("resize", updateRect);
+    return () => {
+      window.removeEventListener("scroll", updateRect, true);
+      window.removeEventListener("resize", updateRect);
+    };
+  }, [open]);
+
   return (
     <div style={{ position: "relative", flex: 1 }}>
       <div
-        onClick={() => setOpen(p => !p)}
+        ref={triggerRef}
+        onClick={toggleOpen}
         style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "13px 14px", color: value ? "#fff" : "#555", fontSize: "14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
       >
         <span>{value || placeholder}</span>
         <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
       </div>
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "10px", zIndex: 30, maxHeight: "220px", overflowY: "auto" }}>
-          {options.map(o => (
-            <div
-              key={o}
-              onClick={() => { onChange(o); setOpen(false); }}
-              style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#777", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
-            >
-              {o}
-            </div>
-          ))}
-        </div>
+      {open && rect && createPortal(
+        <>
+          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9998 }} />
+          <div style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, background: "#111", border: "1px solid #222", borderRadius: "10px", zIndex: 9999, maxHeight: "220px", overflowY: "auto" }}>
+            {options.map(o => (
+              <div
+                key={o}
+                onClick={() => { onChange(o); setOpen(false); }}
+                style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#777", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
+              >
+                {o}
+              </div>
+            ))}
+          </div>
+        </>,
+        document.body
       )}
     </div>
   );
@@ -72,6 +104,7 @@ export default function CreatorOnboarding({ navigate, setPendingEmail }: Props) 
   const [birthDay, setBirthDay] = useState("");
   const [birthMonth, setBirthMonth] = useState("");
   const [birthYear, setBirthYear] = useState("");
+  const [showAgeWarning, setShowAgeWarning] = useState(false);
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
 const [nicheInput, setNicheInput] = useState("");
 const [showNicheDropdown, setShowNicheDropdown] = useState(false);
@@ -102,6 +135,10 @@ const [showOtp, setShowOtp] = useState(false);
 
   const computedAge = calculateAge(birthDay, birthMonth, birthYear);
 
+  const updateBirthDay = (v: string) => { setBirthDay(v); setShowAgeWarning(false); };
+  const updateBirthMonth = (v: string) => { setBirthMonth(v); setShowAgeWarning(false); };
+  const updateBirthYear = (v: string) => { setBirthYear(v); setShowAgeWarning(false); };
+
   const goTo = (next: number) => {
     if (animating) return;
     setDirection(next > screen ? "forward" : "back");
@@ -113,6 +150,14 @@ const [showOtp, setShowOtp] = useState(false);
   };
 
   const next = () => goTo(screen + 1);
+
+  const handleContinueFromWelcome = () => {
+    if (computedAge === null || computedAge < 18) {
+      setShowAgeWarning(true);
+      return;
+    }
+    next();
+  };
   const back = () => goTo(screen - 1);
 
   const togglePlatform = (p: string) =>
@@ -298,13 +343,13 @@ const [showOtp, setShowOtp] = useState(false);
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.5rem" }}>
         <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
         <div style={{ display: "flex", gap: "8px" }}>
-          <DateDropdown value={birthDay} onChange={setBirthDay} options={DAY_OPTIONS} placeholder="Day" />
-          <div style={{ flex: 1.6 }}><DateDropdown value={birthMonth} onChange={setBirthMonth} options={MONTHS} placeholder="Month" /></div>
-          <DateDropdown value={birthYear} onChange={setBirthYear} options={YEAR_OPTIONS} placeholder="Year" />
+          <DateDropdown value={birthDay} onChange={updateBirthDay} options={DAY_OPTIONS} placeholder="Day" />
+          <div style={{ flex: 1.6 }}><DateDropdown value={birthMonth} onChange={updateBirthMonth} options={MONTHS} placeholder="Month" /></div>
+          <DateDropdown value={birthYear} onChange={updateBirthYear} options={YEAR_OPTIONS} placeholder="Year" />
         </div>
-        {computedAge !== null && computedAge < 18 && (
+        {showAgeWarning && (
           <p style={{ fontSize: "12px", color: "#ff9500", lineHeight: 1.5 }}>
-            You're too young for FlipCollab right now.
+            {computedAge === null ? "Please enter your date of birth to continue." : "You're too young for FlipCollab right now."}
           </p>
         )}
       </div>
@@ -557,7 +602,7 @@ const buttonLabel = () => {
         ) : (
           <div
             className="tap-btn"
-            onClick={(!loading && buttonLabel()) ? (screen === 5 ? handleSignup : next) : undefined}
+            onClick={(!loading && buttonLabel()) ? (screen === 5 ? handleSignup : screen === 0 ? handleContinueFromWelcome : next) : undefined}
             style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && buttonLabel()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
             {screen === 5 && loading ? "Sending code..." : (buttonLabel() || "Enter your name to continue")}
