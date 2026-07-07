@@ -196,7 +196,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Header */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
         <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
           {myAvatar ? <img src={myAvatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
@@ -204,7 +204,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+      <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d", position: "fixed", top: "57px", left: 0, right: 0, zIndex: 99 }}>
         <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
           Discover Deals
         </button>
@@ -213,13 +213,13 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         </button>
       </div>
 
-      {/* Filters */}<div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px" }}>
+      {/* Filters */}<div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px", position: "fixed", top: "106px", left: 0, right: 0, background: "#0a0a0a", zIndex: 98 }}>
         <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
         <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
       </div>
 
       {/* Campaign Feed */}
-<div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+<div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: "11rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {loading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (

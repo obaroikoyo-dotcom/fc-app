@@ -102,12 +102,12 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Fixed Layout Typography: justifyValue -> justifyContent */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Notifications</span>
       </div>
 
       {/* Feed List */}
-      <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
+      <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem", paddingTop: "57px" }}>
         {loading && notifications.length === 0 ? (
           <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
         ) : notifications.length === 0 ? (
