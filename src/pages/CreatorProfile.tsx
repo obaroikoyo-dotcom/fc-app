@@ -38,6 +38,10 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [view, setView] = useState<"profile" | "settings">("profile");
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
 
+  useEffect(() => {
+    document.querySelector(".page-enter")?.scrollTo(0, 0);
+  }, [view, settingsSection]);
+
   // Profile data
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);

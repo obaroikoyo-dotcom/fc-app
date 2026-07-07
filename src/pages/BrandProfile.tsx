@@ -35,6 +35,10 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
   const [view, setView] = useState<"profile" | "settings">("profile");
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
 
+  useEffect(() => {
+    document.querySelector(".page-enter")?.scrollTo(0, 0);
+  }, [view, settingsSection]);
+
   // Profile data
   const [logo, setLogo] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
