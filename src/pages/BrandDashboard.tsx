@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import CreateCampaign from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -51,6 +51,8 @@ const formatRelativeTime = (dateString: string, now: Date) => {
 };
 
 export default function BrandDashboard({ navigate, tab, setTab, navigateToProfile }: Props) {
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const [stickyHeight, setStickyHeight] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +62,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [feedTab, setFeedTab] = useState<"yours" | "discover">("yours");
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
+
+  useLayoutEffect(() => {
+    if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
+  }, [tab, isEnterprise]);
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -139,42 +145,45 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
-      {/* Header */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-            {tab === "campaigns" ? "Campaigns" : "Post Campaign"}
-          </span>
-          {isEnterprise && (
-            <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
-          )}
+      {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
+      <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+        {/* Header */}
+        <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+              {tab === "campaigns" ? "Campaigns" : "Post Campaign"}
+            </span>
+            {isEnterprise && (
+              <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
+            )}
+          </div>
+          <div onClick={() => navigate("brand-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
+            {myLogo ? <img src={myLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
+          </div>
         </div>
-        <div onClick={() => navigate("brand-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
-          {myLogo ? <img src={myLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
-        </div>
+
+        {/* Feed Tabs */}
+        {tab === "campaigns" && (
+          <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+            <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+              Your Campaigns
+            </button>
+            <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+              Market
+            </button>
+          </div>
+        )}
+
+        {/* Filters */}
+        {tab === "campaigns" && (
+          <div style={{ padding: "1rem 1.25rem", display: "flex", gap: "8px" }}>
+            <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
+            <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
+          </div>
+        )}
       </div>
 
-      {/* Feed Tabs */}
-      {tab === "campaigns" && (
-        <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d", position: "fixed", top: "57px", left: 0, right: 0, zIndex: 99 }}>
-          <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-            Your Campaigns
-          </button>
-          <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-            Market
-          </button>
-        </div>
-      )}
-
-      {/* Filters */}
-      {tab === "campaigns" && (
-        <div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px", position: "fixed", top: "106px", left: 0, right: 0, background: "#0a0a0a", zIndex: 98 }}>
-          <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
-          <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
-        </div>
-      )}
-
-      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: "11rem" }}>
+      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem" }}>
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
