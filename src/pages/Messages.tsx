@@ -253,7 +253,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
   const [seenCampaignIds, setSeenCampaignIds] = useState<string[]>([]);
   
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesStreamRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
   const init = async () => {
@@ -320,7 +320,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 }, []);
 
   useEffect(() => {
-    if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    if (messagesStreamRef.current) messagesStreamRef.current.scrollTop = messagesStreamRef.current.scrollHeight;
   }, [messages]);
 
   // When opening a chat, automatically clear its unread status
@@ -956,7 +956,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div ref={messagesStreamRef} style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -970,7 +970,6 @@ return (
                 </div>
               </div>
             ))}
-            <div ref={bottomRef} />
           </div>
 
           {/* INPUT BAR CONTROLLER */}
