@@ -458,7 +458,7 @@ case "apply-campaign":
   to { opacity: 1; transform: translateX(0); }
 }
   .page-enter {
-    animation: pageEnter 0.18s ease-out forwards;
+    animation: pageEnter 0.18s ease-out;
   }
 `}</style>
      <div key={page} className="page-enter" style={{ height: "100%", overflow: page === "messages-brand" || page === "messages-creator" ? "hidden" : "auto" }}>
