@@ -526,8 +526,8 @@ setTimeout(() => setSaved(false), 2000);
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"))}
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
-        {settingsRow("Privacy Policy", "How we use your data", () => setSettingsSection("privacy-policy"))}
-{settingsRow("Terms of Service", "Platform rules", () => setSettingsSection("terms"))}
+        {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"))}
+{settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}>
