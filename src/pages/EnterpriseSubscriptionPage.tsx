@@ -21,6 +21,73 @@ const CARD_ELEMENT_OPTIONS = {
 const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
 const fieldInput: React.CSSProperties = { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const };
 
+const COUNTRIES: { code: string; name: string }[] = [
+  { code: "GB", name: "United Kingdom" }, { code: "US", name: "United States" }, { code: "IE", name: "Ireland" },
+  { code: "AF", name: "Afghanistan" }, { code: "AL", name: "Albania" }, { code: "DZ", name: "Algeria" }, { code: "AD", name: "Andorra" },
+  { code: "AO", name: "Angola" }, { code: "AG", name: "Antigua and Barbuda" }, { code: "AR", name: "Argentina" }, { code: "AM", name: "Armenia" },
+  { code: "AU", name: "Australia" }, { code: "AT", name: "Austria" }, { code: "AZ", name: "Azerbaijan" }, { code: "BS", name: "Bahamas" },
+  { code: "BH", name: "Bahrain" }, { code: "BD", name: "Bangladesh" }, { code: "BB", name: "Barbados" }, { code: "BY", name: "Belarus" },
+  { code: "BE", name: "Belgium" }, { code: "BZ", name: "Belize" }, { code: "BJ", name: "Benin" }, { code: "BT", name: "Bhutan" },
+  { code: "BO", name: "Bolivia" }, { code: "BA", name: "Bosnia and Herzegovina" }, { code: "BW", name: "Botswana" }, { code: "BR", name: "Brazil" },
+  { code: "BN", name: "Brunei" }, { code: "BG", name: "Bulgaria" }, { code: "BF", name: "Burkina Faso" }, { code: "BI", name: "Burundi" },
+  { code: "KH", name: "Cambodia" }, { code: "CM", name: "Cameroon" }, { code: "CA", name: "Canada" }, { code: "CV", name: "Cape Verde" },
+  { code: "CF", name: "Central African Republic" }, { code: "TD", name: "Chad" }, { code: "CL", name: "Chile" }, { code: "CN", name: "China" },
+  { code: "CO", name: "Colombia" }, { code: "KM", name: "Comoros" }, { code: "CG", name: "Congo" }, { code: "CR", name: "Costa Rica" },
+  { code: "HR", name: "Croatia" }, { code: "CU", name: "Cuba" }, { code: "CY", name: "Cyprus" }, { code: "CZ", name: "Czech Republic" },
+  { code: "DK", name: "Denmark" }, { code: "DJ", name: "Djibouti" }, { code: "DM", name: "Dominica" }, { code: "DO", name: "Dominican Republic" },
+  { code: "EC", name: "Ecuador" }, { code: "EG", name: "Egypt" }, { code: "SV", name: "El Salvador" }, { code: "GQ", name: "Equatorial Guinea" },
+  { code: "ER", name: "Eritrea" }, { code: "EE", name: "Estonia" }, { code: "SZ", name: "Eswatini" }, { code: "ET", name: "Ethiopia" },
+  { code: "FJ", name: "Fiji" }, { code: "FI", name: "Finland" }, { code: "FR", name: "France" }, { code: "GA", name: "Gabon" },
+  { code: "GM", name: "Gambia" }, { code: "GE", name: "Georgia" }, { code: "DE", name: "Germany" }, { code: "GH", name: "Ghana" },
+  { code: "GR", name: "Greece" }, { code: "GD", name: "Grenada" }, { code: "GT", name: "Guatemala" }, { code: "GN", name: "Guinea" },
+  { code: "GW", name: "Guinea-Bissau" }, { code: "GY", name: "Guyana" }, { code: "HT", name: "Haiti" }, { code: "HN", name: "Honduras" },
+  { code: "HK", name: "Hong Kong" }, { code: "HU", name: "Hungary" }, { code: "IS", name: "Iceland" }, { code: "IN", name: "India" },
+  { code: "ID", name: "Indonesia" }, { code: "IR", name: "Iran" }, { code: "IQ", name: "Iraq" }, { code: "IL", name: "Israel" },
+  { code: "IT", name: "Italy" }, { code: "JM", name: "Jamaica" }, { code: "JP", name: "Japan" }, { code: "JO", name: "Jordan" },
+  { code: "KZ", name: "Kazakhstan" }, { code: "KE", name: "Kenya" }, { code: "KI", name: "Kiribati" }, { code: "KW", name: "Kuwait" },
+  { code: "KG", name: "Kyrgyzstan" }, { code: "LA", name: "Laos" }, { code: "LV", name: "Latvia" }, { code: "LB", name: "Lebanon" },
+  { code: "LS", name: "Lesotho" }, { code: "LR", name: "Liberia" }, { code: "LY", name: "Libya" }, { code: "LI", name: "Liechtenstein" },
+  { code: "LT", name: "Lithuania" }, { code: "LU", name: "Luxembourg" }, { code: "MO", name: "Macau" }, { code: "MG", name: "Madagascar" },
+  { code: "MW", name: "Malawi" }, { code: "MY", name: "Malaysia" }, { code: "MV", name: "Maldives" }, { code: "ML", name: "Mali" },
+  { code: "MT", name: "Malta" }, { code: "MH", name: "Marshall Islands" }, { code: "MR", name: "Mauritania" }, { code: "MU", name: "Mauritius" },
+  { code: "MX", name: "Mexico" }, { code: "FM", name: "Micronesia" }, { code: "MD", name: "Moldova" }, { code: "MC", name: "Monaco" },
+  { code: "MN", name: "Mongolia" }, { code: "ME", name: "Montenegro" }, { code: "MA", name: "Morocco" }, { code: "MZ", name: "Mozambique" },
+  { code: "MM", name: "Myanmar" }, { code: "NA", name: "Namibia" }, { code: "NR", name: "Nauru" }, { code: "NP", name: "Nepal" },
+  { code: "NL", name: "Netherlands" }, { code: "NZ", name: "New Zealand" }, { code: "NI", name: "Nicaragua" }, { code: "NE", name: "Niger" },
+  { code: "NG", name: "Nigeria" }, { code: "KP", name: "North Korea" }, { code: "MK", name: "North Macedonia" }, { code: "NO", name: "Norway" },
+  { code: "OM", name: "Oman" }, { code: "PK", name: "Pakistan" }, { code: "PW", name: "Palau" }, { code: "PA", name: "Panama" },
+  { code: "PG", name: "Papua New Guinea" }, { code: "PY", name: "Paraguay" }, { code: "PE", name: "Peru" }, { code: "PH", name: "Philippines" },
+  { code: "PL", name: "Poland" }, { code: "PT", name: "Portugal" }, { code: "QA", name: "Qatar" }, { code: "RO", name: "Romania" },
+  { code: "RU", name: "Russia" }, { code: "RW", name: "Rwanda" }, { code: "KN", name: "Saint Kitts and Nevis" }, { code: "LC", name: "Saint Lucia" },
+  { code: "WS", name: "Samoa" }, { code: "SM", name: "San Marino" }, { code: "ST", name: "Sao Tome and Principe" }, { code: "SA", name: "Saudi Arabia" },
+  { code: "SN", name: "Senegal" }, { code: "RS", name: "Serbia" }, { code: "SC", name: "Seychelles" }, { code: "SL", name: "Sierra Leone" },
+  { code: "SG", name: "Singapore" }, { code: "SK", name: "Slovakia" }, { code: "SI", name: "Slovenia" }, { code: "SB", name: "Solomon Islands" },
+  { code: "SO", name: "Somalia" }, { code: "ZA", name: "South Africa" }, { code: "KR", name: "South Korea" }, { code: "SS", name: "South Sudan" },
+  { code: "ES", name: "Spain" }, { code: "LK", name: "Sri Lanka" }, { code: "SD", name: "Sudan" }, { code: "SR", name: "Suriname" },
+  { code: "SE", name: "Sweden" }, { code: "CH", name: "Switzerland" }, { code: "SY", name: "Syria" }, { code: "TW", name: "Taiwan" },
+  { code: "TJ", name: "Tajikistan" }, { code: "TZ", name: "Tanzania" }, { code: "TH", name: "Thailand" }, { code: "TL", name: "Timor-Leste" },
+  { code: "TG", name: "Togo" }, { code: "TO", name: "Tonga" }, { code: "TT", name: "Trinidad and Tobago" }, { code: "TN", name: "Tunisia" },
+  { code: "TR", name: "Turkey" }, { code: "TM", name: "Turkmenistan" }, { code: "TV", name: "Tuvalu" }, { code: "UG", name: "Uganda" },
+  { code: "UA", name: "Ukraine" }, { code: "AE", name: "United Arab Emirates" }, { code: "UY", name: "Uruguay" }, { code: "UZ", name: "Uzbekistan" },
+  { code: "VU", name: "Vanuatu" }, { code: "VA", name: "Vatican City" }, { code: "VE", name: "Venezuela" }, { code: "VN", name: "Vietnam" },
+  { code: "YE", name: "Yemen" }, { code: "ZM", name: "Zambia" }, { code: "ZW", name: "Zimbabwe" },
+];
+
+interface NominatimResult {
+  display_name: string;
+  address?: {
+    house_number?: string;
+    road?: string;
+    city?: string;
+    town?: string;
+    village?: string;
+    county?: string;
+    state?: string;
+    postcode?: string;
+    country_code?: string;
+  };
+}
+
 interface SubscriptionFormProps {
   selectedPlan: "monthly" | "annual";
   onSuccess: () => void;
@@ -41,7 +108,59 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
   const [billingState, setBillingState] = useState("");
   const [billingPostalCode, setBillingPostalCode] = useState("");
   const [billingCountry, setBillingCountry] = useState("GB");
+  const [addressSuggestions, setAddressSuggestions] = useState<NominatimResult[]>([]);
+  const [addressSearching, setAddressSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const billingRef = useRef<HTMLDivElement>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchAbortRef = useRef<AbortController | null>(null);
+
+  const handleAddressLine1Change = (value: string) => {
+    setBillingLine1(value);
+    setShowSuggestions(true);
+
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+
+    if (value.trim().length < 3) {
+      setAddressSuggestions([]);
+      setAddressSearching(false);
+      return;
+    }
+
+    searchDebounceRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+      setAddressSearching(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(value)}`,
+          { signal: controller.signal }
+        );
+        const data: NominatimResult[] = await res.json();
+        setAddressSuggestions(data);
+      } catch {
+        // Ignore aborted/failed lookups — user can still type the address manually.
+      } finally {
+        setAddressSearching(false);
+      }
+    }, 500);
+  };
+
+  const selectAddressSuggestion = (result: NominatimResult) => {
+    const a = result.address || {};
+    const line1 = [a.house_number, a.road].filter(Boolean).join(" ");
+    setBillingLine1(line1 || result.display_name.split(",")[0]);
+    setBillingCity(a.city || a.town || a.village || "");
+    setBillingState(a.state || a.county || "");
+    setBillingPostalCode(a.postcode || "");
+    if (a.country_code) {
+      const upper = a.country_code.toUpperCase();
+      if (COUNTRIES.some(c => c.code === upper)) setBillingCountry(upper);
+    }
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
+  };
 
   const toggleBilling = () => {
     setBillingOpen(prev => {
@@ -147,9 +266,35 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
 
         {billingOpen && (
           <div ref={billingRef} className="billing-address-in" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <div>
-              <label style={fieldLabel}>Address Line 1</label>
-              <input value={billingLine1} onChange={e => setBillingLine1(e.target.value)} placeholder="123 High Street" style={fieldInput} />
+            <div style={{ position: "relative" }}>
+              <label style={fieldLabel}>Address Line 1 <span style={{ color: "#333", textTransform: "none", letterSpacing: 0 }}>— start typing to search</span></label>
+              <input
+                value={billingLine1}
+                onChange={e => handleAddressLine1Change(e.target.value)}
+                onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                placeholder="123 High Street"
+                style={fieldInput}
+                autoComplete="off"
+              />
+              {addressSearching && (
+                <span style={{ position: "absolute", right: "14px", top: "36px", fontSize: "11px", color: "#555" }}>Searching…</span>
+              )}
+              {showSuggestions && addressSuggestions.length > 0 && (
+                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", zIndex: 10, maxHeight: "220px", overflowY: "auto" }}>
+                  {addressSuggestions.map((s, i) => (
+                    <div
+                      key={i}
+                      onMouseDown={() => selectAddressSuggestion(s)}
+                      style={{ padding: "10px 14px", fontSize: "12px", color: "#ccc", cursor: "pointer", borderBottom: i < addressSuggestions.length - 1 ? "1px solid #1a1a1a" : "none" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#1a1a1a")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      {s.display_name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label style={fieldLabel}>Address Line 2</label>
@@ -173,11 +318,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
               <div>
                 <label style={fieldLabel}>Country</label>
                 <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ ...fieldInput, cursor: "pointer" }}>
-                  <option value="GB">United Kingdom</option>
-                  <option value="US">United States</option>
-                  <option value="IE">Ireland</option>
-                  <option value="CA">Canada</option>
-                  <option value="AU">Australia</option>
+                  {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
               </div>
             </div>
