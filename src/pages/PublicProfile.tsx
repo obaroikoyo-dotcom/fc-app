@@ -146,7 +146,7 @@ const startDM = async () => {
         {bar("20px", "20px")}
         {bar("120px", "18px")}
       </div>
-      <div style={{ padding: "2.25rem 1.25rem 8rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ padding: "2.25rem 1.25rem 8rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ width: "100%", maxWidth: "480px" }}>
 
           {/* Header */}
@@ -236,12 +236,12 @@ const startDM = async () => {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Top Nav */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name || "Creator"}</span>
       </div>
 
-      <div style={{ padding: "2.25rem 1.25rem 8rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <div style={{ padding: "2.25rem 1.25rem 8rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ width: "100%", maxWidth: "480px" }}>
 
           {/* Header */}

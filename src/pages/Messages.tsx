@@ -621,8 +621,12 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     else if (view === "app-detail") setView("campaign-apps");
   };
 return (
-    <div style={{ height: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+    <div className="msg-viewport" style={{ background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        .msg-viewport { height: 100vh; height: 100dvh; }
+      `}</style>
 
       {/* Header Bar */}
       <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", flexShrink: 0, zIndex: 100 }}>
