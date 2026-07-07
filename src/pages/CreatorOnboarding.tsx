@@ -12,6 +12,56 @@ const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "P
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
 const TOTAL_SCREENS = 8;
 
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => String(i + 1));
+const CURRENT_YEAR = new Date().getFullYear();
+const YEAR_OPTIONS = Array.from({ length: 92 }, (_, i) => String(CURRENT_YEAR - 8 - i));
+
+function calculateAge(day: string, month: string, year: string): number | null {
+  if (!day || !month || !year) return null;
+  const monthIndex = MONTHS.indexOf(month);
+  if (monthIndex === -1) return null;
+  const birth = new Date(parseInt(year, 10), monthIndex, parseInt(day, 10));
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const hadBirthdayThisYear = today.getMonth() > birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+  if (!hadBirthdayThisYear) age--;
+  return age;
+}
+
+function DateDropdown({ value, onChange, options, placeholder }: {
+  value: string;
+  onChange: (v: string) => void;
+  options: string[];
+  placeholder: string;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ position: "relative", flex: 1 }}>
+      <div
+        onClick={() => setOpen(p => !p)}
+        style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "13px 14px", color: value ? "#fff" : "#555", fontSize: "14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+      >
+        <span>{value || placeholder}</span>
+        <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
+      </div>
+      {open && (
+        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "10px", zIndex: 30, maxHeight: "220px", overflowY: "auto" }}>
+          {options.map(o => (
+            <div
+              key={o}
+              onClick={() => { onChange(o); setOpen(false); }}
+              style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#777", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
+            >
+              {o}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CreatorOnboarding({ navigate, setPendingEmail }: Props) {
   const [screen, setScreen] = useState(0);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
@@ -19,6 +69,9 @@ export default function CreatorOnboarding({ navigate, setPendingEmail }: Props) 
 
   // Form data
   const [name, setName] = useState("");
+  const [birthDay, setBirthDay] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthYear, setBirthYear] = useState("");
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
 const [nicheInput, setNicheInput] = useState("");
 const [showNicheDropdown, setShowNicheDropdown] = useState(false);
@@ -46,6 +99,8 @@ const [otpResent, setOtpResent] = useState(false);
 const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 const [showOtp, setShowOtp] = useState(false);
   const picRef = useRef<HTMLInputElement>(null);
+
+  const computedAge = calculateAge(birthDay, birthMonth, birthYear);
 
   const goTo = (next: number) => {
     if (animating) return;
@@ -188,9 +243,15 @@ const [showOtp, setShowOtp] = useState(false);
       await supabase.from("creator_profiles").insert({
         id: user.id,
         name,
+        age: computedAge,
         niche: selectedNiches.join(", "),
         location,
         avatar_url: avatarUrl,
+        platforms: selectedPlatforms,
+        social_links: socialLinks,
+        follower_counts: followerCounts,
+        content_types: contentTypes,
+        rates,
         available: true,
         onboarding_complete: true,
       });
@@ -233,6 +294,19 @@ const [showOtp, setShowOtp] = useState(false);
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
         <input style={inputStyle} placeholder="e.g. Sofia Martinez" value={name} onChange={e => setName(e.target.value)} autoFocus />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.5rem" }}>
+        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <DateDropdown value={birthDay} onChange={setBirthDay} options={DAY_OPTIONS} placeholder="Day" />
+          <div style={{ flex: 1.6 }}><DateDropdown value={birthMonth} onChange={setBirthMonth} options={MONTHS} placeholder="Month" /></div>
+          <DateDropdown value={birthYear} onChange={setBirthYear} options={YEAR_OPTIONS} placeholder="Year" />
+        </div>
+        {computedAge !== null && computedAge < 18 && (
+          <p style={{ fontSize: "12px", color: "#ff9500", lineHeight: 1.5 }}>
+            You're too young for FlipCollab right now.
+          </p>
+        )}
       </div>
     </div>,
 

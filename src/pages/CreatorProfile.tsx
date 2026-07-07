@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -62,6 +62,18 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [favTab, setFavTab] = useState<"creators" | "campaigns">("campaigns");
+  const profileHeaderRef = useRef<HTMLDivElement>(null);
+  const [profileHeaderHeight, setProfileHeaderHeight] = useState(56);
+
+  useLayoutEffect(() => {
+    const el = profileHeaderRef.current;
+    if (!el) return;
+    const update = () => setProfileHeaderHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [view]);
 
   // Settings-specific data
   const [walletBalance, setWalletBalance] = useState(0);
@@ -338,7 +350,7 @@ setTimeout(() => setSaved(false), 2000);
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
   const renderProfile = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div ref={profileHeaderRef} style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
         <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
@@ -347,7 +359,7 @@ setTimeout(() => setSaved(false), 2000);
         </div>
       </div>
 
-      <div style={{ padding: "1.5rem 1.25rem", paddingTop: "3.5rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingTop: `${profileHeaderHeight + 24}px` }}>
         {/* Avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333" }}>
@@ -451,6 +463,15 @@ setTimeout(() => setSaved(false), 2000);
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Empty state — only covers platforms/content/languages/audience/rates/collabs, not bio/niche/location */}
+        {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◉</div>
+            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+            <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
           </div>
         )}
       </div>

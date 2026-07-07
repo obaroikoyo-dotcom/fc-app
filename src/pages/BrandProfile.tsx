@@ -284,6 +284,15 @@ const loadFavourites = async () => {
             </div>
           </div>
         )}
+
+        {/* Empty state — only covers content/audience/tier/links, not bio/industry/location */}
+        {!contentTypes.length && !targetAudience && !targetTier && !website && !instagram && !tiktok && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◈</div>
+            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+            <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added asset formats, target audience, or links yet. Fill these out from Edit Profile so creators know what you're looking for.</p>
+          </div>
+        )}
       </div>
     </div>
   );
