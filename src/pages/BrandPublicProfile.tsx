@@ -78,33 +78,76 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   const dividerStyle: React.CSSProperties = { borderTop: "1px solid #1a1a1a", marginBottom: "2rem" };
   const sectionStyle: React.CSSProperties = { marginBottom: "2rem" };
 
-  if (loading) return (
+  if (loading) {
+    const pulse = "pulse 1.5s ease-in-out infinite";
+    const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
+      <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+    );
+    return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
-      <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+      <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <div style={{ width: "20px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-        <div style={{ width: "120px", height: "18px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+        {bar("20px", "20px")}
+        {bar("120px", "18px")}
       </div>
-      <div style={{ padding: "1.5rem 1.25rem", paddingTop: "5rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "5rem" }}>
+
+        {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-          <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: "#1a1a1a", flexShrink: 0, animation: "shimmer 1.5s ease-in-out infinite" }} />
+          {bar("72px", "72px", { borderRadius: "16px", flexShrink: 0 })}
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <div style={{ width: "140px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-            <div style={{ width: "100px", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+            {bar("140px", "20px")}
+            {bar("100px", "13px")}
           </div>
         </div>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
-          <div style={{ flex: 1, height: "44px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-          <div style={{ flex: 1, height: "44px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+
+        {/* DM Button */}
+        {bar("100%", "44px", { borderRadius: "8px", marginBottom: "2rem" })}
+
+        {/* Bio */}
+        <div style={{ ...sectionStyle, display: "flex", flexDirection: "column", gap: "10px" }}>
+          {bar("100%", "13px")}
+          {bar("85%", "13px")}
+          {bar("60%", "13px")}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div style={{ width: "100%", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-          <div style={{ width: "85%", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-          <div style={{ width: "90%", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+
+        <div style={dividerStyle} />
+
+        {/* Details */}
+        <div style={{ ...sectionStyle, display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {[0, 1, 2].map(i => (
+            <div key={i}>
+              {bar("100px", "11px", { marginBottom: "8px" })}
+              {bar("160px", "13px")}
+            </div>
+          ))}
+          <div>
+            {bar("140px", "11px", { marginBottom: "8px" })}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[70, 90, 60].map((w, i) => <div key={i}>{bar(`${w}px`, "28px", { borderRadius: "20px" })}</div>)}
+            </div>
+          </div>
         </div>
+
+        <div style={dividerStyle} />
+
+        {/* Links */}
+        <div style={sectionStyle}>
+          {bar("50px", "11px", { marginBottom: "10px" })}
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {[0, 1].map(i => (
+              <div key={i} style={{ display: "flex", gap: "8px" }}>
+                {bar("70px", "13px")}
+                {bar("120px", "13px")}
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
+  }
 
   if (!brand) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
