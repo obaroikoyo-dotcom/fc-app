@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
@@ -253,7 +253,10 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
   const [seenCampaignIds, setSeenCampaignIds] = useState<string[]>([]);
   
-  const messagesStreamRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const [stickyHeight, setStickyHeight] = useState(0);
+  const inputBarRef = useRef<HTMLDivElement>(null);
+  const [inputBarHeight, setInputBarHeight] = useState(0);
 
   useEffect(() => {
   const init = async () => {
@@ -320,8 +323,16 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 }, []);
 
   useEffect(() => {
-    if (messagesStreamRef.current) messagesStreamRef.current.scrollTop = messagesStreamRef.current.scrollHeight;
-  }, [messages]);
+    if (view === "chat") {
+      const scroller = document.querySelector(".page-enter");
+      if (scroller) scroller.scrollTop = scroller.scrollHeight;
+    }
+  }, [messages, view]);
+
+  useLayoutEffect(() => {
+    if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
+    if (inputBarRef.current) setInputBarHeight(inputBarRef.current.offsetHeight);
+  }, [view, role, brandTab, activeConvo]);
 
   // When opening a chat, automatically clear its unread status
   useEffect(() => {
@@ -621,62 +632,64 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     else if (view === "app-detail") setView("campaign-apps");
   };
 return (
-    <div className="msg-viewport" style={{ background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
         @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        .msg-viewport { height: 100vh; height: 100dvh; }
       `}</style>
 
-      {/* Header Bar */}
-      <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", flexShrink: 0, zIndex: 100 }}>
-        {view !== "list" && (
-          <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>
-            ←
+      {/* Sticky header group: header + brand tabs stack with zero gap since they share one fixed box */}
+      <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+        {/* Header Bar */}
+        <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a" }}>
+          {view !== "list" && (
+            <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>
+              ←
+            </div>
+          )}
+          {view === "chat" && activeConvo ? (
+    <div
+      onClick={() => {
+        const otherId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+        if (activeConvo.other_role === "brand") {
+          navigateToBrandProfile?.(otherId);
+        } else {
+          navigateToProfile?.(otherId);
+        }
+      }}
+      style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+    >
+      <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
+        {activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
+      </div>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{activeConvo.other_name}</h1>
+    </div>
+  ) : (
+    <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+      {getHeader()}
+    </h1>
+  )}
+        </div>
+
+        {/* Brand Tabs Toggle */}
+        {role === "brand" && view === "list" && (
+          <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
+            <div onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "#fff" : "#444", borderBottom: brandTab === "applications" ? "2px solid #fff" : "2px solid transparent" }}>
+              applications
+            </div>
+            <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "#fff" : "#444", borderBottom: brandTab === "messages" ? "2px solid #fff" : "2px solid transparent", position: "relative" }}>
+              messages
+              {unreadConvoIds.length > 0 && (
+                <span style={{ display: "inline-block", width: "6px", height: "6px", background: "#ff3b30", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
+              )}
+            </div>
           </div>
         )}
-        {view === "chat" && activeConvo ? (
-  <div
-    onClick={() => {
-      const otherId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
-      if (activeConvo.other_role === "brand") {
-        navigateToBrandProfile?.(otherId);
-      } else {
-        navigateToProfile?.(otherId);
-      }
-    }}
-    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
-  >
-    <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
-      {activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
-    </div>
-    <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{activeConvo.other_name}</h1>
-  </div>
-) : (
-  <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
-    {getHeader()}
-  </h1>
-)}
       </div>
-
-      {/* Brand Tabs Toggle */}
-      {role === "brand" && view === "list" && (
-        <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
-          <div onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "#fff" : "#444", borderBottom: brandTab === "applications" ? "2px solid #fff" : "2px solid transparent" }}>
-            applications
-          </div>
-          <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "#fff" : "#444", borderBottom: brandTab === "messages" ? "2px solid #fff" : "2px solid transparent", position: "relative" }}>
-            messages
-            {unreadConvoIds.length > 0 && (
-              <span style={{ display: "inline-block", width: "6px", height: "6px", background: "#ff3b30", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Applications Tab */}
       {role === "brand" && view === "list" && brandTab === "applications" && (
-        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
+        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
@@ -714,7 +727,7 @@ return (
 
       {/* Campaign Applications List */}
       {view === "campaign-apps" && activeCampaign && (
-        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
+        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {activeCampaign.applications.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
@@ -743,7 +756,7 @@ return (
 
       {/* Application Detail */}
       {view === "app-detail" && activeApplication && (
-        <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem 1.25rem", paddingBottom: "8rem" }}>
+        <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.5rem" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#333" }}>
               {activeApplication.creator_avatar ? <img src={activeApplication.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
@@ -812,7 +825,7 @@ return (
 
       {/* Messages Tab List View */}
       {(role === "creator" || (role === "brand" && brandTab === "messages")) && view === "list" && (
-        <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem" }}>
+        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {loading ? (
   <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
     {[1, 2, 3, 4, 5].map(i => (
@@ -956,7 +969,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div ref={messagesStreamRef} style={{ flex: 1, overflowY: "auto", padding: "1rem 1.25rem", paddingBottom: "5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `${inputBarHeight + 112}px` : "12rem" }}>
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -973,7 +986,7 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div style={{ flexShrink: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", marginBottom: "6.5rem" }}>
+          <div ref={inputBarRef} style={{ position: "fixed", bottom: "6.5rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {activeConvo?.application_status === "rejected" ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
                 🔒 Messaging disabled (application finalized)
