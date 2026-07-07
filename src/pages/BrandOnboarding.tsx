@@ -34,7 +34,6 @@ const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
   const [targetAudience, setTargetAudience] = useState("");
   const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [targetTier, setTargetTier] = useState(""); // Replaced budgetRange state with targetTier
-  const [campaignBudget, setCampaignBudget] = useState(""); // Added campaignBudget state tracking
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -220,7 +219,6 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         target_audience: targetAudience,
         content_types: contentTypes,
         budget_range: targetTier,
-        campaign_budget: parseFloat(campaignBudget) || 0,
         logo_url: logoUrl,
         avatar_url: logoUrl,
         onboarding_complete: true,
@@ -378,23 +376,6 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           </div>
         ))}
       </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Initial Escrow Funding ($ USD)</label>
-        <div style={{ position: "relative" }}>
-          <span style={{ position: "absolute", left: "16px", top: "13px", color: "#555", fontSize: "15px" }}>$</span>
-          <input 
-            type="number"
-            style={{ ...inputStyle, paddingLeft: "32px" }} 
-            placeholder="e.g. 1500" 
-            value={campaignBudget} 
-            onChange={e => setCampaignBudget(e.target.value)} 
-          />
-        </div>
-        <p style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>
-          * This capital secures the escrow contract framework. Funds unlock only upon milestone verification.
-        </p>
-      </div>
     </div>,
 
     // Screen 5 — Access Credentials
@@ -454,7 +435,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
     if (screen === 1) return (selectedIndustries.length > 0 || location.trim()) ? "Continue →" : "Skip step →";
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
-    if (screen === 4) return (targetTier && campaignBudget.trim()) ? "Continue →" : "Provide parameters to proceed"; 
+    if (screen === 4) return targetTier ? "Continue →" : "Provide parameters to proceed";
     if (screen === 5) return email.trim() && password.length >= 6 && password === confirm && termsAccepted ? "Continue →" : null;
     if (screen === 6) return brandLogo ? "Review Agreements & Deploy →" : "Review Agreements & Deploy →";
     return "Continue →";
