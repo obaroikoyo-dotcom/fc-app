@@ -461,7 +461,7 @@ case "apply-campaign":
     animation: pageEnter 0.18s ease-out;
   }
 `}</style>
-     <div key={page} className="page-enter" style={{ height: "100%", overflow: "auto" }}>
+     <div key={page} className="page-enter" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" }}>
   {renderPage()}
 </div>
       {CREATOR_PAGES.includes(page) && (

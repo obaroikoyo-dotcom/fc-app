@@ -1,7 +1,18 @@
-body {
+html, body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
   background: #0a0a0a;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
 }
 
 /* --- Dynamic Theme Inversion Filter Rules --- */
