@@ -4,6 +4,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -58,6 +59,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [myLogo, setMyLogo] = useState<string | null>(null);
   const [now, setNow] = useState(new Date());
@@ -197,7 +199,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
           <div key="campaigns" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {loading ? (
+            {showSkeleton ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (
                   <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
@@ -218,7 +220,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                   </div>
                 ))}
               </div>
-            ) : campaigns.length === 0 ? (
+            ) : loading ? null : campaigns.length === 0 ? (
               <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
                 <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7 }}>Post your first campaign and start finding creators.</p>

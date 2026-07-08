@@ -3,6 +3,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -31,6 +32,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   const [brand, setBrand] = useState<BrandData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const showSkeleton = useDelayedLoading(loading);
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
@@ -86,6 +88,10 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
   const dividerStyle: React.CSSProperties = { borderTop: "1px solid #1a1a1a", marginBottom: "2rem" };
   const sectionStyle: React.CSSProperties = { marginBottom: "2rem" };
+
+  if (loading && !showSkeleton) {
+    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+  }
 
   if (loading) {
     const pulse = "pulse 1.5s ease-in-out infinite";

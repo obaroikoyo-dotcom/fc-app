@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -45,6 +46,7 @@ const UI = {
 export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading);
   const [message, setMessage] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -152,6 +154,10 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     setSubmitting(false);
     setUploadProgress(null);
   };
+
+  if (loading && !showSkeleton) {
+    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+  }
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>

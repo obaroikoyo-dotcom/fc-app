@@ -3,6 +3,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -28,6 +29,7 @@ interface Notification {
 export default function Notifications({ navigate, setTargetData, onRead }: Props) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading);
 
   useEffect(() => {
     // 1. Initial run fetches historical notifications as they stand
@@ -117,9 +119,9 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
 
       {/* Feed List */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem", paddingTop: "57px" }}>
-        {loading && notifications.length === 0 ? (
+        {showSkeleton && notifications.length === 0 ? (
           <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
-        ) : notifications.length === 0 ? (
+        ) : loading && notifications.length === 0 ? null : notifications.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>All caught up</p>
             <p style={{ fontSize: "13px", color: "#444" }}>When updates occur, they'll land right here.</p>

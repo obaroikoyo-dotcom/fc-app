@@ -3,6 +3,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -101,6 +102,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading);
   const [applied, setApplied] = useState<string[]>([]);
   const [bookmarked, setBookmarked] = useState<string[]>([]);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
@@ -239,7 +241,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
       {/* Campaign Feed */}
 <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-        {loading ? (
+        {showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (
               <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
@@ -260,7 +262,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
               </div>
             ))}
           </div>
-        ) : filteredCampaigns.length === 0 ? (
+        ) : loading ? null : filteredCampaigns.length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
               {feedTab === "discover" ? "No new offers active" : "No pitches sent yet"}
