@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { withTimeout } from "../lib/withTimeout";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -56,23 +57,25 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
   const fetchNotifications = async (isBackgroundUpdate = false) => {
     if (!isBackgroundUpdate) setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { return; }
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { return; }
 
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
 
-      if (!error && data) {
-        const parsed = data.map((n: any) => ({
-          ...n,
-          actor_name: "Someone",
-          actor_avatar: null
-        }));
-        setNotifications(parsed);
-      }
+        if (!error && data) {
+          const parsed = data.map((n: any) => ({
+            ...n,
+            actor_name: "Someone",
+            actor_avatar: null
+          }));
+          setNotifications(parsed);
+        }
+      })());
     } finally {
       setLoading(false);
     }

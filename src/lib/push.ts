@@ -13,7 +13,19 @@ export function isPushSupported() {
   return "serviceWorker" in navigator && "PushManager" in window;
 }
 
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || (navigator as any).standalone === true;
+}
+
 export async function subscribeToPush(userId: string) {
+  if (isIOS() && !isStandalone()) {
+    throw new Error("On iPhone/iPad, add FlipCollab to your Home Screen first (Share button → Add to Home Screen), then open it from there to enable notifications.");
+  }
+
   if (!isPushSupported()) throw new Error("Push notifications aren't supported on this browser.");
 
   const permission = await Notification.requestPermission();

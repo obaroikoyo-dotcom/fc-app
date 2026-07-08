@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import CreateCampaign from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { withTimeout } from "../lib/withTimeout";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -70,24 +71,26 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const fetchCampaigns = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-        const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, logo_url").eq("id", user.id).single();
-        if (bp?.is_enterprise) setIsEnterprise(true);
-        if (bp?.logo_url) setMyLogo(bp.logo_url);
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setCurrentUserId(user.id);
+          const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, logo_url").eq("id", user.id).single();
+          if (bp?.is_enterprise) setIsEnterprise(true);
+          if (bp?.logo_url) setMyLogo(bp.logo_url);
 
-        const { data } = await supabase
-          .from("campaigns")
-          .select(`*, applications(id), brand_profiles(name, logo_url)`)
-          .order("created_at", { ascending: false });
+          const { data } = await supabase
+            .from("campaigns")
+            .select(`*, applications(id), brand_profiles(name, logo_url)`)
+            .order("created_at", { ascending: false });
 
-        if (data) {
-          const mine = data.filter(c => c.brand_id === user.id);
-          const others = data.filter(c => c.brand_id !== user.id);
-          setCampaigns([...mine, ...others] as unknown as Campaign[]);
+          if (data) {
+            const mine = data.filter(c => c.brand_id === user.id);
+            const others = data.filter(c => c.brand_id !== user.id);
+            setCampaigns([...mine, ...others] as unknown as Campaign[]);
+          }
         }
-      }
+      })());
     } finally {
       setLoading(false);
     }

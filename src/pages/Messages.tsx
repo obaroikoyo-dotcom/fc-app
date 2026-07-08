@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { notifyAndPush } from "../lib/push";
+import { withTimeout } from "../lib/withTimeout";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 
@@ -259,13 +260,23 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
   useEffect(() => {
   const init = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    let user;
+    try {
+      const result = await withTimeout(supabase.auth.getUser());
+      user = result.data.user;
+    } catch (err) {
+      console.error("Failed to get user:", err);
+      setLoading(false);
+      return;
+    }
+    if (!user) { setLoading(false); return; }
     setCurrentUserId(user.id);
 
     if (role === "brand") {
       try {
-        const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single();
+        const { data: bp } = await withTimeout(
+          supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single()
+        );
         if (bp?.is_enterprise) setIsEnterprise(true);
         if (bp?.stripe_payment_method_id && bp?.card_last4) {
           setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
@@ -347,79 +358,81 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const loadConversations = async () => {
     setLoading(true);
     try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { return; }
-    setCurrentUserId(user.id);
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { return; }
+        setCurrentUserId(user.id);
 
-    const { data: myRole } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-if (myRole?.role === "creator") {
-  const { data: cp } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
-  setCurrentUserName(cp?.name || "Someone");
-} else {
-  const { data: bp } = await supabase.from("brand_profiles").select("name").eq("id", user.id).single();
-  setCurrentUserName(bp?.name || "Someone");
-}
-
-    const { data } = await supabase
-      .from("conversations")
-      .select("*")
-      .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
-      .order("last_message_at", { ascending: false });
-
-    if (data) {
-      const enriched = await Promise.all(data.map(async (c) => {
-        const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
-        
-        // Fetch counter-party information
-        const { data: profile } = await supabase.from("profiles").select("role").eq("id", otherId).single();
-let otherName = "Unknown";
-let otherAvatar = null;
-if (profile?.role === "creator") {
-  const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", otherId).single();
-  otherName = cp?.name || "Unknown";
-  otherAvatar = cp?.avatar_url || null;
-} else {
-  const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url").eq("id", otherId).single();
-  otherName = bp?.name || "Unknown";
-  otherAvatar = bp?.avatar_url || null;
-}
-        
-        // Match live app link properties to conversational items to maintain in-chat actions
-        const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
-const brandSearchId = profile?.role === "brand" ? otherId : user.id;
-
-const { data: linkedApp } = await supabase
-  .from("applications")
-  .select("id, status, campaign_id, campaigns(name, budget, brand_id)")
-  .eq("creator_id", creatorSearchId)
-  .eq("campaigns.brand_id", brandSearchId)
-  .order("created_at", { ascending: false })
-  .limit(1)
-  .maybeSingle();
-
-        return { 
-          ...c, 
-          other_name: otherName, 
-          other_role: profile?.role, 
-          other_avatar: otherAvatar,
-          application_id: linkedApp?.id,
-          application_status: linkedApp?.status,
-          campaign_id: linkedApp?.campaign_id,
-          campaign_name: (linkedApp?.campaigns as any)?.name,
-          campaign_budget: parseInt((linkedApp?.campaigns as any)?.budget, 10) || 0
-        };
-      }));
-      const sorted = enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
-      setConversations(sorted);
-      if (openConvoId) {
-        const target = enriched.find(c => c.id === openConvoId);
-        if (target) {
-          openChat(target);
-          onConvoOpened?.();
+        const { data: myRole } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+        if (myRole?.role === "creator") {
+          const { data: cp } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
+          setCurrentUserName(cp?.name || "Someone");
+        } else {
+          const { data: bp } = await supabase.from("brand_profiles").select("name").eq("id", user.id).single();
+          setCurrentUserName(bp?.name || "Someone");
         }
-      }
-    }
-    fetchUnreadMessages(user.id);
+
+        const { data } = await supabase
+          .from("conversations")
+          .select("*")
+          .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+          .order("last_message_at", { ascending: false });
+
+        if (data) {
+          const enriched = await Promise.all(data.map(async (c) => {
+            const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+
+            // Fetch counter-party information
+            const { data: profile } = await supabase.from("profiles").select("role").eq("id", otherId).single();
+            let otherName = "Unknown";
+            let otherAvatar = null;
+            if (profile?.role === "creator") {
+              const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", otherId).single();
+              otherName = cp?.name || "Unknown";
+              otherAvatar = cp?.avatar_url || null;
+            } else {
+              const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url").eq("id", otherId).single();
+              otherName = bp?.name || "Unknown";
+              otherAvatar = bp?.avatar_url || null;
+            }
+
+            // Match live app link properties to conversational items to maintain in-chat actions
+            const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
+            const brandSearchId = profile?.role === "brand" ? otherId : user.id;
+
+            const { data: linkedApp } = await supabase
+              .from("applications")
+              .select("id, status, campaign_id, campaigns(name, budget, brand_id)")
+              .eq("creator_id", creatorSearchId)
+              .eq("campaigns.brand_id", brandSearchId)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            return {
+              ...c,
+              other_name: otherName,
+              other_role: profile?.role,
+              other_avatar: otherAvatar,
+              application_id: linkedApp?.id,
+              application_status: linkedApp?.status,
+              campaign_id: linkedApp?.campaign_id,
+              campaign_name: (linkedApp?.campaigns as any)?.name,
+              campaign_budget: parseInt((linkedApp?.campaigns as any)?.budget, 10) || 0
+            };
+          }));
+          const sorted = enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+          setConversations(sorted);
+          if (openConvoId) {
+            const target = enriched.find(c => c.id === openConvoId);
+            if (target) {
+              openChat(target);
+              onConvoOpened?.();
+            }
+          }
+        }
+        fetchUnreadMessages(user.id);
+      })(), 15000);
     } finally {
       setLoading(false);
     }

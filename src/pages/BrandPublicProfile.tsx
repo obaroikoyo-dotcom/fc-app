@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { withTimeout } from "../lib/withTimeout";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -34,16 +35,18 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
   const loadProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setCurrentUserId(user.id);
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) setCurrentUserId(user.id);
 
-      const { data } = await supabase
-        .from("brand_profiles")
-        .select("*")
-        .eq("id", profileId)
-        .single();
+        const { data } = await supabase
+          .from("brand_profiles")
+          .select("*")
+          .eq("id", profileId)
+          .single();
 
-      if (data) setBrand(data);
+        if (data) setBrand(data);
+      })());
     } finally {
       setLoading(false);
     }

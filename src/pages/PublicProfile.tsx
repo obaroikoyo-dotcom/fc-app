@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { withTimeout } from "../lib/withTimeout";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -40,38 +41,40 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
 
  const loadProfile = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-        const { data: fav } = await supabase
-          .from("favourites")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("creator_id", profileId)
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setCurrentUserId(user.id);
+          const { data: fav } = await supabase
+            .from("favourites")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("creator_id", profileId)
+            .single();
+          setFavourited(!!fav);
+        }
+
+        // Try creator_profiles first
+        const { data: creatorData } = await supabase
+          .from("creator_profiles")
+          .select("*")
+          .eq("id", profileId)
           .single();
-        setFavourited(!!fav);
-      }
 
-      // Try creator_profiles first
-      const { data: creatorData } = await supabase
-        .from("creator_profiles")
-        .select("*")
-        .eq("id", profileId)
-        .single();
+        if (creatorData) {
+          setCreator(creatorData);
+          return;
+        }
 
-      if (creatorData) {
-        setCreator(creatorData);
-        return;
-      }
+        // Fall back to brand_profiles
+        const { data: brandData } = await supabase
+          .from("brand_profiles")
+          .select("*")
+          .eq("id", profileId)
+          .single();
 
-      // Fall back to brand_profiles
-      const { data: brandData } = await supabase
-        .from("brand_profiles")
-        .select("*")
-        .eq("id", profileId)
-        .single();
-
-      if (brandData) setCreator(brandData);
+        if (brandData) setCreator(brandData);
+      })());
     } finally {
       setLoading(false);
     }
