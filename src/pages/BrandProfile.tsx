@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
-import { supabase } from "../lib/supabase";
+import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush } from "../lib/push";
 
 interface Props {
@@ -409,7 +409,7 @@ const loadFavourites = async () => {
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div
-            onClick={async () => { await supabase.auth.signOut(); window.location.reload(); }}
+            onClick={forceSignOut}
             style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
             Sign Out
@@ -421,9 +421,8 @@ const loadFavourites = async () => {
               if (userId) {
                 await supabase.from("profiles").delete().eq("id", userId);
                 await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
-                await supabase.auth.signOut();
               }
-              window.location.reload();
+              await forceSignOut();
             }}
             style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
