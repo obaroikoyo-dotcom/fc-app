@@ -437,6 +437,9 @@ const { data: linkedApp } = await supabase
   };
 
   const clearUnreadForConvo = async (convoId: string) => {
+  // Clear the dot immediately rather than waiting on the round-trip below.
+  setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
+
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   const currentUserId = user.id;
@@ -451,9 +454,9 @@ const { data: linkedApp } = await supabase
     const toMark = notifs.filter(n => n.data?.conversation_id === convoId).map(n => n.id);
     if (toMark.length > 0) {
       await supabase.from("notifications").update({ read: true }).in("id", toMark); // fixed: was is_read
+      if (onRead) onRead();
     }
   }
-  setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
 };
 
   const loadApplications = async () => {
