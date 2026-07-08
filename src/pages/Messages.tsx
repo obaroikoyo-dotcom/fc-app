@@ -144,7 +144,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         user_id: paymentApp.creator_id,
         type: "payment_received",
         title: "Payment Received",
-        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow.`,
+        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Refresh and check Payouts in Settings to see your balance.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
 
