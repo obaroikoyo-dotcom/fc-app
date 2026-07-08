@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { subscribeToPush, unsubscribeFromPush } from "../lib/push";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -87,7 +88,10 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
   const [appliedCampaigns, setAppliedCampaigns] = useState<any[]>([]);
   const [appFilter, setAppFilter] = useState<"all" | "pending" | "accepted" | "rejected">("all");
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    typeof Notification !== "undefined" && Notification.permission === "granted"
+  );
+  const [notifError, setNotifError] = useState("");
   const [profileVisible, setProfileVisible] = useState(true);
   const [rateVisible, setRateVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
@@ -794,6 +798,22 @@ setTimeout(() => setSaved(false), 2000);
   // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
 
   // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
+  const toggleNotifications = async () => {
+    setNotifError("");
+    if (notificationsEnabled) {
+      if (userId) await unsubscribeFromPush(userId);
+      setNotificationsEnabled(false);
+      return;
+    }
+    if (!userId) return;
+    try {
+      await subscribeToPush(userId);
+      setNotificationsEnabled(true);
+    } catch (err: any) {
+      setNotifError(err?.message || "Couldn't enable notifications.");
+    }
+  };
+
   const renderNotifications = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Notifications", () => setSettingsSection("main"))}
@@ -803,10 +823,11 @@ setTimeout(() => setSaved(false), 2000);
             <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Push Notifications</p>
             <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>New messages, applications, and deals</p>
           </div>
-          <div onClick={() => setNotificationsEnabled(p => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: notificationsEnabled ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+          <div onClick={toggleNotifications} style={{ width: "44px", height: "24px", borderRadius: "12px", background: notificationsEnabled ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
             <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
           </div>
         </div>
+        {notifError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
       </div>
     </div>
   );

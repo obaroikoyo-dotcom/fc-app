@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { notifyAndPush } from "../lib/push";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 
@@ -140,15 +141,13 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
       if (txError) console.error("Failed to mark transaction completed:", txError);
 
-      const { error: notifError } = await supabase.from("notifications").insert({
+      await notifyAndPush({
         user_id: paymentApp.creator_id,
         type: "payment_received",
         title: "Payment Received",
         body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Refresh and check Payouts in Settings to see your balance.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
-
-      if (notifError) console.error("Failed to insert notification:", notifError);
 
       setProcessing(false);
       onSuccess(paymentApp);
@@ -532,7 +531,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
 
     const receiverId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
 
-    await supabase.from("notifications").insert({
+    await notifyAndPush({
       user_id: receiverId,
       type: "new_message",
       title: "New Message",
@@ -598,7 +597,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       }).eq("id", existing.id);
     }
 
-    await supabase.from("notifications").insert({
+    await notifyAndPush({
       user_id: app.creator_id,
       type: "campaign_chatting",
       title: "Chat Opened! 💬",

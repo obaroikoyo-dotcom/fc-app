@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { subscribeToPush, unsubscribeFromPush } from "../lib/push";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -24,6 +25,7 @@ type SettingsSection =
   | "edit-profile"
   | "industry-selection"
   | "campaign-preferences"
+  | "notifications"
   | "visibility"
   | "share-profile"
   | "favourites"
@@ -53,6 +55,10 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
   const [targetTier, setTargetTier] = useState("");
   const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [profileVisible, setProfileVisible] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    typeof Notification !== "undefined" && Notification.permission === "granted"
+  );
+  const [notifError, setNotifError] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -388,6 +394,7 @@ const loadFavourites = async () => {
         {settingsRow("Edit Profile", "Name, bio, industry, location, links", () => setSettingsSection("edit-profile"))}
         {settingsRow("Industry & Content Needs", "Sectors and media formats you need", () => setSettingsSection("industry-selection"))}
         {settingsRow("Campaign Preferences", "Creator tier and target audience", () => setSettingsSection("campaign-preferences"))}
+        {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"))}
         {settingsRow("Visibility", "Control what creators see", () => setSettingsSection("visibility"))}
         {settingsRow("Share Profile", "Get your shareable brand link", () => setSettingsSection("share-profile"))}
 
@@ -535,6 +542,41 @@ const loadFavourites = async () => {
         <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#fff" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
+      </div>
+    </div>
+  );
+
+  // ─── NOTIFICATIONS ────────────────────────────────────────────────────────
+  const toggleNotifications = async () => {
+    setNotifError("");
+    if (notificationsEnabled) {
+      if (userId) await unsubscribeFromPush(userId);
+      setNotificationsEnabled(false);
+      return;
+    }
+    if (!userId) return;
+    try {
+      await subscribeToPush(userId);
+      setNotificationsEnabled(true);
+    } catch (err: any) {
+      setNotifError(err?.message || "Couldn't enable notifications.");
+    }
+  };
+
+  const renderNotifications = () => (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+      {renderSettingsHeader("Notifications", () => setSettingsSection("main"))}
+      <div style={{ padding: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+          <div>
+            <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Push Notifications</p>
+            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>New applications, messages, and payments</p>
+          </div>
+          <div onClick={toggleNotifications} style={{ width: "44px", height: "24px", borderRadius: "12px", background: notificationsEnabled ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+          </div>
+        </div>
+        {notifError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
       </div>
     </div>
   );
@@ -704,6 +746,7 @@ const renderTerms = () => (
       {settingsSection === "edit-profile" && renderEditProfile()}
       {settingsSection === "industry-selection" && renderIndustrySelection()}
       {settingsSection === "campaign-preferences" && renderCampaignPreferences()}
+      {settingsSection === "notifications" && renderNotifications()}
       {settingsSection === "visibility" && renderVisibility()}
       {settingsSection === "share-profile" && renderShareProfile()}
       {settingsSection === "favourites" && renderFavourites()}

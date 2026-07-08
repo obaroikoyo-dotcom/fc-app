@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { notifyAndPush } from "../lib/push";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -132,7 +133,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     });
 
     if (!appError) {
-      await supabase.from("notifications").insert({
+      await notifyAndPush({
         user_id: campaign.brand_id,
         type: "campaign_application",
         title: "New Application 📩",
