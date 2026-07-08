@@ -77,17 +77,20 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-        if (data?.role) {
-          setUserRole(data.role);
-          setFilter(data.role === "brand" ? "creators" : "brands");
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+          if (data?.role) {
+            setUserRole(data.role);
+            setFilter(data.role === "brand" ? "creators" : "brands");
+          }
         }
+        const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
+        if (profiles) setAllProfiles(profiles);
+      } finally {
+        setLoading(false);
       }
-      const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
-      if (profiles) setAllProfiles(profiles);
-      setLoading(false);
     })();
   }, []);
 

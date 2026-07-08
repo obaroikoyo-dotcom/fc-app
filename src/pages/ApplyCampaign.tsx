@@ -53,19 +53,22 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setCurrentUserId(user.id);
-        const { data } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
-        if (data?.name) setMyCreatorName(data.name);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setCurrentUserId(user.id);
+          const { data } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
+          if (data?.name) setMyCreatorName(data.name);
+        }
+        const { data } = await supabase
+    .from("campaigns")
+    .select("*, brand_profiles(name, logo_url, is_enterprise)")
+    .eq("id", campaignId)
+    .single();
+        if (data) setCampaign(data);
+      } finally {
+        setLoading(false);
       }
-      const { data } = await supabase
-  .from("campaigns")
-  .select("*, brand_profiles(name, logo_url, is_enterprise)")
-  .eq("id", campaignId)
-  .single();
-      if (data) setCampaign(data);
-      setLoading(false);
     };
     load();
   }, [campaignId]);

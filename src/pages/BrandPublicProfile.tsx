@@ -33,17 +33,20 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   useEffect(() => { loadProfile(); }, [profileId]);
 
   const loadProfile = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) setCurrentUserId(user.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setCurrentUserId(user.id);
 
-    const { data } = await supabase
-      .from("brand_profiles")
-      .select("*")
-      .eq("id", profileId)
-      .single();
+      const { data } = await supabase
+        .from("brand_profiles")
+        .select("*")
+        .eq("id", profileId)
+        .single();
 
-    if (data) setBrand(data);
-    setLoading(false);
+      if (data) setBrand(data);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const startDM = async () => {

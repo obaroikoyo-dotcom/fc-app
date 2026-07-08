@@ -149,24 +149,27 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
   const fetchCampaigns = async (userId?: string) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("campaigns")
-      .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise), applications(creator_id, status, message)`)
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("campaigns")
+        .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise), applications(creator_id, status, message)`)
+        .order("created_at", { ascending: false });
 
-    if (!error && data) {
-      const activeUid = userId || currentUserId;
-      const parsed: Campaign[] = data.map((c: any) => {
-        const myApp = c.applications?.find((a: any) => a.creator_id === activeUid);
-        return {
-          ...c,
-          my_application: myApp ? { status: myApp.status, message: myApp.message } : undefined
-        };
-      });
-      setCampaigns(parsed);
-      setApplied(parsed.filter(c => c.my_application).map(c => c.id));
+      if (!error && data) {
+        const activeUid = userId || currentUserId;
+        const parsed: Campaign[] = data.map((c: any) => {
+          const myApp = c.applications?.find((a: any) => a.creator_id === activeUid);
+          return {
+            ...c,
+            my_application: myApp ? { status: myApp.status, message: myApp.message } : undefined
+          };
+        });
+        setCampaigns(parsed);
+        setApplied(parsed.filter(c => c.my_application).map(c => c.id));
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const toggleBookmark = async (campaignId: string) => {

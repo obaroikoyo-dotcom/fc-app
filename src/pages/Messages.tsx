@@ -265,10 +265,14 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     setCurrentUserId(user.id);
 
     if (role === "brand") {
-      const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single();
-      if (bp?.is_enterprise) setIsEnterprise(true);
-      if (bp?.stripe_payment_method_id && bp?.card_last4) {
-        setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
+      try {
+        const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single();
+        if (bp?.is_enterprise) setIsEnterprise(true);
+        if (bp?.stripe_payment_method_id && bp?.card_last4) {
+          setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
+        }
+      } catch (err) {
+        console.error("Failed to load brand payment info:", err);
       }
     }
     await loadConversations();
@@ -343,8 +347,9 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
   const loadConversations = async () => {
     setLoading(true);
+    try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!user) { return; }
     setCurrentUserId(user.id);
 
     const { data: myRole } = await supabase.from("profiles").select("role").eq("id", user.id).single();
@@ -416,7 +421,9 @@ const { data: linkedApp } = await supabase
       }
     }
     fetchUnreadMessages(user.id);
-    setLoading(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchUnreadMessages = async (userId = currentUserId) => {
