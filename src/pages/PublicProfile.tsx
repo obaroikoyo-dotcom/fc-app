@@ -3,7 +3,6 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
-import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -38,7 +37,6 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [loading, setLoading] = useState(true);
   const [favourited, setFavourited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const showSkeleton = useDelayedLoading(loading);
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
@@ -144,99 +142,8 @@ const startDM = async () => {
   const sectionStyle: React.CSSProperties = { marginBottom: "2rem" };
   const dividerStyle: React.CSSProperties = { borderTop: "1px solid #1a1a1a", marginBottom: "2rem" };
 
-  if (loading && !showSkeleton) {
-    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
-  }
-
   if (loading) {
-    const pulse = "pulse 1.5s ease-in-out infinite";
-    const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
-      <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
-    );
-    return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
-      <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        {bar("20px", "20px")}
-        {bar("120px", "18px")}
-      </div>
-      <div style={{ padding: "2.25rem 1.25rem 8rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ width: "100%", maxWidth: "480px" }}>
-
-          {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-            {bar("72px", "72px", { borderRadius: "50%", flexShrink: 0 })}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {bar("140px", "20px")}
-              {bar("100px", "13px")}
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
-            {bar("100%", "44px", { flex: 1, borderRadius: "8px" })}
-            {bar("100%", "44px", { flex: 1, borderRadius: "8px" })}
-          </div>
-
-          {/* Bio */}
-          <div style={{ ...sectionStyle, display: "flex", flexDirection: "column", gap: "10px" }}>
-            {bar("100%", "13px")}
-            {bar("85%", "13px")}
-            {bar("60%", "13px")}
-          </div>
-
-          <div style={dividerStyle} />
-
-          {/* Platforms */}
-          <div style={sectionStyle}>
-            {bar("90px", "11px", { marginBottom: "10px" })}
-            {[0, 1].map(i => (
-              <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
-                {bar("100px", "14px", { marginBottom: "10px" })}
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  {bar("90px", "12px")}
-                  {bar("90px", "12px")}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Content Types */}
-          <div style={sectionStyle}>
-            {bar("140px", "11px", { marginBottom: "10px" })}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {[70, 90, 60].map((w, i) => <div key={i}>{bar(`${w}px`, "28px", { borderRadius: "20px" })}</div>)}
-            </div>
-          </div>
-
-          <div style={dividerStyle} />
-
-          {/* Audience */}
-          <div style={sectionStyle}>
-            {bar("70px", "11px", { marginBottom: "10px" })}
-            <div style={{ display: "flex", gap: "1rem" }}>
-              {bar("60px", "13px")}
-              {bar("100px", "13px")}
-            </div>
-          </div>
-
-          {/* Rate Card */}
-          <div style={sectionStyle}>
-            {bar("80px", "11px", { marginBottom: "10px" })}
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px" }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
-                  {bar("50px", "13px")}
-                  {bar("40px", "13px")}
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  );
+    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
   }
 
   if (!creator) return (

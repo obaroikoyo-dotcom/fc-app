@@ -3,7 +3,6 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
-import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -102,7 +101,6 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
-  const showSkeleton = useDelayedLoading(loading);
   const [applied, setApplied] = useState<string[]>([]);
   const [bookmarked, setBookmarked] = useState<string[]>([]);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
@@ -210,7 +208,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
       <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
@@ -241,28 +239,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
       {/* Campaign Feed */}
 <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-        {showSkeleton ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {[1, 2, 3].map(i => (
-              <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ width: "100px", height: "12px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                    <div style={{ width: "60px", height: "10px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                  </div>
-                </div>
-                <div style={{ width: "70%", height: "14px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "8px" }} />
-                <div style={{ width: "90%", height: "10px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "6px" }} />
-                <div style={{ width: "75%", height: "10px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "16px" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #161616", paddingTop: "10px" }}>
-                  <div style={{ width: "60px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                  <div style={{ width: "70px", height: "28px", borderRadius: "6px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : loading ? null : filteredCampaigns.length === 0 ? (
+        {loading ? null : filteredCampaigns.length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
               {feedTab === "discover" ? "No new offers active" : "No pitches sent yet"}
