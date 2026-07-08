@@ -666,7 +666,7 @@ setTimeout(() => setSaved(false), 2000);
           <input style={inputStyle} placeholder="e.g. Beauty, Fitness, Lifestyle" value={niche} onChange={e => setNiche(e.target.value)} />
         </div>
       </div>
-      <div style={{ position: "fixed", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
+      <div style={{ position: "sticky", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
         <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
@@ -974,7 +974,7 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         </div>
       </div>
-      <div style={{ position: "fixed", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
+      <div style={{ position: "sticky", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
         <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#fff" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
@@ -997,7 +997,7 @@ setTimeout(() => setSaved(false), 2000);
           <span onClick={() => setCollabs(prev => [...prev, { brand: "", description: "" }])} style={{ fontSize: "12px", color: "#555", cursor: "pointer", textAlign: "center", padding: "10px", border: "1px dashed #222", borderRadius: "8px" }}>+ Add collab</span>
         </div>
       </div>
-      <div style={{ position: "fixed", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
+      <div style={{ position: "sticky", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
         <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#fff" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
