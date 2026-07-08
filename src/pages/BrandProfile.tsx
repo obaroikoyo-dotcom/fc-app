@@ -409,7 +409,7 @@ const loadFavourites = async () => {
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div
-            onClick={async () => { await supabase.auth.signOut(); navigate("role-select"); }}
+            onClick={async () => { await supabase.auth.signOut(); window.location.reload(); }}
             style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
             Sign Out
@@ -423,7 +423,7 @@ const loadFavourites = async () => {
                 await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
                 await supabase.auth.signOut();
               }
-              navigate("role-select");
+              window.location.reload();
             }}
             style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
