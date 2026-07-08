@@ -35,7 +35,7 @@ type SettingsSection =
   | "privacy-policy"
   | "terms";
 
-export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
+export default function CreatorProfile({ navigateToProfile, toggleTheme, isInverted }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
 

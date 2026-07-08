@@ -1,4 +1,4 @@
-export function withTimeout<T>(promise: Promise<T>, ms = 10000): Promise<T> {
+export function withTimeout<T>(promise: PromiseLike<T>, ms = 10000): Promise<T> {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Request timed out")), ms)),
