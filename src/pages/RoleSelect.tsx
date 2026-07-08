@@ -5,10 +5,26 @@ import { type Page } from "../App";
 
 interface Props { navigate: (p: Page) => void; }
 
+const BuildingIcon = (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+    <rect x="5" y="3" width="10" height="18" rx="1" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M15 9h4v12H5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 7h1M11 7h1M8 11h1M11 11h1M8 15h1M11 15h1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <path d="M17.5 12.5h1M17.5 15.5h1M17.5 18.5h1" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
+const CreatorIcon = (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+    <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+  </svg>
+);
+
 export default function RoleSelect({ navigate }: Props) {
   const [hovered, setHovered] = useState<"brand" | "creator" | null>(null);
 
-  const card = (role: "brand" | "creator", title: string, sub: string, icon: string) => {
+  const card = (role: "brand" | "creator", title: string, sub: string, icon: React.ReactNode) => {
     const isHovered = hovered === role;
     return (
       <div
@@ -26,7 +42,7 @@ export default function RoleSelect({ navigate }: Props) {
           minWidth: "200px",
         }}
       >
-        <div style={{ fontSize: "28px", marginBottom: "12px" }}>{icon}</div>
+        <div style={{ color: "#fff", marginBottom: "12px" }}>{icon}</div>
         <p style={{
           fontFamily: "'Syne', sans-serif",
           fontSize: "18px",
@@ -54,8 +70,8 @@ export default function RoleSelect({ navigate }: Props) {
         }}>Who are you?</p>
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-          {card("brand", "I'm a Brand", "Post campaigns and find the right creators for your product.", "◈")}
-          {card("creator", "I'm a Creator", "Apply to brand collabs and grow your portfolio.", "◉")}
+          {card("brand", "I'm a Brand", "Post campaigns and find the right creators for your product.", BuildingIcon)}
+          {card("creator", "I'm a Creator", "Apply to brand collabs and grow your portfolio.", CreatorIcon)}
         </div>
 
         <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "13px", color: "#444" }}>
