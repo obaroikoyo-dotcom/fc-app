@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
@@ -75,27 +76,28 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      try {
-        await withTimeout((async () => {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-            if (data?.role) {
-              setUserRole(data.role);
-              setFilter(data.role === "brand" ? "creators" : "brands");
-            }
+  const loadProfiles = async () => {
+    setLoading(true);
+    try {
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+          if (data?.role) {
+            setUserRole(data.role);
+            setFilter(data.role === "brand" ? "creators" : "brands");
           }
-          const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
-          if (profiles) setAllProfiles(profiles);
-        })());
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+        }
+        const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
+        if (profiles) setAllProfiles(profiles);
+      })());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadProfiles(); }, []);
+  useRefetchOnVisible(loadProfiles, loading);
 
   const startDM = async (recId: string) => {
     const { data: { user } } = await supabase.auth.getUser();

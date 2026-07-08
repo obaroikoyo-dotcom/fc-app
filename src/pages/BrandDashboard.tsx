@@ -3,6 +3,7 @@ import CreateCampaign from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -95,6 +96,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       setLoading(false);
     }
   };
+
+  useRefetchOnVisible(fetchCampaigns, loading);
 
   useEffect(() => {
     fetchCampaigns();

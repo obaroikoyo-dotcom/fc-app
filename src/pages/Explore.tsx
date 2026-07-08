@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -174,6 +175,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       setLoading(false);
     }
   };
+
+  useRefetchOnVisible(() => fetchCampaigns(), loading);
 
   const toggleBookmark = async (campaignId: string) => {
     if (!currentUserId) return;

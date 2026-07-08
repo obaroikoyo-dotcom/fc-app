@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -80,6 +81,8 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
       setLoading(false);
     }
   };
+
+  useRefetchOnVisible(() => fetchNotifications(), loading);
 
   const markAllAsRead = async () => {
     const { data: { user } } = await supabase.auth.getUser();

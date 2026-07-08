@@ -3,6 +3,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -53,29 +54,29 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myCreatorName, setMyCreatorName] = useState("A creator");
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        await withTimeout((async () => {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user) {
-            setCurrentUserId(user.id);
-            const { data } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
-            if (data?.name) setMyCreatorName(data.name);
-          }
-          const { data } = await supabase
-      .from("campaigns")
-      .select("*, brand_profiles(name, logo_url, is_enterprise)")
-      .eq("id", campaignId)
-      .single();
-          if (data) setCampaign(data);
-        })());
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, [campaignId]);
+  const load = async () => {
+    try {
+      await withTimeout((async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setCurrentUserId(user.id);
+          const { data } = await supabase.from("creator_profiles").select("name").eq("id", user.id).single();
+          if (data?.name) setMyCreatorName(data.name);
+        }
+        const { data } = await supabase
+          .from("campaigns")
+          .select("*, brand_profiles(name, logo_url, is_enterprise)")
+          .eq("id", campaignId)
+          .single();
+        if (data) setCampaign(data);
+      })());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, [campaignId]);
+  useRefetchOnVisible(load, loading);
 
   const togglePlatform = (p: string) =>
     setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);

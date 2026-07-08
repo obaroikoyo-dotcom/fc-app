@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -51,6 +52,8 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       setLoading(false);
     }
   };
+
+  useRefetchOnVisible(loadProfile, loading);
 
   const startDM = async () => {
     if (!currentUserId) return;

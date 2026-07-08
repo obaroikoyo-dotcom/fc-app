@@ -3,6 +3,7 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
+import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 
@@ -437,6 +438,8 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       setLoading(false);
     }
   };
+
+  useRefetchOnVisible(loadConversations, loading);
 
   const fetchUnreadMessages = async (userId = currentUserId) => {
     if (!userId) return;
