@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -45,6 +46,7 @@ const UI = {
 export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading);
   const [message, setMessage] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -153,9 +155,37 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     setUploadProgress(null);
   };
 
-  if (loading) {
+  if (loading && !showSkeleton) {
     return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
   }
+
+  if (loading) return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+        <div style={{ width: "20px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+        <div style={{ width: "120px", height: "18px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+      </div>
+      <div style={{ padding: "1.5rem 1.25rem", paddingTop: "5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
+          <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: "#1a1a1a", flexShrink: 0, animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ width: "140px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+            <div style={{ width: "100px", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
+          <div style={{ flex: 1, height: "44px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div style={{ flex: 1, height: "44px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ width: "100%", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div style={{ width: "85%", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div style={{ width: "90%", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+        </div>
+      </div>
+    </div>
+  );
 
   if (!campaign) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
