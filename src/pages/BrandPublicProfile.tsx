@@ -50,6 +50,8 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
         if (data) setBrand(data);
       })());
+    } catch (err) {
+      console.error("Failed to load brand profile:", err);
     } finally {
       setLoading(false);
     }

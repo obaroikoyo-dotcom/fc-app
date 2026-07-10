@@ -93,6 +93,8 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
         const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
         if (profiles) setAllProfiles(profiles);
       })());
+    } catch (err) {
+      console.error("Failed to load profiles:", err);
     } finally {
       setLoading(false);
     }

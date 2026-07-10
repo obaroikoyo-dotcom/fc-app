@@ -72,6 +72,8 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           .single();
         if (data) setCampaign(data);
       })());
+    } catch (err) {
+      console.error("Failed to load campaign:", err);
     } finally {
       setLoading(false);
     }

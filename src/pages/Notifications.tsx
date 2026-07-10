@@ -79,6 +79,8 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
           setNotifications(parsed);
         }
       })());
+    } catch (err) {
+      console.error("Failed to load notifications:", err);
     } finally {
       setLoading(false);
     }

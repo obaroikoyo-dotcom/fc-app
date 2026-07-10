@@ -94,6 +94,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           }
         }
       })());
+    } catch (err) {
+      console.error("Failed to load campaigns:", err);
     } finally {
       setLoading(false);
     }

@@ -436,6 +436,8 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
         }
         fetchUnreadMessages(user.id);
       })(), 15000);
+    } catch (err) {
+      console.error("Failed to load conversations:", err);
     } finally {
       setLoading(false);
     }

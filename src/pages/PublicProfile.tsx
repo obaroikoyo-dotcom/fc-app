@@ -78,6 +78,8 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
 
         if (brandData) setCreator(brandData);
       })());
+    } catch (err) {
+      console.error("Failed to load profile:", err);
     } finally {
       setLoading(false);
     }
