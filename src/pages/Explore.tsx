@@ -277,13 +277,13 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             </p>
           </div>
         ) : (
-          filteredCampaigns.map(c => {
+          filteredCampaigns.map((c, i) => {
             const baseBudgetVal = parseInt(c.budget, 10) || 0;
             const brandIsEnterprise = (c.brand_profiles as any)?.is_enterprise;
             const netCreatorPayout = brandIsEnterprise ? baseBudgetVal : baseBudgetVal * 0.90;
 
             return (
-              <div key={c.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
+              <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div

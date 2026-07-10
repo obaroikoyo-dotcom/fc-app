@@ -473,6 +473,13 @@ case "apply-campaign":
   .page-enter {
     animation: pageEnter 0.18s ease-out;
   }
+  @keyframes itemEnter {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .item-enter {
+    animation: itemEnter 0.28s ease-out backwards;
+  }
 `}</style>
      <div key={page} className="page-enter" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" }}>
   {renderPage()}

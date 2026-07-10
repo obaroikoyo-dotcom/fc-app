@@ -268,7 +268,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                   )}
                 </div>
               );
-              return <>{filtered.map(c => {
+              return <>{filtered.map((c, i) => {
                 const isOwn = c.brand_id === currentUserId;
                 const brandLogo = (c as any).brand_profiles?.logo_url;
                 const brandName = (c as any).brand_profiles?.name;
@@ -277,7 +277,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const appCount = c.applications?.length || 0;
 
                 return (
-                  <div key={c.id} style={{ background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
+                  <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
 
                     {/* Header Row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>

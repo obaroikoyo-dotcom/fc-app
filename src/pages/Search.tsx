@@ -181,10 +181,10 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
         ) : !hasLoadedOnce && loading ? null : filtered.length === 0 ? (
           <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p>
         ) : (
-          filtered.map(p => {
+          filtered.map((p, i) => {
             const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;
             return (
-              <div key={p.id} onClick={() => navigateToProfile(p.id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+              <div key={p.id} onClick={() => navigateToProfile(p.id)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {cp?.avatar_url || bp?.avatar_url ? <img src={cp?.avatar_url || bp?.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : isC ? "◉" : "◈"}
                 </div>
