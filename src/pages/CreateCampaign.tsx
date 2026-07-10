@@ -190,6 +190,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       };
       let campaign: { id: string } | null;
       if (editingCampaign) {
+        const { count } = await supabase.from("applications")
+          .select("id", { count: "exact", head: true }).eq("campaign_id", editingCampaign.id);
+        if (count && count > 0) {
+          setError("This campaign already has applications and can no longer be edited.");
+          return;
+        }
         const { data, error: updateError } = await supabase.from("campaigns")
           .update(fields).eq("id", editingCampaign.id).select().single();
         if (updateError || !data) { setError("Failed to save changes. Please try again."); return; }

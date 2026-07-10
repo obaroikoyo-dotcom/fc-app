@@ -297,12 +297,14 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         )}
                         {isOwn && feedTab === "yours" ? (
                           <>
-                            <span
-                              onClick={(e) => { e.stopPropagation(); setEditingCampaign(c); setTab("post"); }}
-                              style={{ fontSize: "11px", color: "#ccc", cursor: "pointer", fontWeight: 500, background: "rgba(255,255,255,0.06)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.12)" }}
-                            >
-                              Edit
-                            </span>
+                            {appCount === 0 && (
+                              <span
+                                onClick={(e) => { e.stopPropagation(); setEditingCampaign(c); setTab("post"); }}
+                                style={{ fontSize: "11px", color: "#ccc", cursor: "pointer", fontWeight: 500, background: "rgba(255,255,255,0.06)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.12)" }}
+                              >
+                                Edit
+                              </span>
+                            )}
                             <span
                               onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
                               style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
