@@ -1,10 +1,30 @@
-﻿import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+
+export interface EditableCampaign {
+  id: string;
+  name: string;
+  description?: string;
+  budget: string | number;
+  type: "gifted" | "paid";
+  video_required: boolean;
+  niche: string;
+  deadline: string;
+  objective?: string;
+  deliverables?: string[];
+  vibe?: string;
+  dos?: string[];
+  donts?: string[];
+  promo_code?: string;
+  landing_link?: string;
+  utm_code?: string;
+}
 
 interface Props {
   onPosted: () => void;
   isEnterprise: boolean;
   onNavigateEnterprise?: () => void;
+  editingCampaign?: EditableCampaign | null;
 }
 
 interface AssetFile {
@@ -60,7 +80,7 @@ const sectionTitle = (label: string, sub: string) => (
   </div>
 );
 
-export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnterprise }: Props) {
+export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnterprise, editingCampaign }: Props) {
   const [name, setName] = useState("");
   const [objective, setObjective] = useState("");
   const [objectiveOther, setObjectiveOther] = useState("");
@@ -88,6 +108,26 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const [posting, setPosting] = useState(false);
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!editingCampaign) return;
+    setName(editingCampaign.name || "");
+    const knownObjective = editingCampaign.objective && OBJECTIVES.includes(editingCampaign.objective);
+    setObjective(knownObjective ? editingCampaign.objective! : (editingCampaign.objective ? "Other" : ""));
+    setObjectiveOther(editingCampaign.objective && !knownObjective ? editingCampaign.objective : "");
+    setBudget(editingCampaign.budget ? String(editingCampaign.budget) : "");
+    setCampaignType(editingCampaign.type || "paid");
+    setDeadline(editingCampaign.deadline || "");
+    setNiche(editingCampaign.niche || "");
+    setDeliverables(editingCampaign.deliverables || []);
+    setVideoRequired(!!editingCampaign.video_required);
+    setVibe(editingCampaign.vibe || editingCampaign.description || "");
+    setDos(editingCampaign.dos?.length ? editingCampaign.dos : [""]);
+    setDonts(editingCampaign.donts?.length ? editingCampaign.donts : [""]);
+    setPromoCode(editingCampaign.promo_code || "");
+    setLandingLink(editingCampaign.landing_link || "");
+    setUtmCode(editingCampaign.utm_code || "");
+  }, [editingCampaign]);
 
   const numericBudget = Math.max(0, parseInt(budget, 10) || 0);
   const platformFee = isEnterprise ? 0 : numericBudget * 0.05;
@@ -139,27 +179,41 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setError("You must be logged in to post a campaign."); return; }
       const finalObjective = objective === "Other" ? objectiveOther : objective;
-      const { data: campaign, error: insertError } = await supabase.from("campaigns").insert({
-        brand_id: user.id, name, description: vibe,
+      const fields = {
+        name, description: vibe,
         budget: campaignType === "paid" ? numericBudget : 0,
         type: campaignType,
         niche, platforms, deadline, video_required: videoRequired,
         objective: finalObjective, deliverables, vibe,
         dos: dos.filter(d => d.trim()), donts: donts.filter(d => d.trim()),
-        promo_code: promoCode, landing_link: landingLink, utm_code: utmCode, script: "",
-      }).select().single();
-      if (insertError || !campaign) { setError("Failed to post campaign. Please try again."); return; }
+        promo_code: promoCode, landing_link: landingLink, utm_code: utmCode,
+      };
+      let campaign: { id: string } | null;
+      if (editingCampaign) {
+        const { data, error: updateError } = await supabase.from("campaigns")
+          .update(fields).eq("id", editingCampaign.id).select().single();
+        if (updateError || !data) { setError("Failed to save changes. Please try again."); return; }
+        campaign = data;
+      } else {
+        const { data, error: insertError } = await supabase.from("campaigns")
+          .insert({ brand_id: user.id, ...fields, script: "" }).select().single();
+        if (insertError || !data) { setError("Failed to post campaign. Please try again."); return; }
+        campaign = data;
+      }
+      if (!campaign) { setError("Something went wrong. Please try again."); return; }
       const [logoUrls, overlayUrls, styleVideoUrls, brollUrls] = await Promise.all([
         uploadAssets(user.id, campaign.id, logos, "logos"),
         uploadAssets(user.id, campaign.id, overlays, "overlays"),
         uploadAssets(user.id, campaign.id, styleVideos, "style-videos"),
         uploadAssets(user.id, campaign.id, broll, "broll"),
       ]);
-      if (logoUrls.length || overlayUrls.length || styleVideoUrls.length || brollUrls.length) {
-        await supabase.from("campaigns").update({
-          asset_logos: logoUrls, asset_overlays: overlayUrls,
-          asset_style_videos: styleVideoUrls, asset_broll: brollUrls,
-        }).eq("id", campaign.id);
+      const assetUpdates: Record<string, string[]> = {};
+      if (logoUrls.length) assetUpdates.asset_logos = logoUrls;
+      if (overlayUrls.length) assetUpdates.asset_overlays = overlayUrls;
+      if (styleVideoUrls.length) assetUpdates.asset_style_videos = styleVideoUrls;
+      if (brollUrls.length) assetUpdates.asset_broll = brollUrls;
+      if (Object.keys(assetUpdates).length > 0) {
+        await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id);
       }
       setPosted(true);
       setTimeout(() => { setPosted(false); onPosted(); }, 1500);
@@ -442,7 +496,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           transition: "all 0.2s", marginBottom: "1rem",
         }}
       >
-        {posting ? "Posting..." : posted ? "Posted ✓" : "Post Campaign"}
+        {editingCampaign
+          ? (posting ? "Saving..." : posted ? "Saved ✓" : "Save Changes")
+          : (posting ? "Posting..." : posted ? "Posted ✓" : "Post Campaign")}
       </div>
 
     </div>

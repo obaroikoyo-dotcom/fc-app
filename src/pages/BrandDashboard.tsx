@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
-import CreateCampaign from "./CreateCampaign";
+import CreateCampaign, { type EditableCampaign } from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
@@ -27,6 +27,14 @@ interface Campaign {
   created_at: string;
   script: string;
   applications: { id: string }[];
+  objective?: string;
+  deliverables?: string[];
+  vibe?: string;
+  dos?: string[];
+  donts?: string[];
+  promo_code?: string;
+  landing_link?: string;
+  utm_code?: string;
 }
 
 const formatDeadline = (dateString: string) => {
@@ -66,6 +74,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [feedTab, setFeedTab] = useState<"yours" | "discover">("yours");
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
 
   useLayoutEffect(() => {
     if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
@@ -102,6 +111,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   };
 
   useRefetchOnVisible(fetchCampaigns, loading);
+
+  useEffect(() => {
+    if (tab !== "post") setEditingCampaign(null);
+  }, [tab]);
 
   useEffect(() => {
     fetchCampaigns();
@@ -164,7 +177,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
-              {tab === "campaigns" ? "Campaigns" : "Post Campaign"}
+              {tab === "campaigns" ? "Campaigns" : editingCampaign ? "Edit Campaign" : "Post Campaign"}
             </span>
             {isEnterprise && (
               <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
@@ -283,12 +296,20 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           </span>
                         )}
                         {isOwn && feedTab === "yours" ? (
-                          <span
-                            onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
-                            style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
-                          >
-                            Delete
-                          </span>
+                          <>
+                            <span
+                              onClick={(e) => { e.stopPropagation(); setEditingCampaign(c); setTab("post"); }}
+                              style={{ fontSize: "11px", color: "#ccc", cursor: "pointer", fontWeight: 500, background: "rgba(255,255,255,0.06)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.12)" }}
+                            >
+                              Edit
+                            </span>
+                            <span
+                              onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
+                              style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
+                            >
+                              Delete
+                            </span>
+                          </>
                         ) : !isOwn && (
                           <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             {c.type}
@@ -376,7 +397,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           <div key="post" className="page-enter">
             <CreateCampaign
               isEnterprise={isEnterprise}
+              editingCampaign={editingCampaign as EditableCampaign | null}
               onPosted={async () => {
+                setEditingCampaign(null);
                 await fetchCampaigns();
                 setTab("campaigns");
               }}
