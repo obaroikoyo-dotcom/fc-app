@@ -5,6 +5,7 @@ import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 
@@ -239,6 +240,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
+  const hasLoadedOnce = useHasLoadedOnce(loading);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserName, setCurrentUserName] = useState<string>("Someone");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -855,7 +857,7 @@ return (
       {/* Messages Tab List View */}
       {(role === "creator" || (role === "brand" && brandTab === "messages")) && view === "list" && (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
-          {showSkeleton ? (
+          {!hasLoadedOnce && showSkeleton ? (
   <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
     {[1, 2, 3, 4, 5].map(i => (
       <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111" }}>
@@ -868,7 +870,7 @@ return (
       </div>
     ))}
   </div>
-) : loading ? null : conversations.length === 0 ? (
+) : !hasLoadedOnce && loading ? null : conversations.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
                 <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="#333" strokeWidth="2" strokeLinejoin="round"/>

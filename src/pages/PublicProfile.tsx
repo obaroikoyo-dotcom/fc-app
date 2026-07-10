@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -39,6 +40,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [favourited, setFavourited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const showSkeleton = useDelayedLoading(loading);
+  const hasLoadedOnce = useHasLoadedOnce(loading);
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
@@ -146,11 +148,11 @@ const startDM = async () => {
   const sectionStyle: React.CSSProperties = { marginBottom: "2rem" };
   const dividerStyle: React.CSSProperties = { borderTop: "1px solid #1a1a1a", marginBottom: "2rem" };
 
-  if (loading && !showSkeleton) {
+  if (loading && !hasLoadedOnce && !showSkeleton) {
     return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
   }
 
-  if (loading) {
+  if (loading && !hasLoadedOnce) {
     const pulse = "pulse 1.5s ease-in-out infinite";
     const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
       <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />

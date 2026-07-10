@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
@@ -62,6 +63,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
+  const hasLoadedOnce = useHasLoadedOnce(loading);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [niche, setNiche] = useState("");
   const [followers, setFollowers] = useState("");
@@ -163,7 +165,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
       </div>
 
       <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: `${headerHeight + 16}px`, display: "flex", flexDirection: "column", gap: "10px" }}>
-        {showSkeleton ? (
+        {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3, 4, 5].map(i => (
               <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -176,7 +178,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
               </div>
             ))}
           </div>
-        ) : loading ? null : filtered.length === 0 ? (
+        ) : !hasLoadedOnce && loading ? null : filtered.length === 0 ? (
           <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p>
         ) : (
           filtered.map(p => {

@@ -5,6 +5,7 @@ import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -47,6 +48,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
+  const hasLoadedOnce = useHasLoadedOnce(loading);
   const [message, setMessage] = useState("");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -157,11 +159,11 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     setUploadProgress(null);
   };
 
-  if (loading && !showSkeleton) {
+  if (loading && !hasLoadedOnce && !showSkeleton) {
     return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
   }
 
-  if (loading) return (
+  if (loading && !hasLoadedOnce) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
