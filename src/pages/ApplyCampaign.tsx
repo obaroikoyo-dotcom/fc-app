@@ -6,6 +6,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { censorProfanity } from "../lib/profanity";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -57,6 +58,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myCreatorName, setMyCreatorName] = useState("A creator");
+  const [blocked, setBlocked] = useState(false);
 
   const load = async () => {
     try {
@@ -73,6 +75,16 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           .eq("id", campaignId)
           .single();
         if (data) setCampaign(data);
+
+        if (user && data) {
+          const { data: blockedRow } = await supabase
+            .from("blocked_creators")
+            .select("id")
+            .eq("brand_id", data.brand_id)
+            .eq("creator_id", user.id)
+            .maybeSingle();
+          if (blockedRow) setBlocked(true);
+        }
       }, 10000, "ApplyCampaign.load");
     } catch (err) {
       console.error("Failed to load campaign:", err);
@@ -136,7 +148,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     const { error: appError } = await supabase.from("applications").insert({
       campaign_id: campaign.id,
       creator_id: currentUserId,
-      message,
+      message: censorProfanity(message),
       platforms: selectedPlatforms,
       video_url: uploadedVideoUrl,
       status: "pending",
@@ -194,6 +206,12 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   if (!campaign) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ color: "#555", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Campaign not found.</p>
+    </div>
+  );
+
+  if (blocked) return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
+      <p style={{ color: "#555", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.7 }}>You can't apply to this campaign.</p>
     </div>
   );
 

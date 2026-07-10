@@ -246,6 +246,13 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [activeCampaign, setActiveCampaign] = useState<Campaign | null>(null);
   const [activeApplication, setActiveApplication] = useState<Application | null>(null);
+
+  useEffect(() => {
+    setReportOpen(false);
+    setReportReason("");
+    setReportDetail("");
+    setReportSubmitted(false);
+  }, [activeApplication?.id]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentApp, setPaymentApp] = useState<Application | null>(null);
@@ -253,7 +260,14 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [savedCard, setSavedCard] = useState<{ last4: string; brand: string; pm_id: string } | null>(null);
   const [paymentPopup, setPaymentPopup] = useState<{ title: string; body: string } | null>(null);
-  
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetail, setReportDetail] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [blockedCreatorIds, setBlockedCreatorIds] = useState<string[]>([]);
+
   // Track unread conversation IDs locally to place red dots on chats
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
   const [seenCampaignIds, setSeenCampaignIds] = useState<string[]>([]);
@@ -289,6 +303,15 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
         }
       } catch (err) {
         console.error("Failed to load brand payment info:", err);
+      }
+      try {
+        const { data: blocked } = await withTimeout(
+          () => supabase.from("blocked_creators").select("creator_id").eq("brand_id", user.id),
+          10000, "Messages.init.blockedCreators"
+        );
+        if (blocked) setBlockedCreatorIds(blocked.map(b => b.creator_id));
+      } catch (err) {
+        console.error("Failed to load blocked creators:", err);
       }
     }
     await loadConversations();
@@ -651,6 +674,37 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
   };
 
+  const handleSubmitReport = async (app: Application) => {
+    if (!currentUserId || !reportReason) return;
+    setReportSubmitting(true);
+    const { error } = await supabase.from("reports").insert({
+      reporter_id: currentUserId,
+      reported_user_id: app.creator_id,
+      application_id: app.id,
+      reason: reportDetail ? `${reportReason}: ${reportDetail}` : reportReason,
+    });
+    setReportSubmitting(false);
+    if (!error) {
+      setReportSubmitted(true);
+      setReportReason("");
+      setReportDetail("");
+    }
+  };
+
+  const handleBlockCreator = async (app: Application) => {
+    if (!currentUserId) return;
+    setBlockLoading(true);
+    const { error } = await supabase.from("blocked_creators").insert({
+      brand_id: currentUserId,
+      creator_id: app.creator_id,
+    });
+    if (!error) {
+      setBlockedCreatorIds(prev => [...prev, app.creator_id]);
+      if (app.status === "pending") await handleReject(app);
+    }
+    setBlockLoading(false);
+  };
+
   const getHeader = () => {
     if (view === "chat") return activeConvo?.other_name;
     if (view === "campaign-apps") return activeCampaign?.name;
@@ -789,15 +843,71 @@ return (
       {/* Application Detail */}
       {view === "app-detail" && activeApplication && (
         <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "1.5rem" }}>
-            <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#333" }}>
-              {activeApplication.creator_avatar ? <img src={activeApplication.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", marginBottom: "1.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#333" }}>
+                {activeApplication.creator_avatar ? <img src={activeApplication.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+              </div>
+              <div>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{activeApplication.creator_name}</p>
+                <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>Applied to {activeApplication.campaign_name}</p>
+              </div>
             </div>
-            <div>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{activeApplication.creator_name}</p>
-              <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>Applied to {activeApplication.campaign_name}</p>
-            </div>
+            {blockedCreatorIds.includes(activeApplication.creator_id) ? (
+              <span style={{ fontSize: "10px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 9px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
+            ) : (
+              <span
+                onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
+                style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+              >
+                ⚑ Report
+              </span>
+            )}
           </div>
+
+          {reportOpen && !blockedCreatorIds.includes(activeApplication.creator_id) && (
+            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
+              {reportSubmitted ? (
+                <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
+              ) : (
+                <>
+                  <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report this application</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+                    {["Inappropriate video", "Offensive language", "Spam or scam", "Other"].map(r => (
+                      <span
+                        key={r}
+                        onClick={() => setReportReason(r)}
+                        style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${reportReason === r ? "#fff" : "#222"}`, background: reportReason === r ? "#fff" : "transparent", color: reportReason === r ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
+                      >
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                  <textarea
+                    value={reportDetail}
+                    onChange={e => setReportDetail(e.target.value)}
+                    placeholder="Any extra detail (optional)"
+                    rows={2}
+                    style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px", color: "#fff", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
+                  />
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <div
+                      onClick={() => !reportSubmitting && reportReason && handleSubmitReport(activeApplication)}
+                      style={{ flex: 1, padding: "11px", borderRadius: "8px", background: reportReason ? "#fff" : "#1a1a1a", color: reportReason ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: reportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                    >
+                      {reportSubmitting ? "Submitting..." : "Submit Report"}
+                    </div>
+                    <div
+                      onClick={() => !blockLoading && handleBlockCreator(activeApplication)}
+                      style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                    >
+                      {blockLoading ? "Blocking..." : "Block Creator"}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
             <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Their message</p>
