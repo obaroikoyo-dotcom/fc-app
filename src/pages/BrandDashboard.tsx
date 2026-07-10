@@ -200,7 +200,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
-          <div key="campaigns" className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div key={`campaigns-${feedTab}`} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {showSkeleton ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (

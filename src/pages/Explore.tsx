@@ -242,7 +242,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       </div>
 
       {/* Campaign Feed */}
-<div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+<div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem" }}>
+      <div key={feedTab} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (
@@ -363,6 +364,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             );
           })
         )}
+      </div>
       </div>
     </div>
   );
