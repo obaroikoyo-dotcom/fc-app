@@ -5,6 +5,13 @@ const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export async function signInWithGoogle() {
+  await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin },
+  });
+}
+
 // Supabase's internal auth lock (serializes token-refresh across tabs) can
 // get stuck if a refresh was in-flight when the tab was backgrounded and
 // timer throttling prevented it from ever completing - every subsequent

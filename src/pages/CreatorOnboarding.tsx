@@ -117,6 +117,7 @@ const [showNicheDropdown, setShowNicheDropdown] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [isOAuthUser, setIsOAuthUser] = useState(false);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [error, setError] = useState("");
@@ -132,6 +133,15 @@ const [otpResent, setOtpResent] = useState(false);
 const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 const [showOtp, setShowOtp] = useState(false);
   const picRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
+        setIsOAuthUser(true);
+        setEmail(user.email || "");
+      }
+    });
+  }, []);
 
   const computedAge = calculateAge(birthDay, birthMonth, birthYear);
 
@@ -462,20 +472,26 @@ const [showOtp, setShowOtp] = useState(false);
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your account</h1>
       <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Your details are safe and never shared with brands without your permission.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
-          <input style={inputStyle} placeholder="you@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+      {isOAuthUser ? (
+        <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
+          Continuing as <strong>{email}</strong> via Google
         </div>
-        <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
-          <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div>
+            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
+            <input style={inputStyle} placeholder="you@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
+          </div>
+          <div>
+            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
+            <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+          </div>
+          <div>
+            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
+            <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
+          </div>
         </div>
-        <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
-          <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
-        </div>
-      </div>
+      )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 {!termsAccepted && (
   <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -522,7 +538,7 @@ const buttonLabel = () => {
   if (screen === 2) return selectedPlatforms.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 3) return contentTypes.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 4) return Object.values(rates).some(v => v) ? "Continue →" : "Skip for now →";
-  if (screen === 5) return email.trim() && password.length >= 6 && password === confirm && termsAccepted ? "Continue →" : null;
+  if (screen === 5) return (isOAuthUser ? termsAccepted : (email.trim() && password.length >= 6 && password === confirm && termsAccepted)) ? "Continue →" : null;
   if (screen === 6) return profilePic ? "Finish & Go Explore →" : "Skip for now →";
   return "Continue →";
 };
@@ -602,7 +618,7 @@ const buttonLabel = () => {
         ) : (
           <div
             className="tap-btn"
-            onClick={(!loading && buttonLabel()) ? (screen === 5 ? handleSignup : screen === 0 ? handleContinueFromWelcome : next) : undefined}
+            onClick={(!loading && buttonLabel()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : screen === 0 ? handleContinueFromWelcome : next) : undefined}
             style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && buttonLabel()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
             {screen === 5 && loading ? "Sending code..." : (buttonLabel() || "Enter your name to continue")}

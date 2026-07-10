@@ -262,8 +262,15 @@ export default function App() {
         .maybeSingle();
 
       if (profileError || !profile) {
-        // No profile row yet — user is mid-onboarding (handled by the
-        // onboarding component itself). Don't sign out or redirect.
+        // No profile row yet. Email/password signups are mid-onboarding at
+        // this point (authenticated post-OTP, but handleFinish hasn't run
+        // yet) - their own wizard's local state carries them through, so
+        // leave them alone. OAuth sign-ins land here with no wizard
+        // in progress at all and need to be sent to pick a role.
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.app_metadata?.provider && user.app_metadata.provider !== "email") {
+          setPage("role-select");
+        }
         return;
       }
 
