@@ -23,6 +23,8 @@ import EnterpriseSubscriptionPage from "./pages/EnterpriseSubscriptionPage";
 import ApplyCampaign from "./pages/ApplyCampaign";
 import VerifyEmail from "./pages/VerifyEmail";
 import { supabase } from "./lib/supabase";
+import { withTimeout } from "./lib/withTimeout";
+import { logEvent } from "./lib/debugLog";
 
 
 export type Page = 
@@ -255,54 +257,57 @@ export default function App() {
 
   const syncUserRoute = async (userId: string) => {
     try {
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", userId)
-        .maybeSingle();
+      await withTimeout((async () => {
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userId)
+          .maybeSingle();
 
-      if (profileError || !profile) {
-        // No profile row yet. Email/password signups are mid-onboarding at
-        // this point (authenticated post-OTP, but handleFinish hasn't run
-        // yet) - their own wizard's local state carries them through, so
-        // leave them alone. OAuth sign-ins land here with no wizard
-        // in progress at all and need to be sent to pick a role.
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.app_metadata?.provider && user.app_metadata.provider !== "email") {
+        if (profileError || !profile) {
+          // No profile row yet. Email/password signups are mid-onboarding at
+          // this point (authenticated post-OTP, but handleFinish hasn't run
+          // yet) - their own wizard's local state carries them through, so
+          // leave them alone. OAuth sign-ins land here with no wizard
+          // in progress at all and need to be sent to pick a role.
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.app_metadata?.provider && user.app_metadata.provider !== "email") {
+            setPage("role-select");
+          }
+          return;
+        }
+
+        if (profile.role === "brand") {
+          const { data: brandProfile } = await supabase
+            .from("brand_profiles")
+            .select("onboarding_complete")
+            .eq("id", userId)
+            .maybeSingle();
+
+          if (brandProfile?.onboarding_complete) {
+            setPage("brand-dashboard");
+          } else {
+            setPage("brand-onboarding");
+          }
+        } else if (profile.role === "creator") {
+          const { data: creatorProfile } = await supabase
+            .from("creator_profiles")
+            .select("onboarding_complete")
+            .eq("id", userId)
+            .maybeSingle();
+
+          if (creatorProfile?.onboarding_complete) {
+            setPage("explore");
+          } else {
+            setPage("creator-onboarding");
+          }
+        } else {
           setPage("role-select");
         }
-        return;
-      }
-
-      if (profile.role === "brand") {
-        const { data: brandProfile } = await supabase
-          .from("brand_profiles")
-          .select("onboarding_complete")
-          .eq("id", userId)
-          .maybeSingle();
-          
-        if (brandProfile?.onboarding_complete) {
-          setPage("brand-dashboard");
-        } else {
-          setPage("brand-onboarding");
-        }
-      } else if (profile.role === "creator") {
-        const { data: creatorProfile } = await supabase
-          .from("creator_profiles")
-          .select("onboarding_complete")
-          .eq("id", userId)
-          .maybeSingle();
-          
-        if (creatorProfile?.onboarding_complete) {
-          setPage("explore");
-        } else {
-          setPage("creator-onboarding");
-        }
-      } else {
-        setPage("role-select");
-      }
+      })(), 10000, "App.syncUserRoute");
     } catch (err) {
       console.log("Routing error:", err);
+      logEvent(`App.syncUserRoute failed: ${(err as Error)?.message || err} - falling back to role-select`);
       setPage("role-select");
     }
   };
@@ -316,7 +321,7 @@ export default function App() {
 
     const initializeAuth = async () => {
       try {
-        const sessionPromise = supabase.auth.getSession();
+        const sessionPromise = withTimeout(supabase.auth.getSession(), 10000, "App.initializeAuth.getSession");
         const minSplashDuration = new Promise<void>(resolve => setTimeout(resolve, 3000));
 
         const { data: { session } } = await sessionPromise;
@@ -340,6 +345,7 @@ export default function App() {
         }
       } catch (e) {
         console.log("Auth catch error:", e);
+        logEvent(`App.initializeAuth failed: ${(e as Error)?.message || e} - falling back to role-select`);
         if (isMounted) setPage("role-select");
       } finally {
         if (isMounted) {
