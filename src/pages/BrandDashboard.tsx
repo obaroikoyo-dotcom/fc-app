@@ -234,7 +234,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               const filtered = campaigns.filter(c => {
                 const isOwn = c.brand_id === currentUserId;
                 if (feedTab === "yours" && !isOwn) return false;
-                if (feedTab === "discover" && isOwn) return false;
                 if (selectedNiche && c.niche !== selectedNiche) return false;
                 if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
                 return true;
@@ -278,14 +277,19 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {isOwn ? (
+                        {isOwn && feedTab === "discover" && (
+                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", border: "1px solid #333", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                            Your Preview
+                          </span>
+                        )}
+                        {isOwn && feedTab === "yours" ? (
                           <span
                             onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
                             style={{ fontSize: "11px", color: "#ff4d4d", cursor: "pointer", fontWeight: 500, background: "rgba(255, 77, 77, 0.08)", padding: "4px 9px", borderRadius: "6px", border: "1px solid rgba(255, 77, 77, 0.15)" }}
                           >
                             Delete
                           </span>
-                        ) : (
+                        ) : !isOwn && (
                           <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             {c.type}
                           </span>
