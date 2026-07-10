@@ -6,6 +6,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 
@@ -40,6 +41,7 @@ interface Message {
   conversation_id: string;
   sender_id: string;
   text: string;
+  video_url?: string | null;
   created_at: string;
 }
 
@@ -236,6 +238,13 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvo, setActiveConvo] = useState<Conversation | null>(null);
+
+  useEffect(() => {
+    setChatReportOpen(false);
+    setChatReportReason("");
+    setChatReportDetail("");
+    setChatReportSubmitted(false);
+  }, [activeConvo?.id]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -267,6 +276,12 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
   const [blockedCreatorIds, setBlockedCreatorIds] = useState<string[]>([]);
+  const [chatVideoUploading, setChatVideoUploading] = useState(false);
+  const [chatReportOpen, setChatReportOpen] = useState(false);
+  const [chatReportReason, setChatReportReason] = useState("");
+  const [chatReportDetail, setChatReportDetail] = useState("");
+  const [chatReportSubmitting, setChatReportSubmitting] = useState(false);
+  const [chatReportSubmitted, setChatReportSubmitted] = useState(false);
 
   // Track unread conversation IDs locally to place red dots on chats
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
@@ -275,6 +290,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
   const inputBarRef = useRef<HTMLDivElement>(null);
+  const chatVideoInputRef = useRef<HTMLInputElement>(null);
   const [inputBarHeight, setInputBarHeight] = useState(0);
 
   useEffect(() => {
@@ -564,9 +580,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
 
   const send = async () => {
     if (!input.trim() || !activeConvo || !currentUserId) return;
-    const text = input;
+    const text = censorProfanity(input);
     setInput("");
-    
+
     const now = new Date().toISOString();
     await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text });
     await supabase.from("conversations").update({ last_message: text, last_message_at: now }).eq("id", activeConvo.id);
@@ -584,6 +600,40 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       body: `${currentUserName} sent you a message: "${text.substring(0, 40)}${text.length > 40 ? "..." : ""}"`,
       data: { conversation_id: activeConvo.id }
     });
+  };
+
+  const sendVideo = async (file: File) => {
+    if (!activeConvo || !currentUserId) return;
+    setChatVideoUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${activeConvo.id}/${currentUserId}_${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("message-media").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("message-media").getPublicUrl(path);
+      const videoUrl = urlData.publicUrl;
+
+      const now = new Date().toISOString();
+      await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl });
+      await supabase.from("conversations").update({ last_message: "📹 Video", last_message_at: now }).eq("id", activeConvo.id);
+      setConversations(prev => {
+        const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "📹 Video", last_message_at: now } : c);
+        return updated.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+      });
+
+      const receiverId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+      await notifyAndPush({
+        user_id: receiverId,
+        type: "new_message",
+        title: "New Message",
+        body: `${currentUserName} sent you a video`,
+        data: { conversation_id: activeConvo.id }
+      });
+    } catch (err) {
+      console.error("Failed to send video:", err);
+    } finally {
+      setChatVideoUploading(false);
+    }
   };
 
   const handleAccept = async (app: Application) => {
@@ -705,6 +755,39 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     setBlockLoading(false);
   };
 
+  const otherParticipantId = (c: Conversation | null) =>
+    c ? (c.participant_1 === currentUserId ? c.participant_2 : c.participant_1) : null;
+
+  const handleSubmitChatReport = async () => {
+    const otherId = otherParticipantId(activeConvo);
+    if (!currentUserId || !otherId || !chatReportReason) return;
+    setChatReportSubmitting(true);
+    const { error } = await supabase.from("reports").insert({
+      reporter_id: currentUserId,
+      reported_user_id: otherId,
+      application_id: activeConvo?.application_id || null,
+      reason: chatReportDetail ? `${chatReportReason}: ${chatReportDetail}` : chatReportReason,
+    });
+    setChatReportSubmitting(false);
+    if (!error) {
+      setChatReportSubmitted(true);
+      setChatReportReason("");
+      setChatReportDetail("");
+    }
+  };
+
+  const handleBlockFromChat = async () => {
+    const otherId = otherParticipantId(activeConvo);
+    if (!currentUserId || !otherId) return;
+    setBlockLoading(true);
+    const { error } = await supabase.from("blocked_creators").insert({
+      brand_id: currentUserId,
+      creator_id: otherId,
+    });
+    if (!error) setBlockedCreatorIds(prev => [...prev, otherId]);
+    setBlockLoading(false);
+  };
+
   const getHeader = () => {
     if (view === "chat") return activeConvo?.other_name;
     if (view === "campaign-apps") return activeCampaign?.name;
@@ -727,7 +810,8 @@ return (
       {/* Sticky header group: header + brand tabs stack with zero gap since they share one fixed box */}
       <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {/* Header Bar */}
-        <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a" }}>
+        <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#0a0a0a" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           {view !== "list" && (
             <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>
               ←
@@ -755,7 +839,67 @@ return (
       {getHeader()}
     </h1>
   )}
+          </div>
+          {view === "chat" && activeConvo && (
+            blockedCreatorIds.includes(otherParticipantId(activeConvo) || "") ? (
+              <span style={{ fontSize: "9px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 8px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
+            ) : (
+              <span
+                onClick={() => { setChatReportOpen(o => !o); setChatReportSubmitted(false); }}
+                style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+              >
+                ⚑
+              </span>
+            )
+          )}
         </div>
+
+        {/* Chat report panel */}
+        {view === "chat" && activeConvo && chatReportOpen && !blockedCreatorIds.includes(otherParticipantId(activeConvo) || "") && (
+          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+            {chatReportSubmitted ? (
+              <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
+            ) : (
+              <>
+                <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {activeConvo.other_name}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+                  {["Inappropriate video", "Offensive language", "Spam or scam", "Other"].map(r => (
+                    <span
+                      key={r}
+                      onClick={() => setChatReportReason(r)}
+                      style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${chatReportReason === r ? "#fff" : "#222"}`, background: chatReportReason === r ? "#fff" : "transparent", color: chatReportReason === r ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
+                    >
+                      {r}
+                    </span>
+                  ))}
+                </div>
+                <textarea
+                  value={chatReportDetail}
+                  onChange={e => setChatReportDetail(e.target.value)}
+                  placeholder="Any extra detail (optional)"
+                  rows={2}
+                  style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px", color: "#fff", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
+                />
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <div
+                    onClick={() => !chatReportSubmitting && chatReportReason && handleSubmitChatReport()}
+                    style={{ flex: 1, padding: "11px", borderRadius: "8px", background: chatReportReason ? "#fff" : "#1a1a1a", color: chatReportReason ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: chatReportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                  >
+                    {chatReportSubmitting ? "Submitting..." : "Submit Report"}
+                  </div>
+                  {activeConvo.other_role === "creator" && (
+                    <div
+                      onClick={() => !blockLoading && handleBlockFromChat()}
+                      style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                    >
+                      {blockLoading ? "Blocking..." : "Block Creator"}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Brand Tabs Toggle */}
         {role === "brand" && view === "list" && (
@@ -1117,9 +1261,12 @@ return (
             )}
             {messages.map(m => (
               <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === currentUserId ? "flex-end" : "flex-start" }}>
-                <div style={{ maxWidth: "75%", padding: "10px 14px", borderRadius: m.sender_id === currentUserId ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.sender_id === currentUserId ? "#fff" : "#111", color: m.sender_id === currentUserId ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: m.sender_id === currentUserId ? "none" : "1px solid #1a1a1a" }}>
-                  <p>{m.text}</p>
-                  <p style={{ fontSize: "10px", color: m.sender_id === currentUserId ? "#888" : "#444", marginTop: "4px", textAlign: "right" }}>
+                <div style={{ maxWidth: "75%", padding: m.video_url ? "8px" : "10px 14px", borderRadius: m.sender_id === currentUserId ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.sender_id === currentUserId ? "#fff" : "#111", color: m.sender_id === currentUserId ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: m.sender_id === currentUserId ? "none" : "1px solid #1a1a1a" }}>
+                  {m.video_url && (
+                    <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
+                  )}
+                  {m.text && <p style={{ padding: m.video_url ? "8px 6px 0" : 0 }}>{m.text}</p>}
+                  <p style={{ fontSize: "10px", color: m.sender_id === currentUserId ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: m.video_url ? "0 6px" : 0 }}>
                     {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
@@ -1135,6 +1282,23 @@ return (
               </div>
             ) : (
               <>
+                <input
+                  ref={chatVideoInputRef}
+                  type="file"
+                  accept="video/*"
+                  style={{ display: "none" }}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (file) sendVideo(file);
+                  }}
+                />
+                <div
+                  onClick={() => !chatVideoUploading && chatVideoInputRef.current?.click()}
+                  style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#111", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatVideoUploading ? "default" : "pointer", fontSize: "16px", color: chatVideoUploading ? "#333" : "#888", flexShrink: 0 }}
+                >
+                  {chatVideoUploading ? "…" : "🎥"}
+                </div>
                 <input
                   style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "24px", padding: "10px 16px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit" }}
                   placeholder="Message..."
