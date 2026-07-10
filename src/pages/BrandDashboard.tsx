@@ -104,7 +104,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             setCampaigns([...mine, ...others] as unknown as Campaign[]);
           }
         }
-      })());
+      })(), 10000, "BrandDashboard.fetchCampaigns");
     } catch (err) {
       console.error("Failed to load campaigns:", err);
     } finally {

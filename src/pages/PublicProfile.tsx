@@ -79,7 +79,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
           .single();
 
         if (brandData) setCreator(brandData);
-      })());
+      })(), 10000, "PublicProfile.loadProfile");
     } catch (err) {
       console.error("Failed to load profile:", err);
     } finally {

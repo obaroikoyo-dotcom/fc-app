@@ -174,7 +174,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
           setCampaigns(parsed);
           setApplied(parsed.filter(c => c.my_application).map(c => c.id));
         }
-      })());
+      })(), 10000, "Explore.fetchCampaigns");
     } catch (err) {
       console.error("Failed to load campaigns:", err);
     } finally {

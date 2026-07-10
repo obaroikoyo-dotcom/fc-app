@@ -94,7 +94,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
         }
         const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
         if (profiles) setAllProfiles(profiles);
-      })());
+      })(), 10000, "Search.loadProfiles");
     } catch (err) {
       console.error("Failed to load profiles:", err);
     } finally {

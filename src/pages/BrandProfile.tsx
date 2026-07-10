@@ -3,6 +3,7 @@ import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush } from "../lib/push";
+import { getLog, clearLog } from "../lib/debugLog";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -31,7 +32,8 @@ type SettingsSection =
   | "favourites"
   | "help"
   | "privacy-policy"
-  | "terms";
+  | "terms"
+  | "debug-log";
 
 export default function BrandProfile({ navigate, toggleTheme, isInverted }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
@@ -406,6 +408,7 @@ const loadFavourites = async () => {
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
         {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"))}
 {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"))}
+        {settingsRow("Debug Log", "For troubleshooting freezes", () => setSettingsSection("debug-log"))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div
@@ -730,6 +733,40 @@ const renderTerms = () => (
     </div>
   </div>
 );
+
+  // ─── DEBUG LOG ──────────────────────────────────────────────────────────
+  const renderDebugLog = () => {
+    const entries = getLog();
+    const text = entries.join("\n");
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+        {renderSettingsHeader("Debug Log", () => setSettingsSection("main"))}
+        <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <p style={{ color: "#555", fontSize: "12px", lineHeight: 1.6 }}>
+            When something freezes, come back here (Settings still works even when other pages don't), copy this, and send it over.
+          </p>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <div
+              onClick={() => { navigator.clipboard?.writeText(text); }}
+              style={{ flex: 1, padding: "11px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600, textAlign: "center", letterSpacing: "0.05em", textTransform: "uppercase" }}
+            >
+              Copy
+            </div>
+            <div
+              onClick={() => { clearLog(); setSettingsSection("main"); setSettingsSection("debug-log"); }}
+              style={{ flex: 1, padding: "11px", border: "1px solid #222", color: "#555", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600, textAlign: "center", letterSpacing: "0.05em", textTransform: "uppercase" }}
+            >
+              Clear
+            </div>
+          </div>
+          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", color: "#888", fontSize: "11px", lineHeight: 1.6, fontFamily: "monospace" }}>
+            {text || "No events logged yet."}
+          </pre>
+        </div>
+      </div>
+    );
+  };
+
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   if (view === "profile") return (
     <>
@@ -752,6 +789,7 @@ const renderTerms = () => (
       {settingsSection === "help" && renderHelp()}
       {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
 {settingsSection === "terms" && renderTerms()}
+      {settingsSection === "debug-log" && renderDebugLog()}
     </>
   );
 }

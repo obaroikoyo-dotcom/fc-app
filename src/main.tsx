@@ -2,6 +2,28 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { logEvent } from "./lib/debugLog";
+
+logEvent("app boot");
+
+window.addEventListener("error", (e) => {
+  logEvent(`window error: ${e.message} @ ${e.filename}:${e.lineno}`);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  logEvent(`unhandled rejection: ${e.reason?.message || e.reason}`);
+});
+
+let hiddenAt: number | null = null;
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") {
+    hiddenAt = Date.now();
+    logEvent("visibility -> hidden");
+  } else if (document.visibilityState === "visible") {
+    const hiddenForMs = hiddenAt !== null ? Date.now() - hiddenAt : null;
+    hiddenAt = null;
+    logEvent(`visibility -> visible (hidden for ${hiddenForMs ?? "?"}ms)`);
+  }
+});
 
 // A window.location.reload() here to "recover" from a stuck page is
 // actually risky: right after returning to the foreground, the network
@@ -24,6 +46,7 @@ document.addEventListener("visibilitychange", () => {
     el.style.display = "none";
     void el.offsetHeight; // reading layout forces the reflow
     el.style.display = "";
+    logEvent("forced repaint");
   }
 });
 
