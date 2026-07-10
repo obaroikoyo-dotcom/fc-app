@@ -275,7 +275,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
-  const [blockedCreatorIds, setBlockedCreatorIds] = useState<string[]>([]);
+  const [blockedIds, setBlockedIds] = useState<string[]>([]);
   const [chatVideoUploading, setChatVideoUploading] = useState(false);
   const [chatReportOpen, setChatReportOpen] = useState(false);
   const [chatReportReason, setChatReportReason] = useState("");
@@ -320,15 +320,15 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       } catch (err) {
         console.error("Failed to load brand payment info:", err);
       }
-      try {
-        const { data: blocked } = await withTimeout(
-          () => supabase.from("blocked_creators").select("creator_id").eq("brand_id", user.id),
-          10000, "Messages.init.blockedCreators"
-        );
-        if (blocked) setBlockedCreatorIds(blocked.map(b => b.creator_id));
-      } catch (err) {
-        console.error("Failed to load blocked creators:", err);
-      }
+    }
+    try {
+      const { data: blocked } = await withTimeout(
+        () => supabase.from("blocks").select("blocked_id").eq("blocker_id", user.id),
+        10000, "Messages.init.blocks"
+      );
+      if (blocked) setBlockedIds(blocked.map(b => b.blocked_id));
+    } catch (err) {
+      console.error("Failed to load blocked users:", err);
     }
     await loadConversations();
     if (role === "brand") {
@@ -744,12 +744,12 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   const handleBlockCreator = async (app: Application) => {
     if (!currentUserId) return;
     setBlockLoading(true);
-    const { error } = await supabase.from("blocked_creators").insert({
-      brand_id: currentUserId,
-      creator_id: app.creator_id,
+    const { error } = await supabase.from("blocks").insert({
+      blocker_id: currentUserId,
+      blocked_id: app.creator_id,
     });
     if (!error) {
-      setBlockedCreatorIds(prev => [...prev, app.creator_id]);
+      setBlockedIds(prev => [...prev, app.creator_id]);
       if (app.status === "pending") await handleReject(app);
     }
     setBlockLoading(false);
@@ -780,11 +780,11 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     const otherId = otherParticipantId(activeConvo);
     if (!currentUserId || !otherId) return;
     setBlockLoading(true);
-    const { error } = await supabase.from("blocked_creators").insert({
-      brand_id: currentUserId,
-      creator_id: otherId,
+    const { error } = await supabase.from("blocks").insert({
+      blocker_id: currentUserId,
+      blocked_id: otherId,
     });
-    if (!error) setBlockedCreatorIds(prev => [...prev, otherId]);
+    if (!error) setBlockedIds(prev => [...prev, otherId]);
     setBlockLoading(false);
   };
 
@@ -841,7 +841,7 @@ return (
   )}
           </div>
           {view === "chat" && activeConvo && (
-            blockedCreatorIds.includes(otherParticipantId(activeConvo) || "") ? (
+            blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
               <span style={{ fontSize: "9px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 8px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
             ) : (
               <span
@@ -855,7 +855,7 @@ return (
         </div>
 
         {/* Chat report panel */}
-        {view === "chat" && activeConvo && chatReportOpen && !blockedCreatorIds.includes(otherParticipantId(activeConvo) || "") && (
+        {view === "chat" && activeConvo && chatReportOpen && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
           <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
             {chatReportSubmitted ? (
               <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
@@ -887,14 +887,12 @@ return (
                   >
                     {chatReportSubmitting ? "Submitting..." : "Submit Report"}
                   </div>
-                  {activeConvo.other_role === "creator" && (
-                    <div
-                      onClick={() => !blockLoading && handleBlockFromChat()}
-                      style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
-                    >
-                      {blockLoading ? "Blocking..." : "Block Creator"}
-                    </div>
-                  )}
+                  <div
+                    onClick={() => !blockLoading && handleBlockFromChat()}
+                    style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                  >
+                    {blockLoading ? "Blocking..." : "Block"}
+                  </div>
                 </div>
               </>
             )}
@@ -997,7 +995,7 @@ return (
                 <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>Applied to {activeApplication.campaign_name}</p>
               </div>
             </div>
-            {blockedCreatorIds.includes(activeApplication.creator_id) ? (
+            {blockedIds.includes(activeApplication.creator_id) ? (
               <span style={{ fontSize: "10px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 9px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
             ) : (
               <span
@@ -1009,7 +1007,7 @@ return (
             )}
           </div>
 
-          {reportOpen && !blockedCreatorIds.includes(activeApplication.creator_id) && (
+          {reportOpen && !blockedIds.includes(activeApplication.creator_id) && (
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
               {reportSubmitted ? (
                 <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>

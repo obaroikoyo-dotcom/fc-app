@@ -77,13 +77,11 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
         if (data) setCampaign(data);
 
         if (user && data) {
-          const { data: blockedRow } = await supabase
-            .from("blocked_creators")
-            .select("id")
-            .eq("brand_id", data.brand_id)
-            .eq("creator_id", user.id)
-            .maybeSingle();
-          if (blockedRow) setBlocked(true);
+          const { data: blockRows } = await supabase
+            .from("blocks")
+            .select("id, blocker_id, blocked_id")
+            .or(`and(blocker_id.eq.${data.brand_id},blocked_id.eq.${user.id}),and(blocker_id.eq.${user.id},blocked_id.eq.${data.brand_id})`);
+          if (blockRows && blockRows.length > 0) setBlocked(true);
         }
       }, 10000, "ApplyCampaign.load");
     } catch (err) {

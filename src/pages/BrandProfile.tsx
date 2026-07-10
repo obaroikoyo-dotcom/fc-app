@@ -33,7 +33,8 @@ type SettingsSection =
   | "help"
   | "privacy-policy"
   | "terms"
-  | "debug-log";
+  | "debug-log"
+  | "reports-blocked";
 
 export default function BrandProfile({ navigate, toggleTheme, isInverted }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
@@ -75,12 +76,55 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
 
+  // Reports & Blocked
+  const [blockedUsers, setBlockedUsers] = useState<{ id: string; blockRowId: string; name: string; avatar: string | null; role: string }[]>([]);
+  const [myReports, setMyReports] = useState<{ id: string; reason: string; created_at: string; name: string }[]>([]);
+  const [unblockLoading, setUnblockLoading] = useState<string | null>(null);
+
   const logoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadProfile();
     loadFavourites();
+    loadReportsBlocked();
   }, []);
+
+  const loadReportsBlocked = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: blocks } = await supabase.from("blocks").select("id, blocked_id, created_at").eq("blocker_id", user.id).order("created_at", { ascending: false });
+    const { data: reports } = await supabase.from("reports").select("id, reason, created_at, reported_user_id").eq("reporter_id", user.id).order("created_at", { ascending: false });
+
+    const otherIds = Array.from(new Set([...(blocks || []).map(b => b.blocked_id), ...(reports || []).map(r => r.reported_user_id)]));
+    if (otherIds.length === 0) return;
+
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, role, creator_profiles(name, avatar_url), brand_profiles(name, avatar_url)")
+      .in("id", otherIds);
+
+    const nameFor = (id: string) => {
+      const p = profiles?.find((p: any) => p.id === id) as any;
+      if (!p) return { name: "Unknown user", avatar: null, role: "" };
+      const info = p.role === "creator" ? p.creator_profiles : p.brand_profiles;
+      return { name: info?.name || "Unknown user", avatar: info?.avatar_url || null, role: p.role };
+    };
+
+    if (blocks) {
+      setBlockedUsers(blocks.map(b => ({ id: b.blocked_id, blockRowId: b.id, ...nameFor(b.blocked_id) })));
+    }
+    if (reports) {
+      setMyReports(reports.map(r => ({ id: r.id, reason: r.reason, created_at: r.created_at, name: nameFor(r.reported_user_id).name })));
+    }
+  };
+
+  const handleUnblock = async (blockRowId: string, userId: string) => {
+    setUnblockLoading(blockRowId);
+    const { error } = await supabase.from("blocks").delete().eq("id", blockRowId);
+    if (!error) setBlockedUsers(prev => prev.filter(b => b.id !== userId));
+    setUnblockLoading(null);
+  };
 
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -402,6 +446,7 @@ const loadFavourites = async () => {
 
         {sectionHeader("FlipCollab Activity")}
         {settingsRow("Favourited Creators", `${favouritedCreators.length} saved`, () => setSettingsSection("favourites"))}
+        {settingsRow("Reported & Blocked", `${blockedUsers.length} blocked · ${myReports.length} reported`, () => setSettingsSection("reports-blocked"))}
 
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"))}
@@ -767,6 +812,54 @@ const renderTerms = () => (
     );
   };
 
+  // ─── REPORTED & BLOCKED ───────────────────────────────────────────────────
+  const renderReportsBlocked = () => (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+      {renderSettingsHeader("Reported & Blocked", () => setSettingsSection("main"))}
+      <div style={{ padding: "1.25rem" }}>
+        <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
+        {blockedUsers.length === 0 ? (
+          <p style={{ fontSize: "12px", color: "#444", marginBottom: "2rem" }}>You haven't blocked anyone.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
+            {blockedUsers.map(b => (
+              <div key={b.blockRowId} style={{ display: "flex", alignItems: "center", gap: "12px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: b.role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
+                  {b.avatar ? <img src={b.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : b.role === "creator" ? "◉" : "◈"}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{b.name}</p>
+                  <p style={{ fontSize: "11px", color: "#444", textTransform: "capitalize" }}>{b.role}</p>
+                </div>
+                <div
+                  onClick={() => unblockLoading !== b.blockRowId && handleUnblock(b.blockRowId, b.id)}
+                  style={{ fontSize: "11px", color: "#ccc", cursor: "pointer", fontWeight: 500, background: "rgba(255,255,255,0.06)", padding: "6px 11px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.12)", flexShrink: 0 }}
+                >
+                  {unblockLoading === b.blockRowId ? "..." : "Unblock"}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Reports You've Filed</p>
+        {myReports.length === 0 ? (
+          <p style={{ fontSize: "12px", color: "#444" }}>You haven't reported anyone.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {myReports.map(r => (
+              <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.name}</p>
+                <p style={{ fontSize: "12px", color: "#888", marginBottom: "6px" }}>{r.reason}</p>
+                <p style={{ fontSize: "10px", color: "#444" }}>{new Date(r.created_at).toLocaleDateString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   if (view === "profile") return (
     <>
@@ -790,6 +883,7 @@ const renderTerms = () => (
       {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
 {settingsSection === "terms" && renderTerms()}
       {settingsSection === "debug-log" && renderDebugLog()}
+      {settingsSection === "reports-blocked" && renderReportsBlocked()}
     </>
   );
 }
