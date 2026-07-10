@@ -267,7 +267,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const init = async () => {
     let user;
     try {
-      const result = await withTimeout(supabase.auth.getUser(), 10000, "Messages.init.getUser");
+      const result = await withTimeout(() => supabase.auth.getUser(), 10000, "Messages.init.getUser");
       user = result.data.user;
     } catch (err) {
       console.error("Failed to get user:", err);
@@ -280,7 +280,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     if (role === "brand") {
       try {
         const { data: bp } = await withTimeout(
-          supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single(),
+          () => supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single(),
           10000, "Messages.init.brandProfile"
         );
         if (bp?.is_enterprise) setIsEnterprise(true);
@@ -364,7 +364,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const loadConversations = async () => {
     setLoading(true);
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { return; }
         setCurrentUserId(user.id);
@@ -438,7 +438,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
           }
         }
         fetchUnreadMessages(user.id);
-      })(), 15000, "Messages.loadConversations");
+      }, 15000, "Messages.loadConversations");
     } catch (err) {
       console.error("Failed to load conversations:", err);
     } finally {

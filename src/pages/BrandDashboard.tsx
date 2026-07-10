@@ -85,7 +85,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const fetchCampaigns = async () => {
     setLoading(true);
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setCurrentUserId(user.id);
@@ -104,7 +104,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             setCampaigns([...mine, ...others] as unknown as Campaign[]);
           }
         }
-      })(), 10000, "BrandDashboard.fetchCampaigns");
+      }, 10000, "BrandDashboard.fetchCampaigns");
     } catch (err) {
       console.error("Failed to load campaigns:", err);
     } finally {

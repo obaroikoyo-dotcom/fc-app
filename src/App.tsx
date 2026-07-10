@@ -257,7 +257,7 @@ export default function App() {
 
   const syncUserRoute = async (userId: string) => {
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role")
@@ -304,7 +304,7 @@ export default function App() {
         } else {
           setPage("role-select");
         }
-      })(), 10000, "App.syncUserRoute");
+      }, 10000, "App.syncUserRoute");
     } catch (err) {
       console.log("Routing error:", err);
       logEvent(`App.syncUserRoute failed: ${(err as Error)?.message || err} - falling back to role-select`);
@@ -321,7 +321,7 @@ export default function App() {
 
     const initializeAuth = async () => {
       try {
-        const sessionPromise = withTimeout(supabase.auth.getSession(), 10000, "App.initializeAuth.getSession");
+        const sessionPromise = withTimeout(() => supabase.auth.getSession(), 10000, "App.initializeAuth.getSession");
         const minSplashDuration = new Promise<void>(resolve => setTimeout(resolve, 3000));
 
         const { data: { session } } = await sessionPromise;

@@ -60,7 +60,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
   const load = async () => {
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setCurrentUserId(user.id);
@@ -73,7 +73,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           .eq("id", campaignId)
           .single();
         if (data) setCampaign(data);
-      })(), 10000, "ApplyCampaign.load");
+      }, 10000, "ApplyCampaign.load");
     } catch (err) {
       console.error("Failed to load campaign:", err);
     } finally {

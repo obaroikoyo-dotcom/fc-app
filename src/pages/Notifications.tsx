@@ -60,7 +60,7 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
   const fetchNotifications = async (isBackgroundUpdate = false) => {
     if (!isBackgroundUpdate) setLoading(true);
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) { return; }
 
@@ -78,7 +78,7 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
           }));
           setNotifications(parsed);
         }
-      })(), 10000, "Notifications.fetch");
+      }, 10000, "Notifications.fetch");
     } catch (err) {
       console.error("Failed to load notifications:", err);
     } finally {

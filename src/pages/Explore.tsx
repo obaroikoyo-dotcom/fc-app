@@ -156,7 +156,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const fetchCampaigns = async (userId?: string) => {
     setLoading(true);
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data, error } = await supabase
           .from("campaigns")
           .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise), applications(creator_id, status, message)`)
@@ -174,7 +174,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
           setCampaigns(parsed);
           setApplied(parsed.filter(c => c.my_application).map(c => c.id));
         }
-      })(), 10000, "Explore.fetchCampaigns");
+      }, 10000, "Explore.fetchCampaigns");
     } catch (err) {
       console.error("Failed to load campaigns:", err);
     } finally {

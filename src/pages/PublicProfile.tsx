@@ -46,7 +46,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
 
  const loadProfile = async () => {
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setCurrentUserId(user.id);
@@ -79,7 +79,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
           .single();
 
         if (brandData) setCreator(brandData);
-      })(), 10000, "PublicProfile.loadProfile");
+      }, 10000, "PublicProfile.loadProfile");
     } catch (err) {
       console.error("Failed to load profile:", err);
     } finally {

@@ -40,7 +40,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
   const loadProfile = async () => {
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) setCurrentUserId(user.id);
 
@@ -51,7 +51,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
           .single();
 
         if (data) setBrand(data);
-      })(), 10000, "BrandPublicProfile.loadProfile");
+      }, 10000, "BrandPublicProfile.loadProfile");
     } catch (err) {
       console.error("Failed to load brand profile:", err);
     } finally {

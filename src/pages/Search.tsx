@@ -83,7 +83,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
   const loadProfiles = async () => {
     setLoading(true);
     try {
-      await withTimeout((async () => {
+      await withTimeout(async () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
@@ -94,7 +94,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
         }
         const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
         if (profiles) setAllProfiles(profiles);
-      })(), 10000, "Search.loadProfiles");
+      }, 10000, "Search.loadProfiles");
     } catch (err) {
       console.error("Failed to load profiles:", err);
     } finally {
