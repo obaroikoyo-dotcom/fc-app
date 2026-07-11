@@ -5,6 +5,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { getBlockedUserIds } from "../lib/blocks";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -164,13 +165,16 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
         if (!error && data) {
           const activeUid = userId || currentUserId;
-          const parsed: Campaign[] = data.map((c: any) => {
-            const myApp = c.applications?.find((a: any) => a.creator_id === activeUid);
-            return {
-              ...c,
-              my_application: myApp ? { status: myApp.status, message: myApp.message } : undefined
-            };
-          });
+          const blockedIds = activeUid ? await getBlockedUserIds(activeUid) : [];
+          const parsed: Campaign[] = data
+            .filter((c: any) => !blockedIds.includes(c.brand_id))
+            .map((c: any) => {
+              const myApp = c.applications?.find((a: any) => a.creator_id === activeUid);
+              return {
+                ...c,
+                my_application: myApp ? { status: myApp.status, message: myApp.message } : undefined
+              };
+            });
           setCampaigns(parsed);
           setApplied(parsed.filter(c => c.my_application).map(c => c.id));
         }

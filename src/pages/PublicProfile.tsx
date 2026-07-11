@@ -41,7 +41,8 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
-  const [blocked, setBlocked] = useState(false);
+  const [blockedByMe, setBlockedByMe] = useState(false);
+  const [blockedMe, setBlockedMe] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetail, setReportDetail] = useState("");
@@ -74,10 +75,10 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
 
           const { data: blockRows } = await supabase
             .from("blocks")
-            .select("id")
-            .eq("blocker_id", user.id)
-            .eq("blocked_id", profileId);
-          setBlocked(!!blockRows && blockRows.length > 0);
+            .select("blocker_id, blocked_id")
+            .or(`and(blocker_id.eq.${user.id},blocked_id.eq.${profileId}),and(blocker_id.eq.${profileId},blocked_id.eq.${user.id})`);
+          setBlockedByMe(!!blockRows?.some(b => b.blocker_id === user.id));
+          setBlockedMe(!!blockRows?.some(b => b.blocker_id === profileId));
         }
 
         // Try creator_profiles first
@@ -169,15 +170,7 @@ const startDM = async () => {
       blocker_id: currentUserId,
       blocked_id: profileId,
     });
-    if (!error) setBlocked(true);
-    setBlockLoading(false);
-  };
-
-  const handleUnblock = async () => {
-    if (!currentUserId) return;
-    setBlockLoading(true);
-    const { error } = await supabase.from("blocks").delete().eq("blocker_id", currentUserId).eq("blocked_id", profileId);
-    if (!error) setBlocked(false);
+    if (!error) setBlockedByMe(true);
     setBlockLoading(false);
   };
 
@@ -313,9 +306,9 @@ const startDM = async () => {
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name || "Creator"}</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (creator.name || "Creator")}</span>
         </div>
-        {currentUserId && currentUserId !== profileId && (
+        {currentUserId && currentUserId !== profileId && !blockedByMe && (
           <span
             onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
             style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
@@ -325,7 +318,18 @@ const startDM = async () => {
         )}
       </div>
 
-      {reportOpen && (
+      {(blockedByMe || blockedMe) ? (
+        <div style={{ padding: "2rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+            {blockedByMe ? "You've blocked this profile" : "User unavailable"}
+          </p>
+          <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, maxWidth: "300px" }}>
+            {blockedByMe
+              ? "You can't see their content or message them. Unblock from Settings → Reported & Blocked to restore this."
+              : "This profile isn't available."}
+          </p>
+        </div>
+      ) : reportOpen && (
         <div style={{ position: "fixed", top: "57px", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
           {reportSubmitted ? (
             <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
@@ -358,10 +362,10 @@ const startDM = async () => {
                   {reportSubmitting ? "Submitting..." : "Submit Report"}
                 </div>
                 <div
-                  onClick={() => !blockLoading && (blocked ? handleUnblock() : handleBlock())}
+                  onClick={() => !blockLoading && handleBlock()}
                   style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
                 >
-                  {blockLoading ? "..." : blocked ? "Unblock" : "Block"}
+                  {blockLoading ? "..." : "Block"}
                 </div>
               </div>
             </>
@@ -369,6 +373,7 @@ const startDM = async () => {
         </div>
       )}
 
+      {!blockedByMe && !blockedMe && (
       <div style={{ padding: "2.25rem 1.25rem 8rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ width: "100%", maxWidth: "480px" }}>
 
@@ -390,17 +395,11 @@ const startDM = async () => {
             </div>
           </div>
 
-          {blocked && (
-            <div style={{ marginBottom: "1rem", padding: "10px 12px", borderRadius: "8px", background: "rgba(255,77,77,0.08)", border: "1px solid rgba(255,77,77,0.2)" }}>
-              <p style={{ fontSize: "12px", color: "#ff4d4d" }}>You've blocked this profile. They can't message or apply to you, and you can't message them.</p>
-            </div>
-          )}
-
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
             <div
-              onClick={() => !blocked && startDM()}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: blocked ? "#1a1a1a" : "#fff", color: blocked ? "#444" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: blocked ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+              onClick={startDM}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Message
             </div>
@@ -512,6 +511,7 @@ const startDM = async () => {
 
         </div>
       </div>
+      )}
     </div>
   );
 }

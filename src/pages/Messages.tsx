@@ -276,6 +276,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
   const [blockedIds, setBlockedIds] = useState<string[]>([]);
+  const [blockedByIds, setBlockedByIds] = useState<string[]>([]);
   const [chatVideoUploading, setChatVideoUploading] = useState(false);
   const [chatReportOpen, setChatReportOpen] = useState(false);
   const [chatReportReason, setChatReportReason] = useState("");
@@ -322,11 +323,14 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       }
     }
     try {
-      const { data: blocked } = await withTimeout(
-        () => supabase.from("blocks").select("blocked_id").eq("blocker_id", user.id),
+      const { data: blocks } = await withTimeout(
+        () => supabase.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`),
         10000, "Messages.init.blocks"
       );
-      if (blocked) setBlockedIds(blocked.map(b => b.blocked_id));
+      if (blocks) {
+        setBlockedIds(blocks.filter(b => b.blocker_id === user.id).map(b => b.blocked_id));
+        setBlockedByIds(blocks.filter(b => b.blocked_id === user.id && b.blocker_id !== user.id).map(b => b.blocker_id));
+      }
     } catch (err) {
       console.error("Failed to load blocked users:", err);
     }
@@ -830,9 +834,9 @@ return (
       style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
     >
       <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
-        {activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
+        {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
       </div>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{activeConvo.other_name}</h1>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}</h1>
     </div>
   ) : (
     <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
@@ -1141,17 +1145,22 @@ return (
           ) : (
             conversations.map((c, i) => {
               const isUnread = unreadConvoIds.includes(c.id);
+              const otherId = otherParticipantId(c);
+              const iBlocked = otherId ? blockedIds.includes(otherId) : false;
+              const theyBlocked = otherId ? blockedByIds.includes(otherId) : false;
+              const displayName = theyBlocked ? "User unavailable" : c.other_name;
+              const previewText = iBlocked ? "Blocked" : theyBlocked ? "Unavailable" : (c.last_message || "Start a conversation");
               return (
                 <div key={c.id} onClick={() => openChat(c)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer", background: isUnread ? "#11111144" : "transparent" }}>
                   <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333", flexShrink: 0, overflow: "hidden", position: "relative" }}>
-                    {c.other_avatar ? <img src={c.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.other_role === "creator" ? "◉" : "◈"}
+                    {theyBlocked ? "◌" : c.other_avatar ? <img src={c.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.other_role === "creator" ? "◉" : "◈"}
                   </div>
-                  
+
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <p style={{ color: "#fff", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{c.other_name}</p>
-                        {isUnread && (
+                        <p style={{ color: "#fff", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{displayName}</p>
+                        {isUnread && !iBlocked && !theyBlocked && (
                           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
                         )}
                       </div>
@@ -1159,8 +1168,8 @@ return (
                         {new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
                       </span>
                     </div>
-                    <p style={{ fontSize: "12px", color: isUnread ? "#eee" : "#444", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {c.last_message || "Start a conversation"}
+                    <p style={{ fontSize: "12px", color: (iBlocked || theyBlocked) ? "#ff4d4d" : isUnread ? "#eee" : "#444", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {previewText}
                     </p>
                   </div>
                 </div>
@@ -1274,7 +1283,15 @@ return (
 
           {/* INPUT BAR CONTROLLER */}
           <div ref={inputBarRef} style={{ position: "fixed", bottom: "6.5rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
-            {activeConvo?.application_status === "rejected" ? (
+            {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600 }}>
+                🚫 You've blocked this user — unblock in Settings to message
+              </div>
+            ) : blockedByIds.includes(otherParticipantId(activeConvo) || "") ? (
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
+                🔒 You can't message this user
+              </div>
+            ) : activeConvo?.application_status === "rejected" ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
                 🔒 Messaging disabled (application finalized)
               </div>

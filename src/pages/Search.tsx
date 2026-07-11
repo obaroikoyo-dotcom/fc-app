@@ -5,6 +5,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { getBlockedUserIds } from "../lib/blocks";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
@@ -93,7 +94,10 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
           }
         }
         const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
-        if (profiles) setAllProfiles(profiles);
+        if (profiles) {
+          const blockedIds = user ? await getBlockedUserIds(user.id) : [];
+          setAllProfiles(profiles.filter(p => !blockedIds.includes(p.id)));
+        }
       }, 10000, "Search.loadProfiles");
     } catch (err) {
       console.error("Failed to load profiles:", err);
