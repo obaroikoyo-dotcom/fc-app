@@ -329,7 +329,13 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
       <div className="tap-btn" onClick={!paymentLoading ? handlePayment : undefined} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
         {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
       </div>
-      <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px" }}>🔒 Secured by Stripe. Cancel anytime.</p>
+      <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+          <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        Secured by Stripe. Cancel anytime.
+      </p>
     </>
   );
 }

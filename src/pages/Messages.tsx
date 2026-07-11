@@ -10,6 +10,20 @@ import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 
+const LockIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+const NoEntryIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+    <path d="M5.5 5.5L18.5 18.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
 interface Props {
   navigate: (p: Page) => void;
   role: "brand" | "creator";
@@ -247,6 +261,10 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   }, [activeConvo?.id]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [otherIsTyping, setOtherIsTyping] = useState(false);
+  const chatChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
@@ -565,16 +583,41 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     }));
   };
 
+  useEffect(() => {
+    return () => {
+      if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, []);
+
   const openChat = async (convo: Conversation) => {
     setActiveConvo(convo);
     setView("chat");
+    setOtherIsTyping(false);
     loadMessages(convo.id);
 
-    supabase.channel(`convo-${convo.id}`)
+    if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current);
+    const channel = supabase.channel(`convo-${convo.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${convo.id}` }, payload => {
         setMessages(prev => [...prev, payload.new as Message]);
+        setOtherIsTyping(false);
+      })
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        if (payload.senderId === currentUserId) return;
+        setOtherIsTyping(true);
+        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = setTimeout(() => setOtherIsTyping(false), 3000);
       })
       .subscribe();
+    chatChannelRef.current = channel;
+  };
+
+  const notifyTyping = () => {
+    if (!chatChannelRef.current || !currentUserId) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    chatChannelRef.current.send({ type: "broadcast", event: "typing", payload: { senderId: currentUserId } });
   };
 
   const loadMessages = async (convoId: string) => {
@@ -800,7 +843,11 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   };
 
   const goBack = () => {
-    if (view === "chat") { setView("list"); setActiveConvo(null); setMessages([]); }
+    if (view === "chat") {
+      setView("list"); setActiveConvo(null); setMessages([]); setOtherIsTyping(false);
+      if (chatChannelRef.current) { supabase.removeChannel(chatChannelRef.current); chatChannelRef.current = null; }
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    }
     else if (view === "campaign-apps") setView("list");
     else if (view === "app-detail") setView("campaign-apps");
   };
@@ -809,6 +856,8 @@ return (
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
         @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+        @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+        .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #888; animation: typingBounce 1s ease-in-out infinite; }
       `}</style>
 
       {/* Sticky header group: header + brand tabs stack with zero gap since they share one fixed box */}
@@ -1279,21 +1328,30 @@ return (
                 </div>
               </div>
             ))}
+            {otherIsTyping && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "#111", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <span className="typing-dot" style={{ animationDelay: "0ms" }} />
+                  <span className="typing-dot" style={{ animationDelay: "160ms" }} />
+                  <span className="typing-dot" style={{ animationDelay: "320ms" }} />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div ref={inputBarRef} style={{ position: "fixed", bottom: "6.5rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
+          <div ref={inputBarRef} style={{ position: "fixed", bottom: "6rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600 }}>
-                🚫 You've blocked this user — unblock in Settings to message
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+                <NoEntryIcon /> You've blocked this user — unblock in Settings to message
               </div>
             ) : blockedByIds.includes(otherParticipantId(activeConvo) || "") ? (
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
-                🔒 You can't message this user
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+                <LockIcon /> You can't message this user
               </div>
             ) : activeConvo?.application_status === "rejected" ? (
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600 }}>
-                🔒 Messaging disabled (application finalized)
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#444", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+                <LockIcon /> Messaging disabled (application finalized)
               </div>
             ) : (
               <>
@@ -1324,7 +1382,7 @@ return (
                   style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "24px", padding: "10px 16px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit" }}
                   placeholder="Message..."
                   value={input}
-                  onChange={e => setInput(e.target.value)}
+                  onChange={e => { setInput(e.target.value); notifyTyping(); }}
                   onKeyDown={e => e.key === "Enter" && send()}
                 />
                 <div onClick={send} style={{ width: "38px", height: "38px", borderRadius: "50%", background: input ? "#fff" : "#111", border: input ? "none" : "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", cursor: input ? "pointer" : "default", fontSize: "16px", color: input ? "#0a0a0a" : "#333", transition: "all 0.2s", flexShrink: 0 }}>
