@@ -1,22 +1,19 @@
+import logo from "../assets/logo.png";
+
 export default function Logo() {
   return (
     <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-      {/* Replace src with FlipCollab logo path when ready */}
-      <img
-        src=""
-        alt="FlipCollab"
-        style={{ height: "40px", display: "none" }}
-        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
-      />
-      <span style={{
+      <img src={logo} alt="FlipCollab" className="no-reinvert" style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
+      <p style={{
         fontFamily: "'Syne', sans-serif",
-        fontSize: "26px",
+        fontSize: "22px",
         fontWeight: 800,
         color: "#fff",
         letterSpacing: "-0.02em",
+        margin: 0,
       }}>
-        Flip<span style={{ color: "#fff" }}>Collab</span>
-      </span>
+        FlipCollab
+      </p>
     </div>
   );
 }
