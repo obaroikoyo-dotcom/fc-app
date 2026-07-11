@@ -1029,10 +1029,10 @@ return (
               <p style={{ fontSize: "13px", color: "#444" }}>Post a campaign to start receiving applications.</p>
             </div>
           ) : (
-            campaigns.map(camp => (
-              <div key={camp.id} onClick={async () => { 
-                setActiveCampaign(camp); 
-                setView("campaign-apps"); 
+            campaigns.map((camp, i) => (
+              <div key={camp.id} onClick={async () => {
+                setActiveCampaign(camp);
+                setView("campaign-apps");
                 setSeenCampaignIds(prev => [...prev, camp.id]);
                 if (currentUserId) {
                   await supabase.from("notifications").update({ read: true })
@@ -1041,7 +1041,7 @@ return (
                     .eq("read", false);
                   if (onRead) onRead();
                 }
-              }} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
+              }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
                 <div>
                   <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{camp.name}</p>
                   <p style={{ color: "#444", fontSize: "12px" }}>{camp.applications.length} application{camp.applications.length !== 1 ? "s" : ""}</p>
@@ -1067,8 +1067,8 @@ return (
               <p style={{ fontSize: "13px", color: "#444" }}>Share your campaign to get more creators applying.</p>
             </div>
           ) : (
-            activeCampaign.applications.map(app => (
-              <div key={app.id} onClick={() => { setActiveApplication(app); setView("app-detail"); }} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
+            activeCampaign.applications.map((app, i) => (
+              <div key={app.id} onClick={() => { setActiveApplication(app); setView("app-detail"); }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: "50%", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#333" }}>
                   {app.creator_avatar ? <img src={app.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
                 </div>
