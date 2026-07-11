@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { brand_id, creator_id, campaign_id, is_enterprise, stripe_customer_id } = await req.json();
+    const { brand_id, creator_id, campaign_id, is_enterprise, stripe_customer_id, billing_address, billing_name } = await req.json();
 
     console.log("Received payment request:", { brand_id, creator_id, campaign_id, is_enterprise, stripe_customer_id });
 
@@ -25,6 +25,34 @@ serve(async (req) => {
     if (!campaign) throw new Error("Campaign not found");
     if (campaign.brand_id !== brand_id) throw new Error("Unauthorized");
     const amount = Math.round(parseFloat(campaign.budget) * 100);
+
+    // New card: persist the billing address on the brand so it can be reused
+    // (and snapshotted) on future payments made with the saved card.
+    let billing = billing_address;
+    if (billing?.line1) {
+      await supabase.from("brand_profiles").update({
+        billing_address_line1: billing.line1,
+        billing_address_line2: billing.line2 || null,
+        billing_city: billing.city || null,
+        billing_state: billing.state || null,
+        billing_postal_code: billing.postal_code || null,
+        billing_country: billing.country || null,
+      }).eq("id", brand_id);
+    } else {
+      const { data: bp } = await supabase.from("brand_profiles")
+        .select("billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country")
+        .eq("id", brand_id).single();
+      if (bp?.billing_address_line1) {
+        billing = {
+          line1: bp.billing_address_line1,
+          line2: bp.billing_address_line2,
+          city: bp.billing_city,
+          state: bp.billing_state,
+          postal_code: bp.billing_postal_code,
+          country: bp.billing_country,
+        };
+      }
+    }
 
     const brandFee = is_enterprise ? 0 : Math.round(amount * 0.05);
     const totalCharge = amount + brandFee;
@@ -70,6 +98,13 @@ serve(async (req) => {
       platform_fee: brandFee + creatorCut,
       status: "pending",
       stripe_payment_intent_id: paymentIntent.id,
+      billing_name: billing_name || null,
+      billing_address_line1: billing?.line1 || null,
+      billing_address_line2: billing?.line2 || null,
+      billing_city: billing?.city || null,
+      billing_state: billing?.state || null,
+      billing_postal_code: billing?.postal_code || null,
+      billing_country: billing?.country || null,
     });
 
     if (insertError) console.error("Failed to insert transaction:", insertError);

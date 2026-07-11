@@ -9,6 +9,7 @@ import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
+import { COUNTRIES } from "../lib/countries";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -101,6 +102,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const elements = useElements();
   const [useNewCard, setUseNewCard] = useState(!savedCard);
   const [cardName, setCardName] = useState("");
+  const [billingLine1, setBillingLine1] = useState("");
+  const [billingLine2, setBillingLine2] = useState("");
+  const [billingCity, setBillingCity] = useState("");
+  const [billingState, setBillingState] = useState("");
+  const [billingPostalCode, setBillingPostalCode] = useState("");
+  const [billingCountry, setBillingCountry] = useState("GB");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
 
@@ -109,11 +116,26 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
   const handlePay = async () => {
     if (!stripe || !currentUserId) return;
+
+    if (useNewCard && (!billingLine1.trim() || !billingCity.trim() || !billingPostalCode.trim() || !billingCountry.trim())) {
+      setError("Please fill in your billing address.");
+      return;
+    }
+
     setProcessing(true);
     setError("");
 
+    const billingAddress = useNewCard ? {
+      line1: billingLine1,
+      line2: billingLine2,
+      city: billingCity,
+      state: billingState,
+      postal_code: billingPostalCode,
+      country: billingCountry,
+    } : undefined;
+
     const res = await supabase.functions.invoke("create-payment-intent", {
-  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, is_enterprise: isEnterprise, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null }
+  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, is_enterprise: isEnterprise, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
 });
 
     if (res.error || !res.data?.clientSecret) {
@@ -129,7 +151,20 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       const cardElement = elements?.getElement(CardElement);
       if (!cardElement) { setError("Card details missing."); setProcessing(false); return; }
       confirmResult = await stripe.confirmCardPayment(res.data.clientSecret, {
-        payment_method: { card: cardElement, billing_details: { name: cardName } },
+        payment_method: {
+          card: cardElement,
+          billing_details: {
+            name: cardName,
+            address: {
+              line1: billingLine1 || undefined,
+              line2: billingLine2 || undefined,
+              city: billingCity || undefined,
+              state: billingState || undefined,
+              postal_code: billingPostalCode || undefined,
+              country: billingCountry || undefined,
+            },
+          },
+        },
       });
     }
 
@@ -230,6 +265,23 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
             <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Details</label>
             <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "13px 14px" }}>
               <CardElement options={CARD_ELEMENT_OPTIONS} />
+            </div>
+          </div>
+          <div>
+            <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Billing Address</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <input value={billingLine1} onChange={e => setBillingLine1(e.target.value)} placeholder="Address line 1" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              <input value={billingLine2} onChange={e => setBillingLine2(e.target.value)} placeholder="Address line 2 (optional)" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="City" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="County/State" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              </div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="Postal code" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
+                  {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                </select>
+              </div>
             </div>
           </div>
         </div>
