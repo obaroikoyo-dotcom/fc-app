@@ -41,8 +41,22 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
+  const [blocked, setBlocked] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetail, setReportDetail] = useState("");
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
 
   useEffect(() => { loadProfile(); }, [profileId]);
+
+  useEffect(() => {
+    setReportOpen(false);
+    setReportReason("");
+    setReportDetail("");
+    setReportSubmitted(false);
+  }, [profileId]);
 
  const loadProfile = async () => {
     try {
@@ -57,6 +71,13 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
             .eq("creator_id", profileId)
             .single();
           setFavourited(!!fav);
+
+          const { data: blockRows } = await supabase
+            .from("blocks")
+            .select("id")
+            .eq("blocker_id", user.id)
+            .eq("blocked_id", profileId);
+          setBlocked(!!blockRows && blockRows.length > 0);
         }
 
         // Try creator_profiles first
@@ -123,6 +144,41 @@ const startDM = async () => {
         .insert({ user_id: currentUserId, creator_id: profileId });
       setFavourited(true);
     }
+  };
+
+  const handleSubmitReport = async () => {
+    if (!currentUserId || !reportReason) return;
+    setReportSubmitting(true);
+    const { error } = await supabase.from("reports").insert({
+      reporter_id: currentUserId,
+      reported_user_id: profileId,
+      reason: reportDetail ? `${reportReason}: ${reportDetail}` : reportReason,
+    });
+    setReportSubmitting(false);
+    if (!error) {
+      setReportSubmitted(true);
+      setReportReason("");
+      setReportDetail("");
+    }
+  };
+
+  const handleBlock = async () => {
+    if (!currentUserId) return;
+    setBlockLoading(true);
+    const { error } = await supabase.from("blocks").insert({
+      blocker_id: currentUserId,
+      blocked_id: profileId,
+    });
+    if (!error) setBlocked(true);
+    setBlockLoading(false);
+  };
+
+  const handleUnblock = async () => {
+    if (!currentUserId) return;
+    setBlockLoading(true);
+    const { error } = await supabase.from("blocks").delete().eq("blocker_id", currentUserId).eq("blocked_id", profileId);
+    if (!error) setBlocked(false);
+    setBlockLoading(false);
   };
 
   const chipStyle: React.CSSProperties = {
@@ -254,10 +310,64 @@ const startDM = async () => {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Top Nav */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name || "Creator"}</span>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+          <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name || "Creator"}</span>
+        </div>
+        {currentUserId && currentUserId !== profileId && (
+          <span
+            onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
+            style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+          >
+            ⚑
+          </span>
+        )}
       </div>
+
+      {reportOpen && (
+        <div style={{ position: "fixed", top: "57px", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
+          {reportSubmitted ? (
+            <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
+          ) : (
+            <>
+              <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {creator.name || "this profile"}</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
+                {["Inappropriate content", "Offensive language", "Spam or scam", "Other"].map(r => (
+                  <span
+                    key={r}
+                    onClick={() => setReportReason(r)}
+                    style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${reportReason === r ? "#fff" : "#222"}`, background: reportReason === r ? "#fff" : "transparent", color: reportReason === r ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
+                  >
+                    {r}
+                  </span>
+                ))}
+              </div>
+              <textarea
+                value={reportDetail}
+                onChange={e => setReportDetail(e.target.value)}
+                placeholder="Any extra detail (optional)"
+                rows={2}
+                style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px", color: "#fff", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
+              />
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div
+                  onClick={() => !reportSubmitting && reportReason && handleSubmitReport()}
+                  style={{ flex: 1, padding: "11px", borderRadius: "8px", background: reportReason ? "#fff" : "#1a1a1a", color: reportReason ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: reportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                >
+                  {reportSubmitting ? "Submitting..." : "Submit Report"}
+                </div>
+                <div
+                  onClick={() => !blockLoading && (blocked ? handleUnblock() : handleBlock())}
+                  style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                >
+                  {blockLoading ? "..." : blocked ? "Unblock" : "Block"}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       <div style={{ padding: "2.25rem 1.25rem 8rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ width: "100%", maxWidth: "480px" }}>
@@ -280,11 +390,17 @@ const startDM = async () => {
             </div>
           </div>
 
+          {blocked && (
+            <div style={{ marginBottom: "1rem", padding: "10px 12px", borderRadius: "8px", background: "rgba(255,77,77,0.08)", border: "1px solid rgba(255,77,77,0.2)" }}>
+              <p style={{ fontSize: "12px", color: "#ff4d4d" }}>You've blocked this profile. They can't message or apply to you, and you can't message them.</p>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
             <div
-              onClick={startDM}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+              onClick={() => !blocked && startDM()}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: blocked ? "#1a1a1a" : "#fff", color: blocked ? "#444" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: blocked ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Message
             </div>
