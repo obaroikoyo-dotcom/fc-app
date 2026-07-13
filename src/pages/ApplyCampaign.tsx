@@ -100,8 +100,8 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 50 * 1024 * 1024) {
-      setFormError("Video must be under 50MB.");
+    if (file.size > 300 * 1024 * 1024) {
+      setFormError("Video must be under 300MB.");
       setVideoFile(null);
       return;
     }
