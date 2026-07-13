@@ -124,7 +124,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Payments & Escrow</span>
-            <span>All payments are processed through Stripe. FlipCollab holds funds in escrow until content is approved by the brand. Disputes must be raised within 7 days of content delivery by contacting Flipcollab@hotmail.com.</span>
+            <span>All payments are processed through Stripe. FlipCollab holds funds in escrow until content is approved by the brand. Disputes must be raised within 7 days of content delivery by contacting hello@flipcollab.com.</span>
           </div>
 
           <div>
@@ -169,7 +169,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>13. Contact</span>
-            <span>For any questions or disputes email us at <strong style={{ color: "#fff" }}>Flipcollab@hotmail.com</strong></span>
+            <span>For any questions or disputes email us at <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong></span>
           </div>
 
           <p style={{ color: "#333", fontSize: "11px", marginBottom: 0 }}>By accepting these terms you confirm you are 18 or over and agree to be bound by these Terms & Conditions.</p>

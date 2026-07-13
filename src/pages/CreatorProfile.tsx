@@ -1092,7 +1092,7 @@ setTimeout(() => setSaved(false), 2000);
         ))}
         <div style={{ marginTop: "1rem", padding: "1rem", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", textAlign: "center" }}>
           <p style={{ color: "#555", fontSize: "12px" }}>Still need help? Email us at</p>
-          <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginTop: "4px" }}>Flipcollab@hotmail.com</p>
+          <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginTop: "4px" }}>hello@flipcollab.com</p>
         </div>
       </div>
     </div>
@@ -1106,7 +1106,7 @@ const renderPrivacyPolicy = () => (
       <p style={{ color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
       <p>This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.</p>
       {[
-        { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: Flipcollab@hotmail.com" },
+        { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
         { t: "2. Data We Collect", b: "Name, email, profile info, payment data via Stripe, messages, campaign content, and device/usage data." },
         { t: "3. How We Use Your Data", b: "To run your account, match brands with creators, process payments, send transactional emails, resolve disputes, and comply with legal obligations." },
         { t: "4. Legal Basis", b: "Contract performance, legitimate interests (security, fraud prevention), and legal obligation." },
@@ -1117,7 +1117,7 @@ const renderPrivacyPolicy = () => (
         { t: "9. Security", b: "HTTPS, Supabase auth, and Stripe PCI compliance. Contact us immediately if you suspect unauthorised access." },
         { t: "10. Children", b: "Not for under 18s. Accounts found to belong to minors are deleted immediately." },
         { t: "11. Changes", b: "We'll notify you of significant changes via email or in-app notice." },
-        { t: "12. Contact", b: "Flipcollab@hotmail.com" },
+        { t: "12. Contact", b: "hello@flipcollab.com" },
       ].map(({ t, b }) => (
         <div key={t}>
           <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
@@ -1138,7 +1138,7 @@ const renderTerms = () => (
         { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
         { t: "2. Your Account", b: "Keep credentials secure. FlipCollab isn't liable for unauthorised access. You can delete your account anytime from settings." },
         { t: "3. Creator Responsibilities", b: "Deliver content as described within the agreed timeframe. Don't accept payment outside FlipCollab to bypass fees — this results in immediate termination." },
-        { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved. Disputes must be raised within 7 days to Flipcollab@hotmail.com." },
+        { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved. Disputes must be raised within 7 days to hello@flipcollab.com." },
         { t: "5. Payment Delays", b: "Delays may occur during maintenance or incidents. All escrow funds are guaranteed to be processed once normal operations resume." },
         { t: "6. Platform Fees", b: "FlipCollab deducts a 10% fee from creator earnings per completed collab." },
         { t: "7. Prohibited Content", b: "No illegal, hateful, explicit, discriminatory, or misleading content. Violations result in account suspension or termination." },
@@ -1148,7 +1148,7 @@ const renderTerms = () => (
         { t: "11. Governing Law", b: "Governed by the laws of England and Wales." },
         { t: "12. In-App Purchases", b: "Subscription fees are recurring and cancellable anytime. No refunds for partial periods." },
         { t: "13. App Store Compliance", b: "Claims must be directed to FlipCollab, not Apple or Google." },
-        { t: "14. Contact", b: "Flipcollab@hotmail.com" },
+        { t: "14. Contact", b: "hello@flipcollab.com" },
       ].map(({ t, b }) => (
         <div key={t}>
           <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>

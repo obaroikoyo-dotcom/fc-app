@@ -2,7 +2,7 @@ const SECTIONS = [
   { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
   { t: "2. Your Account", b: "Keep credentials secure. FlipCollab isn't liable for unauthorised access. You can delete your account anytime from settings." },
   { t: "3. Creator & Brand Responsibilities", b: "Creators must deliver content as described within the agreed timeframe. Brands must post accurate campaign information. Don't pay or accept payment outside FlipCollab to bypass fees — this results in immediate termination." },
-  { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved. Disputes must be raised within 7 days to Flipcollab@hotmail.com." },
+  { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved. Disputes must be raised within 7 days to hello@flipcollab.com." },
   { t: "5. Payment Delays", b: "Delays may occur during maintenance or incidents. All escrow funds are guaranteed to be processed once normal operations resume." },
   { t: "6. Platform Fees", b: "FlipCollab deducts a 10% fee from creator earnings per completed collab. A 5% fee is added to brand payments. Enterprise brands get 0% fees." },
   { t: "7. Prohibited Content", b: "No illegal, hateful, explicit, discriminatory, or misleading content. Violations result in account suspension or termination. For serious violations (fraud, harassment, illegal activity) FlipCollab may permanently withhold funds in the offending account pending investigation." },
@@ -12,7 +12,7 @@ const SECTIONS = [
   { t: "11. Governing Law", b: "Governed by the laws of England and Wales." },
   { t: "12. In-App Purchases", b: "Subscription fees are recurring and cancellable anytime. No refunds for partial periods." },
   { t: "13. App Store Compliance", b: "Claims must be directed to FlipCollab, not Apple or Google." },
-  { t: "14. Contact", b: "Flipcollab@hotmail.com" },
+  { t: "14. Contact", b: "hello@flipcollab.com" },
 ];
 
 export default function TermsPage() {

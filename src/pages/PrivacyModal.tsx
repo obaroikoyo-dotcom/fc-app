@@ -84,7 +84,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>1. Who We Are</span>
-            <span>FlipCollab is a creator collaboration marketplace connecting brands with content creators. For data protection queries, contact us at <strong style={{ color: "#fff" }}>Flipcollab@hotmail.com</strong>.</span>
+            <span>FlipCollab is a creator collaboration marketplace connecting brands with content creators. For data protection queries, contact us at <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
           <div>
@@ -144,7 +144,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li>Data portability</li>
               <li>Lodge a complaint with the ICO (ico.org.uk)</li>
             </ul>
-            <span style={{ display: "block", marginTop: "8px" }}>To exercise any of these rights, email <strong style={{ color: "#fff" }}>Flipcollab@hotmail.com</strong>.</span>
+            <span style={{ display: "block", marginTop: "8px" }}>To exercise any of these rights, email <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
           <div>
@@ -169,7 +169,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. Contact</span>
-            <span>For any privacy-related questions email <strong style={{ color: "#fff" }}>Flipcollab@hotmail.com</strong>.</span>
+            <span>For any privacy-related questions email <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
           <p style={{ color: "#333", fontSize: "11px", marginBottom: 0 }}>FlipCollab is operated in England and Wales. This policy is governed by UK law.</p>

@@ -1,5 +1,5 @@
 const SECTIONS = [
-  { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: Flipcollab@hotmail.com" },
+  { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
   { t: "2. Data We Collect", b: "Name, email, profile info, payment data via Stripe, messages, campaign content, and device/usage data." },
   { t: "3. How We Use Your Data", b: "To run your account, match brands with creators, process payments, send transactional emails, resolve disputes, and comply with legal obligations." },
   { t: "4. Legal Basis", b: "Contract performance, legitimate interests (security, fraud prevention), and legal obligation." },
@@ -10,7 +10,7 @@ const SECTIONS = [
   { t: "9. Security", b: "HTTPS, Supabase auth, and Stripe PCI compliance. Contact us immediately if you suspect unauthorised access." },
   { t: "10. Children", b: "Not for under 18s. Accounts found to belong to minors are deleted immediately." },
   { t: "11. Changes", b: "We'll notify you of significant changes via email or in-app notice." },
-  { t: "12. Contact", b: "Flipcollab@hotmail.com" },
+  { t: "12. Contact", b: "hello@flipcollab.com" },
 ];
 
 export default function PrivacyPolicyPage() {
