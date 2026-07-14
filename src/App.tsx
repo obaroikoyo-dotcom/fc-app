@@ -25,6 +25,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import { supabase } from "./lib/supabase";
 import { withTimeout } from "./lib/withTimeout";
 import { logEvent } from "./lib/debugLog";
+import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
 
 
 export type Page = 
@@ -269,10 +270,16 @@ export default function App() {
           // this point (authenticated post-OTP, but handleFinish hasn't run
           // yet) - their own wizard's local state carries them through, so
           // leave them alone. OAuth sign-ins land here with no wizard
-          // in progress at all and need to be sent to pick a role.
+          // in progress at all and need to be routed - back to the same
+          // onboarding wizard they left (if they clicked "Continue with
+          // Google" mid-onboarding - see src/lib/onboardingDraft.ts), or to
+          // role selection for a first-touch sign-in.
           const { data: { user } } = await supabase.auth.getUser();
           if (user?.app_metadata?.provider && user.app_metadata.provider !== "email") {
-            setPage("role-select");
+            const pendingRole = peekOnboardingDraftRole();
+            if (pendingRole === "brand") setPage("brand-onboarding");
+            else if (pendingRole === "creator") setPage("creator-onboarding");
+            else setPage("role-select");
           }
           return;
         }

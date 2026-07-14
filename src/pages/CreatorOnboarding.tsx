@@ -4,9 +4,19 @@ import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
 import { type Page } from "../App";
-import { supabase } from "../lib/supabase";
+import { supabase, signInWithGoogle } from "../lib/supabase";
+import { saveOnboardingDraft, takeOnboardingDraft } from "../lib/onboardingDraft";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
+
+const GoogleIcon = (
+  <svg width="18" height="18" viewBox="0 0 18 18">
+    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
+    <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z" />
+    <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
+  </svg>
+);
 
 const NICHES = ["Tech", "Beauty", "Fitness", "Gaming", "Fashion", "Food", "Travel", "Lifestyle", "Finance", "Parenting", "Education", "Sports", "Music", "Comedy", "Art", "Wellness", "Pets", "DIY", "Business", "Automotive"];
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
@@ -139,9 +149,37 @@ const [showOtp, setShowOtp] = useState(false);
       if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
         setIsOAuthUser(true);
         setEmail(user.email || "");
+
+        // Resuming after a Google redirect - restore whatever was filled in
+        // before the redirect tore down component state, and jump straight
+        // back to the credentials screen instead of starting over.
+        const draft = takeOnboardingDraft("creator");
+        if (draft) {
+          if (typeof draft.name === "string") setName(draft.name);
+          if (typeof draft.birthDay === "string") setBirthDay(draft.birthDay);
+          if (typeof draft.birthMonth === "string") setBirthMonth(draft.birthMonth);
+          if (typeof draft.birthYear === "string") setBirthYear(draft.birthYear);
+          if (Array.isArray(draft.selectedNiches)) setSelectedNiches(draft.selectedNiches as string[]);
+          if (typeof draft.location === "string") setLocation(draft.location);
+          if (Array.isArray(draft.selectedPlatforms)) setSelectedPlatforms(draft.selectedPlatforms as string[]);
+          if (draft.socialLinks && typeof draft.socialLinks === "object") setSocialLinks(draft.socialLinks as Record<string, string>);
+          if (draft.followerCounts && typeof draft.followerCounts === "object") setFollowerCounts(draft.followerCounts as Record<string, string>);
+          if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
+          if (draft.rates && typeof draft.rates === "object") setRates(draft.rates as typeof rates);
+          if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
+          setScreen(5);
+        }
       }
     });
   }, []);
+
+  const handleGoogleContinue = async () => {
+    saveOnboardingDraft("creator", {
+      name, birthDay, birthMonth, birthYear, selectedNiches, location,
+      selectedPlatforms, socialLinks, followerCounts, contentTypes, rates, termsAccepted,
+    });
+    await signInWithGoogle();
+  };
 
   const computedAge = calculateAge(birthDay, birthMonth, birthYear);
 
@@ -489,6 +527,19 @@ const [showOtp, setShowOtp] = useState(false);
           <div>
             <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
+            <div style={{ flex: 1, height: "1px", background: "#222" }} />
+            <span style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+            <div style={{ flex: 1, height: "1px", background: "#222" }} />
+          </div>
+
+          <div
+            onClick={handleGoogleContinue}
+            style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+          >
+            {GoogleIcon} Continue with Google
           </div>
         </div>
       )}

@@ -2,10 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
-import { supabase } from "../lib/supabase";
+import { supabase, signInWithGoogle } from "../lib/supabase";
+import { saveOnboardingDraft, takeOnboardingDraft } from "../lib/onboardingDraft";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
+
+const GoogleIcon = (
+  <svg width="18" height="18" viewBox="0 0 18 18">
+    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z" />
+    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
+    <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z" />
+    <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
+  </svg>
+);
 
 const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home", "Jewellery & Accessories", "Skincare", "Haircare", "Travel & Hospitality", "Parenting & Family", "Pet Care", "Finance & Fintech", "Education & E-learning", "Gaming", "Automotive", "Sports & Outdoors", "Luxury Goods", "Sustainability & Eco", "Alcohol & Beverages", "Subscription Boxes", "Home & Garden", "Art & Creative Tools"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Aires", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos"];
@@ -62,9 +72,33 @@ const [showOtp, setShowOtp] = useState(false);
       if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
         setIsOAuthUser(true);
         setEmail(user.email || "");
+
+        // Resuming after a Google redirect - restore whatever was filled in
+        // before the redirect tore down component state, and jump straight
+        // back to the credentials screen instead of starting over.
+        const draft = takeOnboardingDraft("brand");
+        if (draft) {
+          if (typeof draft.companyName === "string") setCompanyName(draft.companyName);
+          if (Array.isArray(draft.selectedIndustries)) setSelectedIndustries(draft.selectedIndustries as string[]);
+          if (typeof draft.location === "string") setLocation(draft.location);
+          if (typeof draft.website === "string") setWebsite(draft.website);
+          if (typeof draft.bio === "string") setBio(draft.bio);
+          if (typeof draft.targetAudience === "string") setTargetAudience(draft.targetAudience);
+          if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
+          if (typeof draft.targetTier === "string") setTargetTier(draft.targetTier);
+          if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
+          setScreen(5);
+        }
       }
     });
   }, []);
+
+  const handleGoogleContinue = async () => {
+    saveOnboardingDraft("brand", {
+      companyName, selectedIndustries, location, website, bio, targetAudience, contentTypes, targetTier, termsAccepted,
+    });
+    await signInWithGoogle();
+  };
 
   const goTo = (next: number) => {
     if (animating) return;
@@ -410,6 +444,19 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           <div>
             <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Portal Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
+            <div style={{ flex: 1, height: "1px", background: "#222" }} />
+            <span style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+            <div style={{ flex: 1, height: "1px", background: "#222" }} />
+          </div>
+
+          <div
+            onClick={handleGoogleContinue}
+            style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+          >
+            {GoogleIcon} Continue with Google
           </div>
         </div>
       )}
