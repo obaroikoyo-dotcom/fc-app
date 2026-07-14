@@ -8,18 +8,28 @@ export function saveOnboardingDraft(role: "brand" | "creator", data: Record<stri
   localStorage.setItem(KEY, JSON.stringify({ role, data }));
 }
 
-// Consumes (reads + clears) the draft. Called once, by the onboarding page
-// itself, when it detects it's resuming a Google sign-in.
-export function takeOnboardingDraft(role: "brand" | "creator"): Record<string, unknown> | null {
+// Non-destructive read, used by the onboarding page to restore its fields.
+// Deliberately NOT cleared here: the app's auth routing (App.tsx) re-checks
+// this on every auth state change, and Supabase fires more than one of
+// those in quick succession after an OAuth redirect (its own listener,
+// plus this app's separately-delayed initial auth check). If the draft
+// were wiped as soon as the wizard first read it, that second, later
+// check would find nothing and incorrectly bounce back to role-select.
+export function peekOnboardingDraft(role: "brand" | "creator"): Record<string, unknown> | null {
   const raw = localStorage.getItem(KEY);
   if (!raw) return null;
-  localStorage.removeItem(KEY);
   try {
     const parsed = JSON.parse(raw);
     return parsed.role === role ? parsed.data : null;
   } catch {
     return null;
   }
+}
+
+// Called once the account is actually finished (handleFinish succeeds) -
+// only then is it safe to stop treating this as a resumable draft.
+export function clearOnboardingDraft() {
+  localStorage.removeItem(KEY);
 }
 
 // Non-destructive read used by the app's top-level auth routing to decide

@@ -5,7 +5,7 @@ import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
 import { type Page } from "../App";
 import { supabase, signInWithGoogle } from "../lib/supabase";
-import { saveOnboardingDraft, takeOnboardingDraft } from "../lib/onboardingDraft";
+import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -153,7 +153,7 @@ const [showOtp, setShowOtp] = useState(false);
         // Resuming after a Google redirect - restore whatever was filled in
         // before the redirect tore down component state, and jump straight
         // back to the credentials screen instead of starting over.
-        const draft = takeOnboardingDraft("creator");
+        const draft = peekOnboardingDraft("creator");
         if (draft) {
           if (typeof draft.name === "string") setName(draft.name);
           if (typeof draft.birthDay === "string") setBirthDay(draft.birthDay);
@@ -317,6 +317,7 @@ const [showOtp, setShowOtp] = useState(false);
 
   const handleFinish = async () => {
     setLoading(true);
+    clearOnboardingDraft();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
