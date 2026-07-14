@@ -58,6 +58,12 @@ interface Message {
   text: string;
   video_url?: string | null;
   created_at: string;
+  read_at?: string | null;
+}
+
+interface Reaction {
+  user_id: string;
+  emoji: string;
 }
 
 interface Application {
@@ -79,6 +85,8 @@ interface Campaign {
   name: string;
   applications: Application[];
 }
+
+const REACTION_EMOJI = ["❤️", "😂", "😮", "😢", "👍"];
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -314,9 +322,12 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [otherIsTyping, setOtherIsTyping] = useState(false);
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
+  const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const chatChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
+  const isNearBottomRef = useRef(true);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
@@ -365,102 +376,140 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [inputBarHeight, setInputBarHeight] = useState(0);
 
   useEffect(() => {
-  const init = async () => {
-    let user;
-    try {
-      const result = await withTimeout(() => supabase.auth.getUser(), 10000, "Messages.init.getUser");
-      user = result.data.user;
-    } catch (err) {
-      console.error("Failed to get user:", err);
-      setLoading(false);
-      return;
-    }
-    if (!user) { setLoading(false); return; }
-    setCurrentUserId(user.id);
+    // Channel refs are populated inside init() below, but this cleanup is
+    // returned by the outer effect (not the inner async function, which
+    // React never awaits) so it actually runs on unmount - previously these
+    // channels leaked and re-subscribed their handlers on every visit to
+    // this page, since supabase.channel() dedupes/reuses by topic name.
+    let messagesBadgeChannel: ReturnType<typeof supabase.channel> | null = null;
+    let applicationsChannel: ReturnType<typeof supabase.channel> | null = null;
+    let convoChannel: ReturnType<typeof supabase.channel> | null = null;
 
-    if (role === "brand") {
+    const init = async () => {
+      let user;
       try {
-        const { data: bp } = await withTimeout(
-          () => supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single(),
-          10000, "Messages.init.brandProfile"
+        const result = await withTimeout(() => supabase.auth.getUser(), 10000, "Messages.init.getUser");
+        user = result.data.user;
+      } catch (err) {
+        console.error("Failed to get user:", err);
+        setLoading(false);
+        return;
+      }
+      if (!user) { setLoading(false); return; }
+      setCurrentUserId(user.id);
+
+      if (role === "brand") {
+        try {
+          const { data: bp } = await withTimeout(
+            () => supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single(),
+            10000, "Messages.init.brandProfile"
+          );
+          if (bp?.is_enterprise) setIsEnterprise(true);
+          if (bp?.stripe_payment_method_id && bp?.card_last4) {
+            setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
+          }
+        } catch (err) {
+          console.error("Failed to load brand payment info:", err);
+        }
+      }
+      try {
+        const { data: blocks } = await withTimeout(
+          () => supabase.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`),
+          10000, "Messages.init.blocks"
         );
-        if (bp?.is_enterprise) setIsEnterprise(true);
-        if (bp?.stripe_payment_method_id && bp?.card_last4) {
-          setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
+        if (blocks) {
+          setBlockedIds(blocks.filter(b => b.blocker_id === user.id).map(b => b.blocked_id));
+          setBlockedByIds(blocks.filter(b => b.blocked_id === user.id && b.blocker_id !== user.id).map(b => b.blocker_id));
         }
       } catch (err) {
-        console.error("Failed to load brand payment info:", err);
+        console.error("Failed to load blocked users:", err);
       }
-    }
-    try {
-      const { data: blocks } = await withTimeout(
-        () => supabase.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${user.id},blocked_id.eq.${user.id}`),
-        10000, "Messages.init.blocks"
-      );
-      if (blocks) {
-        setBlockedIds(blocks.filter(b => b.blocker_id === user.id).map(b => b.blocked_id));
-        setBlockedByIds(blocks.filter(b => b.blocked_id === user.id && b.blocker_id !== user.id).map(b => b.blocker_id));
+      await loadConversations();
+      // Only clear the notification types actually surfaced by this tab for
+      // each role - a blanket "mark everything read" here previously wiped
+      // out notifications the user hadn't actually seen yet (e.g. a payment
+      // popup queued for later), which is why the badge could clear too early.
+      if (role === "brand") {
+        loadApplications();
+        await supabase.from("notifications").update({ read: true })
+          .eq("user_id", user.id).eq("read", false)
+          .in("type", ["new_message", "campaign_application"]);
+        if (onRead) onRead();
+      } else {
+        await supabase.from("notifications").update({ read: true })
+          .eq("user_id", user.id).eq("read", false)
+          .in("type", ["new_message", "campaign_chatting", "payment_received"]);
+        if (onRead) onRead();
       }
-    } catch (err) {
-      console.error("Failed to load blocked users:", err);
-    }
-    await loadConversations();
-    if (role === "brand") {
-      loadApplications();
-      await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
-      if (onRead) onRead();
-    }
-    await fetchUnreadMessages(user.id);
+      await fetchUnreadMessages(user.id);
 
-    const channel = supabase
-      .channel("messages-badge-sync")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, (payload) => {
-        fetchUnreadMessages(user.id); // use local var, not state
-        const n = payload.new as { user_id: string; type: string; title: string; body: string };
-        if (role === "creator" && n.user_id === user.id && n.type === "payment_received") {
-          setPaymentPopup({ title: n.title, body: n.body });
-        }
-      })
-      .subscribe();
-
-    if (role === "brand") {
-      supabase
-        .channel("applications-update")
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "applications" }, () => {
-          loadApplications();
+      messagesBadgeChannel = supabase
+        .channel("messages-badge-sync")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
+          fetchUnreadMessages(user.id); // use local var, not state
+          const n = payload.new as { id: string; user_id: string; type: string; title: string; body: string };
+          if (role === "creator" && n.type === "payment_received") {
+            setPaymentPopup({ title: n.title, body: n.body });
+            // Showing the popup is the "seeing" of it - mark it read
+            // immediately rather than waiting for the next tab open.
+            supabase.from("notifications").update({ read: true }).eq("id", n.id);
+            if (onRead) onRead();
+          }
         })
         .subscribe();
-    }
 
-    const convoChannel = supabase
-      .channel("conversations-reorder")
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, (payload) => {
-        const updated = payload.new as Conversation;
-        setConversations(prev => {
-          const exists = prev.find(c => c.id === updated.id);
-          if (!exists) { loadConversations(); return prev; }
-          const merged = prev.map(c => c.id === updated.id ? { ...c, last_message: updated.last_message, last_message_at: updated.last_message_at } : c);
-          return merged.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
-        });
-      })
-      .subscribe();
+      if (role === "brand") {
+        applicationsChannel = supabase
+          .channel("applications-update")
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "applications" }, () => {
+            loadApplications();
+          })
+          .subscribe();
+      }
+
+      convoChannel = supabase
+        .channel("conversations-reorder")
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, (payload) => {
+          const updated = payload.new as Conversation;
+          setConversations(prev => {
+            const exists = prev.find(c => c.id === updated.id);
+            if (!exists) { loadConversations(); return prev; }
+            const merged = prev.map(c => c.id === updated.id ? { ...c, last_message: updated.last_message, last_message_at: updated.last_message_at } : c);
+            return merged.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+          });
+        })
+        .subscribe();
+    };
+
+    init();
 
     return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(convoChannel);
-      supabase.removeChannel(supabase.channel("applications-update"));
+      if (messagesBadgeChannel) supabase.removeChannel(messagesBadgeChannel);
+      if (applicationsChannel) supabase.removeChannel(applicationsChannel);
+      if (convoChannel) supabase.removeChannel(convoChannel);
     };
-  };
+  }, []);
 
-  init();
-}, []);
-
+  // Only auto-scroll to the newest message if the user was already near the
+  // bottom - otherwise a new message while reading back through history
+  // would yank the view down out from under them.
   useEffect(() => {
-    if (view === "chat") {
+    if (view === "chat" && isNearBottomRef.current) {
       const scroller = document.querySelector(".page-enter");
       if (scroller) scroller.scrollTop = scroller.scrollHeight;
     }
   }, [messages, view]);
+
+  useEffect(() => {
+    if (view !== "chat") return;
+    const scroller = document.querySelector(".page-enter");
+    if (!scroller) return;
+    const onScroll = () => {
+      isNearBottomRef.current = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < 150;
+    };
+    scroller.addEventListener("scroll", onScroll);
+    return () => scroller.removeEventListener("scroll", onScroll);
+  }, [view]);
 
   useLayoutEffect(() => {
     if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
@@ -472,7 +521,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     if (view === "chat" && activeConvo) {
       clearUnreadForConvo(activeConvo.id);
     }
-  }, [view, activeConvo]);
+  }, [view, activeConvo?.id]);
 
   const loadConversations = async () => {
     setLoading(true);
@@ -589,7 +638,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     .from("notifications")
     .select("id, data")
     .eq("user_id", currentUserId)
-    .eq("type", "new_message")
+    .in("type", ["new_message", "campaign_chatting"])
     .eq("read", false);
 
   if (notifs) {
@@ -642,17 +691,47 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     };
   }, []);
 
+  // Every append to `messages` goes through this so a message can never be
+  // added twice - both the sender's own optimistic-ish insert response and
+  // the realtime echo of the same row would otherwise both land here.
+  const appendMessage = (m: Message) => {
+    setMessages(prev => prev.some(existing => existing.id === m.id) ? prev : [...prev, m]);
+  };
+
+  const markMessagesRead = async (convoId: string, myId: string) => {
+    await supabase.from("messages").update({ read_at: new Date().toISOString() })
+      .eq("conversation_id", convoId).neq("sender_id", myId).is("read_at", null);
+  };
+
   const openChat = async (convo: Conversation) => {
     setActiveConvo(convo);
     setView("chat");
     setOtherIsTyping(false);
+    setReactions({});
+    isNearBottomRef.current = true;
     loadMessages(convo.id);
+    if (currentUserId) markMessagesRead(convo.id, currentUserId);
 
     if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current);
     const channel = supabase.channel(`convo-${convo.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${convo.id}` }, payload => {
-        setMessages(prev => [...prev, payload.new as Message]);
+        const incoming = payload.new as Message;
+        appendMessage(incoming);
         setOtherIsTyping(false);
+        if (currentUserId && incoming.sender_id !== currentUserId) markMessagesRead(convo.id, currentUserId);
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${convo.id}` }, payload => {
+        const updated = payload.new as Message;
+        setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, read_at: updated.read_at } : m));
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, payload => {
+        const row = (payload.new ?? payload.old) as { message_id: string; user_id: string; emoji: string } | undefined;
+        if (!row) return;
+        setReactions(prev => {
+          const list = (prev[row.message_id] || []).filter(r => r.user_id !== row.user_id);
+          if (payload.eventType !== "DELETE") list.push({ user_id: row.user_id, emoji: (payload.new as { emoji: string }).emoji });
+          return { ...prev, [row.message_id]: list };
+        });
       })
       .on("broadcast", { event: "typing" }, ({ payload }) => {
         if (payload.senderId === currentUserId) return;
@@ -674,7 +753,37 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
 
   const loadMessages = async (convoId: string) => {
     const { data } = await supabase.from("messages").select("*").eq("conversation_id", convoId).order("created_at", { ascending: true });
-    if (data) setMessages(data);
+    if (!data) return;
+    setMessages(data);
+    const ids = data.map(m => m.id);
+    if (ids.length === 0) return;
+    const { data: reacts } = await supabase.from("message_reactions").select("message_id, user_id, emoji").in("message_id", ids);
+    if (reacts) {
+      const grouped: Record<string, Reaction[]> = {};
+      reacts.forEach(r => { (grouped[r.message_id] ||= []).push({ user_id: r.user_id, emoji: r.emoji }); });
+      setReactions(grouped);
+    }
+  };
+
+  const reactToMessage = async (messageId: string, emoji: string) => {
+    if (!currentUserId) return;
+    const existing = reactions[messageId]?.find(r => r.user_id === currentUserId);
+    // Optimistically update so the tap feels instant rather than waiting on
+    // the realtime round trip back from our own write.
+    setReactions(prev => {
+      const list = (prev[messageId] || []).filter(r => r.user_id !== currentUserId);
+      if (!(existing?.emoji === emoji)) list.push({ user_id: currentUserId, emoji });
+      return { ...prev, [messageId]: list };
+    });
+    setReactionPickerFor(null);
+    if (existing?.emoji === emoji) {
+      await supabase.from("message_reactions").delete().eq("message_id", messageId).eq("user_id", currentUserId);
+    } else {
+      await supabase.from("message_reactions").upsert(
+        { message_id: messageId, user_id: currentUserId, emoji },
+        { onConflict: "message_id,user_id" }
+      );
+    }
   };
 
   const send = async () => {
@@ -683,7 +792,8 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     setInput("");
 
     const now = new Date().toISOString();
-    await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text });
+    const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text }).select().single();
+    if (inserted) appendMessage(inserted);
     await supabase.from("conversations").update({ last_message: text, last_message_at: now }).eq("id", activeConvo.id);
     setConversations(prev => {
       const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: text, last_message_at: now } : c);
@@ -713,7 +823,8 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       const videoUrl = urlData.publicUrl;
 
       const now = new Date().toISOString();
-      await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl });
+      const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl }).select().single();
+      if (inserted) appendMessage(inserted);
       await supabase.from("conversations").update({ last_message: "📹 Video", last_message_at: now }).eq("id", activeConvo.id);
       setConversations(prev => {
         const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "📹 Video", last_message_at: now } : c);
@@ -897,6 +1008,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   const goBack = () => {
     if (view === "chat") {
       setView("list"); setActiveConvo(null); setMessages([]); setOtherIsTyping(false);
+      setReactions({}); setReactionPickerFor(null);
       if (chatChannelRef.current) { supabase.removeChannel(chatChannelRef.current); chatChannelRef.current = null; }
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     }
@@ -1367,19 +1479,64 @@ return (
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
-            {messages.map(m => (
-              <div key={m.id} style={{ display: "flex", justifyContent: m.sender_id === currentUserId ? "flex-end" : "flex-start" }}>
-                <div style={{ maxWidth: "75%", padding: m.video_url ? "8px" : "10px 14px", borderRadius: m.sender_id === currentUserId ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: m.sender_id === currentUserId ? "#fff" : "#111", color: m.sender_id === currentUserId ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: m.sender_id === currentUserId ? "none" : "1px solid #1a1a1a" }}>
-                  {m.video_url && (
-                    <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
+            {messages.map((m, i) => {
+              const mine = m.sender_id === currentUserId;
+              const msgReactions = reactions[m.id] || [];
+              const uniqueEmoji = [...new Set(msgReactions.map(r => r.emoji))];
+              const myReaction = msgReactions.find(r => r.user_id === currentUserId)?.emoji;
+              const isLastMessage = i === messages.length - 1;
+              const showSeen = mine && isLastMessage && !!m.read_at;
+              return (
+                <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
+                  <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", flexDirection: mine ? "row-reverse" : "row" }}>
+                    <div
+                      onDoubleClick={() => reactToMessage(m.id, "❤️")}
+                      style={{ position: "relative", maxWidth: "75%", padding: m.video_url ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "#fff" : "#111", color: mine ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}
+                    >
+                      {m.video_url && (
+                        <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
+                      )}
+                      {m.text && <p style={{ padding: m.video_url ? "8px 6px 0" : 0 }}>{m.text}</p>}
+                      <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: m.video_url ? "0 6px" : 0 }}>
+                        {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                      {uniqueEmoji.length > 0 && (
+                        <div style={{ position: "absolute", bottom: "-10px", [mine ? "left" : "right"]: "-4px", display: "flex", gap: "2px" }}>
+                          {uniqueEmoji.map(emoji => (
+                            <span key={emoji} style={{ fontSize: "12px", background: "#1a1a1a", border: "1px solid #333", borderRadius: "10px", padding: "1px 5px" }}>{emoji}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      onClick={() => setReactionPickerFor(prev => prev === m.id ? null : m.id)}
+                      style={{ fontSize: "13px", color: "#444", cursor: "pointer", padding: "4px", flexShrink: 0 }}
+                    >
+                      ☺
+                    </span>
+                    {reactionPickerFor === m.id && (
+                      <>
+                        <div onClick={() => setReactionPickerFor(null)} style={{ position: "fixed", inset: 0, zIndex: 998 }} />
+                        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", [mine ? "right" : "left"]: 0, background: "#111", border: "1px solid #222", borderRadius: "20px", padding: "6px 8px", display: "flex", gap: "6px", zIndex: 999, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
+                          {REACTION_EMOJI.map(emoji => (
+                            <span
+                              key={emoji}
+                              onClick={() => reactToMessage(m.id, emoji)}
+                              style={{ fontSize: "18px", cursor: "pointer", opacity: myReaction === emoji ? 1 : 0.7, transform: myReaction === emoji ? "scale(1.15)" : "scale(1)", transition: "all 0.1s" }}
+                            >
+                              {emoji}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {showSeen && (
+                    <p style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>Seen</p>
                   )}
-                  {m.text && <p style={{ padding: m.video_url ? "8px 6px 0" : 0 }}>{m.text}</p>}
-                  <p style={{ fontSize: "10px", color: m.sender_id === currentUserId ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: m.video_url ? "0 6px" : 0 }}>
-                    {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {otherIsTyping && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "#111", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: "4px" }}>
