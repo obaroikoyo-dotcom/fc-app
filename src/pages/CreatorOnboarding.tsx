@@ -6,6 +6,7 @@ import TermsModal from "./TermsModal";
 import { type Page } from "../App";
 import { supabase, signInWithGoogle } from "../lib/supabase";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
+import { logEvent } from "../lib/debugLog";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -146,6 +147,7 @@ const [showOtp, setShowOtp] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
+      logEvent(`CreatorOnboarding mount: hasUser=${!!user} emailConfirmed=${!!user?.email_confirmed_at} provider=${user?.app_metadata?.provider ?? "n/a"}`);
       if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
         setIsOAuthUser(true);
         setEmail(user.email || "");
@@ -154,6 +156,7 @@ const [showOtp, setShowOtp] = useState(false);
         // before the redirect tore down component state, and jump straight
         // back to the credentials screen instead of starting over.
         const draft = peekOnboardingDraft("creator");
+        logEvent(`CreatorOnboarding mount: isOAuthUser=true draftFound=${!!draft}`);
         if (draft) {
           if (typeof draft.name === "string") setName(draft.name);
           if (typeof draft.birthDay === "string") setBirthDay(draft.birthDay);

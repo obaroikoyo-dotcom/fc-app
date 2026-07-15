@@ -265,6 +265,8 @@ export default function App() {
           .eq("id", userId)
           .maybeSingle();
 
+        logEvent(`syncUserRoute: userId=${userId.slice(0, 8)} profileFound=${!!profile} role=${profile?.role ?? "n/a"} error=${profileError?.message ?? "none"}`);
+
         if (profileError || !profile) {
           // No profile row yet. Email/password signups are mid-onboarding at
           // this point (authenticated post-OTP, but handleFinish hasn't run
@@ -275,11 +277,15 @@ export default function App() {
           // Google" mid-onboarding - see src/lib/onboardingDraft.ts), or to
           // role selection for a first-touch sign-in.
           const { data: { user } } = await supabase.auth.getUser();
-          if (user?.app_metadata?.provider && user.app_metadata.provider !== "email") {
+          const provider = user?.app_metadata?.provider;
+          if (provider && provider !== "email") {
             const pendingRole = peekOnboardingDraftRole();
+            logEvent(`syncUserRoute: no profile, provider=${provider}, pendingDraftRole=${pendingRole ?? "none"} -> routing to ${pendingRole ? pendingRole + "-onboarding" : "role-select"}`);
             if (pendingRole === "brand") setPage("brand-onboarding");
             else if (pendingRole === "creator") setPage("creator-onboarding");
             else setPage("role-select");
+          } else {
+            logEvent(`syncUserRoute: no profile, provider=${provider ?? "none"} (email/password mid-signup) - leaving page as-is`);
           }
           return;
         }
@@ -334,6 +340,8 @@ export default function App() {
         const { data: { session } } = await sessionPromise;
         if (!isMounted) return;
 
+        logEvent(`initializeAuth: hasSession=${!!session} provider=${session?.user?.app_metadata?.provider ?? "n/a"} emailConfirmed=${!!session?.user?.email_confirmed_at}`);
+
         // Don't swap away from the splash page until its own animation
         // has had time to finish, but don't add this on top of network time.
         await minSplashDuration;
@@ -372,8 +380,9 @@ export default function App() {
       .subscribe();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      logEvent(`onAuthStateChange: event=${event} hasSession=${!!session} provider=${session?.user?.app_metadata?.provider ?? "n/a"} emailConfirmed=${!!session?.user?.email_confirmed_at}`);
       if (!isMounted) return;
-      
+
       if (event === "SIGNED_OUT") {
         setPage("role-select");
         setUnreadCount(0);

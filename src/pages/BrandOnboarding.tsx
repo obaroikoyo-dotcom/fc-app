@@ -4,6 +4,7 @@ import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase, signInWithGoogle } from "../lib/supabase";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
+import { logEvent } from "../lib/debugLog";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
@@ -69,6 +70,7 @@ const [showOtp, setShowOtp] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
+      logEvent(`BrandOnboarding mount: hasUser=${!!user} emailConfirmed=${!!user?.email_confirmed_at} provider=${user?.app_metadata?.provider ?? "n/a"}`);
       if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
         setIsOAuthUser(true);
         setEmail(user.email || "");
@@ -77,6 +79,7 @@ const [showOtp, setShowOtp] = useState(false);
         // before the redirect tore down component state, and jump straight
         // back to the credentials screen instead of starting over.
         const draft = peekOnboardingDraft("brand");
+        logEvent(`BrandOnboarding mount: isOAuthUser=true draftFound=${!!draft}`);
         if (draft) {
           if (typeof draft.companyName === "string") setCompanyName(draft.companyName);
           if (Array.isArray(draft.selectedIndustries)) setSelectedIndustries(draft.selectedIndustries as string[]);
