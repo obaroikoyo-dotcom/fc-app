@@ -381,6 +381,15 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     // React never awaits) so it actually runs on unmount - previously these
     // channels leaked and re-subscribed their handlers on every visit to
     // this page, since supabase.channel() dedupes/reuses by topic name.
+    //
+    // The topic names also get a random per-mount suffix: removeChannel()
+    // tears a channel down asynchronously, so if this page unmounts and
+    // remounts quickly (e.g. fast tab switching), a fixed topic name could
+    // still resolve to the previous mount's not-yet-fully-closed channel
+    // object, and calling .on() on an already-subscribed channel throws
+    // "cannot add postgres_changes callbacks ... after subscribe()". A
+    // unique topic per mount makes that collision structurally impossible.
+    const instanceId = Math.random().toString(36).slice(2);
     let messagesBadgeChannel: ReturnType<typeof supabase.channel> | null = null;
     let applicationsChannel: ReturnType<typeof supabase.channel> | null = null;
     let convoChannel: ReturnType<typeof supabase.channel> | null = null;
@@ -444,7 +453,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       await fetchUnreadMessages(user.id);
 
       messagesBadgeChannel = supabase
-        .channel("messages-badge-sync")
+        .channel(`messages-badge-sync-${instanceId}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
           fetchUnreadMessages(user.id); // use local var, not state
           const n = payload.new as { id: string; user_id: string; type: string; title: string; body: string };
@@ -460,7 +469,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
       if (role === "brand") {
         applicationsChannel = supabase
-          .channel("applications-update")
+          .channel(`applications-update-${instanceId}`)
           .on("postgres_changes", { event: "INSERT", schema: "public", table: "applications" }, () => {
             loadApplications();
           })
@@ -468,7 +477,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       }
 
       convoChannel = supabase
-        .channel("conversations-reorder")
+        .channel(`conversations-reorder-${instanceId}`)
         .on("postgres_changes", { event: "UPDATE", schema: "public", table: "conversations" }, (payload) => {
           const updated = payload.new as Conversation;
           setConversations(prev => {
@@ -713,7 +722,11 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     if (currentUserId) markMessagesRead(convo.id, currentUserId);
 
     if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current);
-    const channel = supabase.channel(`convo-${convo.id}`)
+    // Suffixed with a random id for the same reason as the mount-level
+    // channels above: removeChannel() is async, so reopening the same
+    // conversation quickly could otherwise resolve to the previous open's
+    // not-yet-closed channel and throw on .on() after it's already subscribed.
+    const channel = supabase.channel(`convo-${convo.id}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${convo.id}` }, payload => {
         const incoming = payload.new as Message;
         appendMessage(incoming);
