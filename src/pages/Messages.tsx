@@ -95,6 +95,8 @@ interface Campaign {
 }
 
 const REACTION_EMOJI = ["❤️", "😂", "😮", "😢", "👍"];
+const CHAT_OPENED_PREFIX = "👋 Chat Opened!";
+const PAYMENT_CONFIRMED_PREFIX = "💰 Payment secured!";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -807,6 +809,23 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     }
   };
 
+  // Shared by the top Deal Desk bar and the in-chat pay prompt card, so both
+  // entry points open the exact same modal in the exact same way.
+  const openPaymentModal = () => {
+    if (!activeConvo) return;
+    setCampaignBudget((activeConvo.campaign_budget || 0) * 100);
+    setPaymentApp({
+      id: activeConvo.application_id!,
+      campaign_id: activeConvo.campaign_id!,
+      creator_id: activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1,
+      status: activeConvo.application_status!,
+      message: "", platforms: [], created_at: "",
+      creator_name: activeConvo.other_name,
+      campaign_name: activeConvo.campaign_name
+    });
+    setShowPayment(true);
+  };
+
   const send = async () => {
     if (!input.trim() || !activeConvo || !currentUserId) return;
     const text = censorProfanity(input);
@@ -885,7 +904,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       .or(`and(participant_1.eq.${userId},participant_2.eq.${app.creator_id}),and(participant_1.eq.${app.creator_id},participant_2.eq.${userId})`)
       .maybeSingle();
 
-    const welcomeText = `👋 Chat Opened! The brand is interested in talking details for "${app.campaign_name}". Let's align on dates and deliverables before finalizing the deal!`;
+    const welcomeText = `${CHAT_OPENED_PREFIX} The brand is interested in talking details for "${app.campaign_name}". Let's align on dates and deliverables before finalizing the deal!`;
     const nowTimestamp = new Date().toISOString();
 
     let targetConvoId = existing?.id || "";
@@ -1429,19 +1448,7 @@ return (
                   {activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" ? (
                     <>
                       <button
-                        onClick={() => {
-                          setCampaignBudget((activeConvo.campaign_budget || 0) * 100);
-                          setPaymentApp({
-                            id: activeConvo.application_id!,
-                            campaign_id: activeConvo.campaign_id!,
-                            creator_id: activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1,
-                            status: activeConvo.application_status!,
-                            message: "", platforms: [], created_at: "",
-                            creator_name: activeConvo.other_name,
-                            campaign_name: activeConvo.campaign_name
-                          });
-                          setShowPayment(true);
-                        }}
+                        onClick={openPaymentModal}
                         style={{ background: "#fff", color: "#0a0a0a", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
                       >
                         Lock Deal & Pay
@@ -1500,7 +1507,16 @@ return (
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
-            {messages.map((m, i) => {
+            {(() => {
+              const chatOpenedIdx = messages.findIndex(m => m.text?.startsWith(CHAT_OPENED_PREFIX));
+              const paymentIdx = messages.map(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)).lastIndexOf(true);
+              const showPayCard = role === "brand" && !!activeConvo?.application_id
+                && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid";
+              const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
+              const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
+              const dividerAtIdx = paymentIdx + 1;
+
+              return messages.map((m, i) => {
               const mine = m.sender_id === currentUserId;
               const msgReactions = reactions[m.id] || [];
               const uniqueEmoji = [...new Set(msgReactions.map(r => r.emoji))];
@@ -1508,7 +1524,26 @@ return (
               const isLastMessage = i === messages.length - 1;
               const showSeen = mine && isLastMessage && !!m.read_at;
               return (
-                <div key={m.id} style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
+                <div key={m.id} style={{ display: "contents" }}>
+                {showPayCard && i === cardInsertAtIdx && (
+                  <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Ready to lock in the deal?</p>
+                      <p style={{ color: "#666", fontSize: "12px" }}>Secure funds in escrow for "{activeConvo?.campaign_name || "this campaign"}" so {activeConvo?.other_name || "the creator"} can get started.</p>
+                    </div>
+                    <div onClick={openPaymentModal} style={{ alignSelf: "flex-start", background: "#fff", color: "#0a0a0a", borderRadius: "6px", padding: "8px 14px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                      Lock Deal & Pay
+                    </div>
+                  </div>
+                )}
+                {showDivider && i === dividerAtIdx && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
+                    <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
+                    <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase" as const, letterSpacing: "0.08em", flexShrink: 0 }}>After payment</span>
+                    <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
+                  </div>
+                )}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
                   <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", flexDirection: mine ? "row-reverse" : "row" }}>
                     <div
                       onDoubleClick={() => reactToMessage(m.id, "❤️")}
@@ -1556,8 +1591,10 @@ return (
                     <p style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>Seen</p>
                   )}
                 </div>
+                </div>
               );
-            })}
+              });
+            })()}
             {otherIsTyping && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
                 <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "#111", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1646,9 +1683,22 @@ return (
               currentUserId={currentUserId}
               savedCard={savedCard}
               onClose={() => setShowPayment(false)}
-              onSuccess={async (_app) => {
+              onSuccess={async (app) => {
                 setShowPayment(false);
                 setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : null);
+
+                if (activeConvo && currentUserId) {
+                  const paymentText = `${PAYMENT_CONFIRMED_PREFIX} Funds for "${app.campaign_name}" are held in escrow until content is approved.`;
+                  const now = new Date().toISOString();
+                  const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: paymentText }).select().single();
+                  if (inserted) appendMessage(inserted);
+                  await supabase.from("conversations").update({ last_message: paymentText, last_message_at: now }).eq("id", activeConvo.id);
+                  setConversations(prev => {
+                    const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: paymentText, last_message_at: now } : c);
+                    return updated.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+                  });
+                }
+
                 await loadConversations();
               }}
             />
