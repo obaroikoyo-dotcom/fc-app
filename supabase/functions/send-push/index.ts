@@ -40,7 +40,11 @@ serve(async (req) => {
     const result = await res.json();
     if (!res.ok) throw new Error(`OneSignal error: ${JSON.stringify(result)}`);
 
-    return new Response(JSON.stringify({ sent: result.recipients ?? 0, id: result.id }), {
+    // A non-empty id means OneSignal accepted and dispatched the message;
+    // an empty string id means the request was valid but no subscriber
+    // matched the target external_id.
+    const sent = typeof result.id === "string" && result.id.length > 0 ? 1 : 0;
+    return new Response(JSON.stringify({ sent, id: result.id }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
