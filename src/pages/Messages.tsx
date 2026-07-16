@@ -877,9 +877,15 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   const screenOutApp = async (app: LinkedApplication) => {
     await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
     setCampaignPickerFor(null);
-    if (activeConvo?.application_id === app.id) {
-      setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
-    }
+    // Patch locally right away - loadConversations() below only refreshes
+    // the conversations list, not the currently-open activeConvo, so
+    // without this the screened-out campaign would still show as payable
+    // in the picker until the chat is closed and reopened.
+    setActiveConvo(prev => prev ? {
+      ...prev,
+      application_status: prev.application_id === app.id ? "rejected" : prev.application_status,
+      linked_applications: prev.linked_applications?.map(a => a.id === app.id ? { ...a, status: "rejected" } : a),
+    } : null);
     await loadConversations();
   };
 
@@ -1777,7 +1783,15 @@ return (
               onClose={() => setShowPayment(false)}
               onSuccess={async (app) => {
                 setShowPayment(false);
-                setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : null);
+                // Patch only the specific application that was actually
+                // paid - with multiple campaigns open at once, blindly
+                // setting the conversation's top-level status would mark
+                // the wrong one as paid if it wasn't the "latest" one.
+                setActiveConvo(prev => prev ? {
+                  ...prev,
+                  application_status: prev.application_id === app.id ? "paid" : prev.application_status,
+                  linked_applications: prev.linked_applications?.map(a => a.id === app.id ? { ...a, status: "paid" } : a),
+                } : null);
 
                 if (activeConvo && currentUserId) {
                   const paymentText = `${PAYMENT_CONFIRMED_PREFIX} Funds for "${app.campaign_name}" are held in escrow until content is approved.`;

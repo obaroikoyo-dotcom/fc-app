@@ -274,6 +274,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const brandName = (c as any).brand_profiles?.name;
                 const budgetVal = parseInt(c.budget, 10);
                 const currentTotalCost = budgetVal + budgetVal * 0.05;
+                const creatorNetPayout = isEnterprise ? budgetVal : budgetVal * 0.90;
                 const appCount = c.applications?.length || 0;
 
                 return (
@@ -375,6 +376,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                                 ? <span style={{ color: "#34c759", fontWeight: 500 }}>0% platform fee (Enterprise)</span>
                                 : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% fee)</>
                               }
+                              <br />
+                              Creator nets <span style={{ color: "#fff", fontWeight: 500 }}>£{creatorNetPayout.toLocaleString()}</span>{!isEnterprise && " (-10% cut)"}
                             </span>
                           )}
                         </div>
