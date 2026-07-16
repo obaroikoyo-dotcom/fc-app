@@ -58,3 +58,22 @@ export function optOutOneSignalPush() {
     await OneSignal.User.PushSubscription.optOut();
   });
 }
+
+export function optInOneSignalPush() {
+  withOneSignal(async (OneSignal) => {
+    await OneSignal.User.PushSubscription.optIn();
+  });
+}
+
+// Browser Notification permission only ever moves from "default" toward
+// "granted"/"denied" and can't be revoked in code - opting out via OneSignal
+// doesn't touch it. So the Settings toggle needs OneSignal's own opted-in
+// flag, not Notification.permission, or it looks "on" again after opting
+// out and revisiting the page.
+export function isOneSignalOptedIn(): Promise<boolean> {
+  return new Promise((resolve) => {
+    withOneSignal((OneSignal) => {
+      resolve(!!OneSignal.User.PushSubscription.optedIn);
+    });
+  });
+}

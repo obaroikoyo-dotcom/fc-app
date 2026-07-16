@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
-import { subscribeToPush, unsubscribeFromPush } from "../lib/push";
+import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
 
 interface Props {
@@ -58,9 +58,11 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
   const [targetTier, setTargetTier] = useState("");
   const [contentTypes, setContentTypes] = useState<string[]>([]);
   const [profileVisible, setProfileVisible] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(
-    typeof Notification !== "undefined" && Notification.permission === "granted"
-  );
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    isPushEnabled().then(setNotificationsEnabled);
+  }, []);
   const [notifError, setNotifError] = useState("");
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);

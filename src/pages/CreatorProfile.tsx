@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
-import { subscribeToPush, unsubscribeFromPush } from "../lib/push";
+import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
 
 interface Props {
@@ -91,9 +91,11 @@ export default function CreatorProfile({ navigateToProfile, toggleTheme, isInver
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
   const [appliedCampaigns, setAppliedCampaigns] = useState<any[]>([]);
   const [appFilter, setAppFilter] = useState<"all" | "pending" | "accepted" | "rejected">("all");
-  const [notificationsEnabled, setNotificationsEnabled] = useState(
-    typeof Notification !== "undefined" && Notification.permission === "granted"
-  );
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => {
+    isPushEnabled().then(setNotificationsEnabled);
+  }, []);
   const [notifError, setNotifError] = useState("");
   const [profileVisible, setProfileVisible] = useState(true);
   const [rateVisible, setRateVisible] = useState(true);
