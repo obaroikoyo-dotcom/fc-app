@@ -43,6 +43,23 @@ export async function unsubscribeFromPush(_userId: string) {
   optOutOneSignalPush();
 }
 
+// Silent, best-effort version of subscribeToPush for auto-prompting shortly
+// after a user lands in the app, rather than waiting for them to find the
+// Settings toggle. Swallows every failure (declined, blocked, unsupported
+// browser, iOS not installed to home screen) since there's no dedicated UI
+// showing the result of an automatic attempt - it either results in the
+// native OS permission dialog appearing, or silently does nothing.
+export async function autoRequestPush(userId: string) {
+  try {
+    const already = await isOneSignalOptedIn();
+    if (already) return;
+    await subscribeToPush(userId);
+  } catch {
+    // Expected in plenty of cases (declined, blocked, unsupported) - no
+    // user-facing error surface for a background attempt like this one.
+  }
+}
+
 interface NotifyPayload {
   user_id: string;
   type: string;

@@ -27,6 +27,7 @@ import { withTimeout } from "./lib/withTimeout";
 import { logEvent } from "./lib/debugLog";
 import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
+import { autoRequestPush } from "./lib/push";
 
 
 export type Page = 
@@ -358,6 +359,7 @@ export default function App() {
             setPage("verify-email");
           } else {
             oneSignalLogin(session.user.id);
+            setTimeout(() => autoRequestPush(session.user.id), 3000);
             await syncUserRoute(session.user.id);
             fetchGlobalUnreadCount();
           }
@@ -402,6 +404,7 @@ export default function App() {
           return;
         }
         oneSignalLogin(session.user.id);
+        setTimeout(() => autoRequestPush(session.user.id), 3000);
         await syncUserRoute(session.user.id);
         fetchGlobalUnreadCount();
       } else if (event === "USER_UPDATED" && session?.user) {
