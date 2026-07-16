@@ -4,7 +4,8 @@ import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
 import { type Page } from "../App";
-import { supabase, signInWithGoogle } from "../lib/supabase";
+import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
 
@@ -176,12 +177,13 @@ const [showOtp, setShowOtp] = useState(false);
     });
   }, []);
 
-  const handleGoogleContinue = async () => {
+  const handleGoogleCredential = async (idToken: string, nonce: string) => {
     saveOnboardingDraft("creator", {
       name, birthDay, birthMonth, birthYear, selectedNiches, location,
       selectedPlatforms, socialLinks, followerCounts, contentTypes, rates, termsAccepted,
     });
-    await signInWithGoogle();
+    const { error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
+    if (idTokenError) setError(idTokenError.message);
   };
 
   const computedAge = calculateAge(birthDay, birthMonth, birthYear);
@@ -539,12 +541,13 @@ const [showOtp, setShowOtp] = useState(false);
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
           </div>
 
-          <div
-            onClick={handleGoogleContinue}
-            style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
-          >
-            {GoogleIcon} Continue with Google
-          </div>
+          <GoogleSignInButton onCredential={handleGoogleCredential}>
+            <div
+              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+            >
+              {GoogleIcon} Continue with Google
+            </div>
+          </GoogleSignInButton>
         </div>
       )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}

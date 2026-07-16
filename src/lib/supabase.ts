@@ -19,11 +19,12 @@ export function resetSupabaseClient() {
   supabase = createClient(supabaseUrl, supabaseAnonKey);
 }
 
-export async function signInWithGoogle() {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: window.location.origin },
-  });
+// Used by GoogleSignInButton's onCredential callback. Runs entirely
+// client-side (Google Identity Services popup + a direct API call here) -
+// no redirect through Supabase's own domain, which is what lets Google's
+// UI show flipcollab.com instead of the raw supabase.co project ref.
+export async function signInWithGoogleIdToken(idToken: string, nonce: string) {
+  return supabase.auth.signInWithIdToken({ provider: "google", token: idToken, nonce });
 }
 
 // Supabase's internal auth lock (serializes token-refresh across tabs) can

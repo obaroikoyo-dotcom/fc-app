@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
-import { supabase, signInWithGoogle } from "../lib/supabase";
+import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
@@ -96,11 +97,16 @@ const [showOtp, setShowOtp] = useState(false);
     });
   }, []);
 
-  const handleGoogleContinue = async () => {
+  const handleGoogleCredential = async (idToken: string, nonce: string) => {
+    // Saved right before the sign-in call (not eagerly on click) - App.tsx's
+    // global auth listener fires the moment this succeeds and needs the
+    // draft in place to route back to this same wizard instead of
+    // role-select, regardless of which page happens to be showing.
     saveOnboardingDraft("brand", {
       companyName, selectedIndustries, location, website, bio, targetAudience, contentTypes, targetTier, termsAccepted,
     });
-    await signInWithGoogle();
+    const { error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
+    if (idTokenError) setError(idTokenError.message);
   };
 
   const goTo = (next: number) => {
@@ -456,12 +462,13 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
           </div>
 
-          <div
-            onClick={handleGoogleContinue}
-            style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
-          >
-            {GoogleIcon} Continue with Google
-          </div>
+          <GoogleSignInButton onCredential={handleGoogleCredential}>
+            <div
+              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+            >
+              {GoogleIcon} Continue with Google
+            </div>
+          </GoogleSignInButton>
         </div>
       )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}

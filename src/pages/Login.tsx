@@ -3,8 +3,9 @@ import AuthLayout from "../components/AuthLayout";
 import Logo from "../components/Logo";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 import { type Page } from "../App";
-import { supabase, signInWithGoogle } from "../lib/supabase";
+import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
 
 interface Props { navigate: (p: Page) => void; }
 
@@ -24,6 +25,14 @@ export default function Login({ navigate }: Props) {
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleGoogleCredential = async (idToken: string, nonce: string) => {
+    setError("");
+    const { error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
+    if (idTokenError) setError(idTokenError.message);
+    // Successful sign-in is picked up by App.tsx's onAuthStateChange, which
+    // handles routing from here.
+  };
 
   const handleLogin = async () => {
     setError("");
@@ -86,9 +95,11 @@ export default function Login({ navigate }: Props) {
           <div style={{ flex: 1, height: "1px", background: "#222" }} />
         </div>
 
-        <Button variant="outline" onClick={signInWithGoogle} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-          {GoogleIcon} Continue with Google
-        </Button>
+        <GoogleSignInButton onCredential={handleGoogleCredential}>
+          <Button variant="outline" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+            {GoogleIcon} Continue with Google
+          </Button>
+        </GoogleSignInButton>
 
         <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#444" }}>
           Don't have an account?{" "}
