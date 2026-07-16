@@ -43,6 +43,14 @@ interface Props {
   onRead?: () => void;
 }
 
+interface LinkedApplication {
+  id: string;
+  status: string;
+  campaign_id: string;
+  campaign_name: string;
+  campaign_budget: number;
+}
+
 interface Conversation {
   id: string;
   participant_1: string;
@@ -52,6 +60,7 @@ interface Conversation {
   other_name?: string;
   other_role?: string;
   other_avatar?: string;
+  linked_applications?: LinkedApplication[];
   application_id?: string;
   application_status?: string;
   campaign_id?: string;
@@ -232,7 +241,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   };
 
   return (
-    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", padding: "1.5rem" }}>
+    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "85vh", overflowY: "auto", padding: "1.5rem" }}>
       <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "8px" }}>Confirm Deal & Pay</h3>
       <p style={{ color: "#555", fontSize: "13px", marginBottom: "1.5rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
 
@@ -357,6 +366,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [showPayment, setShowPayment] = useState(false);
   const [paymentApp, setPaymentApp] = useState<Application | null>(null);
   const [campaignBudget, setCampaignBudget] = useState(0);
+  const [campaignPickerFor, setCampaignPickerFor] = useState<"pay" | "screenout" | null>(null);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [savedCard, setSavedCard] = useState<{ last4: string; brand: string; pm_id: string } | null>(null);
   const [paymentPopup, setPaymentPopup] = useState<{ title: string; body: string } | null>(null);
@@ -587,25 +597,37 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
             const brandSearchId = profile?.role === "brand" ? otherId : user.id;
 
-            const { data: linkedApp } = await supabase
+            // Fetch every application between this brand+creator pair, not
+            // just the latest - a brand and creator can have run more than
+            // one campaign together, and each needs its own pay/screen-out
+            // action rather than only ever surfacing the newest one.
+            const { data: linkedApps } = await supabase
               .from("applications")
               .select("id, status, campaign_id, campaigns(name, budget, brand_id)")
               .eq("creator_id", creatorSearchId)
               .eq("campaigns.brand_id", brandSearchId)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
+              .order("created_at", { ascending: false });
+
+            const linkedApplications: LinkedApplication[] = (linkedApps || []).map(a => ({
+              id: a.id,
+              status: a.status,
+              campaign_id: a.campaign_id,
+              campaign_name: (a.campaigns as any)?.name || "Campaign",
+              campaign_budget: parseInt((a.campaigns as any)?.budget, 10) || 0,
+            }));
+            const latestApp = linkedApplications[0];
 
             return {
               ...c,
               other_name: otherName,
               other_role: profile?.role,
               other_avatar: otherAvatar,
-              application_id: linkedApp?.id,
-              application_status: linkedApp?.status,
-              campaign_id: linkedApp?.campaign_id,
-              campaign_name: (linkedApp?.campaigns as any)?.name,
-              campaign_budget: parseInt((linkedApp?.campaigns as any)?.budget, 10) || 0
+              linked_applications: linkedApplications,
+              application_id: latestApp?.id,
+              application_status: latestApp?.status,
+              campaign_id: latestApp?.campaign_id,
+              campaign_name: latestApp?.campaign_name,
+              campaign_budget: latestApp?.campaign_budget || 0
             };
           }));
           const sorted = enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
@@ -809,21 +831,62 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     }
   };
 
-  // Shared by the top Deal Desk bar and the in-chat pay prompt card, so both
-  // entry points open the exact same modal in the exact same way.
-  const openPaymentModal = () => {
+  // A brand and creator can have run more than one campaign together, so
+  // paying/screening-out isn't always unambiguous - these are the
+  // applications between this pair that are still open (not already paid
+  // or already screened out), i.e. the ones eligible for either action.
+  const payableApps: LinkedApplication[] = (activeConvo?.linked_applications || [])
+    .filter(a => a.status !== "paid" && a.status !== "rejected");
+
+  const openPaymentModalForApp = (app: LinkedApplication) => {
     if (!activeConvo) return;
-    setCampaignBudget((activeConvo.campaign_budget || 0) * 100);
+    setCampaignBudget(app.campaign_budget * 100);
     setPaymentApp({
-      id: activeConvo.application_id!,
-      campaign_id: activeConvo.campaign_id!,
+      id: app.id,
+      campaign_id: app.campaign_id,
       creator_id: activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1,
-      status: activeConvo.application_status!,
+      status: app.status,
       message: "", platforms: [], created_at: "",
       creator_name: activeConvo.other_name,
-      campaign_name: activeConvo.campaign_name
+      campaign_name: app.campaign_name
     });
+    setCampaignPickerFor(null);
     setShowPayment(true);
+  };
+
+  // Shared by the top Deal Desk bar and the in-chat pay prompt card, both of
+  // which are tied to a single, specific campaign already (not a place
+  // where picking between several makes sense).
+  const openPaymentModal = () => {
+    if (!activeConvo?.application_id) return;
+    openPaymentModalForApp({
+      id: activeConvo.application_id,
+      status: activeConvo.application_status || "",
+      campaign_id: activeConvo.campaign_id || "",
+      campaign_name: activeConvo.campaign_name || "",
+      campaign_budget: activeConvo.campaign_budget || 0,
+    });
+  };
+
+  const handlePayButtonClick = () => {
+    if (payableApps.length === 0) return;
+    if (payableApps.length === 1) { openPaymentModalForApp(payableApps[0]); return; }
+    setCampaignPickerFor("pay");
+  };
+
+  const screenOutApp = async (app: LinkedApplication) => {
+    await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
+    setCampaignPickerFor(null);
+    if (activeConvo?.application_id === app.id) {
+      setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
+    }
+    await loadConversations();
+  };
+
+  const handleScreenOutButtonClick = () => {
+    if (payableApps.length === 0) return;
+    if (payableApps.length === 1) { screenOutApp(payableApps[0]); return; }
+    setCampaignPickerFor("screenout");
   };
 
   const send = async () => {
@@ -1101,12 +1164,30 @@ return (
             blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
               <span style={{ fontSize: "9px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 8px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
             ) : (
-              <span
-                onClick={() => { setChatReportOpen(o => !o); setChatReportSubmitted(false); }}
-                style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
-              >
-                ⚑
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                {role === "brand" && (
+                  <>
+                    <span
+                      onClick={handlePayButtonClick}
+                      style={{ fontSize: "10px", fontWeight: 600, color: payableApps.length > 0 ? "#0a0a0a" : "#444", background: payableApps.length > 0 ? "#fff" : "#161616", cursor: payableApps.length > 0 ? "pointer" : "default", padding: "5px 10px", borderRadius: "6px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}
+                    >
+                      Pay
+                    </span>
+                    <span
+                      onClick={handleScreenOutButtonClick}
+                      style={{ fontSize: "10px", fontWeight: 600, color: payableApps.length > 0 ? "#ff3b30" : "#444", border: `1px solid ${payableApps.length > 0 ? "#3a1a1a" : "#222"}`, cursor: payableApps.length > 0 ? "pointer" : "default", padding: "5px 10px", borderRadius: "6px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}
+                    >
+                      Screen Out
+                    </span>
+                  </>
+                )}
+                <span
+                  onClick={() => { setChatReportOpen(o => !o); setChatReportSubmitted(false); }}
+                  style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+                >
+                  ⚑
+                </span>
+              </div>
             )
           )}
         </div>
@@ -1436,7 +1517,7 @@ return (
       {view === "chat" && (
         <>
           {/* IN-CHAT DEAL DESK WIDGET */}
-          {activeConvo?.application_id && role === "brand" && (
+          {activeConvo?.application_id && (
             <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
                 <p style={{ textTransform: "uppercase", fontSize: "9px", color: "#444", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
@@ -1444,36 +1525,18 @@ return (
               </div>
 
               {role === "brand" ? (
+                // Pay/Screen Out actions live in the header now - this is
+                // just a status readout once a decision's been made.
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                  {activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" ? (
-                    <>
-                      <button
-                        onClick={openPaymentModal}
-                        style={{ background: "#fff", color: "#0a0a0a", border: "none", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
-                      >
-                        Lock Deal & Pay
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!activeConvo.application_id) return;
-                          await supabase.from("applications").update({ status: "rejected" }).eq("id", activeConvo.application_id);
-                          setActiveConvo(prev => prev ? { ...prev, application_status: "rejected" } : null);
-                          loadConversations();
-                        }}
-                        style={{ background: "transparent", color: "#ff3b30", border: "1px solid #222", borderRadius: "6px", padding: "6px 12px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}
-                      >
-                        Decline Creator
-                      </button>
-                    </>
-                  ) : activeConvo.application_status === "paid" ? (
+                  {activeConvo.application_status === "paid" ? (
                     <span style={{ fontSize: "11px", color: "#34c759", background: "#0a1f0a", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a3a1a" }}>
                       Deal Locked — Paid
                     </span>
-                  ) : (
+                  ) : activeConvo.application_status === "rejected" ? (
                     <span style={{ fontSize: "11px", color: "#444", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
                       Folder Closed (Declined)
                     </span>
-                  )}
+                  ) : null}
                 </div>
               ) : (
                 /* Creator Side Logic */
@@ -1673,8 +1736,37 @@ return (
         </div>
       )}
 
+      {campaignPickerFor && (
+        <div onClick={() => setCampaignPickerFor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem" }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>
+              {campaignPickerFor === "pay" ? "Which campaign are you paying for?" : "Which campaign are you screening out?"}
+            </h3>
+            <p style={{ color: "#555", fontSize: "12px", marginBottom: "1.25rem" }}>
+              You and {activeConvo?.other_name || "this creator"} have more than one open campaign together.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {payableApps.map(app => (
+                <div
+                  key={app.id}
+                  onClick={() => campaignPickerFor === "pay" ? openPaymentModalForApp(app) : screenOutApp(app)}
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", cursor: "pointer" }}
+                >
+                  <span style={{ color: "#fff", fontSize: "13px", fontWeight: 500 }}>{app.campaign_name}</span>
+                  {campaignPickerFor === "pay" && <span style={{ color: "#888", fontSize: "12px" }}>£{app.campaign_budget.toFixed(2)}</span>}
+                </div>
+              ))}
+            </div>
+            <div onClick={() => setCampaignPickerFor(null)} style={{ marginTop: "1.25rem", padding: "12px", borderRadius: "8px", border: "1px solid #222", color: "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
+              Cancel
+            </div>
+          </div>
+        </div>
+      )}
+
       {showPayment && paymentApp && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1rem", overflowY: "auto" }}>
+          <div style={{ margin: "auto 0" }}>
           <Elements stripe={stripePromise}>
             <PaymentModalContent
               paymentApp={paymentApp}
@@ -1703,6 +1795,7 @@ return (
               }}
             />
           </Elements>
+          </div>
         </div>
       )}
 

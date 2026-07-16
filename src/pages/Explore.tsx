@@ -315,7 +315,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                 </div>
 
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>{c.name}</p>
-                <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "12px" }}>{c.description}</p>
+                <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5, marginBottom: "12px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.description}</p>
 
                 <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#444", marginBottom: "12px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
