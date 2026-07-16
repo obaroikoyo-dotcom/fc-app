@@ -23,6 +23,21 @@ export default function AboutPage() {
             {p}
           </p>
         ))}
+
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
+          What FlipCollab does
+        </h2>
+        <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
+          FlipCollab is a creator collaboration marketplace. Brands create an account, post paid or gifted campaigns describing the content they need, and review creators who apply. Creators create a profile, browse open campaigns, and apply to the ones that fit their audience and niche. Once a brand accepts a creator, the two message each other directly inside FlipCollab to agree on deliverables and timelines. For paid campaigns, the brand's payment is held securely in escrow via Stripe and released to the creator once the agreed content is delivered.
+        </p>
+
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
+          Your data
+        </h2>
+        <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
+          To provide this service, FlipCollab collects account information (such as your name and email), profile details you choose to add (bio, niche, social links), messages and campaign content exchanged on the platform, and payment information processed securely through Stripe. This data is used solely to operate your account, match brands with creators, process payments, and enable messaging between the two parties - it is never sold to third parties. Full details are available in our{" "}
+          <a href="https://privacy.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Privacy Policy</a>.
+        </p>
       </div>
     </div>
   );
