@@ -11,12 +11,22 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="FlipCollab" />
+    <meta name="description" content="FlipCollab is a creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns. Brands post campaigns and find creators who match their audience; creators discover and apply to collaborations that fit their content and goals." />
     <title>FlipCollab</title>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Real, accurate fallback content for crawlers/reviewers that don't
+           execute JavaScript - this is a client-rendered React app, so
+           without this the initial HTML is otherwise empty. React replaces
+           this the instant it mounts, so real users barely see it. -->
+      <div style="font-family: sans-serif; color: #fff; background: #0a0a0a; min-height: 100vh; padding: 2rem; box-sizing: border-box;">
+        <h1>FlipCollab</h1>
+        <p style="max-width: 640px; line-height: 1.6;">FlipCollab is a creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns. Brands post campaigns and find creators who match their audience; creators discover and apply to collaborations that fit their content and goals.</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
