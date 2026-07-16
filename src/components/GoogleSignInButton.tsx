@@ -23,13 +23,14 @@ declare global {
   }
 }
 
-async function sha256Base64Url(input: string): Promise<string> {
+// Supabase's signInWithIdToken() re-hashes the nonce you give it (SHA-256)
+// and compares the result, as a hex string, against the ID token's nonce
+// claim - so what's sent to Google here must also be hex, not base64url.
+async function sha256Hex(input: string): Promise<string> {
   const data = new TextEncoder().encode(input);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const bytes = new Uint8Array(hashBuffer);
-  let binary = "";
-  bytes.forEach(b => { binary += String.fromCharCode(b); });
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
 interface Props {
@@ -54,7 +55,7 @@ export default function GoogleSignInButton({ onCredential, children }: Props) {
     const setup = async () => {
       const raw = crypto.randomUUID() + crypto.randomUUID();
       nonceRef.current = raw;
-      const hashedNonce = await sha256Base64Url(raw);
+      const hashedNonce = await sha256Hex(raw);
       if (cancelled) return;
 
       const tryInit = () => {
