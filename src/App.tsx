@@ -333,6 +333,7 @@ export default function App() {
 
   useEffect(() => {
     let isMounted = true;
+    let lastAuthUserId: string | null = null;
 
     const fallbackTimeout = setTimeout(() => {
       if (isMounted) setLoading(false);
@@ -358,6 +359,7 @@ export default function App() {
             setPendingEmail(session.user.email || "");
             setPage("verify-email");
           } else {
+            lastAuthUserId = session.user.id;
             oneSignalLogin(session.user.id);
             setTimeout(() => autoRequestPush(session.user.id), 3000);
             await syncUserRoute(session.user.id);
@@ -392,11 +394,20 @@ export default function App() {
       if (!isMounted) return;
 
       if (event === "SIGNED_OUT") {
+        lastAuthUserId = null;
         oneSignalLogout();
         setPage("role-select");
         setUnreadCount(0);
         setLoading(false);
       } else if (event === "SIGNED_IN" && session?.user) {
+        // Supabase re-fires SIGNED_IN when the tab regains focus and the
+        // client re-validates its session (e.g. switching back to the app)
+        // - not just on an actual new login. Re-running the route sync for
+        // the same user just re-navigates mid-use, freezing the UI for a
+        // beat and then dropping whatever screen the user was on.
+        if (lastAuthUserId === session.user.id) return;
+        lastAuthUserId = session.user.id;
+
         if (!session.user.email_confirmed_at) {
           setPendingEmail(session.user.email || "");
           setPage("verify-email");
