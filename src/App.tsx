@@ -26,6 +26,7 @@ import { supabase } from "./lib/supabase";
 import { withTimeout } from "./lib/withTimeout";
 import { logEvent } from "./lib/debugLog";
 import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
+import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
 
 
 export type Page = 
@@ -326,6 +327,10 @@ export default function App() {
   };
 
   useEffect(() => {
+    initOneSignal();
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
 
     const fallbackTimeout = setTimeout(() => {
@@ -352,6 +357,7 @@ export default function App() {
             setPendingEmail(session.user.email || "");
             setPage("verify-email");
           } else {
+            oneSignalLogin(session.user.id);
             await syncUserRoute(session.user.id);
             fetchGlobalUnreadCount();
           }
@@ -384,6 +390,7 @@ export default function App() {
       if (!isMounted) return;
 
       if (event === "SIGNED_OUT") {
+        oneSignalLogout();
         setPage("role-select");
         setUnreadCount(0);
         setLoading(false);
@@ -394,6 +401,7 @@ export default function App() {
           setLoading(false);
           return;
         }
+        oneSignalLogin(session.user.id);
         await syncUserRoute(session.user.id);
         fetchGlobalUnreadCount();
       } else if (event === "USER_UPDATED" && session?.user) {
