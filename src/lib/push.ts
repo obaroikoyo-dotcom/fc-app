@@ -29,7 +29,12 @@ export async function subscribeToPush(userId: string) {
   // undone by requesting permission alone.
   oneSignalLogin(userId);
   const granted = await requestOneSignalPermission();
-  if (!granted) throw new Error("Notification permission denied.");
+  if (!granted) {
+    // Once a browser has blocked a site's notifications, no page can
+    // re-prompt it via code - the user has to flip it back on themselves
+    // in the browser's own site settings, so tell them that directly.
+    throw new Error("Notifications are blocked for this site in your browser. Turn them on in your browser's site settings, then try again.");
+  }
   optInOneSignalPush();
 }
 
