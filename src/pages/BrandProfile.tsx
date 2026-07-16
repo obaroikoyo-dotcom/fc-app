@@ -192,9 +192,10 @@ const loadFavourites = async () => {
     const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      setLogo(data.publicUrl);
-      setLogoUrl(data.publicUrl);
-      await supabase.from("brand_profiles").update({ logo_url: data.publicUrl, avatar_url: data.publicUrl }).eq("id", userId);
+      const bustedUrl = `${data.publicUrl}?t=${Date.now()}`;
+      setLogo(bustedUrl);
+      setLogoUrl(bustedUrl);
+      await supabase.from("brand_profiles").update({ logo_url: bustedUrl, avatar_url: bustedUrl }).eq("id", userId);
     }
   };
 

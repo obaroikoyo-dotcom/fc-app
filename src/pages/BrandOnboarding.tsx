@@ -255,7 +255,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          logoUrl = urlData.publicUrl;
+          logoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
         } else {
           console.log("Asset upload catch:", uploadError.message);
         }

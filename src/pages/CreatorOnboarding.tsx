@@ -335,7 +335,7 @@ const [showOtp, setShowOtp] = useState(false);
         const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, profileFile, { upsert: true });
         if (!uploadError) {
           const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          avatarUrl = urlData.publicUrl;
+          avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
         }
       }
 

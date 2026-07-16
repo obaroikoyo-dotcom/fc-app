@@ -285,13 +285,14 @@ const [withdrawError, setWithdrawError] = useState("");
     const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      setProfilePic(data.publicUrl);
-      setAvatarUrl(data.publicUrl);
+      const bustedUrl = `${data.publicUrl}?t=${Date.now()}`;
+      setProfilePic(bustedUrl);
+      setAvatarUrl(bustedUrl);
       const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
       if (existing) {
-        await supabase.from("creator_profiles").update({ avatar_url: data.publicUrl }).eq("id", userId);
+        await supabase.from("creator_profiles").update({ avatar_url: bustedUrl }).eq("id", userId);
       } else {
-        await supabase.from("creator_profiles").insert({ id: userId, avatar_url: data.publicUrl });
+        await supabase.from("creator_profiles").insert({ id: userId, avatar_url: bustedUrl });
       }
     }
   };
