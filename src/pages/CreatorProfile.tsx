@@ -4,6 +4,7 @@ import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
+import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, type SocialConnection, type SocialPlatform } from "../lib/social";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -117,6 +118,10 @@ const [withdrawError, setWithdrawError] = useState("");
   const [myReports, setMyReports] = useState<{ id: string; reason: string; created_at: string; name: string }[]>([]);
   const [unblockLoading, setUnblockLoading] = useState<string | null>(null);
 
+  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
+  const [socialNotice, setSocialNotice] = useState("");
+
   const picRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -126,6 +131,23 @@ const [withdrawError, setWithdrawError] = useState("");
     loadWallet();
     loadWithdrawalRequests();
     loadReportsBlocked();
+    loadSocialConnections();
+
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("social_connected");
+    const socialError = params.get("social_error");
+    if (connected) {
+      setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected.`);
+      setSettingsSection("manage-accounts");
+      setView("settings");
+    } else if (socialError) {
+      setSocialNotice(`Couldn't connect: ${socialError}`);
+      setSettingsSection("manage-accounts");
+      setView("settings");
+    }
+    if (connected || socialError) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
 
     const channel = supabase
   .channel("wallet-updates")
@@ -175,6 +197,29 @@ const [withdrawError, setWithdrawError] = useState("");
     const { error } = await supabase.from("blocks").delete().eq("id", blockRowId);
     if (!error) setBlockedUsers(prev => prev.filter(b => b.id !== userId));
     setUnblockLoading(null);
+  };
+
+  const loadSocialConnections = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setSocialConnections(await getSocialConnections(user.id));
+  };
+
+  const handleConnectSocial = async (platform: SocialPlatform) => {
+    setConnectingPlatform(platform);
+    try {
+      await startSocialConnect(platform);
+    } catch (err) {
+      setSocialNotice(`Couldn't start connection: ${(err as Error).message}`);
+      setConnectingPlatform(null);
+    }
+  };
+
+  const handleDisconnectSocial = async (platform: SocialPlatform) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await disconnectSocialPlatform(user.id, platform);
+    setSocialConnections(prev => prev.filter(c => c.platform !== platform));
   };
 
   const loadProfile = async () => {
@@ -729,16 +774,44 @@ setTimeout(() => setSaved(false), 2000);
   );
 
   // ─── MANAGE ACCOUNTS ──────────────────────────────────────────────────────
-  const renderManageAccounts = () => (
+  const renderManageAccounts = () => {
+    const connectedPlatforms = new Set(socialConnections.map(c => c.platform));
+    const findConnection = (p: SocialPlatform) => socialConnections.find(c => c.platform === p);
+
+    return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Manage Accounts", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <div style={{ background: "#111", border: "1px dashed #222", borderRadius: "12px", padding: "2rem", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Coming Soon</p>
-          <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.6 }}>Direct TikTok, Instagram, and YouTube account linking is in progress. We're waiting on platform API permissions. Check back soon.</p>
-        </div>
-        <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-          {["TikTok", "Instagram", "YouTube", "Twitter/X", "Facebook"].map(platform => (
+        {socialNotice && (
+          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
+            <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+          </div>
+        )}
+        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+          Connect Instagram or TikTok to show your 5 most recent posts on your public profile, pulled directly from your account.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
+            const connection = findConnection(platform);
+            const label = platform === "instagram" ? "Instagram" : "TikTok";
+            return (
+              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+                <div>
+                  <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
+                  {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                </div>
+                {connectedPlatforms.has(platform) ? (
+                  <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
+                ) : (
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+          {["YouTube", "Twitter/X", "Facebook"].map(platform => (
             <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
               <p style={{ fontSize: "14px", color: "#555", fontWeight: 500 }}>{platform}</p>
               <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
@@ -747,7 +820,8 @@ setTimeout(() => setSaved(false), 2000);
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   // ─── PAYOUTS ──────────────────────────────────────────────────────────────
   const renderPayouts = () => (
