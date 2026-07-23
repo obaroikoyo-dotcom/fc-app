@@ -48,6 +48,15 @@ interface Props {
 export default function GoogleSignInButton({ onCredential, children }: Props) {
   const hiddenBtnRef = useRef<HTMLDivElement>(null);
   const nonceRef = useRef("");
+  // Callers (e.g. the onboarding wizards) typically pass a plain inline
+  // function that closes over form state, so it gets a new reference on
+  // every keystroke. Reading it through a ref updated every render means
+  // the setup effect below can run exactly once per mount - re-running it
+  // on every re-render was tearing down and rebuilding Google's real
+  // button mid-interaction, so a tap could land while it was rebuilding
+  // and silently do nothing.
+  const onCredentialRef = useRef(onCredential);
+  onCredentialRef.current = onCredential;
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +75,7 @@ export default function GoogleSignInButton({ onCredential, children }: Props) {
         }
         window.google.accounts.id.initialize({
           client_id: GOOGLE_CLIENT_ID,
-          callback: (response) => onCredential(response.credential, nonceRef.current),
+          callback: (response) => onCredentialRef.current(response.credential, nonceRef.current),
           nonce: hashedNonce,
           use_fedcm_for_prompt: true,
         });
@@ -84,7 +93,7 @@ export default function GoogleSignInButton({ onCredential, children }: Props) {
 
     setup();
     return () => { cancelled = true; };
-  }, [onCredential]);
+  }, []);
 
   return (
     <div style={{ position: "relative", width: "100%" }}>
