@@ -590,13 +590,25 @@ const [showOtp, setShowOtp] = useState(false);
     </div>,
   ];
 
+const canProceed = () => {
+  if (screen === 0) return !!name.trim();
+  if (screen === 5) return isOAuthUser ? termsAccepted : (!!email.trim() && password.length >= 6 && password === confirm && termsAccepted);
+  return true;
+};
+
 const buttonLabel = () => {
-  if (screen === 0) return name.trim() ? "Continue →" : null;
+  if (screen === 0) return name.trim() ? "Continue →" : "Enter your name to continue";
   if (screen === 1) return (selectedNiches.length > 0 || location.trim()) ? "Continue →" : "Skip for now →";
   if (screen === 2) return selectedPlatforms.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 3) return contentTypes.length > 0 ? "Continue →" : "Skip for now →";
   if (screen === 4) return Object.values(rates).some(v => v) ? "Continue →" : "Skip for now →";
-  if (screen === 5) return (isOAuthUser ? termsAccepted : (email.trim() && password.length >= 6 && password === confirm && termsAccepted)) ? "Continue →" : null;
+  if (screen === 5) {
+    if (!termsAccepted) return "Accept Terms and Conditions to proceed";
+    if (!isOAuthUser && !email.trim()) return "Enter your email to proceed";
+    if (!isOAuthUser && password.length < 6) return "Password must be at least 6 characters";
+    if (!isOAuthUser && password !== confirm) return "Passwords must match";
+    return "Continue →";
+  }
   if (screen === 6) return profilePic ? "Finish & Go Explore →" : "Skip for now →";
   return "Continue →";
 };
@@ -676,10 +688,10 @@ const buttonLabel = () => {
         ) : (
           <div
             className="tap-btn"
-            onClick={(!loading && buttonLabel()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : screen === 0 ? handleContinueFromWelcome : next) : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && buttonLabel()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
+            onClick={(!loading && canProceed()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : screen === 0 ? handleContinueFromWelcome : next) : undefined}
+            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
-            {screen === 5 && loading ? "Sending code..." : (buttonLabel() || "Enter your name to continue")}
+            {screen === 5 && loading ? "Sending code..." : buttonLabel()}
           </div>
         )}
       </div>

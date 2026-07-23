@@ -26,6 +26,7 @@ import { supabase } from "./lib/supabase";
 import { withTimeout } from "./lib/withTimeout";
 import { logEvent } from "./lib/debugLog";
 import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
+import { peekGoogleLoginIntent, clearGoogleLoginIntent } from "./lib/authIntent";
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
 import { autoRequestPush } from "./lib/push";
 
@@ -270,6 +271,17 @@ export default function App() {
         logEvent(`syncUserRoute: userId=${userId.slice(0, 8)} profileFound=${!!profile} role=${profile?.role ?? "n/a"} error=${profileError?.message ?? "none"}`);
 
         if (profileError || !profile) {
+          // A Google sign-in attempt from the Login page (as opposed to an
+          // onboarding page) means the user believes they already have an
+          // account - a missing profile row here means they don't, and
+          // Login.tsx handles telling them that and signing the phantom
+          // session back out itself. Stay out of its way rather than
+          // routing to role-select first.
+          if (peekGoogleLoginIntent()) {
+            logEvent("syncUserRoute: no profile, Google login-intent flag set - deferring to Login page");
+            return;
+          }
+
           // No profile row yet. Email/password signups are mid-onboarding at
           // this point (authenticated post-OTP, but handleFinish hasn't run
           // yet) - their own wizard's local state carries them through, so
@@ -396,9 +408,16 @@ export default function App() {
       if (event === "SIGNED_OUT") {
         lastAuthUserId = null;
         oneSignalLogout();
-        setPage("role-select");
         setUnreadCount(0);
         setLoading(false);
+        // Login.tsx signs the phantom "no account found" session back out
+        // itself and shows its own error in place - it's already sitting on
+        // the Login page, so don't yank it away to role-select.
+        if (peekGoogleLoginIntent()) {
+          clearGoogleLoginIntent();
+        } else {
+          setPage("role-select");
+        }
       } else if (event === "SIGNED_IN" && session?.user) {
         // Supabase re-fires SIGNED_IN when the tab regains focus and the
         // client re-validates its session (e.g. switching back to the app)

@@ -504,14 +504,27 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
     </div>,
   ];
 
+  const canProceed = () => {
+    if (screen === 0) return !!companyName.trim();
+    if (screen === 4) return !!targetTier;
+    if (screen === 5) return isOAuthUser ? termsAccepted : (!!email.trim() && password.length >= 6 && password === confirm && termsAccepted);
+    return true;
+  };
+
   const buttonLabel = () => {
-    if (screen === 0) return companyName.trim() ? "Continue →" : null;
+    if (screen === 0) return companyName.trim() ? "Continue →" : "Enter company name to proceed";
     if (screen === 1) return (selectedIndustries.length > 0 || location.trim()) ? "Continue →" : "Skip step →";
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
     if (screen === 4) return targetTier ? "Continue →" : "Provide parameters to proceed";
-    if (screen === 5) return (isOAuthUser ? termsAccepted : (email.trim() && password.length >= 6 && password === confirm && termsAccepted)) ? "Continue →" : null;
-    if (screen === 6) return brandLogo ? "Review Agreements & Deploy →" : "Review Agreements & Deploy →";
+    if (screen === 5) {
+      if (!termsAccepted) return "Accept Terms and Conditions to proceed";
+      if (!isOAuthUser && !email.trim()) return "Enter your email to proceed";
+      if (!isOAuthUser && password.length < 6) return "Password must be at least 6 characters";
+      if (!isOAuthUser && password !== confirm) return "Passwords must match";
+      return "Continue →";
+    }
+    if (screen === 6) return "Review Agreements & Deploy →";
     return "Continue →";
   };
 
@@ -582,10 +595,10 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         ) : (
           <div
             className="tap-btn"
-            onClick={(!loading && buttonLabel()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : next) : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: buttonLabel() ? "#fff" : "#1a1a1a", color: buttonLabel() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && buttonLabel()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: buttonLabel() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
+            onClick={(!loading && canProceed()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : next) : undefined}
+            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
-            {screen === 5 && loading ? "Sending code..." : (buttonLabel() || "Provide name to proceed")}
+            {screen === 5 && loading ? "Sending code..." : buttonLabel()}
           </div>
         )}
       </div>

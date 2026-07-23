@@ -6,6 +6,7 @@ import Button from "../components/Button";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { type Page } from "../App";
 import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
+import { markGoogleLoginIntent, clearGoogleLoginIntent } from "../lib/authIntent";
 
 interface Props { navigate: (p: Page) => void; }
 
@@ -28,8 +29,30 @@ export default function Login({ navigate }: Props) {
 
   const handleGoogleCredential = async (idToken: string, nonce: string) => {
     setError("");
-    const { error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
-    if (idTokenError) setError(idTokenError.message);
+    markGoogleLoginIntent();
+
+    const { data, error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
+    if (idTokenError) {
+      clearGoogleLoginIntent();
+      setError(idTokenError.message);
+      return;
+    }
+
+    // signInWithIdToken silently creates a new account for a Google identity
+    // that's never signed in before - not what "sign in" should do. A missing
+    // profile row means there's genuinely no FlipCollab account behind this
+    // Google account, so undo the phantom sign-in and tell them to sign up.
+    if (data.user) {
+      const { data: profile } = await supabase.from("profiles").select("id").eq("id", data.user.id).maybeSingle();
+      if (!profile) {
+        await supabase.auth.signOut();
+        clearGoogleLoginIntent();
+        setError("No account found for that Google account. Try signing up instead.");
+        return;
+      }
+    }
+
+    clearGoogleLoginIntent();
     // Successful sign-in is picked up by App.tsx's onAuthStateChange, which
     // handles routing from here.
   };
