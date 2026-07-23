@@ -4,7 +4,7 @@ import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
-import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, type SocialConnection, type SocialPlatform } from "../lib/social";
+import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption } from "../lib/social";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -121,6 +121,10 @@ const [withdrawError, setWithdrawError] = useState("");
   const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
   const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
   const [socialNotice, setSocialNotice] = useState("");
+  const [pickerPlatform, setPickerPlatform] = useState<SocialPlatform | null>(null);
+  const [postOptions, setPostOptions] = useState<SocialPostOption[]>([]);
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
+  const [savingSelection, setSavingSelection] = useState(false);
 
   const picRef = useRef<HTMLInputElement>(null);
 
@@ -220,6 +224,33 @@ const [withdrawError, setWithdrawError] = useState("");
     if (!user) return;
     await disconnectSocialPlatform(user.id, platform);
     setSocialConnections(prev => prev.filter(c => c.platform !== platform));
+  };
+
+  const openPostPicker = async (platform: SocialPlatform) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const options = await getSocialPostOptions(user.id, platform);
+    setPostOptions(options);
+    setSelectedPostIds(options.filter(o => o.featured).map(o => o.post_id));
+    setPickerPlatform(platform);
+  };
+
+  const togglePostSelection = (postId: string) => {
+    setSelectedPostIds(prev => {
+      if (prev.includes(postId)) return prev.filter(id => id !== postId);
+      if (prev.length >= MAX_FEATURED_POSTS) return prev;
+      return [...prev, postId];
+    });
+  };
+
+  const savePostSelection = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !pickerPlatform) return;
+    setSavingSelection(true);
+    await setFeaturedPosts(user.id, pickerPlatform, selectedPostIds);
+    setSavingSelection(false);
+    setPickerPlatform(null);
+    setSocialNotice("Featured videos updated.");
   };
 
   const loadProfile = async () => {
@@ -774,7 +805,49 @@ setTimeout(() => setSaved(false), 2000);
   );
 
   // ─── MANAGE ACCOUNTS ──────────────────────────────────────────────────────
+  const renderPostPicker = () => (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+      {renderSettingsHeader(`Choose ${pickerPlatform === "instagram" ? "Instagram" : "TikTok"} videos`, () => setPickerPlatform(null))}
+      <div style={{ padding: "1.25rem" }}>
+        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+          Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected).
+        </p>
+        {postOptions.length === 0 ? (
+          <p style={{ fontSize: "13px", color: "#555" }}>No posts found yet.</p>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+            {postOptions.map(post => {
+              const selected = selectedPostIds.includes(post.post_id);
+              return (
+                <div
+                  key={post.post_id}
+                  onClick={() => togglePostSelection(post.post_id)}
+                  style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid #fff" : "1px solid #1a1a1a", cursor: "pointer" }}
+                >
+                  <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  {selected && (
+                    <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
+        <div
+          onClick={() => !savingSelection && savePostSelection()}
+          style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+        >
+          {savingSelection ? "Saving..." : "Save Selection"}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderManageAccounts = () => {
+    if (pickerPlatform) return renderPostPicker();
+
     const connectedPlatforms = new Set(socialConnections.map(c => c.platform));
     const findConnection = (p: SocialPlatform) => socialConnections.find(c => c.platform === p);
 
@@ -789,7 +862,7 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
         <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
-          Connect Instagram or TikTok to show your 5 most recent posts on your public profile, pulled directly from your account.
+          Connect Instagram or TikTok, then choose up to {MAX_FEATURED_POSTS} of your own posts to feature on your public profile.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
@@ -801,13 +874,18 @@ setTimeout(() => setSaved(false), 2000);
                   <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
                   {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
-                {connectedPlatforms.has(platform) ? (
-                  <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
-                ) : (
-                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
-                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
-                  </span>
-                )}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {connectedPlatforms.has(platform) ? (
+                    <>
+                      <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: "pointer" }}>Choose videos</span>
+                      <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
+                    </>
+                  ) : (
+                    <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                      {connectingPlatform === platform ? "Connecting..." : "Connect"}
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}

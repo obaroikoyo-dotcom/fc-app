@@ -65,11 +65,14 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     connected_at: new Date().toISOString(),
   }, { onConflict: "user_id,platform" });
 
+  // Fetch a larger pool than what actually gets shown - the creator picks
+  // up to 5 of these to feature on their public profile, rather than the
+  // most recent 5 being auto-selected for them.
   const mediaRes = await fetch(
-    `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=5&access_token=${accessToken}`
+    `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=20&access_token=${accessToken}`
   );
   const media = await mediaRes.json();
-  const posts = (media.data || []).map((m: any) => ({
+  const posts = (media.data || []).map((m: any, i: number) => ({
     user_id: userId,
     platform: "instagram",
     post_id: m.id,
@@ -78,6 +81,9 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     caption: m.caption || null,
     posted_at: m.timestamp || null,
     cached_at: new Date().toISOString(),
+    // Default to featuring the most recent 5 so something shows up right
+    // away; the creator can change the selection anytime from settings.
+    featured: i < 5,
   }));
   if (posts.length) {
     await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
@@ -119,13 +125,15 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     connected_at: new Date().toISOString(),
   }, { onConflict: "user_id,platform" });
 
+  // Fetch a larger pool than what actually gets shown - the creator picks
+  // up to 5 of these to feature on their public profile.
   const videosRes = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,cover_image_url,share_url,video_description,create_time", {
     method: "POST",
     headers: { Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ max_count: 5 }),
+    body: JSON.stringify({ max_count: 20 }),
   });
   const videosData = await videosRes.json();
-  const posts = (videosData?.data?.videos || []).map((v: any) => ({
+  const posts = (videosData?.data?.videos || []).map((v: any, i: number) => ({
     user_id: userId,
     platform: "tiktok",
     post_id: v.id,
@@ -134,6 +142,9 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     caption: v.video_description || null,
     posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
     cached_at: new Date().toISOString(),
+    // Default to featuring the most recent 5 so something shows up right
+    // away; the creator can change the selection anytime from settings.
+    featured: i < 5,
   }));
   if (posts.length) {
     await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });

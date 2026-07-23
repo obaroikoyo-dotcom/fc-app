@@ -17,6 +17,12 @@ export interface SocialPost {
   posted_at: string | null;
 }
 
+export interface SocialPostOption extends SocialPost {
+  featured: boolean;
+}
+
+export const MAX_FEATURED_POSTS = 5;
+
 export async function startSocialConnect(platform: SocialPlatform) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Not signed in");
@@ -52,7 +58,28 @@ export async function getSocialPosts(userId: string): Promise<SocialPost[]> {
     .from("social_posts_cache")
     .select("platform, post_id, post_url, thumbnail_url, caption, posted_at")
     .eq("user_id", userId)
+    .eq("featured", true)
     .order("posted_at", { ascending: false })
-    .limit(10);
+    .limit(MAX_FEATURED_POSTS);
   return data || [];
+}
+
+// The full pool of fetched posts for a platform, so the owner can pick which
+// ones to feature - not just whatever was auto-selected on connect.
+export async function getSocialPostOptions(userId: string, platform: SocialPlatform): Promise<SocialPostOption[]> {
+  const { data } = await supabase
+    .from("social_posts_cache")
+    .select("platform, post_id, post_url, thumbnail_url, caption, posted_at, featured")
+    .eq("user_id", userId)
+    .eq("platform", platform)
+    .order("posted_at", { ascending: false });
+  return data || [];
+}
+
+export async function setFeaturedPosts(userId: string, platform: SocialPlatform, postIds: string[]) {
+  const capped = postIds.slice(0, MAX_FEATURED_POSTS);
+  await supabase.from("social_posts_cache").update({ featured: false }).eq("user_id", userId).eq("platform", platform);
+  if (capped.length) {
+    await supabase.from("social_posts_cache").update({ featured: true }).eq("user_id", userId).eq("platform", platform).in("post_id", capped);
+  }
 }
