@@ -155,11 +155,11 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
     return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {bar("20px", "20px")}
         {bar("120px", "18px")}
       </div>
-      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "5rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
@@ -231,7 +231,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Top Nav */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
           <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (brand.name || "Brand")}</span>
@@ -247,7 +247,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       </div>
 
       {(blockedByMe || blockedMe) ? (
-        <div style={{ padding: "2rem", paddingTop: "6rem", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+        <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
             {blockedByMe ? "You've blocked this profile" : "User unavailable"}
           </p>
@@ -258,7 +258,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
           </p>
         </div>
       ) : reportOpen && (
-        <div style={{ position: "fixed", top: "57px", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
+        <div style={{ position: "fixed", top: "calc(57px + env(safe-area-inset-top, 0px))", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
           {reportSubmitted ? (
             <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
           ) : (
@@ -302,7 +302,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       )}
 
       {!blockedByMe && !blockedMe && (
-      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "5rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>

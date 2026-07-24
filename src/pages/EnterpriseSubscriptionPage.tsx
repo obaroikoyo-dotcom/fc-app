@@ -311,12 +311,12 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         .billing-address-in { animation: billingAddressIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}</style>
 
-      <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#555", cursor: "pointer" }}>←</span>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
       </div>
 
-      <div style={{ padding: "2rem 1.25rem", paddingTop: "6rem", paddingBottom: "6rem", maxWidth: "480px", margin: "0 auto" }}>
+      <div style={{ padding: "2rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", paddingBottom: "6rem", maxWidth: "480px", margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#555", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>

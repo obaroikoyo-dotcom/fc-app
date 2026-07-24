@@ -176,11 +176,11 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   if (loading && !hasLoadedOnce) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
       <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100, paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
         <div style={{ width: "20px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
         <div style={{ width: "120px", height: "18px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
       </div>
-      <div style={{ padding: "1.5rem 1.25rem", paddingTop: "5rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
           <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: "#1a1a1a", flexShrink: 0, animation: "shimmer 1.5s ease-in-out infinite" }} />
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -218,12 +218,12 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
 
       {/* Header */}
-      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100, paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
         <div onClick={goBack} style={{ cursor: "pointer", color: "#555", fontSize: "20px", lineHeight: 1 }}>←</div>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Apply</span>
       </div>
 
-      <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "8rem", paddingTop: "5rem" }}>
+      <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "8rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
 
         {/* Campaign title */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>

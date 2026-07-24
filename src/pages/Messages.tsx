@@ -1136,7 +1136,7 @@ return (
       {/* Sticky header group: header + brand tabs stack with zero gap since they share one fixed box */}
       <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {/* Header Bar */}
-        <div style={{ padding: "1.25rem", borderBottom: "1px solid #111", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#0a0a0a" }}>
+        <div style={{ padding: "1.25rem", paddingTop: "calc(1.25rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#0a0a0a" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           {view !== "list" && (
             <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>

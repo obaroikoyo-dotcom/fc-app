@@ -176,7 +176,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
       <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {/* Header */}
-        <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
+        <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
               {tab === "campaigns" ? "Campaigns" : editingCampaign ? "Edit Campaign" : "Post Campaign"}
