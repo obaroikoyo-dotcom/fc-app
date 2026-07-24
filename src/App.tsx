@@ -74,7 +74,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   return (
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.5rem 0 calc(0.375rem + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.5rem 0 env(safe-area-inset-bottom, 0px) 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -134,7 +134,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   const profileActive = page === "brand-profile";
 
   return (
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.5rem 0 calc(0.375rem + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.5rem 0 env(safe-area-inset-bottom, 0px) 0", background: bgColor, position: "fixed", bottom: 0, width: "100%", zIndex: 100, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
