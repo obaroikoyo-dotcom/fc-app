@@ -70,7 +70,7 @@ interface NavProps {
 function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#a3a3a3" : "#444";
-  const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
+  const bgColor = isInverted ? "#ffffff" : "red"; // TEMP DEBUG - reveals true nav container bounds
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   return (
