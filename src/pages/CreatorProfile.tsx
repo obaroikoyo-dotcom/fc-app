@@ -14,6 +14,7 @@ interface Props {
 }
 
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
+const LABEL_TO_SOCIAL_PLATFORM: Record<string, SocialPlatform> = { Instagram: "instagram", TikTok: "tiktok" };
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["9-15", "16-17", "18-24", "25-34", "35-44", "45+"];
@@ -545,6 +546,13 @@ setTimeout(() => setSaved(false), 2000);
         {featuredPosts.length > 0 && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Recent Posts</label>
+            {socialConnections.filter(c => c.username).length > 0 && (
+              <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px" }}>
+                {socialConnections.filter(c => c.username).map((c, i) => (
+                  <span key={c.platform}>{i > 0 ? "  ·  " : ""}{c.platform === "instagram" ? "Instagram" : "TikTok"} @{c.username}</span>
+                ))}
+              </p>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
               {featuredPosts.slice(0, 5).map(post => (
                 <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
@@ -753,18 +761,29 @@ setTimeout(() => setSaved(false), 2000);
         {selectedPlatforms.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <label style={labelStyle}>Social Media Details</label>
-            {selectedPlatforms.map(p => (
+            {selectedPlatforms.map(p => {
+              const connectedPlatform = LABEL_TO_SOCIAL_PLATFORM[p];
+              const connection = connectedPlatform ? socialConnections.find(c => c.platform === connectedPlatform) : undefined;
+              return (
               <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                 <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "10px" }}>{p}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <input style={inputStyle} placeholder={`${p} profile link`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
+                  {connection ? (
+                    <div>
+                      <input style={{ ...inputStyle, color: "#777", cursor: "not-allowed" }} value={connection.username ? `@${connection.username}` : "Connected"} disabled />
+                      <p style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>Verified via connected account - disconnect it in Manage Accounts to change this.</p>
+                    </div>
+                  ) : (
+                    <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
+                  )}
                   <div style={{ display: "flex", gap: "8px" }}>
                     <input style={{ ...inputStyle, flex: 1 }} placeholder="Followers" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
                     <input style={{ ...inputStyle, flex: 1 }} placeholder="Engagement %" type="number" value={engagementRates[p] || ""} onChange={e => setEngagementRates(prev => ({ ...prev, [p]: e.target.value }))} />
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

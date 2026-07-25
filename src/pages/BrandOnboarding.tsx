@@ -570,13 +570,13 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       <div
         key={screen}
         className={animating ? "" : direction === "forward" ? "slide-forward" : "slide-back"}
-        style={{ flex: 1, padding: "2rem 1.5rem", overflowY: "auto", paddingBottom: "10rem" }}
+        style={{ flex: 1, padding: "2rem 1.5rem", overflowY: "auto", paddingBottom: "calc(13rem + env(safe-area-inset-bottom, 0px))" }}
       >
         {screens[screen]}
       </div>
 
       {/* Bottom Control Area */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1.25rem 1.5rem 2rem", background: "linear-gradient(to top, #0a0a0a 60%, transparent)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1.25rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, #0a0a0a 60%, transparent)" }}>
         {screen === 6 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div

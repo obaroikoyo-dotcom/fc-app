@@ -56,8 +56,8 @@ export type Page =
   | "apply-campaign"
   | "verify-email";
 
-const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "apply-campaign"];
-const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand"];
+const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "public-profile", "apply-campaign"];
+const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand", "public-profile"];
 
 
 interface NavProps {
@@ -204,7 +204,12 @@ export default function App() {
   const [openConvoId, setOpenConvoId] = useState<string | null>(null);
   const [applyingCampaignId, setApplyingCampaignId] = useState<string | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string>("");
-  
+  // "public-profile" is shared between roles (either kind of user can view a
+  // creator's profile), so CREATOR_PAGES/BRAND_PAGES membership alone can't
+  // decide which bottom nav to show there - this tracks which one the
+  // signed-in user actually is.
+  const [userRole, setUserRole] = useState<"creator" | "brand" | null>(null);
+
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
   });
@@ -327,6 +332,7 @@ export default function App() {
         }
 
         if (profile.role === "brand") {
+          setUserRole("brand");
           const { data: brandProfile } = await supabase
             .from("brand_profiles")
             .select("onboarding_complete")
@@ -339,6 +345,7 @@ export default function App() {
             setPage("brand-onboarding");
           }
         } else if (profile.role === "creator") {
+          setUserRole("creator");
           const { data: creatorProfile } = await supabase
             .from("creator_profiles")
             .select("onboarding_complete")
@@ -432,6 +439,7 @@ export default function App() {
         oneSignalLogout();
         setUnreadCount(0);
         setLoading(false);
+        setUserRole(null);
         // Login.tsx signs the phantom "no account found" session back out
         // itself and shows its own error in place - it's already sitting on
         // the Login page, so don't yank it away to role-select.
@@ -563,10 +571,10 @@ case "apply-campaign":
      <div key={page} className="page-enter" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" }}>
   {renderPage()}
 </div>
-      {CREATOR_PAGES.includes(page) && (
+      {CREATOR_PAGES.includes(page) && (page !== "public-profile" || userRole === "creator") && (
         <CreatorNav page={page} navigate={navigate} isInverted={isInverted} unreadCount={unreadCount} />
       )}
-      {BRAND_PAGES.includes(page) && (
+      {BRAND_PAGES.includes(page) && (page !== "public-profile" || userRole === "brand") && (
         <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} unreadCount={unreadCount} />
       )}
     </div>

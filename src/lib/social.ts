@@ -15,6 +15,7 @@ export interface SocialPost {
   thumbnail_url: string;
   caption: string | null;
   posted_at: string | null;
+  username: string | null;
 }
 
 export interface SocialPostOption extends SocialPost {
@@ -56,7 +57,7 @@ export async function disconnectSocialPlatform(userId: string, platform: SocialP
 export async function getSocialPosts(userId: string): Promise<SocialPost[]> {
   const { data } = await supabase
     .from("social_posts_cache")
-    .select("platform, post_id, post_url, thumbnail_url, caption, posted_at")
+    .select("platform, post_id, post_url, thumbnail_url, caption, posted_at, username")
     .eq("user_id", userId)
     .eq("featured", true)
     .order("posted_at", { ascending: false })
@@ -69,11 +70,32 @@ export async function getSocialPosts(userId: string): Promise<SocialPost[]> {
 export async function getSocialPostOptions(userId: string, platform: SocialPlatform): Promise<SocialPostOption[]> {
   const { data } = await supabase
     .from("social_posts_cache")
-    .select("platform, post_id, post_url, thumbnail_url, caption, posted_at, featured")
+    .select("platform, post_id, post_url, thumbnail_url, caption, posted_at, featured, username")
     .eq("user_id", userId)
     .eq("platform", platform)
     .order("posted_at", { ascending: false });
   return data || [];
+}
+
+// Verified usernames per platform, derived from the public post cache since
+// social_connections (which also has this) is owner-only by RLS - anyone
+// viewing a public profile needs to see these, not just the owner.
+export async function getPublicSocialUsernames(userId: string): Promise<{ platform: SocialPlatform; username: string }[]> {
+  const { data } = await supabase
+    .from("social_posts_cache")
+    .select("platform, username")
+    .eq("user_id", userId)
+    .eq("featured", true)
+    .not("username", "is", null);
+  if (!data) return [];
+  const seen = new Set<string>();
+  const result: { platform: SocialPlatform; username: string }[] = [];
+  for (const row of data) {
+    if (!row.username || seen.has(row.platform)) continue;
+    seen.add(row.platform);
+    result.push({ platform: row.platform, username: row.username });
+  }
+  return result;
 }
 
 export async function setFeaturedPosts(userId: string, platform: SocialPlatform, postIds: string[]) {

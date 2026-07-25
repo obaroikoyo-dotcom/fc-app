@@ -213,6 +213,21 @@ const [showOtp, setShowOtp] = useState(false);
     });
   }, []);
 
+  // The moment a connection's real username differs from whatever was
+  // typed on the platforms screen, pre-fill that field with the verified
+  // one so the mismatch is already resolved by default - the user can just
+  // continue. If they go on to edit it into something else that still
+  // doesn't match, the live mismatch check below catches that on its own.
+  useEffect(() => {
+    socialConnections.forEach(connection => {
+      const label = PLATFORM_LABEL[connection.platform];
+      if (connection.username && socialLinks[label] !== connection.username && !usernamesMatch(socialLinks[label] || "", connection.username)) {
+        setSocialLinks(prev => ({ ...prev, [label]: connection.username! }));
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socialConnections]);
+
   const handleConnectSocial = async (platform: SocialPlatform) => {
     setConnectingPlatform(platform);
     saveOnboardingDraft("creator", {
@@ -683,9 +698,17 @@ const [showOtp, setShowOtp] = useState(false);
                 )}
               </div>
               {mismatch && (
-                <p style={{ fontSize: "11px", color: "#ff3b30", marginTop: "8px", lineHeight: 1.5 }}>
-                  This is @{connection!.username}, but you entered "{typedUsername}" earlier. Update the username on the platforms screen so it matches, or reconnect the right account.
-                </p>
+                <div style={{ marginTop: "10px" }}>
+                  <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px", lineHeight: 1.5 }}>
+                    This is @{connection!.username}, but you entered "{typedUsername}" earlier - it needs to match the connected account.
+                  </p>
+                  <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Change username</label>
+                  <input
+                    style={{ ...inputStyle, padding: "10px 12px", fontSize: "13px" }}
+                    value={typedUsername}
+                    onChange={e => setSocialLinks(prev => ({ ...prev, [label]: e.target.value }))}
+                  />
+                </div>
               )}
             </div>
           );
@@ -790,7 +813,7 @@ const buttonLabel = () => {
       <div
         key={screen}
         className={animating ? "" : direction === "forward" ? "slide-forward" : "slide-back"}
-        style={{ flex: 1, padding: "2rem 1.5rem", overflowY: "auto", paddingBottom: "10rem" }}
+        style={{ flex: 1, padding: "2rem 1.5rem", overflowY: "auto", paddingBottom: "calc(13rem + env(safe-area-inset-bottom, 0px))" }}
       >
         {screens[screen]}
       </div>

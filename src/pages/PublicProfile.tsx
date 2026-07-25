@@ -5,7 +5,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
-import { getSocialPosts, type SocialPost } from "../lib/social";
+import { getSocialPosts, getPublicSocialUsernames, type SocialPost, type SocialPlatform } from "../lib/social";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -51,6 +51,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
   const [socialPosts, setSocialPosts] = useState<SocialPost[]>([]);
+  const [socialUsernames, setSocialUsernames] = useState<{ platform: SocialPlatform; username: string }[]>([]);
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
@@ -93,6 +94,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
         if (creatorData) {
           setCreator(creatorData);
           setSocialPosts(await getSocialPosts(profileId));
+          setSocialUsernames(await getPublicSocialUsernames(profileId));
           return;
         }
 
@@ -443,6 +445,13 @@ const startDM = async () => {
           {socialPosts.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Recent Posts</label>
+              {socialUsernames.length > 0 && (
+                <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px" }}>
+                  {socialUsernames.map((s, i) => (
+                    <span key={s.platform}>{i > 0 ? "  ·  " : ""}{s.platform === "instagram" ? "Instagram" : "TikTok"} @{s.username}</span>
+                  ))}
+                </p>
+              )}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
                 {socialPosts.slice(0, 5).map(post => (
                   <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>

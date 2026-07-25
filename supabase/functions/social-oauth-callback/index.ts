@@ -81,6 +81,7 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     caption: m.caption || null,
     posted_at: m.timestamp || null,
     cached_at: new Date().toISOString(),
+    username: profile.username || null,
     // Default to featuring the most recent 5 so something shows up right
     // away; the creator can change the selection anytime from settings.
     featured: i < 5,
@@ -142,6 +143,7 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     caption: v.video_description || null,
     posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
     cached_at: new Date().toISOString(),
+    username: displayName,
     // Default to featuring the most recent 5 so something shows up right
     // away; the creator can change the selection anytime from settings.
     featured: i < 5,
