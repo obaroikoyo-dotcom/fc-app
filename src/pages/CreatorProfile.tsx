@@ -852,7 +852,7 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
       </div>
-      <div style={{ position: "fixed", bottom: "60px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #1a1a1a", zIndex: 200 }}>
+      <div style={{ position: "fixed", bottom: "52px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #1a1a1a", zIndex: 200 }}>
         <div
           onClick={() => !savingSelection && savePostSelection()}
           style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
