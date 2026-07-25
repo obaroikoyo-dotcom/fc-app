@@ -8,7 +8,7 @@ import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
-import { startSocialConnect, getSocialConnections, type SocialConnection, type SocialPlatform } from "../lib/social";
+import { startSocialConnect, getSocialConnections, getSocialPostOptions, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption } from "../lib/social";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -157,6 +157,10 @@ const [showOtp, setShowOtp] = useState(false);
   const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
   const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
   const [socialNotice, setSocialNotice] = useState("");
+  const [pickerPlatform, setPickerPlatform] = useState<SocialPlatform | null>(null);
+  const [postOptions, setPostOptions] = useState<SocialPostOption[]>([]);
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
+  const [savingSelection, setSavingSelection] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -197,8 +201,9 @@ const [showOtp, setShowOtp] = useState(false);
       const params = new URLSearchParams(window.location.search);
       const connected = params.get("social_connected");
       const socialError = params.get("social_error");
-      if (connected) {
-        setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected.`);
+      if (connected === "instagram" || connected === "tiktok") {
+        setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected. Choose which videos to feature.`);
+        openPostPicker(connected);
       } else if (socialError) {
         setSocialNotice(`Couldn't connect: ${socialError}`);
       }
@@ -221,6 +226,33 @@ const [showOtp, setShowOtp] = useState(false);
       setSocialNotice(`Couldn't start connection: ${(err as Error).message}`);
       setConnectingPlatform(null);
     }
+  };
+
+  const openPostPicker = async (platform: SocialPlatform) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const options = await getSocialPostOptions(user.id, platform);
+    setPostOptions(options);
+    setSelectedPostIds(options.filter(o => o.featured).map(o => o.post_id));
+    setPickerPlatform(platform);
+  };
+
+  const togglePostSelection = (postId: string) => {
+    setSelectedPostIds(prev => {
+      if (prev.includes(postId)) return prev.filter(id => id !== postId);
+      if (prev.length >= MAX_FEATURED_POSTS) return prev;
+      return [...prev, postId];
+    });
+  };
+
+  const savePostSelection = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !pickerPlatform) return;
+    setSavingSelection(true);
+    await setFeaturedPosts(user.id, pickerPlatform, selectedPostIds);
+    setSavingSelection(false);
+    setPickerPlatform(null);
+    setSocialNotice("Featured videos updated.");
   };
 
   const handleGoogleCredential = async (idToken: string, nonce: string) => {
@@ -640,7 +672,10 @@ const [showOtp, setShowOtp] = useState(false);
                   {connection && <p style={{ fontSize: "11px", color: mismatch ? "#ff3b30" : "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
                 {connection ? (
-                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#34c759" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: "pointer" }}>Choose videos</span>
+                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#34c759" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
+                  </div>
                 ) : (
                   <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                     {connectingPlatform === platform ? "Connecting..." : "Connect"}
@@ -844,6 +879,48 @@ const buttonLabel = () => {
         style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#34c759" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: otpResending ? "none" : "auto" }}
       >
         {otpResending ? "Sending..." : otpResent ? "Code resent" : "Resend code"}
+      </div>
+    </div>
+  </div>
+)}
+{pickerPlatform && (
+  <div style={{ position: "fixed", inset: 0, background: "#0a0a0a", zIndex: 9999, display: "flex", flexDirection: "column" }}>
+    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
+      <span onClick={() => setPickerPlatform(null)} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
+      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform === "instagram" ? "Instagram" : "TikTok"} videos</span>
+    </div>
+    <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "6rem" }}>
+      <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+        Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected). You can change this anytime from Settings.
+      </p>
+      {postOptions.length === 0 ? (
+        <p style={{ fontSize: "13px", color: "#555" }}>No posts found yet.</p>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+          {postOptions.map(post => {
+            const selected = selectedPostIds.includes(post.post_id);
+            return (
+              <div
+                key={post.post_id}
+                onClick={() => togglePostSelection(post.post_id)}
+                style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid #fff" : "1px solid #1a1a1a", cursor: "pointer" }}
+              >
+                <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                {selected && (
+                  <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px))", background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
+      <div
+        onClick={() => !savingSelection && savePostSelection()}
+        style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+      >
+        {savingSelection ? "Saving..." : "Save Selection"}
       </div>
     </div>
   </div>
