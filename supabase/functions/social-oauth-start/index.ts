@@ -60,7 +60,7 @@ serve(async (req) => {
         client_key: clientKey,
         redirect_uri: CALLBACK_URL,
         response_type: "code",
-        scope: "user.info.basic,video.list",
+        scope: "user.info.basic,user.info.stats,video.list",
         state,
       });
       authorizeUrl = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;

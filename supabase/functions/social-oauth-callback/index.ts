@@ -51,7 +51,7 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
   const accessToken = longLivedData.access_token || tokenData.access_token;
   const expiresInSec = longLivedData.expires_in || 3600;
 
-  const profileRes = await fetch(`https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`);
+  const profileRes = await fetch(`https://graph.instagram.com/me?fields=id,username,followers_count&access_token=${accessToken}`);
   const profile = await profileRes.json();
 
   await supabase.from("social_connections").upsert({
@@ -59,6 +59,7 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     platform: "instagram",
     platform_user_id: profile.id || tokenData.user_id,
     username: profile.username || null,
+    follower_count: profile.followers_count ?? null,
     access_token: accessToken,
     refresh_token: null,
     expires_at: new Date(Date.now() + expiresInSec * 1000).toISOString(),
@@ -82,6 +83,7 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     posted_at: m.timestamp || null,
     cached_at: new Date().toISOString(),
     username: profile.username || null,
+    follower_count: profile.followers_count ?? null,
     // Default to featuring the most recent 5 so something shows up right
     // away; the creator can change the selection anytime from settings.
     featured: i < 5,
@@ -109,17 +111,22 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
   const tokenData = await tokenRes.json();
   if (!tokenData.access_token) throw new Error("TikTok token exchange failed: " + JSON.stringify(tokenData));
 
-  const profileRes = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name", {
+  // follower_count requires the user.info.stats scope - if that scope
+  // isn't enabled on the TikTok app yet, this field is just absent from
+  // the response rather than erroring, so it degrades gracefully to null.
+  const profileRes = await fetch("https://open.tiktokapis.com/v2/user/info/?fields=open_id,display_name,follower_count", {
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
   });
   const profileData = await profileRes.json();
   const displayName = profileData?.data?.user?.display_name || null;
+  const followerCount = profileData?.data?.user?.follower_count ?? null;
 
   await supabase.from("social_connections").upsert({
     user_id: userId,
     platform: "tiktok",
     platform_user_id: tokenData.open_id,
     username: displayName,
+    follower_count: followerCount,
     access_token: tokenData.access_token,
     refresh_token: tokenData.refresh_token || null,
     expires_at: new Date(Date.now() + (tokenData.expires_in || 3600) * 1000).toISOString(),
@@ -144,6 +151,7 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
     cached_at: new Date().toISOString(),
     username: displayName,
+    follower_count: followerCount,
     // Default to featuring the most recent 5 so something shows up right
     // away; the creator can change the selection anytime from settings.
     featured: i < 5,

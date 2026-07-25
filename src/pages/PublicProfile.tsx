@@ -5,7 +5,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
-import { getSocialPosts, getPublicSocialUsernames, type SocialPost, type SocialPlatform } from "../lib/social";
+import { getSocialPosts, getPublicSocialInfo, type SocialPost, type PublicSocialInfo } from "../lib/social";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -51,7 +51,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [reportSubmitted, setReportSubmitted] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
   const [socialPosts, setSocialPosts] = useState<SocialPost[]>([]);
-  const [socialUsernames, setSocialUsernames] = useState<{ platform: SocialPlatform; username: string }[]>([]);
+  const [socialInfo, setSocialInfo] = useState<PublicSocialInfo[]>([]);
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
@@ -94,7 +94,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
         if (creatorData) {
           setCreator(creatorData);
           setSocialPosts(await getSocialPosts(profileId));
-          setSocialUsernames(await getPublicSocialUsernames(profileId));
+          setSocialInfo(await getPublicSocialInfo(profileId));
           return;
         }
 
@@ -429,15 +429,22 @@ const startDM = async () => {
           {creator.platforms?.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Platforms</label>
-              {creator.platforms.map(p => (
+              {creator.platforms.map(p => {
+                const verified = socialInfo.find(s => (s.platform === "instagram" ? "Instagram" : "TikTok") === p);
+                const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
+                return (
                 <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "8px" }}>{p}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
+                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#555", fontSize: "12px" }}>@{verified?.username || creator.social_links[p]}</p>}
+                  </div>
                   <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555" }}>
-                    {creator.follower_counts?.[p] && <span>{Number(creator.follower_counts[p]).toLocaleString()} followers</span>}
+                    {followers != null && <span>{followers.toLocaleString()} followers{verified && " ✓"}</span>}
                     {creator.engagement_rates?.[p] && <span>{creator.engagement_rates[p]}% engagement</span>}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
@@ -445,10 +452,10 @@ const startDM = async () => {
           {socialPosts.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Recent Posts</label>
-              {socialUsernames.length > 0 && (
+              {socialInfo.length > 0 && (
                 <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px" }}>
-                  {socialUsernames.map((s, i) => (
-                    <span key={s.platform}>{i > 0 ? "  ·  " : ""}{s.platform === "instagram" ? "Instagram" : "TikTok"} @{s.username}</span>
+                  {socialInfo.map((s, i) => (
+                    <span key={s.platform}>{i > 0 ? "  ·  " : ""}{s.platform === "instagram" ? "Instagram" : "TikTok"} @{s.username}{s.follower_count != null ? ` (${s.follower_count.toLocaleString()})` : ""}</span>
                   ))}
                 </p>
               )}

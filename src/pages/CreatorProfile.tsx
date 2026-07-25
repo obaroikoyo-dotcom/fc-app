@@ -530,15 +530,23 @@ setTimeout(() => setSaved(false), 2000);
         {selectedPlatforms.length > 0 && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Platforms</label>
-            {selectedPlatforms.map(p => (
+            {selectedPlatforms.map(p => {
+              const connectedPlatform = LABEL_TO_SOCIAL_PLATFORM[p];
+              const connection = connectedPlatform ? socialConnections.find(c => c.platform === connectedPlatform) : undefined;
+              const followers = connection?.follower_count ?? (followerCounts[p] ? Number(followerCounts[p]) : null);
+              return (
               <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "8px" }}>
-                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>{p}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
+                  {(connection?.username || socialLinks[p]) && <p style={{ color: "#555", fontSize: "12px" }}>@{connection?.username || socialLinks[p]}</p>}
+                </div>
                 <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555" }}>
-                  {followerCounts[p] && <span>{Number(followerCounts[p]).toLocaleString()} followers</span>}
+                  {followers != null && <span>{followers.toLocaleString()} followers{connection && " ✓"}</span>}
                   {engagementRates[p] && <span>{engagementRates[p]}% engagement</span>}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

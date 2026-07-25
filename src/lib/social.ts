@@ -5,6 +5,7 @@ export type SocialPlatform = "instagram" | "tiktok";
 export interface SocialConnection {
   platform: SocialPlatform;
   username: string | null;
+  follower_count: number | null;
   connected_at: string;
 }
 
@@ -44,7 +45,7 @@ export async function startSocialConnect(platform: SocialPlatform) {
 export async function getSocialConnections(userId: string): Promise<SocialConnection[]> {
   const { data } = await supabase
     .from("social_connections")
-    .select("platform, username, connected_at")
+    .select("platform, username, follower_count, connected_at")
     .eq("user_id", userId);
   return data || [];
 }
@@ -77,23 +78,30 @@ export async function getSocialPostOptions(userId: string, platform: SocialPlatf
   return data || [];
 }
 
-// Verified usernames per platform, derived from the public post cache since
-// social_connections (which also has this) is owner-only by RLS - anyone
-// viewing a public profile needs to see these, not just the owner.
-export async function getPublicSocialUsernames(userId: string): Promise<{ platform: SocialPlatform; username: string }[]> {
+export interface PublicSocialInfo {
+  platform: SocialPlatform;
+  username: string;
+  follower_count: number | null;
+}
+
+// Verified username/follower count per platform, derived from the public
+// post cache since social_connections (which also has this) is owner-only
+// by RLS - anyone viewing a public profile needs to see these, not just
+// the owner.
+export async function getPublicSocialInfo(userId: string): Promise<PublicSocialInfo[]> {
   const { data } = await supabase
     .from("social_posts_cache")
-    .select("platform, username")
+    .select("platform, username, follower_count")
     .eq("user_id", userId)
     .eq("featured", true)
     .not("username", "is", null);
   if (!data) return [];
   const seen = new Set<string>();
-  const result: { platform: SocialPlatform; username: string }[] = [];
+  const result: PublicSocialInfo[] = [];
   for (const row of data) {
     if (!row.username || seen.has(row.platform)) continue;
     seen.add(row.platform);
-    result.push({ platform: row.platform, username: row.username });
+    result.push({ platform: row.platform, username: row.username, follower_count: row.follower_count });
   }
   return result;
 }
