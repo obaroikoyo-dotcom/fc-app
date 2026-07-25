@@ -75,7 +75,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 6px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -137,7 +137,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 6px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -209,13 +209,26 @@ export default function App() {
     return localStorage.getItem("theme") === "inverted";
   });
 
-  const toggleTheme = () => {  
-    setIsInverted(prev => {    
-      const next = !prev;    
-      localStorage.setItem("theme", next ? "inverted" : "normal");    
-      return next;  
+  const toggleTheme = () => {
+    setIsInverted(prev => {
+      const next = !prev;
+      localStorage.setItem("theme", next ? "inverted" : "normal");
+      return next;
     });
   };
+
+  // The app's own root div is filtered to invert (rather than every
+  // component having real light-theme styles), but that filter only
+  // covers the root div's own rendered pixels - it doesn't touch the
+  // actual <body> behind it. If the root div's height falls even
+  // slightly short of the true viewport (safe-area/dynamic-toolbar
+  // rounding), the sliver that peeks through is body's own background,
+  // which is hardcoded dark and never gets inverted. Keep it in sync
+  // with the theme so that sliver matches instead of showing through
+  // as a stray black band.
+  useEffect(() => {
+    document.body.style.background = isInverted ? "#ffffff" : "#0a0a0a";
+  }, [isInverted]);
 
   const navigate = (p: Page) => {
   setHistory(prev => [...prev, page]);
