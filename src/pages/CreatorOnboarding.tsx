@@ -24,7 +24,15 @@ const GoogleIcon = (
 const NICHES = ["Tech", "Beauty", "Fitness", "Gaming", "Fashion", "Food", "Travel", "Lifestyle", "Finance", "Parenting", "Education", "Sports", "Music", "Comedy", "Art", "Wellness", "Pets", "DIY", "Business", "Automotive"];
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
-const TOTAL_SCREENS = 8;
+const TOTAL_SCREENS = 9;
+const PLATFORM_LABEL: Record<SocialPlatform, string> = { instagram: "Instagram", tiktok: "TikTok" };
+const UNAVAILABLE_PLATFORMS = ["YouTube", "Twitter/X", "Facebook", "Pinterest"];
+
+function usernamesMatch(typed: string, real: string | null): boolean {
+  if (!typed || !real) return true;
+  const norm = (s: string) => s.trim().toLowerCase().replace(/^@/, "");
+  return norm(typed) === norm(real);
+}
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => String(i + 1));
@@ -510,7 +518,7 @@ const [showOtp, setShowOtp] = useState(false);
             <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
               <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "10px" }}>{p}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <input style={inputStyle} placeholder={`${p} profile link`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
+                <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
                 <input style={inputStyle} placeholder="Follower count" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
               </div>
             </div>
@@ -605,8 +613,59 @@ const [showOtp, setShowOtp] = useState(false);
 </div>
     </div>,
 
-    // Screen 6 — Profile Photo
+    // Screen 6 — Verify Accounts
     <div key={6}>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
+      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>
+        Connect Instagram or TikTok to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile. The account you connect should match the username you entered earlier.
+      </p>
+      {socialNotice && (
+        <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
+          <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+        </div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
+          const connection = socialConnections.find(c => c.platform === platform);
+          const label = PLATFORM_LABEL[platform];
+          const typedUsername = socialLinks[label];
+          const mismatch = !!connection && !!typedUsername && !usernamesMatch(typedUsername, connection.username);
+          return (
+            <div key={platform} style={{ background: "#111", border: `1px solid ${mismatch ? "#ff3b30" : "#1a1a1a"}`, borderRadius: "10px", padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div>
+                  <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
+                  {connection && <p style={{ fontSize: "11px", color: mismatch ? "#ff3b30" : "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                </div>
+                {connection ? (
+                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#34c759" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
+                ) : (
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
+                  </span>
+                )}
+              </div>
+              {mismatch && (
+                <p style={{ fontSize: "11px", color: "#ff3b30", marginTop: "8px", lineHeight: 1.5 }}>
+                  This is @{connection!.username}, but you entered "{typedUsername}" earlier. Update the username on the platforms screen so it matches, or reconnect the right account.
+                </p>
+              )}
+            </div>
+          );
+        })}
+        {UNAVAILABLE_PLATFORMS.map(platform => (
+          <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+            <p style={{ fontSize: "14px", color: "#555", fontWeight: 500 }}>{platform}</p>
+            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+          </div>
+        ))}
+      </div>
+    </div>,
+
+    // Screen 7 — Profile Photo
+    <div key={7}>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add a profile photo</h1>
       <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>Optional, but creators with a photo get <span style={{ color: "#fff", fontWeight: 600 }}>3x more brand reach-outs</span>. You can always add one later from your profile.</p>
@@ -619,44 +678,10 @@ const [showOtp, setShowOtp] = useState(false);
         <input ref={picRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePic} />
         <p style={{ fontSize: "12px", color: "#444" }}>{profilePic ? "Tap to change" : "Tap to upload"}</p>
       </div>
-
-      <div style={{ marginTop: "2rem" }}>
-        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px", display: "block" }}>Verify your accounts</label>
-        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
-          Connect Instagram or TikTok to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile.
-        </p>
-        {socialNotice && (
-          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-            <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
-          </div>
-        )}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
-            const connection = socialConnections.find(c => c.platform === platform);
-            const label = platform === "instagram" ? "Instagram" : "TikTok";
-            return (
-              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-                <div>
-                  <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
-                  {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
-                </div>
-                {connection ? (
-                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Connected ✓</span>
-                ) : (
-                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
-                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
-                  </span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
     </div>,
 
-    // Screen 7 — Done
-    <div key={7} style={{ textAlign: "center" }}>
+    // Screen 8 — Done
+    <div key={8} style={{ textAlign: "center" }}>
       <div style={{ fontSize: "48px", marginBottom: "1.5rem" }}>🎉</div>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
       <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
@@ -682,7 +707,8 @@ const buttonLabel = () => {
     if (!isOAuthUser && password !== confirm) return "Passwords must match";
     return "Continue →";
   }
-  if (screen === 6) return profilePic ? "Finish & Go Explore →" : "Skip for now →";
+  if (screen === 6) return "Continue →";
+  if (screen === 7) return profilePic ? "Finish & Go Explore →" : "Skip for now →";
   return "Continue →";
 };
 
@@ -735,7 +761,7 @@ const buttonLabel = () => {
       </div>
 
       {/* Bottom Button */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1.25rem 1.5rem 2rem", background: "linear-gradient(to top, #0a0a0a 60%, transparent)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1.25rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, #0a0a0a 60%, transparent)" }}>
         {isLastScreen ? (
           <div
             onClick={() => navigate("explore")}
@@ -743,7 +769,7 @@ const buttonLabel = () => {
           >
             Start Exploring →
           </div>
-        ) : screen === 6 ? (
+        ) : screen === 7 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
               onClick={loading ? undefined : handleFinish}
