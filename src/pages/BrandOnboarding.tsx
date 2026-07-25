@@ -554,12 +554,12 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       `}</style>
 
       {/* Progress Bar */}
-      <div style={{ height: "2px", background: "#111", position: "fixed", top: 0, left: 0, right: 0, zIndex: 10 }}>
+      <div style={{ height: "2px", background: "#111", position: "fixed", top: "env(safe-area-inset-top, 0px)", left: 0, right: 0, zIndex: 10 }}>
         <div style={{ height: "100%", background: "#fff", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
       </div>
 
       {/* Top Nav */}
-      <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "8px" }}>
+      <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(8px + env(safe-area-inset-top, 0px))" }}>
         {screen > 0
           ? <span onClick={back} style={{ fontSize: "18px", color: "#555", cursor: "pointer", padding: "4px" }}>←</span>
           : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#444", cursor: "pointer" }}>← Back</span>}
