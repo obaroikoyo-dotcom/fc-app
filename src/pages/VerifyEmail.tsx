@@ -204,7 +204,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
             onClick={() => navigate("role-select")}
             style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
-            Back to Sign In
+            Back to Log In
           </div>
 
         </div>

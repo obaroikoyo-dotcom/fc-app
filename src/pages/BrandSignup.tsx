@@ -65,7 +65,7 @@ export default function BrandSignup({ navigate }: Props) {
 
         <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#444" }}>
           Already have an account?{" "}
-          <span onClick={() => navigate("login")} style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}>Sign in</span>
+          <span onClick={() => navigate("login")} style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}>Log in</span>
         </p>
       </div>
     </AuthLayout>

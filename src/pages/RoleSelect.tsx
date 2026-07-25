@@ -80,7 +80,7 @@ export default function RoleSelect({ navigate }: Props) {
             onClick={() => navigate("login")}
             style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}
           >
-            Sign in
+            Log in
           </span>
         </p>
       </div>

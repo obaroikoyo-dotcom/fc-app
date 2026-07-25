@@ -99,7 +99,7 @@ export default function Login({ navigate }: Props) {
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
         <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Welcome back</p>
-        <p style={{ fontSize: "13px", color: "#444", marginBottom: "2rem" }}>Sign in to your FlipCollab account.</p>
+        <p style={{ fontSize: "13px", color: "#444", marginBottom: "2rem" }}>Log in to your FlipCollab account.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input label="Email" type="email" placeholder="you@email.com" value={form.email} onChange={set("email")} />
@@ -109,7 +109,7 @@ export default function Login({ navigate }: Props) {
         {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 
         <div style={{ marginTop: "1.5rem" }}>
-          <Button onClick={handleLogin}>{loading ? "Signing in..." : "Sign In"}</Button>
+          <Button onClick={handleLogin}>{loading ? "Logging in..." : "Log In"}</Button>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "1.5rem 0" }}>
