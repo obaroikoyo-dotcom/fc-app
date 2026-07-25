@@ -105,8 +105,20 @@ const [showOtp, setShowOtp] = useState(false);
     saveOnboardingDraft("brand", {
       companyName, selectedIndustries, location, website, bio, targetAudience, contentTypes, targetTier, termsAccepted,
     });
-    const { error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
-    if (idTokenError) setError(idTokenError.message);
+    const { data, error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
+    if (idTokenError) {
+      setError(idTokenError.message);
+      return;
+    }
+    // The ID-token flow is a client-side popup, not a page redirect - this
+    // component never remounts, so nothing else re-checks auth state after
+    // this. Without updating it here directly, the screen keeps showing the
+    // email/password form (even though sign-in already succeeded) until the
+    // user leaves and comes back and the mount effect finally catches up.
+    if (data.user) {
+      setIsOAuthUser(true);
+      setEmail(data.user.email || "");
+    }
   };
 
   const goTo = (next: number) => {
