@@ -8,6 +8,7 @@ import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
+import { startSocialConnect, getSocialConnections, type SocialConnection, type SocialPlatform } from "../lib/social";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -145,19 +146,27 @@ const [otpResent, setOtpResent] = useState(false);
 const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 const [showOtp, setShowOtp] = useState(false);
   const picRef = useRef<HTMLInputElement>(null);
+  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
+  const [socialNotice, setSocialNotice] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       logEvent(`CreatorOnboarding mount: hasUser=${!!user} emailConfirmed=${!!user?.email_confirmed_at} provider=${user?.app_metadata?.provider ?? "n/a"}`);
-      if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
+      if (!user) return;
+
+      if (user.app_metadata?.provider && user.app_metadata.provider !== "email") {
         setIsOAuthUser(true);
         setEmail(user.email || "");
+      }
 
-        // Resuming after a Google redirect - restore whatever was filled in
-        // before the redirect tore down component state, and jump straight
-        // back to the credentials screen instead of starting over.
+      if (user.email_confirmed_at) {
+        // Resuming after a redirect (Google sign-in, or connecting a
+        // social account from screen 6) tore down component state -
+        // restore whatever was filled in and jump back to where they
+        // left off instead of starting over.
         const draft = peekOnboardingDraft("creator");
-        logEvent(`CreatorOnboarding mount: isOAuthUser=true draftFound=${!!draft}`);
+        logEvent(`CreatorOnboarding mount: draftFound=${!!draft}`);
         if (draft) {
           if (typeof draft.name === "string") setName(draft.name);
           if (typeof draft.birthDay === "string") setBirthDay(draft.birthDay);
@@ -171,16 +180,46 @@ const [showOtp, setShowOtp] = useState(false);
           if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
           if (draft.rates && typeof draft.rates === "object") setRates(draft.rates as typeof rates);
           if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
-          setScreen(5);
+          setScreen(typeof draft.screen === "number" ? draft.screen : 5);
         }
+
+        getSocialConnections(user.id).then(setSocialConnections);
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get("social_connected");
+      const socialError = params.get("social_error");
+      if (connected) {
+        setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected.`);
+      } else if (socialError) {
+        setSocialNotice(`Couldn't connect: ${socialError}`);
+      }
+      if (connected || socialError) {
+        window.history.replaceState({}, "", window.location.pathname);
       }
     });
   }, []);
+
+  const handleConnectSocial = async (platform: SocialPlatform) => {
+    setConnectingPlatform(platform);
+    saveOnboardingDraft("creator", {
+      name, birthDay, birthMonth, birthYear, selectedNiches, location,
+      selectedPlatforms, socialLinks, followerCounts, contentTypes, rates, termsAccepted,
+      screen: 6,
+    });
+    try {
+      await startSocialConnect(platform);
+    } catch (err) {
+      setSocialNotice(`Couldn't start connection: ${(err as Error).message}`);
+      setConnectingPlatform(null);
+    }
+  };
 
   const handleGoogleCredential = async (idToken: string, nonce: string) => {
     saveOnboardingDraft("creator", {
       name, birthDay, birthMonth, birthYear, selectedNiches, location,
       selectedPlatforms, socialLinks, followerCounts, contentTypes, rates, termsAccepted,
+      screen: 5,
     });
     const { error: idTokenError } = await signInWithGoogleIdToken(idToken, nonce);
     if (idTokenError) setError(idTokenError.message);
@@ -579,6 +618,40 @@ const [showOtp, setShowOtp] = useState(false);
         </div>
         <input ref={picRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePic} />
         <p style={{ fontSize: "12px", color: "#444" }}>{profilePic ? "Tap to change" : "Tap to upload"}</p>
+      </div>
+
+      <div style={{ marginTop: "2rem" }}>
+        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px", display: "block" }}>Verify your accounts</label>
+        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+          Connect Instagram or TikTok to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile.
+        </p>
+        {socialNotice && (
+          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
+            <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+          </div>
+        )}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
+            const connection = socialConnections.find(c => c.platform === platform);
+            const label = platform === "instagram" ? "Instagram" : "TikTok";
+            return (
+              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+                <div>
+                  <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
+                  {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                </div>
+                {connection ? (
+                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Connected ✓</span>
+                ) : (
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>,
 

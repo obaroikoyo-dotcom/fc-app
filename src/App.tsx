@@ -309,14 +309,19 @@ export default function App() {
           // role selection for a first-touch sign-in.
           const { data: { user } } = await supabase.auth.getUser();
           const provider = user?.app_metadata?.provider;
-          if (provider && provider !== "email") {
-            const pendingRole = peekOnboardingDraftRole();
-            logEvent(`syncUserRoute: no profile, provider=${provider}, pendingDraftRole=${pendingRole ?? "none"} -> routing to ${pendingRole ? pendingRole + "-onboarding" : "role-select"}`);
-            if (pendingRole === "brand") setPage("brand-onboarding");
-            else if (pendingRole === "creator") setPage("creator-onboarding");
-            else setPage("role-select");
+          const pendingRole = peekOnboardingDraftRole();
+          if (pendingRole) {
+            // A draft exists regardless of provider - the user is resuming
+            // after a redirect (Google sign-in, or connecting a social
+            // account from within the onboarding wizard) that tore down
+            // in-memory state, not a fresh first-touch sign-in.
+            logEvent(`syncUserRoute: no profile, provider=${provider ?? "none"}, pendingDraftRole=${pendingRole} -> routing to ${pendingRole}-onboarding`);
+            setPage(pendingRole === "brand" ? "brand-onboarding" : "creator-onboarding");
+          } else if (provider && provider !== "email") {
+            logEvent(`syncUserRoute: no profile, provider=${provider}, no draft -> role-select`);
+            setPage("role-select");
           } else {
-            logEvent(`syncUserRoute: no profile, provider=${provider ?? "none"} (email/password mid-signup) - leaving page as-is`);
+            logEvent(`syncUserRoute: no profile, provider=${provider ?? "none"} (email/password mid-signup, no draft) - leaving page as-is`);
           }
           return;
         }
