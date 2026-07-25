@@ -4,7 +4,7 @@ import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
-import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption } from "../lib/social";
+import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -119,6 +119,7 @@ const [withdrawError, setWithdrawError] = useState("");
   const [unblockLoading, setUnblockLoading] = useState<string | null>(null);
 
   const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [featuredPosts, setFeaturedPostsState] = useState<SocialPost[]>([]);
   const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
   const [socialNotice, setSocialNotice] = useState("");
   const [pickerPlatform, setPickerPlatform] = useState<SocialPlatform | null>(null);
@@ -207,6 +208,7 @@ const [withdrawError, setWithdrawError] = useState("");
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setSocialConnections(await getSocialConnections(user.id));
+    setFeaturedPostsState(await getSocialPosts(user.id));
   };
 
   const handleConnectSocial = async (platform: SocialPlatform) => {
@@ -224,6 +226,7 @@ const [withdrawError, setWithdrawError] = useState("");
     if (!user) return;
     await disconnectSocialPlatform(user.id, platform);
     setSocialConnections(prev => prev.filter(c => c.platform !== platform));
+    setFeaturedPostsState(prev => prev.filter(p => p.platform !== platform));
   };
 
   const openPostPicker = async (platform: SocialPlatform) => {
@@ -248,6 +251,7 @@ const [withdrawError, setWithdrawError] = useState("");
     if (!user || !pickerPlatform) return;
     setSavingSelection(true);
     await setFeaturedPosts(user.id, pickerPlatform, selectedPostIds);
+    setFeaturedPostsState(await getSocialPosts(user.id));
     setSavingSelection(false);
     setPickerPlatform(null);
     setSocialNotice("Featured videos updated.");
@@ -534,6 +538,20 @@ setTimeout(() => setSaved(false), 2000);
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Recent Posts */}
+        {featuredPosts.length > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={labelStyle}>Recent Posts</label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
+              {featuredPosts.slice(0, 5).map(post => (
+                <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
+                  <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </a>
+              ))}
+            </div>
           </div>
         )}
 
@@ -834,7 +852,7 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
       </div>
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
+      <div style={{ position: "fixed", bottom: "60px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #1a1a1a", zIndex: 200 }}>
         <div
           onClick={() => !savingSelection && savePostSelection()}
           style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
