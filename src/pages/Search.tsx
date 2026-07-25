@@ -90,7 +90,6 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
           const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
           if (data?.role) {
             setUserRole(data.role);
-            setFilter(data.role === "brand" ? "creators" : "brands");
           }
         }
         const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
