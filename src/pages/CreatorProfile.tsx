@@ -785,7 +785,11 @@ setTimeout(() => setSaved(false), 2000);
                     <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
                   )}
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <input style={{ ...inputStyle, flex: 1 }} placeholder="Followers" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
+                    {connection ? (
+                      <input style={{ ...inputStyle, flex: 1, color: "#777", cursor: "not-allowed" }} value={connection.follower_count != null ? `${connection.follower_count.toLocaleString()} followers` : "Syncing..."} disabled />
+                    ) : (
+                      <input style={{ ...inputStyle, flex: 1 }} placeholder="Followers" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
+                    )}
                     <input style={{ ...inputStyle, flex: 1 }} placeholder="Engagement %" type="number" value={engagementRates[p] || ""} onChange={e => setEngagementRates(prev => ({ ...prev, [p]: e.target.value }))} />
                   </div>
                 </div>
