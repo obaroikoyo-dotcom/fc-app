@@ -10,6 +10,31 @@ html, body {
   overscroll-behavior: none;
 }
 
+/* Only a couple of onboarding screens had this - everywhere else, every
+   single tap (buttons, cards, chips - the app uses divs with onClick
+   almost everywhere, not native <button>) showed the browser's default
+   gray/blue tap-highlight flash and a ~300ms delay before registering.
+   That's the single biggest contributor to feeling "cheap"/laggy on
+   mobile; this removes it app-wide with no visual/behavioral change
+   otherwise. */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Same idea, the other half of it: give every tappable element (the app
+   marks them with cursor:pointer, almost always inline) a quick, subtle
+   press-down so taps feel acknowledged immediately instead of just
+   silently waiting on whatever happens next. Skipped automatically on
+   anything that already sets its own transform inline, since inline
+   styles always win over this and there's nothing to override there. */
+[style*="cursor: pointer"] {
+  transition: transform 0.1s ease;
+}
+[style*="cursor: pointer"]:active {
+  transform: scale(0.98);
+}
+
 #root {
   width: 100%;
   height: 100%;
