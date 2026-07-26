@@ -91,6 +91,11 @@ export default function SplashScreen() {
           100% { width: 50px; opacity: 1; }
         }
 
+        @keyframes lineShrink {
+          0%   { width: 50px; opacity: 1; }
+          100% { width: 0; opacity: 0; }
+        }
+
         @keyframes bgBreath {
           0%, 100% { opacity: 0.25; transform: scale(1); }
           50%       { opacity: 0.5; transform: scale(1.08); }
@@ -137,6 +142,9 @@ export default function SplashScreen() {
         .accent-line {
           animation: lineGrow 0.5s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both;
         }
+        .accent-line.out {
+          animation: lineShrink 0.4s ease forwards;
+        }
         .bg-glow {
           animation: bgBreath 2.5s ease-in-out infinite;
         }
@@ -179,7 +187,7 @@ export default function SplashScreen() {
       </div>
 
       {/* Accent line */}
-      <div className="accent-line" style={{
+      <div className={`accent-line${phase === "out" ? " out" : ""}`} style={{
         height: "1px",
         background: "linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)",
         marginBottom: "18px",
