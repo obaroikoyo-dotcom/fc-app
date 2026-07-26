@@ -493,7 +493,7 @@ export default function App() {
 
   const renderPage = () => {
     switch (page) {
-      case "splash": return <SplashScreen navigate={navigate} />;
+      case "splash": return <SplashScreen />;
       case "role-select": return <RoleSelect navigate={navigate} />;
       case "brand-signup": return <BrandSignup navigate={navigate} />;
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} setPendingEmail={setPendingEmail} />;

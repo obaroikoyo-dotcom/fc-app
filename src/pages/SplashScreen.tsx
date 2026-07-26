@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { type Page } from "../App";
 
-interface Props {
-  navigate: (p: Page) => void;
-}
-
-export default function SplashScreen({ navigate }: Props) {
+// Purely the visual animation - App.tsx's own auth check is what decides
+// where to actually go next once it resolves (typically around the same
+// ~3s mark), and is the sole authority on that. This used to also fire its
+// own unconditional navigate("role-select") on a matching timer, which
+// raced against that real auth-aware routing - role-select would flash
+// briefly before App.tsx corrected it to the actual destination a moment
+// later.
+export default function SplashScreen() {
   const [phase, setPhase] = useState<"in" | "hold" | "out">("in");
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("hold"), 1400);
     const t2 = setTimeout(() => setPhase("out"), 2400);
-    const t3 = setTimeout(() => navigate("role-select"), 3000);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   return (
