@@ -32,3 +32,15 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/social-oauth-callback/deno.json"
 entrypoint = "./functions/social-oauth-callback/index.ts"
+
+[functions.tiktok-post-video]
+enabled = true
+verify_jwt = false
+import_map = "./functions/tiktok-post-video/deno.json"
+entrypoint = "./functions/tiktok-post-video/index.ts"
+
+[functions.tiktok-post-status]
+enabled = true
+verify_jwt = false
+import_map = "./functions/tiktok-post-status/deno.json"
+entrypoint = "./functions/tiktok-post-status/index.ts"

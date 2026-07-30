@@ -4,6 +4,7 @@ import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
+import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, type SocialConnection, type SocialPlatform } from "../lib/social";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -34,11 +35,56 @@ type SettingsSection =
   | "privacy-policy"
   | "terms"
   | "debug-log"
-  | "reports-blocked";
+  | "reports-blocked"
+  | "manage-accounts";
 
 export default function BrandProfile({ navigate, toggleTheme, isInverted }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
+  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
+  const [socialNotice, setSocialNotice] = useState("");
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setSocialConnections(await getSocialConnections(user.id));
+
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get("social_connected");
+      const socialError = params.get("social_error");
+      if (connected === "instagram" || connected === "tiktok") {
+        setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected.`);
+        setSettingsSection("manage-accounts");
+        setView("settings");
+      } else if (socialError) {
+        setSocialNotice(`Couldn't connect: ${socialError}`);
+        setSettingsSection("manage-accounts");
+        setView("settings");
+      }
+      if (connected || socialError) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    })();
+  }, []);
+
+  const handleConnectSocial = async (platform: SocialPlatform) => {
+    setConnectingPlatform(platform);
+    try {
+      await startSocialConnect(platform);
+    } catch (err) {
+      setSocialNotice(`Couldn't start connection: ${(err as Error).message}`);
+      setConnectingPlatform(null);
+    }
+  };
+
+  const handleDisconnectSocial = async (platform: SocialPlatform) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await disconnectSocialPlatform(user.id, platform);
+    setSocialConnections(prev => prev.filter(c => c.platform !== platform));
+  };
 
   useEffect(() => {
     document.querySelector(".page-enter")?.scrollTo(0, 0);
@@ -441,6 +487,7 @@ const loadFavourites = async () => {
       <div style={{ padding: "0 1.25rem" }}>
         {sectionHeader("Brand Account")}
         {settingsRow("Edit Profile", "Name, bio, industry, location, links", () => setSettingsSection("edit-profile"))}
+        {settingsRow("Manage Accounts", "Connect TikTok/Instagram to post creator content", () => setSettingsSection("manage-accounts"))}
         {settingsRow("Industry & Content Needs", "Sectors and media formats you need", () => setSettingsSection("industry-selection"))}
         {settingsRow("Campaign Preferences", "Creator tier and target audience", () => setSettingsSection("campaign-preferences"))}
         {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"))}
@@ -696,6 +743,50 @@ const loadFavourites = async () => {
     </div>
   );
 
+  // ─── MANAGE ACCOUNTS ────────────────────────────────────────────────────────
+  const renderManageAccounts = () => {
+    const connectedPlatforms = new Set(socialConnections.map(c => c.platform));
+    const findConnection = (p: SocialPlatform) => socialConnections.find(c => c.platform === p);
+
+    return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+      {renderSettingsHeader("Manage Accounts", () => setSettingsSection("main"))}
+      <div style={{ padding: "1.25rem" }}>
+        {socialNotice && (
+          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
+            <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+          </div>
+        )}
+        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+          Connect your own TikTok or Instagram so you can post creator-made content directly to your brand account once payment has released.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
+            const connection = findConnection(platform);
+            const label = platform === "instagram" ? "Instagram" : "TikTok";
+            return (
+              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+                <div>
+                  <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
+                  {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                </div>
+                {connectedPlatforms.has(platform) ? (
+                  <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
+                ) : (
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+    );
+  };
+
   // ─── HELP ─────────────────────────────────────────────────────────────────
   const renderHelp = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
@@ -882,6 +973,7 @@ const renderTerms = () => (
       {settingsSection === "visibility" && renderVisibility()}
       {settingsSection === "share-profile" && renderShareProfile()}
       {settingsSection === "favourites" && renderFavourites()}
+      {settingsSection === "manage-accounts" && renderManageAccounts()}
       {settingsSection === "help" && renderHelp()}
       {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
 {settingsSection === "terms" && renderTerms()}

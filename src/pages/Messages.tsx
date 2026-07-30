@@ -10,6 +10,8 @@ import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
+import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePaymentManually, type CampaignPost } from "../lib/campaignDelivery";
+import { getSocialConnections } from "../lib/social";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -137,6 +139,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const [billingCountry, setBillingCountry] = useState("GB");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  const [requireTikTokPost, setRequireTikTokPost] = useState(false);
 
   const brandFee = isEnterprise ? 0 : Math.round(campaignBudget * 0.05);
   const totalCharge = campaignBudget + brandFee;
@@ -202,9 +205,14 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     }
 
     if (confirmResult.paymentIntent?.status === "succeeded") {
+      // Gated deals: charge now, but hold the transaction and leave the
+      // application out of "paid" until a creator-posted TikTok video is
+      // confirmed live (or the brand manually releases it later). Ungated
+      // deals keep the exact previous behavior - charge and release in the
+      // same instant.
       const { error: updateError } = await supabase
         .from("applications")
-        .update({ status: "paid" })
+        .update(requireTikTokPost ? { status: "funded", payout_release_mode: "tiktok_gated" } : { status: "paid" })
         .eq("id", paymentApp.id);
 
       if (updateError) {
@@ -214,20 +222,24 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         return;
       }
 
-      // Mark the transaction completed immediately rather than waiting on the
-      // Stripe webhook, so the creator's payout balance updates right away.
-      const { error: txError } = await supabase
-        .from("transactions")
-        .update({ status: "completed" })
-        .eq("stripe_payment_intent_id", confirmResult.paymentIntent.id);
+      if (!requireTikTokPost) {
+        // Mark the transaction completed immediately rather than waiting on
+        // the Stripe webhook, so the creator's payout balance updates right away.
+        const { error: txError } = await supabase
+          .from("transactions")
+          .update({ status: "completed" })
+          .eq("stripe_payment_intent_id", confirmResult.paymentIntent.id);
 
-      if (txError) console.error("Failed to mark transaction completed:", txError);
+        if (txError) console.error("Failed to mark transaction completed:", txError);
+      }
 
       await notifyAndPush({
         user_id: paymentApp.creator_id,
         type: "payment_received",
         title: "Payment Received",
-        body: `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Refresh and check Payouts in Settings to see your balance.`,
+        body: requireTikTokPost
+          ? `Funds for "${paymentApp.campaign_name}" are secured. Post your deliverable video to TikTok from the chat to release your payout.`
+          : `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Refresh and check Payouts in Settings to see your balance.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
 
@@ -314,6 +326,14 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       )}
 
+      <div onClick={() => setRequireTikTokPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px 14px", marginBottom: "1rem", cursor: "pointer" }}>
+        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireTikTokPost ? "#fff" : "#333"}`, background: requireTikTokPost ? "#fff" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireTikTokPost ? "✓" : ""}</div>
+        <div>
+          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>Require a TikTok post before releasing payout</p>
+          <p style={{ fontSize: "11px", color: "#555", marginTop: "2px", lineHeight: 1.5 }}>Your card is charged now, but funds stay held until the creator posts the deliverable to TikTok and it's confirmed live. You can still release manually anytime.</p>
+        </div>
+      </div>
+
       {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "10px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: "10px" }}>
@@ -322,6 +342,172 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
           {processing ? "Processing..." : `Pay £${(totalCharge / 100).toFixed(2)}`}
         </div>
       </div>
+    </div>
+  );
+}
+
+interface EscrowDeliveryCardProps {
+  applicationId: string;
+  campaignId: string;
+  creatorId: string;
+  role: "creator" | "brand";
+  currentUserId: string;
+  applicationStatus: string;
+  onReleased: () => void;
+}
+
+// Shown in the chat once a deal is "funded" (card charged, payout held).
+// Creators upload their deliverable and post it to their own TikTok to
+// release their own payout automatically; brands can only post the same
+// deliverable to their own TikTok once that release has already
+// happened, and can always manually release for deals that never touch
+// TikTok at all (in-person handoffs, etc).
+function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, currentUserId, applicationStatus, onReleased }: EscrowDeliveryCardProps) {
+  const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [tiktokConnected, setTiktokConnected] = useState(false);
+  const [myPost, setMyPost] = useState<CampaignPost | null>(null);
+  const [posting, setPosting] = useState(false);
+  const [releasing, setReleasing] = useState(false);
+  const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: app } = await supabase.from("applications").select("deliverable_url").eq("id", applicationId).single();
+      if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+
+      const connections = await getSocialConnections(currentUserId);
+      setTiktokConnected(connections.some(c => c.platform === "tiktok"));
+
+      const posts = await getCampaignPosts(applicationId);
+      const mine = posts.find(p => p.posted_by_user_id === currentUserId) || null;
+      setMyPost(mine);
+      if (mine && mine.status === "processing") startPolling(mine.id);
+    })();
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicationId]);
+
+  const startPolling = (campaignPostId: string) => {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = setInterval(async () => {
+      try {
+        const result = await pollPostStatus(campaignPostId);
+        if (result.status !== "processing") {
+          if (pollRef.current) clearInterval(pollRef.current);
+          setMyPost(prev => prev ? { ...prev, status: result.status } : prev);
+          if (result.status === "published" && role === "creator") onReleased();
+        }
+      } catch {
+        // Transient errors just get retried on the next tick.
+      }
+    }, 5000);
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const url = await uploadDeliverable(applicationId, file);
+      setDeliverableUrl(url);
+    } catch (err) {
+      setError((err as Error).message || "Upload failed");
+    }
+    setUploading(false);
+  };
+
+  const handlePost = async () => {
+    setPosting(true);
+    setError("");
+    try {
+      const { campaign_post_id } = await postDeliverableToTikTok(applicationId);
+      setMyPost({ id: campaign_post_id, application_id: applicationId, posted_by_user_id: currentUserId, posted_by_role: role, status: "processing", post_url: null, created_at: new Date().toISOString(), published_at: null });
+      startPolling(campaign_post_id);
+    } catch (err) {
+      setError((err as Error).message || "Failed to post to TikTok");
+    }
+    setPosting(false);
+  };
+
+  const handleManualRelease = async () => {
+    setReleasing(true);
+    setError("");
+    try {
+      await releasePaymentManually(applicationId, campaignId, creatorId);
+      onReleased();
+    } catch (err) {
+      setError((err as Error).message || "Failed to release payment");
+    }
+    setReleasing(false);
+  };
+
+  const canBrandPost = role === "brand" && applicationStatus === "paid";
+  const canCreatorPost = role === "creator" && applicationStatus === "funded";
+
+  return (
+    <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
+      <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
+
+      {role === "creator" && !deliverableUrl && (
+        <>
+          <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
+          <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed #333", textAlign: "center", fontSize: "12px", color: "#777", cursor: uploading ? "default" : "pointer" }}>
+            {uploading ? "Uploading..." : "Tap to upload your deliverable video"}
+          </div>
+        </>
+      )}
+
+      {deliverableUrl && (
+        <video src={deliverableUrl} controls style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight: "220px", background: "#000" }} />
+      )}
+
+      {error && <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
+
+      {canCreatorPost && deliverableUrl && (
+        <div>
+          {!tiktokConnected ? (
+            <p style={{ fontSize: "11px", color: "#555" }}>Connect TikTok from Settings → Manage Accounts to post this and get paid.</p>
+          ) : !myPost ? (
+            <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
+              {posting ? "Posting..." : "Post to TikTok & Get Paid"}
+            </div>
+          ) : myPost.status === "processing" ? (
+            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to TikTok... this can take a minute.</p>
+          ) : myPost.status === "published" ? (
+            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted — payout released.</p>
+          ) : (
+            <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
+          )}
+        </div>
+      )}
+
+      {canBrandPost && deliverableUrl && (
+        <div>
+          {!tiktokConnected ? (
+            <p style={{ fontSize: "11px", color: "#555" }}>Connect your own TikTok from Settings to post this content.</p>
+          ) : !myPost ? (
+            <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
+              {posting ? "Posting..." : "Post to Your TikTok"}
+            </div>
+          ) : myPost.status === "processing" ? (
+            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to TikTok...</p>
+          ) : myPost.status === "published" ? (
+            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted to your TikTok.</p>
+          ) : (
+            <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
+          )}
+        </div>
+      )}
+
+      {role === "brand" && applicationStatus === "funded" && (
+        <div onClick={!releasing ? handleManualRelease : undefined} style={{ marginTop: "10px", padding: "11px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: releasing ? "#555" : "#777", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
+          {releasing ? "Releasing..." : "Release Payment Manually (e.g. delivered off-platform)"}
+        </div>
+      )}
     </div>
   );
 }
@@ -836,7 +1022,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   // applications between this pair that are still open (not already paid
   // or already screened out), i.e. the ones eligible for either action.
   const payableApps: LinkedApplication[] = (activeConvo?.linked_applications || [])
-    .filter(a => a.status !== "paid" && a.status !== "rejected");
+    .filter(a => a.status !== "paid" && a.status !== "funded" && a.status !== "rejected");
 
   const openPaymentModalForApp = (app: LinkedApplication) => {
     if (!activeConvo) return;
@@ -1538,6 +1724,10 @@ return (
                     <span style={{ fontSize: "11px", color: "#34c759", background: "#0a1f0a", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a3a1a" }}>
                       Deal Locked — Paid
                     </span>
+                  ) : activeConvo.application_status === "funded" ? (
+                    <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a" }}>
+                      Funded — Awaiting Post
+                    </span>
                   ) : activeConvo.application_status === "rejected" ? (
                     <span style={{ fontSize: "11px", color: "#444", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
                       Folder Closed (Declined)
@@ -1554,6 +1744,15 @@ return (
                       </span>
                       <p style={{ fontSize: "10px", color: "#666", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         The brand decided to pass on this specific campaign brief. Keep your head up! Landing the right brand partnerships takes time—keep refining your pitch and the right match will click.
+                      </p>
+                    </>
+                  ) : activeConvo.application_status === "funded" ? (
+                    <>
+                      <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a", fontWeight: 500 }}>
+                        Funded — Post to Get Paid
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#666", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                        Upload your deliverable and post it to TikTok below - your payout releases automatically once it's confirmed live.
                       </p>
                     </>
                   ) : (
@@ -1573,6 +1772,19 @@ return (
 
           {/* CHAT MESSAGES STREAM */}
           <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `${inputBarHeight + 112}px` : "12rem" }}>
+            {activeConvo?.application_id && currentUserId
+              && (activeConvo.application_status === "funded" || activeConvo.application_status === "paid")
+              && (
+              <EscrowDeliveryCard
+                applicationId={activeConvo.application_id}
+                campaignId={activeConvo.campaign_id || ""}
+                creatorId={role === "brand" ? (activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1) : currentUserId}
+                role={role === "brand" ? "brand" : "creator"}
+                currentUserId={currentUserId}
+                applicationStatus={activeConvo.application_status}
+                onReleased={() => setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : prev)}
+              />
+            )}
             {messages.length === 0 && (
               <p style={{ color: "#333", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -1580,7 +1792,7 @@ return (
               const chatOpenedIdx = messages.findIndex(m => m.text?.startsWith(CHAT_OPENED_PREFIX));
               const paymentIdx = messages.map(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)).lastIndexOf(true);
               const showPayCard = role === "brand" && !!activeConvo?.application_id
-                && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid";
+                && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded";
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
               const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
               const dividerAtIdx = paymentIdx + 1;
