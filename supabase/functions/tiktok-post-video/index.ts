@@ -94,6 +94,18 @@ serve(async (req) => {
 
     const accessToken = await getFreshAccessToken(supabase, user.id);
 
+    // PULL_FROM_URL would need the video's own domain verified with
+    // TikTok - not possible here since deliverables are hosted on
+    // Supabase's own domain, which we don't control the DNS/root of.
+    // Fetching the bytes ourselves and pushing them (FILE_UPLOAD) sidesteps
+    // that requirement entirely, at the cost of buffering the video in this
+    // function's memory - fine for typical short-form clip sizes.
+    const videoRes = await fetch(application.deliverable_url);
+    if (!videoRes.ok) throw new Error(`Failed to fetch deliverable video (${videoRes.status})`);
+    const videoBytes = new Uint8Array(await videoRes.arrayBuffer());
+    const videoSize = videoBytes.byteLength;
+    if (videoSize === 0) throw new Error("Deliverable video is empty");
+
     const initRes = await fetch("https://open.tiktokapis.com/v2/post/publish/video/init/", {
       method: "POST",
       headers: {
@@ -110,14 +122,27 @@ serve(async (req) => {
           video_cover_timestamp_ms: 1000,
         },
         source_info: {
-          source: "PULL_FROM_URL",
-          video_url: application.deliverable_url,
+          source: "FILE_UPLOAD",
+          video_size: videoSize,
+          chunk_size: videoSize,
+          total_chunk_count: 1,
         },
       }),
     });
     const initData = await initRes.json();
     const publishId = initData?.data?.publish_id;
-    if (!publishId) throw new Error("TikTok post init failed: " + JSON.stringify(initData));
+    const uploadUrl = initData?.data?.upload_url;
+    if (!publishId || !uploadUrl) throw new Error("TikTok post init failed: " + JSON.stringify(initData));
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "video/mp4",
+        "Content-Range": `bytes 0-${videoSize - 1}/${videoSize}`,
+      },
+      body: videoBytes,
+    });
+    if (!uploadRes.ok) throw new Error(`Uploading video to TikTok failed (${uploadRes.status})`);
 
     const { data: post, error: insertError } = await supabase.from("campaign_posts").insert({
       application_id,
