@@ -5,6 +5,7 @@ import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
+import VerifiedBadge from "../components/VerifiedBadge";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -289,7 +290,7 @@ const [withdrawError, setWithdrawError] = useState("");
 
     const { data: apps } = await supabase
       .from("applications")
-      .select(`*, campaigns(id, name, description, type, budget, brand_id, brand_profiles(name, logo_url, is_enterprise))`)
+      .select(`*, campaigns(id, name, description, type, budget, brand_id, brand_profiles(name, logo_url, is_enterprise, verified))`)
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false });
     if (apps) setAppliedCampaigns(apps);
@@ -330,7 +331,7 @@ const [withdrawError, setWithdrawError] = useState("");
   const loadCampaignFavourites = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase.from("campaign_favourites").select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name, is_enterprise))").eq("user_id", user.id);
+    const { data } = await supabase.from("campaign_favourites").select("campaign_id, campaigns(name, description, type, budget, brand_profiles(name, is_enterprise, verified))").eq("user_id", user.id);
     if (data) setCampaignFavourites(data);
   };
 
@@ -1147,7 +1148,10 @@ setTimeout(() => setSaved(false), 2000);
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{camp?.name || "Campaign"}</p>
                     <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * (campIsEnterprise ? 1 : 0.9)).toLocaleString()}` : ""}</span>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#444" }}>{camp?.brand_profiles?.name || "Brand"}</p>
+                  <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#444" }}>
+                    {camp?.brand_profiles?.name || "Brand"}
+                    {camp?.brand_profiles?.verified && <VerifiedBadge size={11} />}
+                  </p>
                 </div>
               );
             })}
@@ -1203,7 +1207,10 @@ setTimeout(() => setSaved(false), 2000);
                   <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>{a.status === "paid" ? "paid out" : a.status}</span>
                 </div>
                 {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "#34c759", marginBottom: "4px" }}>Take-home: £{(baseBudget * (brandIsEnterprise ? 1 : 0.9)).toLocaleString()}</p>}
-                <p style={{ fontSize: "12px", color: "#444" }}>{brandData?.name || "Brand"}</p>
+                <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#444" }}>
+                  {brandData?.name || "Brand"}
+                  {brandData?.verified && <VerifiedBadge size={11} />}
+                </p>
               </div>
             );
           })}
