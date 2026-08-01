@@ -6,6 +6,7 @@ import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { getBlockedUserIds } from "../lib/blocks";
+import VerifiedBadge from "../components/VerifiedBadge";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -29,6 +30,7 @@ interface Campaign {
     name: string;
     niche: string;
     avatar_url?: string;
+    verified?: boolean;
   } | null;
   my_application?: {
     status: "pending" | "approved" | "declined";
@@ -160,7 +162,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       await withTimeout(async () => {
         const { data, error } = await supabase
           .from("campaigns")
-          .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise), applications(creator_id, status, message)`)
+          .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise, verified), applications(creator_id, status, message)`)
           .order("created_at", { ascending: false });
 
         if (!error && data) {
@@ -297,7 +299,10 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                       {c.brand_profiles?.avatar_url ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                     </div>
                     <div>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>{c.brand_profiles?.name || "Brand"}</p>
+                      <p style={{ display: "flex", alignItems: "center", gap: "4px", color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>
+                        {c.brand_profiles?.name || "Brand"}
+                        {c.brand_profiles?.verified && <VerifiedBadge size={12} />}
+                      </p>
                       <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
                     </div>
                   </div>

@@ -6,12 +6,13 @@ import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { getBlockedUserIds } from "../lib/blocks";
+import VerifiedBadge from "../components/VerifiedBadge";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
   id: string; role: string; email: string;
   creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; followers?: number; rate?: number; } | null;
-  brand_profiles?: { name: string; niche: string; location: string; avatar_url?: string; } | null;
+  brand_profiles?: { name: string; niche: string; location: string; avatar_url?: string; verified?: boolean; } | null;
 }
 
 const UI = {
@@ -192,7 +193,10 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
                   {cp?.avatar_url || bp?.avatar_url ? <img src={cp?.avatar_url || bp?.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : isC ? "◉" : "◈"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{cp?.name || bp?.name || p.email}</p>
+                  <p style={{ display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 600 }}>
+                    {cp?.name || bp?.name || p.email}
+                    {!isC && bp?.verified && <VerifiedBadge size={13} />}
+                  </p>
                   <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && cp?.followers ? ` · ${cp.followers.toLocaleString()} fans` : ""}</p>
                   {(isC ? cp?.rate : undefined) && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>Rate: £{cp?.rate}</p>}
                 </div>

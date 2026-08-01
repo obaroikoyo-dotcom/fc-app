@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import LocationInput from "../components/LocationInput";
+import VerifiedBadge from "../components/VerifiedBadge";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
@@ -116,6 +117,7 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [isEnterprise, setIsEnterprise] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
@@ -183,6 +185,7 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
     const { data } = await supabase.from("brand_profiles").select("*").eq("id", user.id).single();
     if (data) {
       setName(data.company_name || data.name || "");
+      setIsVerified(!!data.verified);
       setBio(data.bio || "");
       setWebsite(data.website || "");
       setInstagram(data.instagram || "");
@@ -329,6 +332,7 @@ const loadFavourites = async () => {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Brand"}</p>
+              {isVerified && <VerifiedBadge />}
               {isEnterprise && (
                 <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
               )}

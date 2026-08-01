@@ -10,6 +10,7 @@ import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
+import VerifiedBadge from "../components/VerifiedBadge";
 import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePaymentManually, type CampaignPost } from "../lib/campaignDelivery";
 import { getSocialConnections } from "../lib/social";
 
@@ -62,6 +63,7 @@ interface Conversation {
   other_name?: string;
   other_role?: string;
   other_avatar?: string;
+  other_verified?: boolean;
   linked_applications?: LinkedApplication[];
   application_id?: string;
   application_status?: string;
@@ -769,14 +771,16 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             const { data: profile } = await supabase.from("profiles").select("role").eq("id", otherId).single();
             let otherName = "Unknown";
             let otherAvatar = null;
+            let otherVerified = false;
             if (profile?.role === "creator") {
               const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", otherId).single();
               otherName = cp?.name || "Unknown";
               otherAvatar = cp?.avatar_url || null;
             } else {
-              const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url").eq("id", otherId).single();
+              const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url, verified").eq("id", otherId).single();
               otherName = bp?.name || "Unknown";
               otherAvatar = bp?.avatar_url || null;
+              otherVerified = !!bp?.verified;
             }
 
             // Match live app link properties to conversational items to maintain in-chat actions
@@ -808,6 +812,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
               other_name: otherName,
               other_role: profile?.role,
               other_avatar: otherAvatar,
+              other_verified: otherVerified,
               linked_applications: linkedApplications,
               application_id: latestApp?.id,
               application_status: latestApp?.status,
@@ -1344,7 +1349,10 @@ return (
       <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
         {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
       </div>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}</h1>
+      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+        {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}
+        {!blockedByIds.includes(otherParticipantId(activeConvo) || "") && activeConvo.other_verified && <VerifiedBadge />}
+      </h1>
     </div>
   ) : (
     <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
@@ -1686,6 +1694,7 @@ return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                         <p style={{ color: "#fff", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{displayName}</p>
+                        {!theyBlocked && c.other_verified && <VerifiedBadge size={12} />}
                         {isUnread && !iBlocked && !theyBlocked && (
                           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
                         )}

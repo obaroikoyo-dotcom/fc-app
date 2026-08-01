@@ -5,6 +5,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import VerifiedBadge from "../components/VerifiedBadge";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -27,6 +28,7 @@ interface BrandData {
   target_audience?: string;
   content_types?: string[];
   budget_range?: string;
+  verified?: boolean;
 }
 
 export default function BrandPublicProfile({ navigate, profileId, goBack }: Props) {
@@ -234,7 +236,10 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (brand.name || "Brand")}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+            {blockedMe ? "User unavailable" : (brand.name || "Brand")}
+            {!blockedMe && brand.verified && <VerifiedBadge />}
+          </span>
         </div>
         {currentUserId && currentUserId !== profileId && !blockedByMe && (
           <span
@@ -310,7 +315,10 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
             {avatar ? <img src={avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{brand.name || brand.company_name}</p>
+            <p style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>
+              {brand.name || brand.company_name}
+              {brand.verified && <VerifiedBadge />}
+            </p>
             <p style={{ fontSize: "13px", color: "#555" }}>{brand.niche || brand.industry}{brand.location ? ` · ${brand.location}` : ""}</p>
           </div>
         </div>
