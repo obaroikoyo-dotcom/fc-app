@@ -6,7 +6,6 @@ import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
-import { isBusinessEmail } from "../lib/emailVerification";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
@@ -289,7 +288,6 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         logo_url: logoUrl,
         avatar_url: logoUrl,
         onboarding_complete: true,
-        verified: isBusinessEmail(user.email || email),
       });
 
       if (profileError) {
