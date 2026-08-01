@@ -11,6 +11,8 @@ import RoleSelect from "./pages/RoleSelect";
 import BrandSignup from "./pages/BrandSignup";
 import CreatorSignup from "./pages/CreatorSignup";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import BrandDashboard from "./pages/BrandDashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreatorProfile from "./pages/CreatorProfile";
@@ -54,7 +56,9 @@ export type Page =
   | "notifications-brand"
   | "enterprise"
   | "apply-campaign"
-  | "verify-email";
+  | "verify-email"
+  | "forgot-password"
+  | "reset-password";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "public-profile", "apply-campaign"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand", "public-profile"];
@@ -434,6 +438,17 @@ export default function App() {
       logEvent(`onAuthStateChange: event=${event} hasSession=${!!session} provider=${session?.user?.app_metadata?.provider ?? "n/a"} emailConfirmed=${!!session?.user?.email_confirmed_at}`);
       if (!isMounted) return;
 
+      if (event === "PASSWORD_RECOVERY") {
+        // Opening the reset-password email link signs the user into a
+        // temporary recovery session - route straight to the reset screen
+        // instead of letting the normal SIGNED_IN handling below send them
+        // to their actual dashboard.
+        lastAuthUserId = session?.user?.id ?? null;
+        setPage("reset-password");
+        setLoading(false);
+        return;
+      }
+
       if (event === "SIGNED_OUT") {
         lastAuthUserId = null;
         oneSignalLogout();
@@ -499,6 +514,8 @@ export default function App() {
       case "brand-onboarding": return <BrandOnboarding navigate={navigate} setPendingEmail={setPendingEmail} />;
       case "creator-signup": return <CreatorSignup navigate={navigate} />;
       case "login": return <Login navigate={navigate} />;
+      case "forgot-password": return <ForgotPassword navigate={navigate} />;
+      case "reset-password": return <ResetPassword navigate={navigate} />;
       case "brand-dashboard": 
         return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;

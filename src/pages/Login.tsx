@@ -106,6 +106,10 @@ export default function Login({ navigate }: Props) {
           <Input label="Password" type="password" placeholder="••••••••" value={form.password} onChange={set("password")} />
         </div>
 
+        <p style={{ textAlign: "right", marginTop: "10px", fontSize: "12px" }}>
+          <span onClick={() => navigate("forgot-password")} style={{ color: "#777", cursor: "pointer", textDecoration: "underline" }}>Forgot password?</span>
+        </p>
+
         {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 
         <div style={{ marginTop: "1.5rem" }}>
