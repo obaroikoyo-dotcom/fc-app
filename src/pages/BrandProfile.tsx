@@ -37,7 +37,8 @@ type SettingsSection =
   | "terms"
   | "debug-log"
   | "reports-blocked"
-  | "manage-accounts";
+  | "manage-accounts"
+  | "get-verified";
 
 export default function BrandProfile({ navigate, toggleTheme, isInverted }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
@@ -118,6 +119,9 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
   const [userId, setUserId] = useState<string | null>(null);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [verificationRequest, setVerificationRequest] = useState<{ status: string } | null>(null);
+  const [verificationNote, setVerificationNote] = useState("");
+  const [submittingVerification, setSubmittingVerification] = useState(false);
 const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
@@ -199,6 +203,28 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
       setLogoUrl(data.logo_url || data.avatar_url || null);
       setIsEnterprise(data.is_enterprise || false);
 setCancelledAtPeriodEnd(data.subscription_cancel_at_period_end || false);
+    }
+
+    const { data: reqs } = await supabase
+      .from("verification_requests")
+      .select("status")
+      .eq("brand_id", user.id)
+      .order("requested_at", { ascending: false })
+      .limit(1);
+    if (reqs && reqs[0] && reqs[0].status === "pending") setVerificationRequest(reqs[0]);
+  };
+
+  const handleRequestVerification = async () => {
+    if (!userId) return;
+    setSubmittingVerification(true);
+    const { error } = await supabase.from("verification_requests").insert({
+      brand_id: userId,
+      note: verificationNote.trim() || null,
+    });
+    setSubmittingVerification(false);
+    if (!error) {
+      setVerificationRequest({ status: "pending" });
+      setVerificationNote("");
     }
   };
 
@@ -492,6 +518,7 @@ const loadFavourites = async () => {
         {sectionHeader("Brand Account")}
         {settingsRow("Edit Profile", "Name, bio, industry, location, links", () => setSettingsSection("edit-profile"))}
         {settingsRow("Manage Accounts", "Connect TikTok/Instagram to post creator content", () => setSettingsSection("manage-accounts"))}
+        {settingsRow("Get Verified", isVerified ? "Verified ✓" : verificationRequest ? "Request pending review" : "Request a verified badge", () => setSettingsSection("get-verified"))}
         {settingsRow("Industry & Content Needs", "Sectors and media formats you need", () => setSettingsSection("industry-selection"))}
         {settingsRow("Campaign Preferences", "Creator tier and target audience", () => setSettingsSection("campaign-preferences"))}
         {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"))}
@@ -791,6 +818,48 @@ const loadFavourites = async () => {
     );
   };
 
+  const renderGetVerified = () => {
+    return (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+      {renderSettingsHeader("Get Verified", () => setSettingsSection("main"))}
+      <div style={{ padding: "1.25rem" }}>
+        {isVerified ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "16px" }}>
+            <VerifiedBadge size={18} />
+            <p style={{ fontSize: "13px", color: "#fff" }}>Your brand is verified.</p>
+          </div>
+        ) : verificationRequest ? (
+          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "16px" }}>
+            <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>Request pending review</p>
+            <p style={{ fontSize: "12px", color: "#555", marginTop: "6px", lineHeight: 1.6 }}>
+              Our team is looking into it. You'll see the verified tick appear next to your name once it's approved.
+            </p>
+          </div>
+        ) : (
+          <>
+            <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+              Brands signed up with a business email are usually verified automatically. If yours wasn't — or if you'd just like a human to take a look — request a manual review below.
+            </p>
+            <textarea
+              value={verificationNote}
+              onChange={e => setVerificationNote(e.target.value)}
+              placeholder="Anything that helps us confirm you're a real brand (website, socials, etc.) — optional"
+              rows={4}
+              style={{ width: "100%", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", color: "#fff", fontSize: "13px", fontFamily: "inherit", resize: "none", marginBottom: "1rem" }}
+            />
+            <span
+              onClick={submittingVerification ? undefined : handleRequestVerification}
+              style={{ display: "block", textAlign: "center", background: "#fff", color: "#000", fontSize: "13px", fontWeight: 600, borderRadius: "10px", padding: "14px", cursor: submittingVerification ? "default" : "pointer", opacity: submittingVerification ? 0.6 : 1 }}
+            >
+              {submittingVerification ? "Submitting..." : "Request Verification"}
+            </span>
+          </>
+        )}
+      </div>
+    </div>
+    );
+  };
+
   // ─── HELP ─────────────────────────────────────────────────────────────────
   const renderHelp = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
@@ -978,6 +1047,7 @@ const renderTerms = () => (
       {settingsSection === "share-profile" && renderShareProfile()}
       {settingsSection === "favourites" && renderFavourites()}
       {settingsSection === "manage-accounts" && renderManageAccounts()}
+      {settingsSection === "get-verified" && renderGetVerified()}
       {settingsSection === "help" && renderHelp()}
       {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
 {settingsSection === "terms" && renderTerms()}

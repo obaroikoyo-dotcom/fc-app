@@ -186,7 +186,10 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
       return;
     }
 
-    await supabase.from("brand_profiles").update({ is_enterprise: true }).eq("id", user.id);
+    // Paying for Enterprise is itself a strong enough signal of a real
+    // business to also grant the verified badge, on top of whatever the
+    // email-domain check already decided.
+    await supabase.from("brand_profiles").update({ is_enterprise: true, verified: true }).eq("id", user.id);
     onLoadingChange(false);
     onSuccess();
   };
