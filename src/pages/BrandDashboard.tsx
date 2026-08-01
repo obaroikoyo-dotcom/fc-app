@@ -6,6 +6,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import VerifiedBadge from "../components/VerifiedBadge";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -95,7 +96,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
           const { data } = await supabase
             .from("campaigns")
-            .select(`*, applications(id), brand_profiles(name, logo_url)`)
+            .select(`*, applications(id), brand_profiles(name, logo_url, verified)`)
             .order("created_at", { ascending: false });
 
           if (data) {
@@ -272,6 +273,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const isOwn = c.brand_id === currentUserId;
                 const brandLogo = (c as any).brand_profiles?.logo_url;
                 const brandName = (c as any).brand_profiles?.name;
+                const brandVerified = (c as any).brand_profiles?.verified;
                 const budgetVal = parseInt(c.budget, 10);
                 const currentTotalCost = budgetVal + budgetVal * 0.05;
                 const creatorNetPayout = isEnterprise ? budgetVal : budgetVal * 0.90;
@@ -289,7 +291,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#333", flexShrink: 0 }}>
                           {brandLogo ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                         </div>
-                        <span style={{ fontSize: "12px", color: "#555" }}>{brandName || "Brand"}</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#555" }}>
+                          {brandName || "Brand"}
+                          {brandVerified && <VerifiedBadge size={11} />}
+                        </span>
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
