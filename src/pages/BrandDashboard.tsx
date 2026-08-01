@@ -325,8 +325,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                       <div>
-                        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 6px 0" }}>{c.name}</p>
-                        <p style={{ fontSize: "13px", color: "#444", marginBottom: "12px", lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const, overflow: "hidden" }}>{c.description}</p>
+                        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 12px 0" }}>{c.name}</p>
                       </div>
                       {c.video_required && (
                         <span style={{ flexShrink: 0, fontSize: "10px", color: "#555", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
