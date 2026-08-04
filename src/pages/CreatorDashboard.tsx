@@ -13,7 +13,7 @@ export default function CreatorDashboard({ navigate }: Props) {
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1.25rem", textAlign: "center" }}>
         <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>Welcome back</p>
-        <p style={{ fontSize: "13px", color: "#444" }}>Explore brand campaigns or update your profile.</p>
+        <p style={{ fontSize: "13px", color: "#888" }}>Explore brand campaigns or update your profile.</p>
         <div onClick={() => navigate("explore")} style={{ marginTop: "2rem", padding: "13px 2rem", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
           Browse Campaigns
         </div>

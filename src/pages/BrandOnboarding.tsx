@@ -367,20 +367,20 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Protocol</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Protocol</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Initialize corporate identity</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2.5rem" }}>Establish parameters to connect with creators who match your target positioning.</p>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Establish parameters to connect with creators who match your target positioning.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Registered Business Name</label>
+        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Registered Business Name</label>
         <input style={inputStyle} placeholder="e.g. Acme Corporation" value={companyName} onChange={e => setCompanyName(e.target.value)} autoFocus />
       </div>
     </div>,
 
     // Screen 1 — Positioning
     <div key={1}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Market Segment</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Market Segment</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Select sector alignment</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Creators categorize partnership offers by operational fields.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Creators categorize partnership offers by operational fields.</p>
       <div style={{ position: "relative", marginBottom: "1.5rem" }}>
   {selectedIndustries.length > 0 && (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
@@ -407,7 +407,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       {filteredIndustries.map(ind => (
         <div key={ind} onMouseDown={() => addIndustry(ind)} style={{ padding: "10px 14px", fontSize: "13px", color: "#fff", cursor: "pointer" }}>{ind}</div>
       ))}
-      <div onMouseDown={() => addIndustry(industryInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#555", cursor: "pointer", borderTop: filteredIndustries.length ? "1px solid #1a1a1a" : "none" }}>
+      <div onMouseDown={() => addIndustry(industryInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#999", cursor: "pointer", borderTop: filteredIndustries.length ? "1px solid #1a1a1a" : "none" }}>
         Add "{industryInput}"
       </div>
     </div>
@@ -415,7 +415,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 </div>
 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
   <div>
-    <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Headquarters Location</label>
+    <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Headquarters Location</label>
     <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
   </div>
 </div>
@@ -423,16 +423,16 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 2 — Web Presence & Description
     <div key={2}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Profile</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Profile</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verification parameters</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Provide credentials to support verification steps.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Provide credentials to support verification steps.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Corporate Website URL</label>
+          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Corporate Website URL</label>
           <input style={inputStyle} placeholder="https://yourbrand.com" value={website} onChange={e => setWebsite(e.target.value)} />
         </div>
         <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Executive Summary / Mission Statement</label>
+          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Executive Summary / Mission Statement</label>
           <input style={inputStyle} placeholder="Describe your brand voice and creative philosophy..." value={bio} onChange={e => setBio(e.target.value)} />
         </div>
       </div>
@@ -440,9 +440,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 3 — Campaign & Activation Directives
     <div key={3}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Asset Strategies</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Asset Strategies</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Required media formats</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Select the asset distributions required for your placements.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select the asset distributions required for your placements.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {ACTIVATION_TYPES.map(act => (
           <div key={act} onClick={() => toggleContent(act)} style={chipStyle(contentTypes.includes(act))}>
@@ -451,16 +451,16 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         ))}
       </div>
       <div>
-        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Target Demographics</label>
+        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Target Demographics</label>
         <input style={inputStyle} placeholder="e.g. Gen Z Design Enthusiasts, UK Tech Professionals" value={targetAudience} onChange={e => setTargetAudience(e.target.value)} />
       </div>
     </div>,
 
     // Screen 4 — Strategic Alignment & Capital Allocation
     <div key={4}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What is your target creator tier?</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Defining your target allows our algorithm to prioritize the right talent for your brand voice.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Defining your target allows our algorithm to prioritize the right talent for your brand voice.</p>
       
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
         {CREATOR_TIERS.map(tier => (
@@ -485,9 +485,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 5 — Access Credentials
     <div key={5}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Authentication</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Authentication</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Secure corporate portal</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Credentials are handled in compliance with standardized protocols.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Credentials are handled in compliance with standardized protocols.</p>
       {isOAuthUser ? (
         <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
           Continuing as <strong>{email}</strong> via Google
@@ -495,21 +495,21 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Corporate Email Address</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Corporate Email Address</label>
             <input style={inputStyle} placeholder="hello@company.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Portal Password</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Portal Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Portal Password</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Portal Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
-            <span style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+            <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
           </div>
 
@@ -526,7 +526,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       {!termsAccepted && (
         <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Read & accept Terms and Conditions</span>
-          <span style={{ color: "#555" }}>Required →</span>
+          <span style={{ color: "#999" }}>Required →</span>
         </div>
       )}
       {termsAccepted && (
@@ -534,21 +534,21 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       )}
       <div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
   <span>Read Privacy Policy</span>
-  <span style={{ color: "#555" }}>View →</span>
+  <span style={{ color: "#999" }}>View →</span>
 </div>
     </div>,
 
     // Screen 6 — Connect TikTok
     <div key={6}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your TikTok</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
         Verified brands get more replies from creators. Connect your TikTok to show a verified account on your profile — no posting access needed, just proof it's really you.
       </p>
       {socialNotice && (
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-          <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+          <span onClick={() => setSocialNotice("")} style={{ color: "#999", cursor: "pointer", fontSize: "14px" }}>✕</span>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -561,7 +561,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
                   <TikTokIcon size={22} />
                   <div>
                     <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>TikTok</p>
-                    {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                    {connection && <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                   </div>
                 </div>
                 {connection ? (
@@ -577,8 +577,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         })()}
         {COMING_SOON_SOCIALS.map(platform => (
           <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-            <p style={{ fontSize: "14px", color: "#555", fontWeight: 500 }}>{platform}</p>
-            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+            <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
+            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
           </div>
         ))}
       </div>
@@ -586,17 +586,17 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 7 — Visual Branding Identification
     <div key={7}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Visual Assets</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Visual Assets</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Upload brand iconography</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>Identifiable logomarks build consistency and trust throughout application touchpoints.</p>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>Identifiable logomarks build consistency and trust throughout application touchpoints.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <div onClick={() => logoRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "14px", border: `2px dashed ${brandLogo ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
           {brandLogo
             ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: "32px", color: "#333" }}>+</span>}
+            : <span style={{ fontSize: "32px", color: "#777" }}>+</span>}
         </div>
         <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogo} />
-        <p style={{ fontSize: "12px", color: "#444" }}>{brandLogo ? "Modify logomark" : "Assign logomark"}</p>
+        <p style={{ fontSize: "12px", color: "#888" }}>{brandLogo ? "Modify logomark" : "Assign logomark"}</p>
       </div>
     </div>,
   ];
@@ -659,9 +659,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       {/* Top Nav */}
       <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(8px + env(safe-area-inset-top, 0px))" }}>
         {screen > 0
-          ? <span onClick={back} style={{ fontSize: "18px", color: "#555", cursor: "pointer", padding: "4px" }}>←</span>
-          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#444", cursor: "pointer" }}>← Back</span>}
-        <span style={{ fontSize: "12px", color: "#333" }}>{screen + 1} / {TOTAL_SCREENS}</span>
+          ? <span onClick={back} style={{ fontSize: "18px", color: "#999", cursor: "pointer", padding: "4px" }}>←</span>
+          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer" }}>← Back</span>}
+        <span style={{ fontSize: "12px", color: "#777" }}>{screen + 1} / {TOTAL_SCREENS}</span>
       </div>
 
       {/* Screen Content */}
@@ -690,7 +690,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             </div>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#444", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
+              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
             >
               Skip configuration
             </div>
@@ -729,9 +729,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
               </svg>
             </div>
 
-            <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#444", marginBottom: "0.75rem" }}>One more step</p>
+            <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
             <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
-            <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.75rem" }}>
+            <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
               We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
             </p>
 
@@ -752,7 +752,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             </div>
 
             {otpError && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{otpError}</p>}
-            {otpLoading && <p style={{ fontSize: "12px", color: "#555", marginBottom: "1rem" }}>Verifying...</p>}
+            {otpLoading && <p style={{ fontSize: "12px", color: "#999", marginBottom: "1rem" }}>Verifying...</p>}
 
             <div
               onClick={otpResending ? undefined : handleOtpResend}

@@ -56,7 +56,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           <h3 style={{ margin: 0, color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'Syne', sans-serif" }}>
             Privacy Policy
           </h3>
-          <p style={{ margin: "4px 0 0 0", color: "#555", fontSize: "12px" }}>
+          <p style={{ margin: "4px 0 0 0", color: "#999", fontSize: "12px" }}>
             How FlipCollab collects, uses, and protects your data.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
+          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
 
           <p>This Privacy Policy explains how FlipCollab ("we", "us", "our") collects, uses, and protects your personal data when you use our platform. FlipCollab is operated from the United Kingdom and complies with the UK GDPR and the Data Protection Act 2018.</p>
 
@@ -172,7 +172,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             <span>For any privacy-related questions email <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
-          <p style={{ color: "#333", fontSize: "11px", marginBottom: 0 }}>FlipCollab is operated in England and Wales. This policy is governed by UK law.</p>
+          <p style={{ color: "#777", fontSize: "11px", marginBottom: 0 }}>FlipCollab is operated in England and Wales. This policy is governed by UK law.</p>
         </div>
 
         {/* Footer */}

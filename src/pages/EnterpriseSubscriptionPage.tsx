@@ -13,13 +13,13 @@ const CARD_ELEMENT_OPTIONS = {
       fontSize: "14px",
       color: "#fff",
       fontFamily: "'DM Sans', sans-serif",
-      "::placeholder": { color: "#555" },
+      "::placeholder": { color: "#999" },
     },
     invalid: { color: "#ff3b30" },
   },
 };
 
-const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
+const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
 const fieldInput: React.CSSProperties = { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const };
 
 
@@ -214,13 +214,13 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "8px", border: "1px solid #222", background: "transparent", cursor: "pointer" }}
         >
           <span style={{ fontSize: "12px", color: "#aaa", fontWeight: 500 }}>Billing address <span style={{ color: "#ff3b30" }}>*</span></span>
-          <span style={{ fontSize: "11px", color: "#555", transform: billingOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}>▼</span>
+          <span style={{ fontSize: "11px", color: "#999", transform: billingOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}>▼</span>
         </div>
 
         {billingOpen && (
           <div ref={billingRef} className="billing-address-in" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div style={{ position: "relative" }}>
-              <label style={fieldLabel}>Address Line 1 <span style={{ color: "#333", textTransform: "none", letterSpacing: 0 }}>— start typing to search</span></label>
+              <label style={fieldLabel}>Address Line 1 <span style={{ color: "#777", textTransform: "none", letterSpacing: 0 }}>— start typing to search</span></label>
               <input
                 value={billingLine1}
                 onChange={e => handleAddressLine1Change(e.target.value)}
@@ -231,7 +231,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
                 autoComplete="off"
               />
               {addressSearching && (
-                <span style={{ position: "absolute", right: "14px", top: "36px", fontSize: "11px", color: "#555" }}>Searching…</span>
+                <span style={{ position: "absolute", right: "14px", top: "36px", fontSize: "11px", color: "#999" }}>Searching…</span>
               )}
               {showSuggestions && addressSuggestions.length > 0 && (
                 <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", zIndex: 10, maxHeight: "220px", overflowY: "auto" }}>
@@ -282,7 +282,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
       <div className="tap-btn" onClick={!paymentLoading ? handlePayment : undefined} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
         {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
       </div>
-      <p style={{ fontSize: "11px", color: "#333", textAlign: "center", marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+      <p style={{ fontSize: "11px", color: "#777", textAlign: "center", marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
           <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="2" />
           <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -315,40 +315,40 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       `}</style>
 
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#555", cursor: "pointer" }}>←</span>
+        <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#999", cursor: "pointer" }}>←</span>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
       </div>
 
       <div style={{ padding: "2rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", paddingBottom: "6rem", maxWidth: "480px", margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-          <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#555", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>
+          <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#999", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>Scale Your Campaigns.<br />Pay Zero Fees.</h1>
-          <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7 }}>Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations.</p>
+          <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7 }}>Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations.</p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2.5rem" }}>
           <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
-            <p style={{ fontSize: "12px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "12px" }}>Standard</p>
+            <p style={{ fontSize: "12px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "12px" }}>Standard</p>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
-              <span style={{ color: "#555" }}>Brand platform fee</span>
-              <span style={{ color: "#777" }}>+5% per checkout</span>
+              <span style={{ color: "#999" }}>Brand platform fee</span>
+              <span style={{ color: "#bbb" }}>+5% per checkout</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-              <span style={{ color: "#555" }}>Creator platform fee</span>
-              <span style={{ color: "#777" }}>-10% from payout</span>
+              <span style={{ color: "#999" }}>Creator platform fee</span>
+              <span style={{ color: "#bbb" }}>-10% from payout</span>
             </div>
           </div>
 
           <div style={{ background: "#fff", border: "1px solid #fff", borderRadius: "12px", padding: "1.25rem", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, right: 0, background: "#0a0a0a", color: "#fff", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "4px 12px", borderBottomLeftRadius: "8px" }}>Maximize ROI</div>
-            <p style={{ fontSize: "12px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "12px" }}>Enterprise</p>
+            <p style={{ fontSize: "12px", color: "#ccc", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "12px" }}>Enterprise</p>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
-              <span style={{ color: "#333" }}>Brand platform fee</span>
+              <span style={{ color: "#777" }}>Brand platform fee</span>
               <span style={{ color: "#0a0a0a", fontWeight: 700 }}>0% waived</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-              <span style={{ color: "#333" }}>Creator platform fee</span>
+              <span style={{ color: "#777" }}>Creator platform fee</span>
               <span style={{ color: "#0a0a0a", fontWeight: 700 }}>0% waived</span>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
                 <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fff", flexShrink: 0, marginTop: "5px" }} />
                 <div>
                   <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "3px" }}>{title}</p>
-                  <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{sub}</p>
+                  <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>{sub}</p>
                 </div>
               </div>
             ))}
@@ -377,21 +377,21 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
 
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "1.5rem", textAlign: "center", marginBottom: "2.5rem" }}>
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Enterprise Plan</p>
-          <p style={{ fontSize: "12px", color: "#444", marginBottom: "1.5rem" }}>Scalable access for modern brand workflows</p>
+          <p style={{ fontSize: "12px", color: "#888", marginBottom: "1.5rem" }}>Scalable access for modern brand workflows</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
             <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "10px", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ textAlign: "left" }}>
-                <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Monthly</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£97<span style={{ fontSize: "13px", color: "#555", fontWeight: 400 }}>/mo</span></p>
+                <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Monthly</p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£97<span style={{ fontSize: "13px", color: "#999", fontWeight: 400 }}>/mo</span></p>
               </div>
-              <span style={{ fontSize: "11px", color: "#555", border: "1px solid #222", borderRadius: "20px", padding: "4px 10px" }}>Cancel anytime</span>
+              <span style={{ fontSize: "11px", color: "#999", border: "1px solid #222", borderRadius: "20px", padding: "4px 10px" }}>Cancel anytime</span>
             </div>
             <div style={{ background: "#0a0a0a", border: "1px solid #333", borderRadius: "10px", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", top: 0, right: 0, background: "#fff", color: "#0a0a0a", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 10px", borderBottomLeftRadius: "6px" }}>Best Value</div>
               <div style={{ textAlign: "left" }}>
-                <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Annual</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£82<span style={{ fontSize: "13px", color: "#555", fontWeight: 400 }}>/mo</span></p>
-                <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>£984 billed annually</p>
+                <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Annual</p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£82<span style={{ fontSize: "13px", color: "#999", fontWeight: 400 }}>/mo</span></p>
+                <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>£984 billed annually</p>
               </div>
               <span style={{ fontSize: "11px", color: "#fff", border: "1px solid #333", borderRadius: "20px", padding: "4px 10px" }}>Save £180/yr</span>
             </div>
@@ -399,8 +399,8 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <div className="tap-btn" onClick={() => setShowModal(true)} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
   Upgrade to Enterprise
 </div>
-          <p style={{ fontSize: "11px", color: "#333", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime.</p>
-          <p style={{ fontSize: "11px", color: "#333", marginTop: "6px", textAlign: "center" }}>Plan cannot be changed after subscribing. Cancel and resubscribe to switch.</p>
+          <p style={{ fontSize: "11px", color: "#777", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime.</p>
+          <p style={{ fontSize: "11px", color: "#777", marginTop: "6px", textAlign: "center" }}>Plan cannot be changed after subscribing. Cancel and resubscribe to switch.</p>
         </div>
 
         <div>
@@ -413,7 +413,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
             ].map(({ q, a }) => (
               <div key={q} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                 <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>{q}</p>
-                <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.6 }}>{a}</p>
+                <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.6 }}>{a}</p>
               </div>
             ))}
           </div>
@@ -427,7 +427,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <div style={{ fontSize: "40px", marginBottom: "1rem" }}>🎉</div>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
-                <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
+                <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
                 <div className="tap-btn" onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Back to Dashboard
                 </div>
@@ -436,7 +436,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
                   <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Complete Your Upgrade</p>
-                  <span className="tap-btn" onClick={() => setShowModal(false)} style={{ color: "#444", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>×</span>
+                  <span className="tap-btn" onClick={() => setShowModal(false)} style={{ color: "#888", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>×</span>
                 </div>
 
                 <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>

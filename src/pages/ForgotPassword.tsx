@@ -44,14 +44,14 @@ export default function ForgotPassword({ navigate }: Props) {
 
         {sent ? (
           <>
-            <p style={{ fontSize: "13px", color: "#777", marginBottom: "2rem", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "13px", color: "#bbb", marginBottom: "2rem", lineHeight: 1.6 }}>
               If an account exists for <strong style={{ color: "#fff" }}>{email}</strong>, we've sent a link to reset your password. Check your inbox.
             </p>
             <Button variant="outline" onClick={() => navigate("login")}>Back to Log In</Button>
           </>
         ) : (
           <>
-            <p style={{ fontSize: "13px", color: "#444", marginBottom: "2rem" }}>
+            <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem" }}>
               Enter the email on your account and we'll send you a link to reset your password.
             </p>
 
@@ -63,7 +63,7 @@ export default function ForgotPassword({ navigate }: Props) {
               <Button onClick={handleSend}>{loading ? "Sending..." : "Send Reset Link"}</Button>
             </div>
 
-            <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#444" }}>
+            <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#888" }}>
               <span onClick={() => navigate("login")} style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}>Back to Log In</span>
             </p>
           </>

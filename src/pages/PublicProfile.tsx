@@ -242,7 +242,7 @@ const startDM = async () => {
     borderRadius: "20px",
     border: "1px solid #222",
     background: "transparent",
-    color: "#555",
+    color: "#999",
     fontSize: "12px",
     fontWeight: 500,
   };
@@ -252,7 +252,7 @@ const startDM = async () => {
     fontWeight: 500,
     letterSpacing: "0.1em",
     textTransform: "uppercase",
-    color: "#555",
+    color: "#999",
     marginBottom: "6px",
     display: "block",
   };
@@ -357,7 +357,7 @@ const startDM = async () => {
 
   if (!creator) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#333", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Profile not found.</p>
+      <p style={{ color: "#777", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Profile not found.</p>
     </div>
   );
 
@@ -368,13 +368,13 @@ const startDM = async () => {
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-          <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+          <span onClick={goBack} style={{ fontSize: "18px", color: "#999", cursor: "pointer" }}>←</span>
           <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (creator.name || "Creator")}</span>
         </div>
         {currentUserId && currentUserId !== profileId && !blockedByMe && (
           <span
             onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
-            style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+            style={{ fontSize: "11px", color: "#aaa", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
           >
             ⚑
           </span>
@@ -386,7 +386,7 @@ const startDM = async () => {
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
             {blockedByMe ? "You've blocked this profile" : "User unavailable"}
           </p>
-          <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, maxWidth: "300px" }}>
+          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>
             {blockedByMe
               ? "You can't see their content or message them. Unblock from Settings → Reported & Blocked to restore this."
               : "This profile isn't available."}
@@ -398,7 +398,7 @@ const startDM = async () => {
             <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
           ) : (
             <>
-              <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {creator.name || "this profile"}</p>
+              <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {creator.name || "this profile"}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
                 {["Inappropriate content", "Offensive language", "Spam or scam", "Other"].map(r => (
                   <span
@@ -442,7 +442,7 @@ const startDM = async () => {
 
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
+           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777", flexShrink: 0, overflow: "hidden" }}>
   {creator.avatar_url
     ? <img src={creator.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
     : "◉"}
@@ -454,7 +454,7 @@ const startDM = async () => {
                   <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>
                 )}
               </div>
-              <p style={{ fontSize: "13px", color: "#555" }}>{creator.niche}{creator.location ? ` · ${creator.location}` : ""}</p>
+              <p style={{ fontSize: "13px", color: "#999" }}>{creator.niche}{creator.location ? ` · ${creator.location}` : ""}</p>
             </div>
           </div>
 
@@ -477,7 +477,7 @@ const startDM = async () => {
           {/* Bio */}
           {creator.bio && (
             <div style={sectionStyle}>
-              <p style={{ fontSize: "13px", color: "#777", lineHeight: 1.7 }}>{creator.bio}</p>
+              <p style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.7 }}>{creator.bio}</p>
             </div>
           )}
 
@@ -494,9 +494,9 @@ const startDM = async () => {
                 <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
-                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#555", fontSize: "12px" }}>@{verified?.username || creator.social_links[p]}</p>}
+                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{verified?.username || creator.social_links[p]}</p>}
                   </div>
-                  <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555" }}>
+                  <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
                     {followers != null && <span>{followers.toLocaleString()} followers{verified && " ✓"}</span>}
                     {creator.engagement_rates?.[p] && <span>{creator.engagement_rates[p]}% engagement</span>}
                   </div>
@@ -511,7 +511,7 @@ const startDM = async () => {
             <div style={sectionStyle}>
               <label style={labelStyle}>Recent Posts</label>
               {socialInfo.length > 0 && (
-                <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px" }}>
+                <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
                   {socialInfo.map((s, i) => (
                     <span key={s.platform}>{i > 0 ? "  ·  " : ""}{s.platform === "instagram" ? "Instagram" : "TikTok"} @{s.username}{s.follower_count != null ? ` (${s.follower_count.toLocaleString()})` : ""}</span>
                   ))}
@@ -553,7 +553,7 @@ const startDM = async () => {
           {(creator.audience_age_range || creator.audience_location) && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Audience</label>
-              <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "#555" }}>
+              <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "#999" }}>
                 {creator.audience_age_range && <span>Age {creator.audience_age_range}</span>}
                 {creator.audience_location && <span>{creator.audience_location}</span>}
               </div>
@@ -565,11 +565,11 @@ const startDM = async () => {
             <div style={sectionStyle}>
               <label style={labelStyle}>Rate Card</label>
               <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
-                {creator.rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Post</span><span style={{ color: "#fff" }}>£{creator.rates.post}</span></div>}
-                {creator.rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Story</span><span style={{ color: "#fff" }}>£{creator.rates.story}</span></div>}
-                {creator.rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Reel</span><span style={{ color: "#fff" }}>£{creator.rates.reel}</span></div>}
-                {creator.rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Video</span><span style={{ color: "#fff" }}>£{creator.rates.video}</span></div>}
-                {creator.rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>UGC Only</span><span style={{ color: "#fff" }}>£{creator.rates.ugc}</span></div>}
+                {creator.rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Post</span><span style={{ color: "#fff" }}>£{creator.rates.post}</span></div>}
+                {creator.rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Story</span><span style={{ color: "#fff" }}>£{creator.rates.story}</span></div>}
+                {creator.rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Reel</span><span style={{ color: "#fff" }}>£{creator.rates.reel}</span></div>}
+                {creator.rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Video</span><span style={{ color: "#fff" }}>£{creator.rates.video}</span></div>}
+                {creator.rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>UGC Only</span><span style={{ color: "#fff" }}>£{creator.rates.ugc}</span></div>}
               </div>
             </div>
           )}
@@ -584,7 +584,7 @@ const startDM = async () => {
                 {creator.collabs.filter(c => c.brand).map((c, i) => (
                   <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{c.brand}</p>
-                    <p style={{ color: "#555", fontSize: "12px" }}>{c.description}</p>
+                    <p style={{ color: "#999", fontSize: "12px" }}>{c.description}</p>
                   </div>
                 ))}
               </div>
@@ -600,24 +600,24 @@ const startDM = async () => {
                 <div style={{ display: "flex", gap: "10px", marginBottom: "1.25rem" }}>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                     <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Completed</p>
                   </div>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                     {trackRecord.avgRating != null ? (
                       <>
                         <StarRating rating={trackRecord.avgRating} size={13} />
-                        <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                       </>
                     ) : (
                       <>
-                        <p style={{ color: "#555", fontSize: "13px" }}>—</p>
-                        <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                        <p style={{ color: "#999", fontSize: "13px" }}>—</p>
+                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
                       </>
                     )}
                   </div>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                     <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
-                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
                   </div>
                 </div>
 
@@ -655,7 +655,7 @@ const startDM = async () => {
                           >
                             {submittingReview ? "Submitting..." : "Submit Review"}
                           </div>
-                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
                             Cancel
                           </div>
                         </div>
@@ -670,15 +670,15 @@ const startDM = async () => {
                       <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333" }}>
+                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
                               {r.brand_avatar ? <img src={r.brand_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                             </div>
                             <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
                           </div>
                           <StarRating rating={r.rating} size={11} />
                         </div>
-                        {r.comment && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
-                        <p style={{ color: "#333", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                        {r.comment && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                        <p style={{ color: "#777", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
                       </div>
                     ))}
                   </div>
@@ -691,9 +691,9 @@ const startDM = async () => {
           {!creator.platforms?.length && !creator.content_types?.length && !creator.languages?.length && !creator.audience_age_range && !creator.audience_location && !creator.rates?.post && !creator.rates?.reel && !creator.rates?.story && !creator.rates?.video && !creator.rates?.ugc && !creator.collabs?.filter(c => c.brand).length &&
             !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◉</div>
+              <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
-              <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
+              <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
             </div>
           )}
 

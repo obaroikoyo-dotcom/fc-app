@@ -97,7 +97,7 @@ export default function LocationInput({ value, onChange, placeholder, inputStyle
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
                 <p style={{ color: "#fff", fontSize: "13px", fontWeight: 500, margin: 0 }}>{main}</p>
-                {sub && <p style={{ color: "#555", fontSize: "11px", margin: "2px 0 0 0" }}>{sub}</p>}
+                {sub && <p style={{ color: "#999", fontSize: "11px", margin: "2px 0 0 0" }}>{sub}</p>}
               </div>
             );
           })}

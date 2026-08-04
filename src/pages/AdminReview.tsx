@@ -128,7 +128,7 @@ export default function AdminReview({ goBack }: Props) {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
         {header}
-        <p style={{ padding: "2rem", color: "#555", fontSize: "13px", textAlign: "center" }}>Not authorized.</p>
+        <p style={{ padding: "2rem", color: "#999", fontSize: "13px", textAlign: "center" }}>Not authorized.</p>
       </div>
     );
   }
@@ -149,21 +149,21 @@ export default function AdminReview({ goBack }: Props) {
       <div style={{ padding: "1.25rem" }}>
         {tab === "verification" && (
           requests.length === 0 ? (
-            <p style={{ color: "#333", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No pending verification requests.</p>
+            <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No pending verification requests.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {requests.map(r => (
                 <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
                       {r.brand_logo ? <img src={r.brand_logo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                     </div>
                     <div>
                       <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{r.brand_name}</p>
-                      <p style={{ color: "#444", fontSize: "10px" }}>{new Date(r.requested_at).toLocaleString()}</p>
+                      <p style={{ color: "#888", fontSize: "10px" }}>{new Date(r.requested_at).toLocaleString()}</p>
                     </div>
                   </div>
-                  {r.note && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{r.note}</p>}
+                  {r.note && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{r.note}</p>}
                   <div style={{ display: "flex", gap: "8px" }}>
                     <div
                       onClick={() => actioningId ? undefined : handleApprove(r.id)}
@@ -186,14 +186,14 @@ export default function AdminReview({ goBack }: Props) {
 
         {tab === "reports" && (
           reports.length === 0 ? (
-            <p style={{ color: "#333", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open reports.</p>
+            <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open reports.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {reports.map(r => (
                 <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.reporter_name} reported {r.reported_name}</p>
-                  <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "6px" }}>{r.reason}</p>
-                  <p style={{ color: "#444", fontSize: "10px", marginBottom: "10px" }}>{new Date(r.created_at).toLocaleString()}</p>
+                  <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "6px" }}>{r.reason}</p>
+                  <p style={{ color: "#888", fontSize: "10px", marginBottom: "10px" }}>{new Date(r.created_at).toLocaleString()}</p>
                   <div
                     onClick={() => actioningId ? undefined : handleResolveReport(r.id)}
                     style={{ padding: "10px", borderRadius: "8px", border: "1px solid #222", color: "#ccc", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}

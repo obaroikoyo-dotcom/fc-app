@@ -60,7 +60,7 @@ const lbl: React.CSSProperties = {
   fontWeight: 500,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
-  color: "#3a3a3a",
+  color: "#888",
   marginBottom: "5px",
   display: "block",
 };
@@ -76,7 +76,7 @@ const card: React.CSSProperties = {
 const sectionTitle = (label: string, sub: string) => (
   <div style={{ marginBottom: "1rem", paddingBottom: "10px", borderBottom: "1px solid #161616" }}>
     <p style={{ fontSize: "12px", fontWeight: 600, color: "#ccc", margin: 0, letterSpacing: "0.02em" }}>{label}</p>
-    <p style={{ fontSize: "11px", color: "#333", margin: "2px 0 0 0" }}>{sub}</p>
+    <p style={{ fontSize: "11px", color: "#777", margin: "2px 0 0 0" }}>{sub}</p>
   </div>
 );
 
@@ -278,7 +278,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           <div key={i} style={{ display: "flex", gap: "6px", alignItems: "center" }}>
             <input style={inp} type="text" placeholder={placeholder} value={item} onChange={e => onUpdate(i, e.target.value)} />
             {items.length > 1 && (
-              <span onClick={() => onRemove(i)} style={{ color: "#2a2a2a", cursor: "pointer", fontSize: "16px", lineHeight: 1, flexShrink: 0, padding: "0 4px", transition: "color 0.1s" }}
+              <span onClick={() => onRemove(i)} style={{ color: "#777", cursor: "pointer", fontSize: "16px", lineHeight: 1, flexShrink: 0, padding: "0 4px", transition: "color 0.1s" }}
                 onMouseEnter={e => (e.currentTarget.style.color = "#ff4d4d")}
                 onMouseLeave={e => (e.currentTarget.style.color = "#2a2a2a")}
               >×</span>
@@ -288,7 +288,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       </div>
       <div
         onClick={onAdd}
-        style={{ marginTop: "6px", border: "1px dashed #1a1a1a", borderRadius: "6px", padding: "7px", color: "#2a2a2a", fontSize: "11px", textAlign: "center", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.05em" }}
+        style={{ marginTop: "6px", border: "1px dashed #1a1a1a", borderRadius: "6px", padding: "7px", color: "#777", fontSize: "11px", textAlign: "center", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.05em" }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = "#333"; e.currentTarget.style.color = "#666"; }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = "#1a1a1a"; e.currentTarget.style.color = "#2a2a2a"; }}
       >
@@ -312,15 +312,15 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         onMouseLeave={e => (e.currentTarget.style.borderColor = "#1a1a1a")}
       >
         <input type="file" ref={ref} accept={accept} multiple style={{ display: "none" }} onChange={e => handleFiles(e, setter)} />
-        <p style={{ fontSize: "12px", color: "#555", margin: "0 0 2px 0", fontWeight: 500 }}>{label}</p>
-        <p style={{ fontSize: "10px", color: "#2a2a2a", margin: 0, letterSpacing: "0.04em" }}>{sub}</p>
+        <p style={{ fontSize: "12px", color: "#999", margin: "0 0 2px 0", fontWeight: 500 }}>{label}</p>
+        <p style={{ fontSize: "10px", color: "#777", margin: 0, letterSpacing: "0.04em" }}>{sub}</p>
       </div>
       {files.length > 0 && (
         <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "3px" }}>
           {files.map(f => (
             <div key={f.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0a0a0a", border: "1px solid #161616", borderRadius: "4px", padding: "4px 8px" }}>
-              <span style={{ fontSize: "10px", color: "#444", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "85%" }}>{f.file.name}</span>
-              <span onClick={() => removeAsset(f.id, setter)} style={{ fontSize: "13px", color: "#333", cursor: "pointer", flexShrink: 0, marginLeft: "6px" }}>×</span>
+              <span style={{ fontSize: "10px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "85%" }}>{f.file.name}</span>
+              <span onClick={() => removeAsset(f.id, setter)} style={{ fontSize: "13px", color: "#777", cursor: "pointer", flexShrink: 0, marginLeft: "6px" }}>×</span>
             </div>
           ))}
         </div>
@@ -370,10 +370,10 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             <input style={inp} type="number" placeholder="500" value={budget} onChange={e => setBudget(e.target.value)} />
             {numericBudget > 0 && (
               <div style={{ background: "#0a0a0a", border: "1px solid #161616", borderRadius: "6px", padding: "10px 12px", marginTop: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#444", marginBottom: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
                   <span>Base budget</span><span>£{numericBudget.toLocaleString()}</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#444", marginBottom: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
                   <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
                   <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>£{platformFee.toLocaleString()}</span>
                 </div>
@@ -381,16 +381,16 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
                   <span>Total</span><span style={{ color: "#34c759" }}>£{totalCost.toLocaleString()}</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#333", marginTop: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#777", marginTop: "4px" }}>
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
                   <span>£{creatorPayout.toLocaleString()}</span>
                 </div>
                 {!isEnterprise && (
                   <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #161616", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "11px", color: "#2a2a2a" }}>Bypass platform fees by upgrading to{" "}</span>
+                    <span style={{ fontSize: "11px", color: "#777" }}>Bypass platform fees by upgrading to{" "}</span>
                     <span
                       onClick={() => onNavigateEnterprise?.()}
-                      style={{ fontSize: "11px", color: "#666", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em", borderBottom: "1px solid #2a2a2a", paddingBottom: "1px", transition: "color 0.15s" }}
+                      style={{ fontSize: "11px", color: "#aaa", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em", borderBottom: "1px solid #2a2a2a", paddingBottom: "1px", transition: "color 0.15s" }}
                       onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
                       onMouseLeave={e => (e.currentTarget.style.color = "#666")}
                     >
@@ -426,7 +426,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             style={{ width: "14px", height: "14px", cursor: "pointer", accentColor: "#fff", margin: 0, flexShrink: 0 }} />
           <div>
             <label htmlFor="videoReq" style={{ color: "#aaa", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "block" }}>Require video pitch</label>
-            <p style={{ fontSize: "11px", color: "#333", margin: 0 }}>Creators must upload a video to apply.</p>
+            <p style={{ fontSize: "11px", color: "#777", margin: 0 }}>Creators must upload a video to apply.</p>
           </div>
         </div>
       </div>

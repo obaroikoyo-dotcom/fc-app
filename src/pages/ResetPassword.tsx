@@ -44,14 +44,14 @@ export default function ResetPassword({ navigate }: Props) {
 
         {done ? (
           <>
-            <p style={{ fontSize: "13px", color: "#777", marginBottom: "2rem", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "13px", color: "#bbb", marginBottom: "2rem", lineHeight: 1.6 }}>
               Your password has been updated. You can now log in with it.
             </p>
             <Button onClick={() => navigate("login")}>Continue to Log In</Button>
           </>
         ) : (
           <>
-            <p style={{ fontSize: "13px", color: "#444", marginBottom: "2rem" }}>Choose a new password for your account.</p>
+            <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem" }}>Choose a new password for your account.</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <Input label="New Password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} autoFocus />

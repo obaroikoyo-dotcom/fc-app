@@ -75,7 +75,7 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
         style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
       >
         <span>{value || placeholder}</span>
-        <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
+        <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
       </div>
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
@@ -290,7 +290,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
               {feedTab === "discover" ? "No new offers active" : "No pitches sent yet"}
             </p>
-            <p style={{ fontSize: "12px", color: "#444", maxWidth: "260px", margin: "0 auto" }}>
+            <p style={{ fontSize: "12px", color: "#888", maxWidth: "260px", margin: "0 auto" }}>
               {feedTab === "discover" ? "Try loosening your search filters up top." : "Opportunities you apply to will show up right here."}
             </p>
           </div>
@@ -315,7 +315,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                         {c.brand_profiles?.name || "Brand"}
                         {c.brand_profiles?.verified && <VerifiedBadge size={12} />}
                       </p>
-                      <p style={{ color: "#444", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
+                      <p style={{ color: "#888", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
                     </div>
                   </div>
 
@@ -325,7 +325,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                         <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round" />
                       </svg>
                     </div>
-                    <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                    <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                       {c.type}
                     </span>
                   </div>
@@ -333,14 +333,14 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
 
-                <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#444", marginBottom: "12px" }}>
+                <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#888", marginBottom: "12px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Posted:</span>
-                    <span style={{ color: "#666" }}>{formatRelativeTime(c.created_at, now)}</span>
+                    <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Posted:</span>
+                    <span style={{ color: "#aaa" }}>{formatRelativeTime(c.created_at, now)}</span>
                   </span>
                   {c.deadline && (
                     <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Deadline:</span>
+                      <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Deadline:</span>
                       <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline)}</span>
                     </span>
                   )}
@@ -349,7 +349,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                 {c.platforms && c.platforms.length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
                     {c.platforms.map((p: string) => (
-                      <span key={p} style={{ fontSize: "10px", padding: "2px 8px", border: "1px solid #1f1f1f", borderRadius: "20px", color: "#555", background: "#0d0d0d" }}>{p}</span>
+                      <span key={p} style={{ fontSize: "10px", padding: "2px 8px", border: "1px solid #1f1f1f", borderRadius: "20px", color: "#999", background: "#0d0d0d" }}>{p}</span>
                     ))}
                   </div>
                 )}
@@ -358,12 +358,12 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                   <div>
                     {c.type === "paid" && baseBudgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {brandIsEnterprise ? "(0% cut)" : "(-10%)"}</span>
+                        <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {brandIsEnterprise ? "(0% cut)" : "(-10%)"}</span>
                         <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{netCreatorPayout.toLocaleString()}</span>
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
+                        <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
                         <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", textTransform: "uppercase" }}>Gifted</span>
                       </div>
                     )}

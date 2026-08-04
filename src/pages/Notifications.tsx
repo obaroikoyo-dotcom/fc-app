@@ -122,11 +122,11 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
       {/* Feed List */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem", paddingTop: "calc(57px + env(safe-area-inset-top, 0px))" }}>
         {showSkeleton && notifications.length === 0 ? (
-          <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
+          <p style={{ color: "#888", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
         ) : loading && notifications.length === 0 ? null : notifications.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>All caught up</p>
-            <p style={{ fontSize: "13px", color: "#444" }}>When updates occur, they'll land right here.</p>
+            <p style={{ fontSize: "13px", color: "#888" }}>When updates occur, they'll land right here.</p>
           </div>
         ) : (
           notifications.map((n) => (
@@ -154,22 +154,22 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
                 {n.actor_avatar ? (
                   <img src={n.actor_avatar} alt={n.actor_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  <span style={{ fontSize: "14px", color: "#444" }}>◉</span>
+                  <span style={{ fontSize: "14px", color: "#888" }}>◉</span>
                 )}
               </div>
 
               {/* Body Text Context Area */}
               <div style={{ flex: 1, minWidth: 0, paddingLeft: !n.read ? "4px" : "0px" }}>
                 <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "3px" }}>{n.title}</p>
-                <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.4 }}>{n.body}</p>
-                <p style={{ color: "#333", fontSize: "10px", marginTop: "6px" }}>
+                <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.4 }}>{n.body}</p>
+                <p style={{ color: "#777", fontSize: "10px", marginTop: "6px" }}>
                   {new Date(n.created_at).toLocaleDateString([], { month: "short", day: "numeric" })} at {new Date(n.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
 
               {/* Action Routing Indicator Arrow */}
               {n.data && (
-                <span style={{ color: "#333", fontSize: "14px", alignSelf: "center", paddingLeft: "8px" }}>&rarr;</span>
+                <span style={{ color: "#777", fontSize: "14px", alignSelf: "center", paddingLeft: "8px" }}>&rarr;</span>
               )}
             </div>
           ))

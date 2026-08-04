@@ -45,9 +45,9 @@ export default function CreatorSignup({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#444", cursor: "pointer", marginBottom: "1.5rem" }}>← Back</p>
+        <p onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer", marginBottom: "1.5rem" }}>← Back</p>
         <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Creator sign up</p>
-        <p style={{ fontSize: "13px", color: "#444", marginBottom: "2rem" }}>Apply to brand campaigns and build your portfolio.</p>
+        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem" }}>Apply to brand campaigns and build your portfolio.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input label="Full Name" type="text" placeholder="Your name" value={form.name} onChange={set("name")} />
@@ -65,7 +65,7 @@ export default function CreatorSignup({ navigate }: Props) {
           <Button onClick={handleSignup}>{loading ? "Creating account..." : "Create Creator Account"}</Button>
         </div>
 
-        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#444" }}>
+        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#888" }}>
           Already have an account?{" "}
           <span onClick={() => navigate("login")} style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}>Log in</span>
         </p>

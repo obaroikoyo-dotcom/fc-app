@@ -21,7 +21,7 @@ export default function PrivacyPolicyPage() {
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
           Privacy Policy
         </h1>
-        <p style={{ color: "#555", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: January 2026</p>
+        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: January 2026</p>
         <p style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6, marginBottom: "2rem" }}>
           This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.
         </p>

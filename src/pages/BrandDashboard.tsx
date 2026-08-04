@@ -143,7 +143,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
         >
           <span>{value || placeholder}</span>
-          <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
+          <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
         </div>
         {open && (
           <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
@@ -225,21 +225,21 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               <div style={{ display: "flex", gap: "10px" }}>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                  <p style={{ color: "#555", fontSize: "10px", marginTop: "2px" }}>Completed</p>
+                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px" }}>Completed</p>
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   {trackRecord.avgRating != null ? (
                     <>
                       <StarRating rating={trackRecord.avgRating} size={12} />
-                      <p style={{ color: "#555", fontSize: "10px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                      <p style={{ color: "#999", fontSize: "10px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                     </>
                   ) : (
-                    <p style={{ color: "#555", fontSize: "10px" }}>No ratings yet</p>
+                    <p style={{ color: "#999", fontSize: "10px" }}>No ratings yet</p>
                   )}
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700 }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
-                  <p style={{ color: "#555", fontSize: "10px", marginTop: "2px" }}>Avg. reply time</p>
+                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px" }}>Avg. reply time</p>
                 </div>
               </div>
             )}
@@ -267,7 +267,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             ) : !hasLoadedOnce && loading ? null : campaigns.length === 0 ? (
               <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
-                <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7 }}>Post your first campaign and start finding creators.</p>
+                <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>Post your first campaign and start finding creators.</p>
                 <div onClick={() => setTab("post")} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Post a Campaign
                 </div>
@@ -285,7 +285,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                   <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
                     {feedTab === "yours" ? "No campaigns yet" : "No campaigns found"}
                   </p>
-                  <p style={{ fontSize: "13px", color: "#444", lineHeight: 1.7 }}>
+                  <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>
                     {feedTab === "yours" ? "Post your first campaign and start finding creators." : "Try adjusting your filters."}
                   </p>
                   {feedTab === "yours" && (
@@ -314,10 +314,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
                         style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
                       >
-                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#333", flexShrink: 0 }}>
+                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
                           {brandLogo ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                         </div>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#555" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#999" }}>
                           {brandName || "Brand"}
                           {brandVerified && <VerifiedBadge size={11} />}
                         </span>
@@ -347,7 +347,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                             </span>
                           </>
                         ) : !isOwn && (
-                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#666", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             {c.type}
                           </span>
                         )}
@@ -359,21 +359,21 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 12px 0" }}>{c.name}</p>
                       </div>
                       {c.video_required && (
-                        <span style={{ flexShrink: 0, fontSize: "10px", color: "#555", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
+                        <span style={{ flexShrink: 0, fontSize: "10px", color: "#999", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
                           Video Pitch Required
                         </span>
                       )}
                     </div>
 
-                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#555", marginBottom: "12px" }}>
+                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#999", marginBottom: "12px" }}>
                       {c.niche && <span style={{ borderRight: "1px solid #222", paddingRight: "14px" }}>{c.niche}</span>}
                       <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Posted:</span>
-                        <span style={{ color: "#666" }}>{formatRelativeTime(c.created_at, now)}</span>
+                        <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Posted:</span>
+                        <span style={{ color: "#aaa" }}>{formatRelativeTime(c.created_at, now)}</span>
                       </span>
                       {c.deadline && (
                         <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                          <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#333", fontWeight: 500 }}>Deadline:</span>
+                          <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Deadline:</span>
                           <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline)}</span>
                         </span>
                       )}
@@ -381,14 +381,14 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
                     {c.platforms?.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px", marginBottom: "12px" }}>
-                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "11px", padding: "3px 8px", border: "1px solid #222", borderRadius: "20px", color: "#444" }}>{p}</span>)}
+                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "11px", padding: "3px 8px", border: "1px solid #222", borderRadius: "20px", color: "#888" }}>{p}</span>)}
                       </div>
                     )}
 
                     {isOwn && c.script && (
                       <div style={{ marginTop: "12px", marginBottom: "12px", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
-                        <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Script</p>
-                        <p style={{ fontSize: "12px", color: "#555", lineHeight: 1.5 }}>{c.script}</p>
+                        <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Script</p>
+                        <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>{c.script}</p>
                       </div>
                     )}
 
@@ -396,12 +396,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
                       {c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
+                          <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
                           <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
                             £{budgetVal.toLocaleString()}
                           </span>
                           {isOwn && (
-                            <span style={{ fontSize: "10px", color: "#666", marginTop: "4px", lineHeight: 1.3 }}>
+                            <span style={{ fontSize: "10px", color: "#aaa", marginTop: "4px", lineHeight: 1.3 }}>
                               {isEnterprise
                                 ? <span style={{ color: "#34c759", fontWeight: 500 }}>0% platform fee (Enterprise)</span>
                                 : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% fee)</>
@@ -413,11 +413,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         </div>
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
+                          <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
                           <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
                         </div>
                       )}
-                      <div style={{ fontSize: "11px", color: "#666", fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase" }}>
+                      <div style={{ fontSize: "11px", color: "#aaa", fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase" }}>
                         {appCount} application{appCount !== 1 ? "s" : ""}
                       </div>
                     </div>

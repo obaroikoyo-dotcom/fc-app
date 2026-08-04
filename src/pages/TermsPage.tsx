@@ -23,7 +23,7 @@ export default function TermsPage() {
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
           Terms of Service
         </h1>
-        <p style={{ color: "#555", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: January 2026</p>
+        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: January 2026</p>
         <p style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6, marginBottom: "2rem" }}>
           By using FlipCollab you agree to these Terms. You must be at least 18 years old.
         </p>

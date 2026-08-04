@@ -92,7 +92,7 @@ function DateDropdown({ value, onChange, options, placeholder }: {
         style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "13px 14px", color: value ? "#fff" : "#555", fontSize: "14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
       >
         <span>{value || placeholder}</span>
-        <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
+        <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
       </div>
       {open && rect && createPortal(
         <>
@@ -493,15 +493,15 @@ const [showOtp, setShowOtp] = useState(false);
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's build your creator profile</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2.5rem" }}>Takes about 2 minutes. Your profile helps brands find and connect with you for paid and gifted collabs.</p>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Takes about 2 minutes. Your profile helps brands find and connect with you for paid and gifted collabs.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
+        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
         <input style={inputStyle} placeholder="e.g. Sofia Martinez" value={name} onChange={e => setName(e.target.value)} autoFocus />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.5rem" }}>
-        <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
+        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
         <div style={{ display: "flex", gap: "8px" }}>
           <DateDropdown value={birthDay} onChange={updateBirthDay} options={DAY_OPTIONS} placeholder="Day" />
           <div style={{ flex: 1.6 }}><DateDropdown value={birthMonth} onChange={updateBirthMonth} options={MONTHS} placeholder="Month" /></div>
@@ -517,12 +517,12 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 1 — Niche & Location
     <div key={1}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Space</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Space</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you create?</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Brands search by niche to find the right creators.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Brands search by niche to find the right creators.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div style={{ position: "relative" }}>
-  <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Niche</label>
+  <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Niche</label>
 
   {selectedNiches.length > 0 && (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
@@ -549,14 +549,14 @@ const [showOtp, setShowOtp] = useState(false);
       {filteredNiches.map(n => (
         <div key={n} onMouseDown={() => addNiche(n)} style={{ padding: "10px 14px", fontSize: "13px", color: "#fff", cursor: "pointer" }}>{n}</div>
       ))}
-      <div onMouseDown={() => addNiche(nicheInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#555", cursor: "pointer", borderTop: filteredNiches.length ? "1px solid #1a1a1a" : "none" }}>
+      <div onMouseDown={() => addNiche(nicheInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#999", cursor: "pointer", borderTop: filteredNiches.length ? "1px solid #1a1a1a" : "none" }}>
         Add "{nicheInput}"
       </div>
     </div>
   )}
 </div>
         <div>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Location</label>
+          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Location</label>
           <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
         </div>
       </div>
@@ -564,15 +564,15 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 2 — Platforms
     <div key={2}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Platforms</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Platforms</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Where do you post?</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Select all that apply. You can add more later.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select all that apply. You can add more later.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {PLATFORMS.map(p => <div key={p} onClick={() => togglePlatform(p)} style={chipStyle(selectedPlatforms.includes(p))}>{p}</div>)}
       </div>
       {selectedPlatforms.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your handles & followers</label>
+          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your handles & followers</label>
           {selectedPlatforms.map(p => (
             <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
               <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "10px" }}>{p}</p>
@@ -588,9 +588,9 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 3 — Content Types
     <div key={3}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you make?</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Select everything you're comfortable creating.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select everything you're comfortable creating.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
         {CONTENT_TYPES.map(c => <div key={c} onClick={() => toggleContent(c)} style={chipStyle(contentTypes.includes(c))}>{c}</div>)}
       </div>
@@ -598,9 +598,9 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 4 — Rate Card
     <div key={4}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you charge?</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Optional but helps brands know if you're in their budget. You can always update this later.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Optional but helps brands know if you're in their budget. You can always update this later.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         {[
           { key: "post", label: "Feed Post" },
@@ -610,7 +610,7 @@ const [showOtp, setShowOtp] = useState(false);
           { key: "ugc", label: "UGC Only (no posting)" },
         ].map(({ key, label }) => (
           <div key={key}>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>{label}</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>{label}</label>
             <input style={inputStyle} placeholder="£" type="number" value={rates[key as keyof typeof rates]} onChange={e => setRates(r => ({ ...r, [key]: e.target.value }))} />
           </div>
         ))}
@@ -619,9 +619,9 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 5 — Sign Up
     <div key={5}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your account</h1>
-      <p style={{ fontSize: "14px", color: "#555", marginBottom: "2rem" }}>Your details are safe and never shared with brands without your permission.</p>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Your details are safe and never shared with brands without your permission.</p>
       {isOAuthUser ? (
         <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
           Continuing as <strong>{email}</strong> via Google
@@ -629,21 +629,21 @@ const [showOtp, setShowOtp] = useState(false);
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
             <input style={inputStyle} placeholder="you@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#555", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
-            <span style={{ fontSize: "11px", color: "#444", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+            <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
           </div>
 
@@ -660,7 +660,7 @@ const [showOtp, setShowOtp] = useState(false);
 {!termsAccepted && (
   <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
     <span>Read & accept Terms and Conditions</span>
-    <span style={{ color: "#555" }}>Required →</span>
+    <span style={{ color: "#999" }}>Required →</span>
   </div>
 )}
 {termsAccepted && (
@@ -668,21 +668,21 @@ const [showOtp, setShowOtp] = useState(false);
 )}
 <div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
   <span>Read Privacy Policy</span>
-  <span style={{ color: "#555" }}>View →</span>
+  <span style={{ color: "#999" }}>View →</span>
 </div>
     </div>,
 
     // Screen 6 — Verify Accounts
     <div key={6}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
         Connect Instagram or TikTok to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile. The account you connect should match the username you entered earlier.
       </p>
       {socialNotice && (
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-          <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+          <span onClick={() => setSocialNotice("")} style={{ color: "#999", cursor: "pointer", fontSize: "14px" }}>✕</span>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -714,7 +714,7 @@ const [showOtp, setShowOtp] = useState(false);
                   <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px", lineHeight: 1.5 }}>
                     This is @{connection!.username}, but you entered "{typedUsername}" earlier - it needs to match the connected account.
                   </p>
-                  <label style={{ fontSize: "10px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Change username</label>
+                  <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Change username</label>
                   <input
                     style={{ ...inputStyle, padding: "10px 12px", fontSize: "13px" }}
                     value={typedUsername}
@@ -727,8 +727,8 @@ const [showOtp, setShowOtp] = useState(false);
         })}
         {UNAVAILABLE_PLATFORMS.map(platform => (
           <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-            <p style={{ fontSize: "14px", color: "#555", fontWeight: 500 }}>{platform}</p>
-            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+            <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
+            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
           </div>
         ))}
       </div>
@@ -736,17 +736,17 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 7 — Profile Photo
     <div key={7}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add a profile photo</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>Optional, but creators with a photo get <span style={{ color: "#fff", fontWeight: 600 }}>3x more brand reach-outs</span>. You can always add one later from your profile.</p>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>Optional, but creators with a photo get <span style={{ color: "#fff", fontWeight: 600 }}>3x more brand reach-outs</span>. You can always add one later from your profile.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <div onClick={() => picRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "50%", border: `2px dashed ${profilePic ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
           {profilePic
             ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: "32px", color: "#333" }}>+</span>}
+            : <span style={{ fontSize: "32px", color: "#777" }}>+</span>}
         </div>
         <input ref={picRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePic} />
-        <p style={{ fontSize: "12px", color: "#444" }}>{profilePic ? "Tap to change" : "Tap to upload"}</p>
+        <p style={{ fontSize: "12px", color: "#888" }}>{profilePic ? "Tap to change" : "Tap to upload"}</p>
       </div>
     </div>,
 
@@ -754,7 +754,7 @@ const [showOtp, setShowOtp] = useState(false);
     <div key={8} style={{ textAlign: "center" }}>
       <div style={{ fontSize: "48px", marginBottom: "1.5rem" }}>🎉</div>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
-      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
     </div>,
   ];
 
@@ -816,9 +816,9 @@ const buttonLabel = () => {
       {/* Top Nav */}
       <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(8px + env(safe-area-inset-top, 0px))" }}>
         {screen > 0
-          ? <span onClick={back} style={{ fontSize: "18px", color: "#555", cursor: "pointer", padding: "4px" }}>←</span>
-          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#444", cursor: "pointer" }}>← Back</span>}
-        <span style={{ fontSize: "12px", color: "#333" }}>{screen + 1} / {TOTAL_SCREENS}</span>
+          ? <span onClick={back} style={{ fontSize: "18px", color: "#999", cursor: "pointer", padding: "4px" }}>←</span>
+          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer" }}>← Back</span>}
+        <span style={{ fontSize: "12px", color: "#777" }}>{screen + 1} / {TOTAL_SCREENS}</span>
       </div>
 
       {/* Screen Content */}
@@ -854,7 +854,7 @@ const buttonLabel = () => {
             </div>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#444", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
+              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
             >
               Skip for now
             </div>
@@ -888,9 +888,9 @@ const buttonLabel = () => {
         </svg>
       </div>
 
-      <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#444", marginBottom: "0.75rem" }}>One more step</p>
+      <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
-      <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.75rem" }}>
+      <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
         We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
       </p>
 
@@ -911,7 +911,7 @@ const buttonLabel = () => {
       </div>
 
       {otpError && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{otpError}</p>}
-      {otpLoading && <p style={{ fontSize: "12px", color: "#555", marginBottom: "1rem" }}>Verifying...</p>}
+      {otpLoading && <p style={{ fontSize: "12px", color: "#999", marginBottom: "1rem" }}>Verifying...</p>}
 
       <div
         className="tap-btn"
@@ -930,11 +930,11 @@ const buttonLabel = () => {
       <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform === "instagram" ? "Instagram" : "TikTok"} videos</span>
     </div>
     <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "6rem" }}>
-      <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+      <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
         Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected). You can change this anytime from Settings.
       </p>
       {postOptions.length === 0 ? (
-        <p style={{ fontSize: "13px", color: "#555" }}>No posts found yet.</p>
+        <p style={{ fontSize: "13px", color: "#999" }}>No posts found yet.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
           {postOptions.map(post => {

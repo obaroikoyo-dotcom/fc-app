@@ -50,7 +50,7 @@ export default function RoleSelect({ navigate }: Props) {
           color: "#fff",
           marginBottom: "6px",
         }}>{title}</p>
-        <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.5 }}>{sub}</p>
+        <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.5 }}>{sub}</p>
       </div>
     );
   };
@@ -60,13 +60,13 @@ export default function RoleSelect({ navigate }: Props) {
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <img src={logo} className="no-reinvert" style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "0.75rem" }}>FlipCollab</p>
-        <p style={{ textAlign: "center", fontSize: "13px", color: "#555", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+        <p style={{ textAlign: "center", fontSize: "13px", color: "#999", lineHeight: 1.6, marginBottom: "1.5rem" }}>
           FlipCollab is a marketplace connecting brands with content creators for paid and gifted collaborations.
         </p>
         <p style={{
           textAlign: "center",
           fontSize: "13px",
-          color: "#444",
+          color: "#888",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
           marginBottom: "2rem",
@@ -77,7 +77,7 @@ export default function RoleSelect({ navigate }: Props) {
           {card("creator", "I'm a Creator", "Apply to brand campaigns and grow your creator portfolio.", CreatorIcon)}
         </div>
 
-        <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "13px", color: "#444" }}>
+        <p style={{ textAlign: "center", marginTop: "2rem", fontSize: "13px", color: "#888" }}>
           Already have an account?{" "}
           <span
             onClick={() => navigate("login")}

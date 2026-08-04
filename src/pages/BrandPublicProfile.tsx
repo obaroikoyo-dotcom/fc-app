@@ -203,7 +203,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
     fontWeight: 500,
     letterSpacing: "0.1em",
     textTransform: "uppercase",
-    color: "#555",
+    color: "#999",
     marginBottom: "6px",
     display: "block",
   };
@@ -288,7 +288,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
   if (!brand) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#333", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Profile not found.</p>
+      <p style={{ color: "#777", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Profile not found.</p>
     </div>
   );
 
@@ -301,7 +301,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-          <span onClick={goBack} style={{ fontSize: "18px", color: "#555", cursor: "pointer" }}>←</span>
+          <span onClick={goBack} style={{ fontSize: "18px", color: "#999", cursor: "pointer" }}>←</span>
           <span style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
             {blockedMe ? "User unavailable" : (brand.name || "Brand")}
             {!blockedMe && brand.verified && <VerifiedBadge />}
@@ -310,7 +310,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
         {currentUserId && currentUserId !== profileId && !blockedByMe && (
           <span
             onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
-            style={{ fontSize: "11px", color: "#666", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+            style={{ fontSize: "11px", color: "#aaa", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
           >
             ⚑
           </span>
@@ -322,7 +322,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
             {blockedByMe ? "You've blocked this profile" : "User unavailable"}
           </p>
-          <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, maxWidth: "300px" }}>
+          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>
             {blockedByMe
               ? "You can't see their content or message them. Unblock from Settings → Reported & Blocked to restore this."
               : "This profile isn't available."}
@@ -334,7 +334,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
             <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
           ) : (
             <>
-              <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {brand.name || "this profile"}</p>
+              <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {brand.name || "this profile"}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
                 {["Inappropriate content", "Offensive language", "Spam or scam", "Other"].map(r => (
                   <span
@@ -377,7 +377,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-          <div style={{ width: "72px", height: "72px", borderRadius: "16px", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333", flexShrink: 0, overflow: "hidden" }}>
+          <div style={{ width: "72px", height: "72px", borderRadius: "16px", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777", flexShrink: 0, overflow: "hidden" }}>
             {avatar ? <img src={avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
           </div>
           <div style={{ flex: 1 }}>
@@ -385,7 +385,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
               {brand.name || brand.company_name}
               {brand.verified && <VerifiedBadge />}
             </p>
-            <p style={{ fontSize: "13px", color: "#555" }}>{brand.niche || brand.industry}{brand.location ? ` · ${brand.location}` : ""}</p>
+            <p style={{ fontSize: "13px", color: "#999" }}>{brand.niche || brand.industry}{brand.location ? ` · ${brand.location}` : ""}</p>
           </div>
         </div>
 
@@ -400,7 +400,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
         {/* Bio */}
         {brand.bio && (
           <div style={sectionStyle}>
-            <p style={{ fontSize: "13px", color: "#777", lineHeight: 1.7 }}>{brand.bio}</p>
+            <p style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.7 }}>{brand.bio}</p>
           </div>
         )}
 
@@ -431,7 +431,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
               <label style={labelStyle}>Content They Need</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {brand.content_types.map(c => (
-                  <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#555", fontSize: "12px" }}>{c}</span>
+                  <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{c}</span>
                 ))}
               </div>
             </div>
@@ -447,13 +447,13 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {brand.website && (
                 <a href={brand.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#fff", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#444", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Website</span>
+                  <span style={{ color: "#888", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Website</span>
                   <span style={{ color: "#ccc", textDecoration: "underline" }}>{brand.website}</span>
                 </a>
               )}
               {brand.instagram && (
                 <div style={{ fontSize: "13px", color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#444", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Instagram</span>
+                  <span style={{ color: "#888", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Instagram</span>
                   <span style={{ color: "#ccc" }}>{brand.instagram}</span>
                 </div>
               )}
@@ -470,18 +470,18 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
                 <TikTokIcon size={22} />
                 <div>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>TikTok</p>
-                  <p style={{ color: "#555", fontSize: "12px", marginTop: "2px" }}>@{tiktokInfo?.username || brand.tiktok}</p>
+                  <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>@{tiktokInfo?.username || brand.tiktok}</p>
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>
                 {tiktokInfo && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
-                {tiktokInfo?.follower_count != null && <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{tiktokInfo.follower_count.toLocaleString()} followers</p>}
+                {tiktokInfo?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{tiktokInfo.follower_count.toLocaleString()} followers</p>}
               </div>
             </div>
             {COMING_SOON_SOCIALS.map(platform => (
               <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "10px 14px", marginBottom: "8px" }}>
-                <p style={{ fontSize: "13px", color: "#444", fontWeight: 500 }}>{platform}</p>
-                <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+                <p style={{ fontSize: "13px", color: "#888", fontWeight: 500 }}>{platform}</p>
+                <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
               </div>
             ))}
           </div>
@@ -496,24 +496,24 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
               <div style={{ display: "flex", gap: "10px", marginBottom: "1.25rem" }}>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                  <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+                  <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Completed</p>
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   {trackRecord.avgRating != null ? (
                     <>
                       <StarRating rating={trackRecord.avgRating} size={13} />
-                      <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                      <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                     </>
                   ) : (
                     <>
-                      <p style={{ color: "#555", fontSize: "13px" }}>—</p>
-                      <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                      <p style={{ color: "#999", fontSize: "13px" }}>—</p>
+                      <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
                     </>
                   )}
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
-                  <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Avg. reply time</p>
+                  <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Avg. reply time</p>
                 </div>
               </div>
 
@@ -551,7 +551,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
                         >
                           {submittingReview ? "Submitting..." : "Submit Review"}
                         </div>
-                        <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+                        <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
                           Cancel
                         </div>
                       </div>
@@ -566,15 +566,15 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
                     <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333" }}>
+                          <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
                             {r.creator_avatar ? <img src={r.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
                           </div>
                           <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.creator_name || "Creator"}</p>
                         </div>
                         <StarRating rating={r.rating} size={11} />
                       </div>
-                      {r.comment && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
-                      <p style={{ color: "#333", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                      {r.comment && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                      <p style={{ color: "#777", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
                     </div>
                   ))}
                 </div>
@@ -587,9 +587,9 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
           {!brand.industry && !brand.target_audience && !brand.budget_range && !brand.content_types?.length && !brand.website && !brand.instagram && !brand.tiktok && !tiktokInfo &&
             !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "14px", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◈</div>
+              <div style={{ width: "48px", height: "48px", borderRadius: "14px", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◈</div>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No details added yet</p>
-              <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
+              <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
             </div>
           )}
 

@@ -48,7 +48,7 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
         style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
       >
         <span>{value || placeholder}</span>
-        <span style={{ color: "#444", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
+        <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
       </div>
       {open && (
         <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
@@ -210,7 +210,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
             ))}
           </div>
         ) : !hasLoadedOnce && loading ? null : filtered.length === 0 ? (
-          <p style={{ color: "#444", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p>
+          <p style={{ color: "#888", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p>
         ) : (
           filtered.map((p, i) => {
             const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;
@@ -224,7 +224,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
                     {cp?.name || bp?.name || p.email}
                     {!isC && bp?.verified && <VerifiedBadge size={13} />}
                   </p>
-                  <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && maxFollowers(cp) > 0 ? ` · ${maxFollowers(cp).toLocaleString()} fans` : ""}</p>
+                  <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && maxFollowers(cp) > 0 ? ` · ${maxFollowers(cp).toLocaleString()} fans` : ""}</p>
                   {isC && startingRate(cp) != null && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>From £{startingRate(cp)}</p>}
                 </div>
                 <div onClick={e => { e.stopPropagation(); startDM(p.id); }} style={{ padding: "7px 14px", border: "1px solid #333", borderRadius: "6px", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer" }}>DM</div>

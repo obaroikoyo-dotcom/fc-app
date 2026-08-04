@@ -478,7 +478,7 @@ setTimeout(() => setSaved(false), 2000);
   };
   const labelStyle: React.CSSProperties = {
     fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em",
-    textTransform: "uppercase", color: "#555", marginBottom: "6px", display: "block",
+    textTransform: "uppercase", color: "#999", marginBottom: "6px", display: "block",
   };
   const chipStyle = (active: boolean): React.CSSProperties => ({
     padding: "8px 14px", borderRadius: "20px",
@@ -491,13 +491,13 @@ setTimeout(() => setSaved(false), 2000);
     <div onClick={onClick} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid #111", cursor: "pointer" }}>
       <div>
         <p style={{ fontSize: "14px", color: danger ? "#ff4444" : "#fff", fontWeight: 500 }}>{label}</p>
-        {sub && <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>{sub}</p>}
+        {sub && <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
       </div>
-      {!danger && <span style={{ color: "#333", fontSize: "16px" }}>›</span>}
+      {!danger && <span style={{ color: "#777", fontSize: "16px" }}>›</span>}
     </div>
   );
   const sectionHeader = (title: string) => (
-    <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: "20px 0 8px" }}>{title}</p>
+    <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: "20px 0 8px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
@@ -515,7 +515,7 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.5rem 1.25rem", paddingTop: `${profileHeaderHeight + 24}px` }}>
         {/* Avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-          <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#333" }}>
+          <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777" }}>
             {profilePic ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
           </div>
           <div>
@@ -523,18 +523,18 @@ setTimeout(() => setSaved(false), 2000);
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Name"}</p>
               {available && <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>}
             </div>
-            <p style={{ fontSize: "13px", color: "#555" }}>{niche}{location ? ` · ${location}` : ""}</p>
+            <p style={{ fontSize: "13px", color: "#999" }}>{niche}{location ? ` · ${location}` : ""}</p>
           </div>
         </div>
 
         {/* Bio */}
-        {bio && <p style={{ fontSize: "13px", color: "#777", lineHeight: 1.7, marginBottom: "1.5rem" }}>{bio}</p>}
+        {bio && <p style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.7, marginBottom: "1.5rem" }}>{bio}</p>}
 
         {/* Niche tags */}
         {niche && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "1.5rem" }}>
             {niche.split(",").map(n => n.trim()).filter(Boolean).map(n => (
-              <span key={n} style={{ padding: "5px 12px", borderRadius: "20px", border: "1px solid #222", color: "#555", fontSize: "12px" }}>{n}</span>
+              <span key={n} style={{ padding: "5px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{n}</span>
             ))}
           </div>
         )}
@@ -553,9 +553,9 @@ setTimeout(() => setSaved(false), 2000);
               <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "8px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
-                  {(connection?.username || socialLinks[p]) && <p style={{ color: "#555", fontSize: "12px" }}>@{connection?.username || socialLinks[p]}</p>}
+                  {(connection?.username || socialLinks[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{connection?.username || socialLinks[p]}</p>}
                 </div>
-                <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#555" }}>
+                <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
                   {followers != null && <span>{followers.toLocaleString()} followers{connection && " ✓"}</span>}
                   {engagementRates[p] && <span>{engagementRates[p]}% engagement</span>}
                 </div>
@@ -570,7 +570,7 @@ setTimeout(() => setSaved(false), 2000);
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Recent Posts</label>
             {socialConnections.filter(c => c.username).length > 0 && (
-              <p style={{ fontSize: "12px", color: "#555", marginBottom: "10px" }}>
+              <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
                 {socialConnections.filter(c => c.username).map((c, i) => (
                   <span key={c.platform}>{i > 0 ? "  ·  " : ""}{c.platform === "instagram" ? "Instagram" : "TikTok"} @{c.username}</span>
                 ))}
@@ -591,7 +591,7 @@ setTimeout(() => setSaved(false), 2000);
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Content I Create</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {contentTypes.map(c => <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#555", fontSize: "12px" }}>{c}</span>)}
+              {contentTypes.map(c => <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{c}</span>)}
             </div>
           </div>
         )}
@@ -601,7 +601,7 @@ setTimeout(() => setSaved(false), 2000);
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Languages</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {languages.map(l => <span key={l} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#555", fontSize: "12px" }}>{l}</span>)}
+              {languages.map(l => <span key={l} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{l}</span>)}
             </div>
           </div>
         )}
@@ -612,7 +612,7 @@ setTimeout(() => setSaved(false), 2000);
         {(audienceAgeRanges.length > 0 || audienceLocation) && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Audience</label>
-            <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "#555", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "#999", flexWrap: "wrap" }}>
               {audienceAgeRanges.length > 0 && <span>Age: {audienceAgeRanges.join(", ")}</span>}
               {audienceLocation && <span>{audienceLocation}</span>}
             </div>
@@ -624,11 +624,11 @@ setTimeout(() => setSaved(false), 2000);
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Rate Card</label>
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
-              {rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Post</span><span style={{ color: "#fff" }}>£{rates.post}</span></div>}
-              {rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Story</span><span style={{ color: "#fff" }}>£{rates.story}</span></div>}
-              {rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Reel</span><span style={{ color: "#fff" }}>£{rates.reel}</span></div>}
-              {rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>Video</span><span style={{ color: "#fff" }}>£{rates.video}</span></div>}
-              {rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#555" }}>UGC Only</span><span style={{ color: "#fff" }}>£{rates.ugc}</span></div>}
+              {rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Post</span><span style={{ color: "#fff" }}>£{rates.post}</span></div>}
+              {rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Story</span><span style={{ color: "#fff" }}>£{rates.story}</span></div>}
+              {rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Reel</span><span style={{ color: "#fff" }}>£{rates.reel}</span></div>}
+              {rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Video</span><span style={{ color: "#fff" }}>£{rates.video}</span></div>}
+              {rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>UGC Only</span><span style={{ color: "#fff" }}>£{rates.ugc}</span></div>}
             </div>
           </div>
         )}
@@ -641,7 +641,7 @@ setTimeout(() => setSaved(false), 2000);
               {collabs.filter(c => c.brand).map((c, i) => (
                 <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{c.brand}</p>
-                  <p style={{ color: "#555", fontSize: "12px" }}>{c.description}</p>
+                  <p style={{ color: "#999", fontSize: "12px" }}>{c.description}</p>
                 </div>
               ))}
             </div>
@@ -655,24 +655,24 @@ setTimeout(() => setSaved(false), 2000);
             <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                 <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Completed</p>
               </div>
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                 {trackRecord.avgRating != null ? (
                   <>
                     <StarRating rating={trackRecord.avgRating} size={13} />
-                    <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                   </>
                 ) : (
                   <>
-                    <p style={{ color: "#555", fontSize: "13px" }}>—</p>
-                    <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                    <p style={{ color: "#999", fontSize: "13px" }}>—</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
                   </>
                 )}
               </div>
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                 <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
-                <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
+                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
               </div>
             </div>
             {reviews.length > 0 && (
@@ -681,15 +681,15 @@ setTimeout(() => setSaved(false), 2000);
                   <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333" }}>
+                        <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
                           {r.brand_avatar ? <img src={r.brand_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                         </div>
                         <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
                       </div>
                       <StarRating rating={r.rating} size={11} />
                     </div>
-                    {r.comment && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
-                    <p style={{ color: "#333", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                    {r.comment && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                    <p style={{ color: "#777", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
@@ -700,9 +700,9 @@ setTimeout(() => setSaved(false), 2000);
         {/* Empty state — only covers platforms/content/languages/audience/rates/collabs, not bio/niche/location */}
         {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◉</div>
+            <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
-            <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
+            <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
           </div>
         )}
       </div>
@@ -729,7 +729,7 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ margin: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
         <div>
           <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Inverted Light Mode</p>
-          <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Toggle display theme</p>
+          <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>Toggle display theme</p>
         </div>
         <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
           <div style={{ position: "absolute", top: "3px", left: isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
@@ -766,7 +766,7 @@ setTimeout(() => setSaved(false), 2000);
         {settingsRow("Debug Log", "For troubleshooting freezes", () => setSettingsSection("debug-log"))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
-          <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Sign Out
           </div>
           <div onClick={async () => {
@@ -794,9 +794,9 @@ setTimeout(() => setSaved(false), 2000);
         {/* Avatar */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
           <div onClick={() => picRef.current?.click()} style={{ width: "80px", height: "80px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", marginBottom: "8px" }}>
-            {profilePic ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "24px", color: "#333" }}>+</span>}
+            {profilePic ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "24px", color: "#777" }}>+</span>}
           </div>
-          <span style={{ fontSize: "12px", color: "#444" }}>Tap to change photo</span>
+          <span style={{ fontSize: "12px", color: "#888" }}>Tap to change photo</span>
           <input ref={picRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePic} />
         </div>
 
@@ -804,7 +804,7 @@ setTimeout(() => setSaved(false), 2000);
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
           <div>
             <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Open to Collabs</p>
-            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>Brands can see you're available</p>
+            <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>Brands can see you're available</p>
           </div>
           <div onClick={() => setAvailable(p => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: available ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
             <div style={{ position: "absolute", top: "3px", left: available ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: available ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
@@ -845,15 +845,15 @@ setTimeout(() => setSaved(false), 2000);
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {connection ? (
                     <div>
-                      <input style={{ ...inputStyle, color: "#777", cursor: "not-allowed" }} value={connection.username ? `@${connection.username}` : "Connected"} disabled />
-                      <p style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>Verified via connected account - disconnect it in Manage Accounts to change this.</p>
+                      <input style={{ ...inputStyle, color: "#bbb", cursor: "not-allowed" }} value={connection.username ? `@${connection.username}` : "Connected"} disabled />
+                      <p style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>Verified via connected account - disconnect it in Manage Accounts to change this.</p>
                     </div>
                   ) : (
                     <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
                   )}
                   <div style={{ display: "flex", gap: "8px" }}>
                     {connection ? (
-                      <input style={{ ...inputStyle, flex: 1, color: "#777", cursor: "not-allowed" }} value={connection.follower_count != null ? `${connection.follower_count.toLocaleString()} followers` : "Syncing..."} disabled />
+                      <input style={{ ...inputStyle, flex: 1, color: "#bbb", cursor: "not-allowed" }} value={connection.follower_count != null ? `${connection.follower_count.toLocaleString()} followers` : "Syncing..."} disabled />
                     ) : (
                       <input style={{ ...inputStyle, flex: 1 }} placeholder="Followers" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
                     )}
@@ -894,7 +894,7 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Niche Selection", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "13px", color: "#555", marginBottom: "1.5rem", lineHeight: 1.6 }}>Select all niches that describe your content. This helps brands find you in search.</p>
+        <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Select all niches that describe your content. This helps brands find you in search.</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {NICHES.map(n => {
             const active = niche.split(",").map(x => x.trim()).includes(n);
@@ -925,11 +925,11 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader(`Choose ${pickerPlatform === "instagram" ? "Instagram" : "TikTok"} videos`, () => setPickerPlatform(null))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
           Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected).
         </p>
         {postOptions.length === 0 ? (
-          <p style={{ fontSize: "13px", color: "#555" }}>No posts found yet.</p>
+          <p style={{ fontSize: "13px", color: "#999" }}>No posts found yet.</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
             {postOptions.map(post => {
@@ -974,10 +974,10 @@ setTimeout(() => setSaved(false), 2000);
         {socialNotice && (
           <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-            <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+            <span onClick={() => setSocialNotice("")} style={{ color: "#999", cursor: "pointer", fontSize: "14px" }}>✕</span>
           </div>
         )}
-        <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
           Connect Instagram or TikTok, then choose up to {MAX_FEATURED_POSTS} of your own posts to feature on your public profile.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -988,7 +988,7 @@ setTimeout(() => setSaved(false), 2000);
               <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
                 <div>
                   <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
-                  {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                  {connection && <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
                 <div style={{ display: "flex", gap: "8px" }}>
                   {connectedPlatforms.has(platform) ? (
@@ -1007,8 +1007,8 @@ setTimeout(() => setSaved(false), 2000);
           })}
           {["YouTube", "Twitter/X", "Facebook"].map(platform => (
             <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-              <p style={{ fontSize: "14px", color: "#555", fontWeight: 500 }}>{platform}</p>
-              <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+              <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
+              <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
             </div>
           ))}
         </div>
@@ -1030,16 +1030,16 @@ setTimeout(() => setSaved(false), 2000);
           </div>
           {walletTab === "balance" && (
             <div style={{ padding: "1.5rem", textAlign: "center" }}>
-              <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
+              <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              <p style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
+              <p style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
               {transactions.length > 0 && (
                 <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
                   {transactions.map((t, i) => (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                       <div>
                         <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{(t as any).campaigns?.name || "Campaign"}</p>
-                        <p style={{ fontSize: "10px", color: "#444", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
+                        <p style={{ fontSize: "10px", color: "#888", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
                       </div>
                       <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
@@ -1051,7 +1051,7 @@ setTimeout(() => setSaved(false), 2000);
           {walletTab === "withdraw" && (
   <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
     <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-      <p style={{ fontSize: "11px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
+      <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
     </div>
     <div>
@@ -1090,18 +1090,18 @@ setTimeout(() => setSaved(false), 2000);
     <div onClick={!withdrawing ? handleWithdraw : undefined} style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 && withdrawMethod && withdrawAmount ? "#fff" : "#1a1a1a", color: walletBalance > 0 && withdrawMethod && withdrawAmount ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 && withdrawMethod && withdrawAmount ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>
       {withdrawing ? "Submitting..." : "Request Withdrawal"}
     </div>
-    <p style={{ fontSize: "11px", color: "#333", textAlign: "center" }}>Withdrawals processed within 24 hours.</p>
+    <p style={{ fontSize: "11px", color: "#777", textAlign: "center" }}>Withdrawals processed within 24 hours.</p>
   </div>
 )}
           {walletTab === "history" && (
             <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
               {withdrawalRequests.length === 0 ? (
-                <p style={{ fontSize: "12px", color: "#444", textAlign: "center", padding: "2rem" }}>No withdrawal requests yet</p>
+                <p style={{ fontSize: "12px", color: "#888", textAlign: "center", padding: "2rem" }}>No withdrawal requests yet</p>
               ) : withdrawalRequests.map((r, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                   <div>
                     <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>£{(r.amount / 100).toFixed(2)}</p>
-                    <p style={{ fontSize: "10px", color: "#444", textTransform: "uppercase", letterSpacing: "0.06em" }}>{r.method} · {new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>{r.method} · {new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
                   </div>
                   <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: `1px solid ${r.status === "completed" ? "#34c759" : r.status === "rejected" ? "#ff4444" : "#555"}`, color: r.status === "completed" ? "#34c759" : r.status === "rejected" ? "#ff4444" : "#777", textTransform: "uppercase" }}>{r.status}</span>
                 </div>
@@ -1139,7 +1139,7 @@ setTimeout(() => setSaved(false), 2000);
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
           <div>
             <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Push Notifications</p>
-            <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>New messages, applications, and deals</p>
+            <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>New messages, applications, and deals</p>
           </div>
           <div onClick={toggleNotifications} style={{ width: "44px", height: "24px", borderRadius: "12px", background: notificationsEnabled ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
             <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
@@ -1162,7 +1162,7 @@ setTimeout(() => setSaved(false), 2000);
           <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
             <div>
               <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>{label}</p>
-              <p style={{ color: "#444", fontSize: "12px", marginTop: "2px" }}>{sub}</p>
+              <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>{sub}</p>
             </div>
             <div onClick={() => set((p: boolean) => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: val ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
               <div style={{ position: "absolute", top: "3px", left: val ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: val ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
@@ -1178,9 +1178,9 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Share Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "13px", color: "#555", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share your FlipCollab profile link with brands or on your socials.</p>
+        <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share your FlipCollab profile link with brands or on your socials.</p>
         <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "1rem" }}>
-          <p style={{ fontSize: "12px", color: "#555", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{shareLink}</p>
+          <p style={{ fontSize: "12px", color: "#999", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{shareLink}</p>
           <div onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }} style={{ padding: "7px 14px", background: linkCopied ? "#1a1a1a" : "#fff", color: linkCopied ? "#555" : "#0a0a0a", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}>
             {linkCopied ? "Copied ✓" : "Copy"}
           </div>
@@ -1201,7 +1201,7 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ padding: "1.25rem" }}>
       {favTab === "campaigns" && (
         campaignFavourites.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet</p>
+          <p style={{ fontSize: "12px", color: "#777", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {campaignFavourites.map((f, i) => {
@@ -1212,9 +1212,9 @@ setTimeout(() => setSaved(false), 2000);
                 <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{camp?.name || "Campaign"}</p>
-                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#555", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * (campIsEnterprise ? 1 : 0.9)).toLocaleString()}` : ""}</span>
+                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#999", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * (campIsEnterprise ? 1 : 0.9)).toLocaleString()}` : ""}</span>
                   </div>
-                  <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#444" }}>
+                  <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#888" }}>
                     {camp?.brand_profiles?.name || "Brand"}
                     {camp?.brand_profiles?.verified && <VerifiedBadge size={11} />}
                   </p>
@@ -1226,7 +1226,7 @@ setTimeout(() => setSaved(false), 2000);
       )}
       {favTab === "creators" && (
         favourites.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No creators favourited yet</p>
+          <p style={{ fontSize: "12px", color: "#777", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No creators favourited yet</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {favourites.map((f, i) => (
@@ -1236,7 +1236,7 @@ setTimeout(() => setSaved(false), 2000);
                 </div>
                 <div>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f as any).display?.name || "Creator"}</p>
-<p style={{ color: "#444", fontSize: "11px", marginTop: "2px" }}>{(f as any).display?.niche || ""}</p>
+<p style={{ color: "#888", fontSize: "11px", marginTop: "2px" }}>{(f as any).display?.niche || ""}</p>
                 </div>
               </div>
             ))}
@@ -1260,7 +1260,7 @@ setTimeout(() => setSaved(false), 2000);
         </div>
         <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
           {filtered.length === 0 ? (
-            <p style={{ fontSize: "12px", color: "#333", textAlign: "center", padding: "2rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No {appFilter === "all" ? "" : appFilter} applications yet</p>
+            <p style={{ fontSize: "12px", color: "#777", textAlign: "center", padding: "2rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No {appFilter === "all" ? "" : appFilter} applications yet</p>
           ) : filtered.map((a, i) => {
             const campaignData = a.campaigns as any;
             const brandData = campaignData?.brand_profiles as any;
@@ -1273,7 +1273,7 @@ setTimeout(() => setSaved(false), 2000);
                   <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "paid" ? "#34c759" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>{a.status === "paid" ? "paid out" : a.status}</span>
                 </div>
                 {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "#34c759", marginBottom: "4px" }}>Take-home: £{(baseBudget * (brandIsEnterprise ? 1 : 0.9)).toLocaleString()}</p>}
-                <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#444" }}>
+                <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#888" }}>
                   {brandData?.name || "Brand"}
                   {brandData?.verified && <VerifiedBadge size={11} />}
                 </p>
@@ -1292,7 +1292,7 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <div>
           <label style={labelStyle}>Audience Age Ranges</label>
-          <p style={{ fontSize: "12px", color: "#444", marginBottom: "10px" }}>Select all that apply to your audience</p>
+          <p style={{ fontSize: "12px", color: "#888", marginBottom: "10px" }}>Select all that apply to your audience</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {AGE_RANGES.map(a => <div key={a} onClick={() => toggleAgeRange(a)} style={chipStyle(audienceAgeRanges.includes(a))}>{a}</div>)}
           </div>
@@ -1339,7 +1339,7 @@ setTimeout(() => setSaved(false), 2000);
               <input style={inputStyle} placeholder="What did you create?" value={c.description} onChange={e => updateCollab(i, "description", e.target.value)} />
             </div>
           ))}
-          <span onClick={() => setCollabs(prev => [...prev, { brand: "", description: "" }])} style={{ fontSize: "12px", color: "#555", cursor: "pointer", textAlign: "center", padding: "10px", border: "1px dashed #222", borderRadius: "8px" }}>+ Add collab</span>
+          <span onClick={() => setCollabs(prev => [...prev, { brand: "", description: "" }])} style={{ fontSize: "12px", color: "#999", cursor: "pointer", textAlign: "center", padding: "10px", border: "1px dashed #222", borderRadius: "8px" }}>+ Add collab</span>
         </div>
       </div>
       <div style={{ position: "sticky", bottom: "96px", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
@@ -1364,11 +1364,11 @@ setTimeout(() => setSaved(false), 2000);
         ].map(({ q, a }, i) => (
           <div key={i} style={{ marginBottom: "1rem", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
             <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>{q}</p>
-            <p style={{ color: "#555", fontSize: "12px", lineHeight: 1.6 }}>{a}</p>
+            <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.6 }}>{a}</p>
           </div>
         ))}
         <div style={{ marginTop: "1rem", padding: "1rem", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", textAlign: "center" }}>
-          <p style={{ color: "#555", fontSize: "12px" }}>Still need help? Email us at</p>
+          <p style={{ color: "#999", fontSize: "12px" }}>Still need help? Email us at</p>
           <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginTop: "4px" }}>hello@flipcollab.com</p>
         </div>
       </div>
@@ -1380,7 +1380,7 @@ const renderPrivacyPolicy = () => (
   <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Privacy Policy", () => setSettingsSection("main"))}
     <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
+      <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
       <p>This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.</p>
       {[
         { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
@@ -1409,7 +1409,7 @@ const renderTerms = () => (
   <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Terms of Service", () => setSettingsSection("main"))}
     <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
+      <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
       <p>By using FlipCollab you agree to these Terms. You must be at least 18 years old.</p>
       {[
         { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
@@ -1444,7 +1444,7 @@ const renderTerms = () => (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
         {renderSettingsHeader("Debug Log", () => setSettingsSection("main"))}
         <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <p style={{ color: "#555", fontSize: "12px", lineHeight: 1.6 }}>
+          <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.6 }}>
             When something freezes, come back here (Settings still works even when other pages don't), copy this, and send it over.
           </p>
           <div style={{ display: "flex", gap: "10px" }}>
@@ -1456,12 +1456,12 @@ const renderTerms = () => (
             </div>
             <div
               onClick={() => { clearLog(); setSettingsSection("main"); setSettingsSection("debug-log"); }}
-              style={{ flex: 1, padding: "11px", border: "1px solid #222", color: "#555", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600, textAlign: "center", letterSpacing: "0.05em", textTransform: "uppercase" }}
+              style={{ flex: 1, padding: "11px", border: "1px solid #222", color: "#999", borderRadius: "8px", cursor: "pointer", fontSize: "12px", fontWeight: 600, textAlign: "center", letterSpacing: "0.05em", textTransform: "uppercase" }}
             >
               Clear
             </div>
           </div>
-          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", color: "#888", fontSize: "11px", lineHeight: 1.6, fontFamily: "monospace" }}>
+          <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", color: "#ccc", fontSize: "11px", lineHeight: 1.6, fontFamily: "monospace" }}>
             {text || "No events logged yet."}
           </pre>
         </div>
@@ -1474,19 +1474,19 @@ const renderTerms = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Reported & Blocked", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
+        <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
         {blockedUsers.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#444", marginBottom: "2rem" }}>You haven't blocked anyone.</p>
+          <p style={{ fontSize: "12px", color: "#888", marginBottom: "2rem" }}>You haven't blocked anyone.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
             {blockedUsers.map(b => (
               <div key={b.blockRowId} style={{ display: "flex", alignItems: "center", gap: "12px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: b.role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#333" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: b.role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
                   {b.avatar ? <img src={b.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : b.role === "creator" ? "◉" : "◈"}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{b.name}</p>
-                  <p style={{ fontSize: "11px", color: "#444", textTransform: "capitalize" }}>{b.role}</p>
+                  <p style={{ fontSize: "11px", color: "#888", textTransform: "capitalize" }}>{b.role}</p>
                 </div>
                 <div
                   onClick={() => unblockLoading !== b.blockRowId && handleUnblock(b.blockRowId, b.id)}
@@ -1499,16 +1499,16 @@ const renderTerms = () => (
           </div>
         )}
 
-        <p style={{ fontSize: "10px", color: "#444", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Reports You've Filed</p>
+        <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Reports You've Filed</p>
         {myReports.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#444" }}>You haven't reported anyone.</p>
+          <p style={{ fontSize: "12px", color: "#888" }}>You haven't reported anyone.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {myReports.map(r => (
               <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                 <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.name}</p>
-                <p style={{ fontSize: "12px", color: "#888", marginBottom: "6px" }}>{r.reason}</p>
-                <p style={{ fontSize: "10px", color: "#444" }}>{new Date(r.created_at).toLocaleDateString()}</p>
+                <p style={{ fontSize: "12px", color: "#ccc", marginBottom: "6px" }}>{r.reason}</p>
+                <p style={{ fontSize: "10px", color: "#888" }}>{new Date(r.created_at).toLocaleDateString()}</p>
               </div>
             ))}
           </div>

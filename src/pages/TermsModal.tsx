@@ -60,7 +60,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
           <h3 style={{ margin: 0, color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'Syne', sans-serif" }}>
             Terms & Conditions
           </h3>
-          <p style={{ margin: "4px 0 0 0", color: "#555", fontSize: "12px" }}>
+          <p style={{ margin: "4px 0 0 0", color: "#999", fontSize: "12px" }}>
   You must read and accept these terms before creating your account.
 </p>
         </div>
@@ -82,7 +82,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#555", fontSize: "11px" }}>Last updated: January 2026</p>
+          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
 
           <p>Welcome to FlipCollab. By creating an account and using our platform, you agree to these Terms & Conditions. Please read them carefully.</p>
 
@@ -90,11 +90,11 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
           <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "12px" }}>
             <p style={{ color: "#fff", fontWeight: 600, margin: "0 0 6px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Platform Fees</p>
             {role === "brand" ? (
-              <p style={{ margin: 0, color: "#888" }}>
+              <p style={{ margin: 0, color: "#ccc" }}>
                 Posting campaigns and reviewing applications is free. When you fund a collaboration, a <strong style={{ color: "#fff" }}>5% platform fee</strong> is added to the campaign budget to cover payment processing and escrow management.
               </p>
             ) : (
-              <p style={{ margin: 0, color: "#888" }}>
+              <p style={{ margin: 0, color: "#ccc" }}>
                 FlipCollab deducts a <strong style={{ color: "#fff" }}>10% platform fee</strong> from your earnings on each completed collaboration. This covers payment processing, escrow protection, and platform operations.
               </p>
             )}
@@ -172,7 +172,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
             <span>For any questions or disputes email us at <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong></span>
           </div>
 
-          <p style={{ color: "#333", fontSize: "11px", marginBottom: 0 }}>By accepting these terms you confirm you are 18 or over and agree to be bound by these Terms & Conditions.</p>
+          <p style={{ color: "#777", fontSize: "11px", marginBottom: 0 }}>By accepting these terms you confirm you are 18 or over and agree to be bound by these Terms & Conditions.</p>
         </div>
         {/* Footer Actions */}
         <div style={{ padding: "1rem 1.25rem", borderTop: "1px solid #111", display: "flex", gap: "10px" }}>
@@ -184,7 +184,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
               background: "transparent",
               border: "1px solid #222",
               borderRadius: "8px",
-              color: "#555",
+              color: "#999",
               fontSize: "12px",
               fontWeight: 600,
               cursor: "pointer"

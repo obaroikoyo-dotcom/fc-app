@@ -144,11 +144,11 @@ export default function VerifyEmail({ navigate, email }: Props) {
 
         <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "2.25rem 2rem" }}>
 
-          <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#444", marginBottom: "0.75rem" }}>One more step</p>
+          <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
 
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
 
-          <p style={{ fontSize: "13px", color: "#555", lineHeight: 1.7, marginBottom: "1.75rem" }}>
+          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
             We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
           </p>
 
@@ -185,11 +185,11 @@ export default function VerifyEmail({ navigate, email }: Props) {
 
           {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{error}</p>}
 
-          {loading && <p style={{ fontSize: "12px", color: "#555", marginBottom: "1rem" }}>Verifying...</p>}
+          {loading && <p style={{ fontSize: "12px", color: "#999", marginBottom: "1rem" }}>Verifying...</p>}
 
           <div style={{ height: "1px", background: "#1a1a1a", marginBottom: "1.5rem" }} />
 
-          <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
+          <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
             Didn't get it? Check your spam folder, or
           </p>
 
@@ -202,14 +202,14 @@ export default function VerifyEmail({ navigate, email }: Props) {
 
           <div
             onClick={() => navigate("role-select")}
-            style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#555", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+            style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
             Back to Log In
           </div>
 
         </div>
 
-        <p style={{ fontSize: "11px", color: "#333", marginTop: "1.5rem" }}>If you didn't create an account you can safely ignore this.</p>
+        <p style={{ fontSize: "11px", color: "#777", marginTop: "1.5rem" }}>If you didn't create an account you can safely ignore this.</p>
 
       </div>
     </div>
