@@ -6,6 +6,12 @@ import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, type SocialConnection, type SocialPlatform } from "../lib/social";
+import TikTokIcon from "../components/TikTokIcon";
+import StarRating from "../components/StarRating";
+import { getBrandTrackRecord, getBrandReviews, formatResponseTime, type BrandTrackRecord, type BrandReview } from "../lib/brandStats";
+
+const COMING_SOON_SOCIALS = ["Instagram", "YouTube", "Twitter/X", "Pinterest"];
+const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -127,6 +133,10 @@ const [cancelError, setCancelError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
 const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
 
+  const [trackRecord, setTrackRecord] = useState<BrandTrackRecord | null>(null);
+  const [reviews, setReviews] = useState<BrandReview[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
 
@@ -184,6 +194,7 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUserId(user.id);
+    setIsAdmin(user.email === ADMIN_EMAIL);
     setShareLink(`https://flipcollab.app/brand/${user.id}`);
 
     const { data } = await supabase.from("brand_profiles").select("*").eq("id", user.id).single();
@@ -212,6 +223,10 @@ setCancelledAtPeriodEnd(data.subscription_cancel_at_period_end || false);
       .order("requested_at", { ascending: false })
       .limit(1);
     if (reqs && reqs[0] && reqs[0].status === "pending") setVerificationRequest(reqs[0]);
+
+    const [record, reviewRows] = await Promise.all([getBrandTrackRecord(user.id), getBrandReviews(user.id)]);
+    setTrackRecord(record);
+    setReviews(reviewRows);
   };
 
   const handleRequestVerification = async () => {
@@ -406,7 +421,7 @@ const loadFavourites = async () => {
         )}
 
         {/* Links */}
-        {(website || instagram || tiktok) && (
+        {(website || instagram) && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Links</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -415,13 +430,96 @@ const loadFavourites = async () => {
                   style={{ fontSize: "13px", color: "#ccc", textDecoration: "underline" }}>{website}</a>
               )}
               {instagram && <p style={{ fontSize: "13px", color: "#777" }}>Instagram: {instagram}</p>}
-              {tiktok && <p style={{ fontSize: "13px", color: "#777" }}>TikTok: {tiktok}</p>}
             </div>
           </div>
         )}
 
+        {/* Social */}
+        {(() => {
+          const tiktokConnection = socialConnections.find(c => c.platform === "tiktok");
+          if (!tiktokConnection && !tiktok) return null;
+          return (
+            <div style={{ marginBottom: "1.5rem" }}>
+              <label style={labelStyle}>Social</label>
+              <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <TikTokIcon size={22} />
+                  <div>
+                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>TikTok</p>
+                    <p style={{ color: "#555", fontSize: "12px", marginTop: "2px" }}>@{tiktokConnection?.username || tiktok}</p>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  {tiktokConnection && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
+                  {tiktokConnection?.follower_count != null && <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{tiktokConnection.follower_count.toLocaleString()} followers</p>}
+                </div>
+              </div>
+              {COMING_SOON_SOCIALS.map(platform => (
+                <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "10px 14px", marginBottom: "8px" }}>
+                  <p style={{ fontSize: "13px", color: "#444", fontWeight: 500 }}>{platform}</p>
+                  <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+                </div>
+              ))}
+              {!tiktokConnection && (
+                <p style={{ fontSize: "11px", color: "#444", lineHeight: 1.6 }}>
+                  Connect TikTok in Manage Accounts to show a verified badge here.
+                </p>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Track Record */}
+        {trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0) && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={labelStyle}>Track Record</label>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
+                <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+              </div>
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                {trackRecord.avgRating != null ? (
+                  <>
+                    <StarRating rating={trackRecord.avgRating} size={13} />
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ color: "#555", fontSize: "13px" }}>—</p>
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                  </>
+                )}
+              </div>
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
+                <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Avg. reply time</p>
+              </div>
+            </div>
+            {reviews.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333" }}>
+                          {r.creator_avatar ? <img src={r.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                        </div>
+                        <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.creator_name || "Creator"}</p>
+                      </div>
+                      <StarRating rating={r.rating} size={11} />
+                    </div>
+                    {r.comment && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                    <p style={{ color: "#333", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Empty state — only covers content/audience/tier/links, not bio/industry/location */}
-        {!contentTypes.length && !targetAudience && !targetTier && !website && !instagram && !tiktok && (
+        {!contentTypes.length && !targetAudience && !targetTier && !website && !instagram && !tiktok && !socialConnections.some(c => c.platform === "tiktok") && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◈</div>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
@@ -528,6 +626,9 @@ const loadFavourites = async () => {
         {sectionHeader("FlipCollab Activity")}
         {settingsRow("Favourited Creators", `${favouritedCreators.length} saved`, () => setSettingsSection("favourites"))}
         {settingsRow("Reported & Blocked", `${blockedUsers.length} blocked · ${myReports.length} reported`, () => setSettingsSection("reports-blocked"))}
+
+        {isAdmin && sectionHeader("Admin")}
+        {isAdmin && settingsRow("Admin Review", "Verification requests & reports", () => navigate("admin-review"))}
 
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"))}
@@ -790,7 +891,7 @@ const loadFavourites = async () => {
           </div>
         )}
         <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
-          Connect your own TikTok or Instagram so you can post creator-made content directly to your brand account once payment has released.
+          Connect your own TikTok or Instagram so you can post creator-made content directly to your brand account once payment has released. Connecting TikTok also shows a verified TikTok badge on your public profile, so creators know it's really you.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
@@ -838,7 +939,7 @@ const loadFavourites = async () => {
         ) : (
           <>
             <p style={{ fontSize: "12px", color: "#444", lineHeight: 1.6, marginBottom: "1rem" }}>
-              Brands signed up with a business email are usually verified automatically. If yours wasn't — or if you'd just like a human to take a look — request a manual review below.
+              Request a manual review and our team will take a look. Enterprise brands are verified automatically.
             </p>
             <textarea
               value={verificationNote}

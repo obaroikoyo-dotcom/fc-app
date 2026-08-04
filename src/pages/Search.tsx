@@ -11,8 +11,22 @@ import VerifiedBadge from "../components/VerifiedBadge";
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
   id: string; role: string; email: string;
-  creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; followers?: number; rate?: number; } | null;
+  creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; follower_counts?: Record<string, string>; rates?: { post?: string; story?: string; reel?: string; video?: string; ugc?: string }; } | null;
   brand_profiles?: { name: string; niche: string; location: string; avatar_url?: string; verified?: boolean; } | null;
+}
+
+// follower_counts is a per-platform map ("Instagram" -> "12000"), not a
+// single number - this is the actual highest count across platforms.
+function maxFollowers(cp: Profile["creator_profiles"]): number {
+  const counts = Object.values(cp?.follower_counts || {}).map(v => Number(v) || 0);
+  return counts.length ? Math.max(...counts) : 0;
+}
+
+function startingRate(cp: Profile["creator_profiles"]): number | null {
+  const rates = [cp?.rates?.post, cp?.rates?.story, cp?.rates?.reel, cp?.rates?.video, cp?.rates?.ugc]
+    .map(v => (v ? Number(v) : null))
+    .filter((v): v is number => v != null && !isNaN(v));
+  return rates.length ? Math.min(...rates) : null;
 }
 
 const UI = {
@@ -69,6 +83,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
   const [userRole, setUserRole] = useState<string | null>(null);
   const [niche, setNiche] = useState("");
   const [followers, setFollowers] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(210);
 
@@ -134,7 +149,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
     if (niche && nch.toLowerCase() !== niche.toLowerCase()) return false;
 
     if (followers && p.role === "creator") {
-      const fCount = cp?.followers || 0;
+      const fCount = maxFollowers(cp);
       if (followers === "0-10k" && fCount > 10000) return false;
       if (followers === "10k-50k" && (fCount <= 10000 || fCount > 50000)) return false;
       if (followers === "50k-100k" && (fCount <= 50000 || fCount > 100000)) return false;
@@ -142,6 +157,10 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
       if (followers === "1m+" && fCount <= 1000000) return false;
     }
     return true;
+  }).sort((a, b) => {
+    if (sortBy === "followers") return maxFollowers(b.creator_profiles) - maxFollowers(a.creator_profiles);
+    if (sortBy === "name") return (a.creator_profiles?.name || a.brand_profiles?.name || "").localeCompare(b.creator_profiles?.name || b.brand_profiles?.name || "");
+    return 0;
   }).slice(0, 10);
 
   return (
@@ -164,6 +183,14 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
             {filter !== "brands" && (
               <CustomDropdown value={followers} onChange={setFollowers} options={["0-10k", "10k-50k", "50k-100k", "100k-1m", "1m+"]} placeholder="Any Followers" />
             )}
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <CustomDropdown
+              value={sortBy === "followers" ? "Most Followers" : sortBy === "name" ? "Name A-Z" : ""}
+              onChange={v => setSortBy(v === "Most Followers" ? "followers" : v === "Name A-Z" ? "name" : "")}
+              options={filter !== "brands" ? ["Most Followers", "Name A-Z"] : ["Name A-Z"]}
+              placeholder="Sort"
+            />
           </div>
         </div>
       </div>
@@ -197,8 +224,8 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
                     {cp?.name || bp?.name || p.email}
                     {!isC && bp?.verified && <VerifiedBadge size={13} />}
                   </p>
-                  <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && cp?.followers ? ` · ${cp.followers.toLocaleString()} fans` : ""}</p>
-                  {(isC ? cp?.rate : undefined) && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>Rate: £{cp?.rate}</p>}
+                  <p style={{ fontSize: "12px", color: "#444", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && maxFollowers(cp) > 0 ? ` · ${maxFollowers(cp).toLocaleString()} fans` : ""}</p>
+                  {isC && startingRate(cp) != null && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>From £{startingRate(cp)}</p>}
                 </div>
                 <div onClick={e => { e.stopPropagation(); startDM(p.id); }} style={{ padding: "7px 14px", border: "1px solid #333", borderRadius: "6px", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer" }}>DM</div>
               </div>

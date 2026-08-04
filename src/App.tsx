@@ -17,6 +17,7 @@ import BrandDashboard from "./pages/BrandDashboard";
 import CreatorDashboard from "./pages/CreatorDashboard";
 import CreatorProfile from "./pages/CreatorProfile";
 import BrandProfile from "./pages/BrandProfile";
+import AdminReview from "./pages/AdminReview";
 import Explore from "./pages/Explore";
 import Messages from "./pages/Messages";
 import Search from "./pages/Search";
@@ -58,7 +59,8 @@ export type Page =
   | "apply-campaign"
   | "verify-email"
   | "forgot-password"
-  | "reset-password";
+  | "reset-password"
+  | "admin-review";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "public-profile", "apply-campaign"];
 const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand", "public-profile"];
@@ -528,14 +530,16 @@ export default function App() {
             isInverted={isInverted}
           />
         );
-      case "brand-profile": 
+      case "brand-profile":
   return (
-    <BrandProfile 
-      navigate={navigate} 
-      toggleTheme={toggleTheme} 
-      isInverted={isInverted} 
+    <BrandProfile
+      navigate={navigate}
+      toggleTheme={toggleTheme}
+      isInverted={isInverted}
     />
   );
+      case "admin-review":
+        return <AdminReview goBack={() => navigate(userRole === "brand" ? "brand-profile" : "creator-profile")} />;
       case "explore": return <Explore navigate={navigate} navigateToProfile={navigateToBrandProfile} navigateToApply={(id) => { setApplyingCampaignId(id); navigate("apply-campaign"); }} />;
       case "messages-creator": return <Messages navigate={navigate} role="creator" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} onRead={fetchGlobalUnreadCount} />;
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} onRead={fetchGlobalUnreadCount} />;

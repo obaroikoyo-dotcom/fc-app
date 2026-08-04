@@ -6,6 +6,11 @@ import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { getSocialPosts, getPublicSocialInfo, type SocialPost, type PublicSocialInfo } from "../lib/social";
+import StarRating from "../components/StarRating";
+import {
+  getCreatorTrackRecord, getCreatorReviews, getReviewableCreatorCampaigns, submitCreatorReview, formatTurnaroundTime,
+  type CreatorTrackRecord, type CreatorReview, type ReviewableCreatorCampaign,
+} from "../lib/creatorStats";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -52,6 +57,14 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
   const [blockLoading, setBlockLoading] = useState(false);
   const [socialPosts, setSocialPosts] = useState<SocialPost[]>([]);
   const [socialInfo, setSocialInfo] = useState<PublicSocialInfo[]>([]);
+  const [trackRecord, setTrackRecord] = useState<CreatorTrackRecord | null>(null);
+  const [reviews, setReviews] = useState<CreatorReview[]>([]);
+  const [reviewableCampaigns, setReviewableCampaigns] = useState<ReviewableCreatorCampaign[]>([]);
+  const [reviewCampaignId, setReviewCampaignId] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
 
   useEffect(() => { loadProfile(); }, [profileId]);
 
@@ -95,6 +108,19 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
           setCreator(creatorData);
           setSocialPosts(await getSocialPosts(profileId));
           setSocialInfo(await getPublicSocialInfo(profileId));
+
+          const [record, reviewRows] = await Promise.all([
+            getCreatorTrackRecord(profileId),
+            getCreatorReviews(profileId),
+          ]);
+          setTrackRecord(record);
+          setReviews(reviewRows);
+
+          if (user && user.id !== profileId) {
+            const reviewable = await getReviewableCreatorCampaigns(user.id, profileId);
+            setReviewableCampaigns(reviewable);
+            if (reviewable.length > 0) setReviewCampaignId(reviewable[0].campaign_id);
+          }
           return;
         }
 
@@ -149,6 +175,38 @@ const startDM = async () => {
       await supabase.from("favourites")
         .insert({ user_id: currentUserId, creator_id: profileId });
       setFavourited(true);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!currentUserId || !reviewCampaignId) return;
+    setSubmittingReview(true);
+    const { error } = await submitCreatorReview({
+      creatorId: profileId,
+      brandId: currentUserId,
+      campaignId: reviewCampaignId,
+      rating: reviewRating,
+      comment: reviewComment,
+    });
+    setSubmittingReview(false);
+    if (!error) {
+      const submittedCampaign = reviewableCampaigns.find(c => c.campaign_id === reviewCampaignId);
+      setReviews(prev => [{
+        id: `local-${reviewCampaignId}`,
+        rating: reviewRating,
+        comment: reviewComment.trim() || null,
+        created_at: new Date().toISOString(),
+        brand_id: currentUserId,
+        brand_name: "You",
+        brand_avatar: null,
+        campaign_name: submittedCampaign?.campaign_name || null,
+      }, ...prev]);
+      setReviewableCampaigns(prev => prev.filter(c => c.campaign_id !== reviewCampaignId));
+      setReviewComment("");
+      setReviewRating(5);
+      setShowReviewForm(false);
+      const record = await getCreatorTrackRecord(profileId);
+      setTrackRecord(record);
     }
   };
 
@@ -533,8 +591,105 @@ const startDM = async () => {
             </div>
           )}
 
+          {/* Track Record */}
+          {trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0) && (
+            <>
+              <div style={dividerStyle} />
+              <div style={sectionStyle}>
+                <label style={labelStyle}>Track Record</label>
+                <div style={{ display: "flex", gap: "10px", marginBottom: "1.25rem" }}>
+                  <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+                  </div>
+                  <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                    {trackRecord.avgRating != null ? (
+                      <>
+                        <StarRating rating={trackRecord.avgRating} size={13} />
+                        <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                      </>
+                    ) : (
+                      <>
+                        <p style={{ color: "#555", fontSize: "13px" }}>—</p>
+                        <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                      </>
+                    )}
+                  </div>
+                  <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
+                  </div>
+                </div>
+
+                {reviewableCampaigns.length > 0 && (
+                  <div style={{ marginBottom: "1.25rem" }}>
+                    {!showReviewForm ? (
+                      <div onClick={() => setShowReviewForm(true)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #fff", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}>
+                        Leave a review
+                      </div>
+                    ) : (
+                      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                        {reviewableCampaigns.length > 1 && (
+                          <select
+                            value={reviewCampaignId}
+                            onChange={e => setReviewCampaignId(e.target.value)}
+                            style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px", color: "#fff", fontSize: "13px", marginBottom: "10px", fontFamily: "inherit" }}
+                          >
+                            {reviewableCampaigns.map(c => <option key={c.campaign_id} value={c.campaign_id}>{c.campaign_name}</option>)}
+                          </select>
+                        )}
+                        <div style={{ marginBottom: "10px" }}>
+                          <StarRating rating={reviewRating} size={22} interactive onChange={setReviewRating} />
+                        </div>
+                        <textarea
+                          value={reviewComment}
+                          onChange={e => setReviewComment(e.target.value)}
+                          placeholder="How was working with this creator? (optional)"
+                          rows={3}
+                          style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px", color: "#fff", fontSize: "13px", fontFamily: "inherit", resize: "vertical", marginBottom: "10px" }}
+                        />
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          <div
+                            onClick={submittingReview ? undefined : handleSubmitReview}
+                            style={{ flex: 1, padding: "11px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: submittingReview ? "default" : "pointer", opacity: submittingReview ? 0.6 : 1 }}
+                          >
+                            {submittingReview ? "Submitting..." : "Submit Review"}
+                          </div>
+                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+                            Cancel
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {reviews.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {reviews.map(r => (
+                      <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333" }}>
+                              {r.brand_avatar ? <img src={r.brand_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                            </div>
+                            <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
+                          </div>
+                          <StarRating rating={r.rating} size={11} />
+                        </div>
+                        {r.comment && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                        <p style={{ color: "#333", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
           {/* Empty state */}
-          {!creator.platforms?.length && !creator.content_types?.length && !creator.languages?.length && !creator.audience_age_range && !creator.audience_location && !creator.rates?.post && !creator.rates?.reel && !creator.rates?.story && !creator.rates?.video && !creator.rates?.ugc && !creator.collabs?.filter(c => c.brand).length && (
+          {!creator.platforms?.length && !creator.content_types?.length && !creator.languages?.length && !creator.audience_age_range && !creator.audience_location && !creator.rates?.post && !creator.rates?.reel && !creator.rates?.story && !creator.rates?.video && !creator.rates?.ugc && !creator.collabs?.filter(c => c.brand).length &&
+            !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◉</div>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>

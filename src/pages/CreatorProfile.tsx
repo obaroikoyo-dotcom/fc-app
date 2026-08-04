@@ -6,6 +6,9 @@ import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push
 import { getLog, clearLog } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
 import VerifiedBadge from "../components/VerifiedBadge";
+import StarRating from "../components/StarRating";
+import { getCreatorTrackRecord, getCreatorReviews, formatTurnaroundTime, type CreatorTrackRecord, type CreatorReview } from "../lib/creatorStats";
+import { checkAndSendReminders } from "../lib/applicationReminders";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -14,6 +17,7 @@ interface Props {
   isInverted: boolean;
 }
 
+const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 const LABEL_TO_SOCIAL_PLATFORM: Record<string, SocialPlatform> = { Instagram: "instagram", TikTok: "tiktok" };
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
@@ -41,7 +45,7 @@ type SettingsSection =
   | "debug-log"
   | "reports-blocked";
 
-export default function CreatorProfile({ navigateToProfile, toggleTheme, isInverted }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
 
@@ -72,6 +76,9 @@ export default function CreatorProfile({ navigateToProfile, toggleTheme, isInver
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [trackRecord, setTrackRecord] = useState<CreatorTrackRecord | null>(null);
+  const [reviews, setReviews] = useState<CreatorReview[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [favTab, setFavTab] = useState<"creators" | "campaigns">("campaigns");
   const profileHeaderRef = useRef<HTMLDivElement>(null);
   const [profileHeaderHeight, setProfileHeaderHeight] = useState(56);
@@ -263,6 +270,7 @@ const [withdrawError, setWithdrawError] = useState("");
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUserId(user.id);
+    setIsAdmin(user.email === ADMIN_EMAIL);
     setShareLink(`https://flipcollab.app/profile/${user.id}`);
 
     const { data } = await supabase.from("creator_profiles").select("*").eq("id", user.id).single();
@@ -294,6 +302,12 @@ const [withdrawError, setWithdrawError] = useState("");
       .eq("creator_id", user.id)
       .order("created_at", { ascending: false });
     if (apps) setAppliedCampaigns(apps);
+
+    const [record, reviewRows] = await Promise.all([getCreatorTrackRecord(user.id), getCreatorReviews(user.id)]);
+    setTrackRecord(record);
+    setReviews(reviewRows);
+
+    checkAndSendReminders(user.id);
   };
 
   const loadFavourites = async () => {
@@ -634,8 +648,57 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
 
+        {/* Track Record */}
+        {trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0) && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={labelStyle}>Track Record</label>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
+                <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+              </div>
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                {trackRecord.avgRating != null ? (
+                  <>
+                    <StarRating rating={trackRecord.avgRating} size={13} />
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ color: "#555", fontSize: "13px" }}>—</p>
+                    <p style={{ color: "#555", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                  </>
+                )}
+              </div>
+              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
+                <p style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
+              </div>
+            </div>
+            {reviews.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {reviews.map(r => (
+                  <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#333" }}>
+                          {r.brand_avatar ? <img src={r.brand_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                        </div>
+                        <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
+                      </div>
+                      <StarRating rating={r.rating} size={11} />
+                    </div>
+                    {r.comment && <p style={{ color: "#777", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                    <p style={{ color: "#333", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Empty state — only covers platforms/content/languages/audience/rates/collabs, not bio/niche/location */}
-        {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && (
+        {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#333", marginBottom: "1rem" }}>◉</div>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
@@ -691,6 +754,9 @@ setTimeout(() => setSaved(false), 2000);
         {sectionHeader("What Brands Look At")}
         {settingsRow("Audience & Rates", "Age ranges, location, rate card", () => setSettingsSection("audience-data"))}
         {settingsRow("Past Collaborations", `${collabs.filter(c => c.brand).length} added`, () => setSettingsSection("past-collabs"))}
+
+        {isAdmin && sectionHeader("Admin")}
+        {isAdmin && settingsRow("Admin Review", "Verification requests & reports", () => navigate("admin-review"))}
 
         {sectionHeader("General")}
         {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"))}

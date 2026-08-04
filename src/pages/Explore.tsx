@@ -114,6 +114,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "budget">("newest");
   const [now, setNow] = useState(new Date());
 
   useLayoutEffect(() => {
@@ -207,6 +208,9 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     if (feedTab === "discover" && applied.includes(c.id)) return false;
     if (feedTab === "pitches" && !applied.includes(c.id)) return false;
     return true;
+  }).sort((a, b) => {
+    if (sortBy === "budget") return (parseInt(b.budget, 10) || 0) - (parseInt(a.budget, 10) || 0);
+    return 0; // already newest-first from the server query
   });
 
   const getStatusStyle = (status?: string): React.CSSProperties => {
@@ -243,9 +247,17 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         </div>
 
         {/* Filters */}
-        <div style={{ padding: "1rem 1.25rem", display: "flex", gap: "8px" }}>
+        <div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px" }}>
           <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
           <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
+        </div>
+        <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
+          <CustomDropdown
+            value={sortBy === "budget" ? "Highest Budget" : "Newest"}
+            onChange={v => setSortBy(v === "Highest Budget" ? "budget" : "newest")}
+            options={["Newest", "Highest Budget"]}
+            placeholder="Sort"
+          />
         </div>
       </div>
 

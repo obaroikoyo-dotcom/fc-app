@@ -7,6 +7,8 @@ import GoogleSignInButton from "../components/GoogleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
+import TikTokIcon from "../components/TikTokIcon";
+import { startSocialConnect, getSocialConnections, type SocialConnection, type SocialPlatform } from "../lib/social";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -28,7 +30,8 @@ const CREATOR_TIERS = [
   { label: "Macro-Tier Reach", sub: "500k - 1M: Mass awareness spikes", value: "macro" },
   { label: "Elite/Mega Impact", sub: "1M+: Cultural celebrity & global visibility", value: "mega" }
 ];
-const TOTAL_SCREENS = 7;
+const TOTAL_SCREENS = 8;
+const COMING_SOON_SOCIALS = ["Instagram", "YouTube", "Twitter/X", "Pinterest"];
 
 export default function BrandOnboarding({ navigate, setPendingEmail }: Props) {
   const [screen, setScreen] = useState(0);
@@ -66,21 +69,29 @@ const [otpResending, setOtpResending] = useState(false);
 const [otpResent, setOtpResent] = useState(false);
 const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 const [showOtp, setShowOtp] = useState(false);
+  const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
+  const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
+  const [socialNotice, setSocialNotice] = useState("");
 
   const logoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       logEvent(`BrandOnboarding mount: hasUser=${!!user} emailConfirmed=${!!user?.email_confirmed_at} provider=${user?.app_metadata?.provider ?? "n/a"}`);
-      if (user && user.email_confirmed_at && user.app_metadata?.provider && user.app_metadata.provider !== "email") {
+      if (!user) return;
+
+      if (user.app_metadata?.provider && user.app_metadata.provider !== "email") {
         setIsOAuthUser(true);
         setEmail(user.email || "");
+      }
 
-        // Resuming after a Google redirect - restore whatever was filled in
-        // before the redirect tore down component state, and jump straight
-        // back to the credentials screen instead of starting over.
+      if (user.email_confirmed_at) {
+        // Resuming after a redirect (Google sign-in, or connecting TikTok
+        // from the new screen) tore down component state - restore whatever
+        // was filled in and jump back to where they left off instead of
+        // starting over.
         const draft = peekOnboardingDraft("brand");
-        logEvent(`BrandOnboarding mount: isOAuthUser=true draftFound=${!!draft}`);
+        logEvent(`BrandOnboarding mount: draftFound=${!!draft}`);
         if (draft) {
           if (typeof draft.companyName === "string") setCompanyName(draft.companyName);
           if (Array.isArray(draft.selectedIndustries)) setSelectedIndustries(draft.selectedIndustries as string[]);
@@ -91,11 +102,39 @@ const [showOtp, setShowOtp] = useState(false);
           if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
           if (typeof draft.targetTier === "string") setTargetTier(draft.targetTier);
           if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
-          setScreen(5);
+          setScreen(typeof draft.screen === "number" ? draft.screen : 5);
         }
+
+        getSocialConnections(user.id).then(setSocialConnections);
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const connected = params.get("social_connected");
+      const socialError = params.get("social_error");
+      if (connected === "tiktok") {
+        setSocialNotice("TikTok connected.");
+      } else if (socialError) {
+        setSocialNotice(`Couldn't connect: ${socialError}`);
+      }
+      if (connected || socialError) {
+        window.history.replaceState({}, "", window.location.pathname);
       }
     });
   }, []);
+
+  const handleConnectSocial = async (platform: SocialPlatform) => {
+    setConnectingPlatform(platform);
+    saveOnboardingDraft("brand", {
+      companyName, selectedIndustries, location, website, bio, targetAudience, contentTypes, targetTier, termsAccepted,
+      screen: 6,
+    });
+    try {
+      await startSocialConnect(platform);
+    } catch (err) {
+      setSocialNotice(`Couldn't start connection: ${(err as Error).message}`);
+      setConnectingPlatform(null);
+    }
+  };
 
   const handleGoogleCredential = async (idToken: string, nonce: string) => {
     // Saved right before the sign-in call (not eagerly on click) - App.tsx's
@@ -499,8 +538,54 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 </div>
     </div>,
 
-    // Screen 6 — Visual Branding Identification
+    // Screen 6 — Connect TikTok
     <div key={6}>
+      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your TikTok</h1>
+      <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>
+        Verified brands get more replies from creators. Connect your TikTok to show a verified account on your profile — no posting access needed, just proof it's really you.
+      </p>
+      {socialNotice && (
+        <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
+          <span onClick={() => setSocialNotice("")} style={{ color: "#555", cursor: "pointer", fontSize: "14px" }}>✕</span>
+        </div>
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {(() => {
+          const connection = socialConnections.find(c => c.platform === "tiktok");
+          return (
+            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <TikTokIcon size={22} />
+                  <div>
+                    <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>TikTok</p>
+                    {connection && <p style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                  </div>
+                </div>
+                {connection ? (
+                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Connected ✓</span>
+                ) : (
+                  <span onClick={() => handleConnectSocial("tiktok")} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== "tiktok" ? 0.4 : 1 }}>
+                    {connectingPlatform === "tiktok" ? "Connecting..." : "Connect"}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })()}
+        {COMING_SOON_SOCIALS.map(platform => (
+          <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+            <p style={{ fontSize: "14px", color: "#555", fontWeight: 500 }}>{platform}</p>
+            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#333" }}>Coming soon</span>
+          </div>
+        ))}
+      </div>
+    </div>,
+
+    // Screen 7 — Visual Branding Identification
+    <div key={7}>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#555", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Visual Assets</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Upload brand iconography</h1>
       <p style={{ fontSize: "14px", color: "#555", lineHeight: 1.7, marginBottom: "2rem" }}>Identifiable logomarks build consistency and trust throughout application touchpoints.</p>
@@ -536,7 +621,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       if (!isOAuthUser && password !== confirm) return "Passwords must match";
       return "Continue →";
     }
-    if (screen === 6) return "Review Agreements & Deploy →";
+    if (screen === 6) return socialConnections.some(c => c.platform === "tiktok") ? "Continue →" : "Skip for now →";
+    if (screen === 7) return "Review Agreements & Deploy →";
     return "Continue →";
   };
 
@@ -594,7 +680,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           is scrolled underneath it. Only the actual button(s) re-enable
           pointer events. */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "0.5rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, #0a0a0a 60%, transparent)", pointerEvents: "none" }}>
-        {screen === 6 ? (
+        {screen === 7 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
               onClick={loading ? undefined : handleFinish}

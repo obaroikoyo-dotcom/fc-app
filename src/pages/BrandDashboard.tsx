@@ -7,6 +7,8 @@ import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import VerifiedBadge from "../components/VerifiedBadge";
+import StarRating from "../components/StarRating";
+import { getBrandTrackRecord, formatResponseTime, type BrandTrackRecord } from "../lib/brandStats";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -78,6 +80,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [trackRecord, setTrackRecord] = useState<BrandTrackRecord | null>(null);
 
   useLayoutEffect(() => {
     if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
@@ -93,6 +96,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, logo_url").eq("id", user.id).single();
           if (bp?.is_enterprise) setIsEnterprise(true);
           if (bp?.logo_url) setMyLogo(bp.logo_url);
+          getBrandTrackRecord(user.id).then(setTrackRecord);
 
           const { data } = await supabase
             .from("campaigns")
@@ -217,6 +221,28 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
           <div key={`campaigns-${feedTab}`} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {feedTab === "yours" && trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0) && (
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
+                  <p style={{ color: "#555", fontSize: "10px", marginTop: "2px" }}>Completed</p>
+                </div>
+                <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                  {trackRecord.avgRating != null ? (
+                    <>
+                      <StarRating rating={trackRecord.avgRating} size={12} />
+                      <p style={{ color: "#555", fontSize: "10px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                    </>
+                  ) : (
+                    <p style={{ color: "#555", fontSize: "10px" }}>No ratings yet</p>
+                  )}
+                </div>
+                <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700 }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
+                  <p style={{ color: "#555", fontSize: "10px", marginTop: "2px" }}>Avg. reply time</p>
+                </div>
+              </div>
+            )}
             {!hasLoadedOnce && showSkeleton ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (

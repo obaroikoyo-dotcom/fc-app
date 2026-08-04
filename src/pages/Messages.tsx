@@ -141,7 +141,9 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const [billingCountry, setBillingCountry] = useState("GB");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
-  const [requireTikTokPost, setRequireTikTokPost] = useState(false);
+  // Defaults on - protects the brand from paying for a deliverable that
+  // never actually gets posted. Still fully optional; they can uncheck it.
+  const [requireTikTokPost, setRequireTikTokPost] = useState(true);
 
   const brandFee = isEnterprise ? 0 : Math.round(campaignBudget * 0.05);
   const totalCharge = campaignBudget + brandFee;
@@ -328,10 +330,13 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       )}
 
-      <div onClick={() => setRequireTikTokPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px 14px", marginBottom: "1rem", cursor: "pointer" }}>
-        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireTikTokPost ? "#fff" : "#333"}`, background: requireTikTokPost ? "#fff" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireTikTokPost ? "✓" : ""}</div>
+      <div onClick={() => setRequireTikTokPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireTikTokPost ? "rgba(52,199,89,0.06)" : "#111", border: `1px solid ${requireTikTokPost ? "rgba(52,199,89,0.35)" : "#1a1a1a"}`, borderRadius: "8px", padding: "12px 14px", marginBottom: "1rem", cursor: "pointer" }}>
+        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireTikTokPost ? "#34c759" : "#333"}`, background: requireTikTokPost ? "#34c759" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireTikTokPost ? "✓" : ""}</div>
         <div>
-          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>Require a TikTok post before releasing payout</p>
+          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+            Require a TikTok post before releasing payout
+            <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(52,199,89,0.15)", color: "#34c759", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
+          </p>
           <p style={{ fontSize: "11px", color: "#555", marginTop: "2px", lineHeight: 1.5 }}>Your card is charged now, but funds stay held until the creator posts the deliverable to TikTok and it's confirmed live. You can still release manually anytime.</p>
         </div>
       </div>
@@ -1155,7 +1160,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     if (!userId) { setActionLoading(null); return; }
 
     // Swap instant approval to chatting phase so terms can be negotiated inside messages first
-    await supabase.from("applications").update({ status: "accepted" }).eq("id", app.id);
+    await supabase.from("applications").update({ status: "accepted", responded_at: new Date().toISOString() }).eq("id", app.id);
     await supabase.from("campaigns").update({ updated_at: new Date().toISOString() }).eq("id", app.campaign_id);
 
     const { data: existing } = await supabase
@@ -1225,7 +1230,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   const handleReject = async (app: Application) => {
     setActionLoading(app.id);
     setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
-    await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
+    await supabase.from("applications").update({ status: "rejected", responded_at: new Date().toISOString() }).eq("id", app.id);
     setActionLoading(null);
     setActiveCampaign(prev => prev ? {
       ...prev,
