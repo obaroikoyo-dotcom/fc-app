@@ -573,7 +573,7 @@ case "apply-campaign":
   return (
     <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", height: "100vh", overflow: "hidden" }}>
       <style>{`
-  ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); } img.no-reinvert { filter: none; }` : ""}
+  ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); } img.no-reinvert { filter: none; } svg.verified-badge { filter: invert(1) hue-rotate(180deg); }` : ""}
   @keyframes pageEnter {
   from { opacity: 0; transform: translateX(18px); }
   to { opacity: 1; transform: translateX(0); }
