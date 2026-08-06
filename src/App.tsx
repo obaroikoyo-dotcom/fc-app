@@ -25,7 +25,7 @@ import Notifications from "./pages/Notifications";
 import EnterpriseSubscriptionPage from "./pages/EnterpriseSubscriptionPage";
 import ApplyCampaign from "./pages/ApplyCampaign";
 import VerifyEmail from "./pages/VerifyEmail";
-import { supabase } from "./lib/supabase";
+import { supabase, forceSignOut } from "./lib/supabase";
 import { withTimeout } from "./lib/withTimeout";
 import { logEvent } from "./lib/debugLog";
 import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
@@ -215,6 +215,7 @@ export default function App() {
   // decide which bottom nav to show there - this tracks which one the
   // signed-in user actually is.
   const [userRole, setUserRole] = useState<"creator" | "brand" | null>(null);
+  const [accountBlocked, setAccountBlocked] = useState<{ status: "suspended" | "banned"; reason: string | null } | null>(null);
 
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -292,7 +293,7 @@ export default function App() {
       await withTimeout(async () => {
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("role")
+          .select("role, account_status, status_reason")
           .eq("id", userId)
           .maybeSingle();
 
@@ -336,6 +337,12 @@ export default function App() {
           }
           return;
         }
+
+        if (profile.account_status === "suspended" || profile.account_status === "banned") {
+          setAccountBlocked({ status: profile.account_status, reason: profile.status_reason });
+          return;
+        }
+        setAccountBlocked(null);
 
         if (profile.role === "brand") {
           setUserRole("brand");
@@ -504,6 +511,26 @@ export default function App() {
     return (
       <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "#777", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
+      </div>
+    );
+  }
+
+  if (accountBlocked) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "0.75rem" }}>
+          {accountBlocked.status === "banned" ? "Account banned" : "Account suspended"}
+        </p>
+        <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
+          {accountBlocked.reason || `Your account has been ${accountBlocked.status} by FlipCollab. If you think this is a mistake, contact hello@flipcollab.com.`}
+        </p>
+        <div
+          onClick={forceSignOut}
+          style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #222", color: "#ccc", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+        >
+          Sign Out
+        </div>
       </div>
     );
   }

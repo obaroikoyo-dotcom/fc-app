@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import { listUsers, setAccountStatus, type UserSearchResult } from "../lib/moderation";
 
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 
@@ -28,13 +29,33 @@ interface ReportRow {
 
 export default function AdminReview({ goBack }: Props) {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<"verification" | "reports">("verification");
+  const [tab, setTab] = useState<"verification" | "reports" | "accounts">("verification");
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [actioningId, setActioningId] = useState<string | null>(null);
+  const [users, setUsers] = useState<UserSearchResult[]>([]);
+  const [usersLoaded, setUsersLoaded] = useState(false);
+  const [userQuery, setUserQuery] = useState("");
 
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    if (tab === "accounts" && !usersLoaded) {
+      listUsers().then(u => { setUsers(u); setUsersLoaded(true); });
+    }
+  }, [tab, usersLoaded]);
+
+  const handleSetStatus = async (userId: string, status: "active" | "suspended" | "banned") => {
+    setActioningId(userId);
+    const { error } = await setAccountStatus(userId, status);
+    setActioningId(null);
+    if (!error) setUsers(prev => prev.map(u => u.id === userId ? { ...u, account_status: status } : u));
+  };
+
+  const filteredUsers = userQuery.trim()
+    ? users.filter(u => u.name.toLowerCase().includes(userQuery.toLowerCase()) || u.email.toLowerCase().includes(userQuery.toLowerCase()))
+    : users;
 
   const load = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -144,6 +165,9 @@ export default function AdminReview({ goBack }: Props) {
         <button onClick={() => setTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid #fff" : "2px solid transparent", color: tab === "reports" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Reports ({reports.length})
         </button>
+        <button onClick={() => setTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid #fff" : "2px solid transparent", color: tab === "accounts" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+          Accounts
+        </button>
       </div>
 
       <div style={{ padding: "1.25rem" }}>
@@ -204,6 +228,70 @@ export default function AdminReview({ goBack }: Props) {
               ))}
             </div>
           )
+        )}
+
+        {tab === "accounts" && (
+          <>
+            <input
+              value={userQuery}
+              onChange={e => setUserQuery(e.target.value)}
+              placeholder="Search by name or email..."
+              style={{ width: "100%", background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", marginBottom: "1rem", boxSizing: "border-box" as const }}
+            />
+            {!usersLoaded ? (
+              <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>Loading accounts...</p>
+            ) : filteredUsers.length === 0 ? (
+              <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>{userQuery ? "No matching accounts." : "No accounts found."}</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {filteredUsers.slice(0, 30).map(u => (
+                  <div key={u.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                      <div style={{ width: "32px", height: "32px", borderRadius: u.role === "creator" ? "50%" : "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
+                        {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : u.role === "creator" ? "◉" : "◈"}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{u.name}</p>
+                        <p style={{ color: "#888", fontSize: "10px", textTransform: "capitalize" }}>{u.role} · {u.email}</p>
+                      </div>
+                      <span style={{
+                        fontSize: "10px", padding: "3px 9px", borderRadius: "20px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em", flexShrink: 0,
+                        border: `1px solid ${u.account_status === "active" ? "#333" : u.account_status === "suspended" ? "rgba(255,149,0,0.4)" : "rgba(255,77,77,0.4)"}`,
+                        color: u.account_status === "active" ? "#888" : u.account_status === "suspended" ? "#ff9500" : "#ff4d4d",
+                      }}>
+                        {u.account_status}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      {u.account_status !== "active" ? (
+                        <div
+                          onClick={() => actioningId ? undefined : handleSetStatus(u.id, "active")}
+                          style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
+                        >
+                          {actioningId === u.id ? "..." : "Reactivate"}
+                        </div>
+                      ) : (
+                        <>
+                          <div
+                            onClick={() => actioningId ? undefined : handleSetStatus(u.id, "suspended")}
+                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,149,0,0.35)", color: "#ff9500", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
+                          >
+                            Suspend
+                          </div>
+                          <div
+                            onClick={() => actioningId ? undefined : handleSetStatus(u.id, "banned")}
+                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.35)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
+                          >
+                            Ban
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
