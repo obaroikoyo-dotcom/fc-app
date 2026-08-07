@@ -34,5 +34,19 @@ export async function setAccountStatus(userId: string, status: AccountStatus, re
     new_status: status,
     reason: reason?.trim() || null,
   });
-  return { error };
+  if (error) return { error };
+
+  // Also revoke/restore sign-in at the auth-provider level, not just the
+  // in-app flag - suspended and banned both block login the same way here;
+  // the distinction is purely the status/reason shown to admins and users.
+  try {
+    await supabase.functions.invoke("moderate-user", {
+      body: { user_id: userId, action: status === "active" ? "unban" : "ban" },
+    });
+  } catch {
+    // The DB flag above already blocks all in-app usage even if this
+    // best-effort auth-level call fails.
+  }
+
+  return { error: null };
 }

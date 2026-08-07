@@ -44,3 +44,9 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/tiktok-post-status/deno.json"
 entrypoint = "./functions/tiktok-post-status/index.ts"
+
+[functions.moderate-user]
+enabled = true
+verify_jwt = false
+import_map = "./functions/moderate-user/deno.json"
+entrypoint = "./functions/moderate-user/index.ts"
