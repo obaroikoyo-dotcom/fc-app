@@ -7,14 +7,20 @@ import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import VerifiedBadge from "../components/VerifiedBadge";
 import TikTokIcon from "../components/TikTokIcon";
+import InstagramIcon from "../components/InstagramIcon";
 import StarRating from "../components/StarRating";
-import { getPublicSocialInfo, type PublicSocialInfo } from "../lib/social";
+import { getPublicSocialInfo, type PublicSocialInfo, type SocialPlatform } from "../lib/social";
 import {
   getBrandTrackRecord, getBrandReviews, getReviewableCampaigns, submitBrandReview, formatResponseTime,
   type BrandTrackRecord, type BrandReview, type ReviewableCampaign,
 } from "../lib/brandStats";
 
-const COMING_SOON_SOCIALS = ["Instagram", "YouTube", "Twitter/X", "Pinterest"];
+const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
+const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {
+  tiktok: (size) => <TikTokIcon size={size} />,
+  instagram: (size) => <InstagramIcon size={size} />,
+};
+const SOCIAL_LABEL: Record<SocialPlatform, string> = { tiktok: "TikTok", instagram: "Instagram" };
 
 interface Props {
   navigate: (p: Page) => void;
@@ -42,7 +48,7 @@ interface BrandData {
 
 export default function BrandPublicProfile({ navigate, profileId, goBack }: Props) {
   const [brand, setBrand] = useState<BrandData | null>(null);
-  const [tiktokInfo, setTiktokInfo] = useState<PublicSocialInfo | null>(null);
+  const [socialInfo, setSocialInfo] = useState<PublicSocialInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const showSkeleton = useDelayedLoading(loading);
@@ -95,8 +101,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
         if (data) setBrand(data);
 
-        const socials = await getPublicSocialInfo(profileId);
-        setTiktokInfo(socials.find(s => s.platform === "tiktok") || null);
+        setSocialInfo(await getPublicSocialInfo(profileId));
 
         const [record, reviewRows] = await Promise.all([
           getBrandTrackRecord(profileId),
@@ -441,51 +446,53 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
         <div style={dividerStyle} />
 
         {/* Links */}
-        {(brand.website || brand.instagram) && (
+        {brand.website && (
           <div style={sectionStyle}>
             <label style={labelStyle}>Links</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {brand.website && (
-                <a href={brand.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#fff", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#888", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Website</span>
-                  <span style={{ color: "#ccc", textDecoration: "underline" }}>{brand.website}</span>
-                </a>
-              )}
-              {brand.instagram && (
-                <div style={{ fontSize: "13px", color: "#fff", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ color: "#888", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Instagram</span>
-                  <span style={{ color: "#ccc" }}>{brand.instagram}</span>
-                </div>
-              )}
+              <a href={brand.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#fff", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ color: "#888", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Website</span>
+                <span style={{ color: "#ccc", textDecoration: "underline" }}>{brand.website}</span>
+              </a>
             </div>
           </div>
         )}
 
         {/* Social */}
-        {(tiktokInfo || brand.tiktok) && (
-          <div style={sectionStyle}>
-            <label style={labelStyle}>Social</label>
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <TikTokIcon size={22} />
-                <div>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>TikTok</p>
-                  <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>@{tiktokInfo?.username || brand.tiktok}</p>
+        {(() => {
+          const platforms = (["tiktok", "instagram"] as SocialPlatform[]).map(platform => ({
+            platform,
+            info: socialInfo.find(s => s.platform === platform) || null,
+            typed: platform === "tiktok" ? brand.tiktok : brand.instagram,
+          })).filter(p => p.info || p.typed);
+          if (platforms.length === 0) return null;
+          return (
+            <div style={sectionStyle}>
+              <label style={labelStyle}>Social</label>
+              {platforms.map(({ platform, info, typed }) => (
+                <div key={platform} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    {SOCIAL_ICON[platform](22)}
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{SOCIAL_LABEL[platform]}</p>
+                      <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>@{info?.username || typed}</p>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    {info && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
+                    {info?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{info.follower_count.toLocaleString()} followers</p>}
+                  </div>
                 </div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                {tiktokInfo && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
-                {tiktokInfo?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{tiktokInfo.follower_count.toLocaleString()} followers</p>}
-              </div>
+              ))}
+              {COMING_SOON_SOCIALS.map(platform => (
+                <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "10px 14px", marginBottom: "8px" }}>
+                  <p style={{ fontSize: "13px", color: "#888", fontWeight: 500 }}>{platform}</p>
+                  <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
+                </div>
+              ))}
             </div>
-            {COMING_SOON_SOCIALS.map(platform => (
-              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "10px 14px", marginBottom: "8px" }}>
-                <p style={{ fontSize: "13px", color: "#888", fontWeight: 500 }}>{platform}</p>
-                <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
-              </div>
-            ))}
-          </div>
-        )}
+          );
+        })()}
 
         {/* Track Record */}
         {trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0) && (
@@ -584,7 +591,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
         )}
 
 {/* Empty state */}
-          {!brand.industry && !brand.target_audience && !brand.budget_range && !brand.content_types?.length && !brand.website && !brand.instagram && !brand.tiktok && !tiktokInfo &&
+          {!brand.industry && !brand.target_audience && !brand.budget_range && !brand.content_types?.length && !brand.website && !brand.instagram && !brand.tiktok && !socialInfo.length &&
             !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "14px", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◈</div>

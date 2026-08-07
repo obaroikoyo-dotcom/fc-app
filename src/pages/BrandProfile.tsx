@@ -7,12 +7,18 @@ import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push
 import { getLog, clearLog } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, type SocialConnection, type SocialPlatform } from "../lib/social";
 import TikTokIcon from "../components/TikTokIcon";
+import InstagramIcon from "../components/InstagramIcon";
 import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, getBrandReviews, formatResponseTime, type BrandTrackRecord, type BrandReview } from "../lib/brandStats";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
-const COMING_SOON_SOCIALS = ["Instagram", "YouTube", "Twitter/X", "Pinterest"];
+const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
+const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {
+  tiktok: (size) => <TikTokIcon size={size} />,
+  instagram: (size) => <InstagramIcon size={size} />,
+};
+const SOCIAL_LABEL: Record<SocialPlatform, string> = { tiktok: "TikTok", instagram: "Instagram" };
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 
 interface Props {
@@ -484,48 +490,52 @@ const loadFavourites = async () => {
         )}
 
         {/* Links */}
-        {(website || instagram) && (
+        {website && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Links</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {website && (
-                <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noreferrer"
-                  style={{ fontSize: "13px", color: "#ccc", textDecoration: "underline" }}>{website}</a>
-              )}
-              {instagram && <p style={{ fontSize: "13px", color: "#bbb" }}>Instagram: {instagram}</p>}
+              <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noreferrer"
+                style={{ fontSize: "13px", color: "#ccc", textDecoration: "underline" }}>{website}</a>
             </div>
           </div>
         )}
 
         {/* Social */}
         {(() => {
-          const tiktokConnection = socialConnections.find(c => c.platform === "tiktok");
-          if (!tiktokConnection && !tiktok) return null;
+          const platforms = (["tiktok", "instagram"] as SocialPlatform[]).map(platform => ({
+            platform,
+            connection: socialConnections.find(c => c.platform === platform) || null,
+            typed: platform === "tiktok" ? tiktok : instagram,
+          })).filter(p => p.connection || p.typed);
+          if (platforms.length === 0) return null;
+          const anyConnected = platforms.some(p => p.connection);
           return (
             <div style={{ marginBottom: "1.5rem" }}>
               <label style={labelStyle}>Social</label>
-              <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <TikTokIcon size={22} />
-                  <div>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>TikTok</p>
-                    <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>@{tiktokConnection?.username || tiktok}</p>
+              {platforms.map(({ platform, connection, typed }) => (
+                <div key={platform} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    {SOCIAL_ICON[platform](22)}
+                    <div>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{SOCIAL_LABEL[platform]}</p>
+                      <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>@{connection?.username || typed}</p>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    {connection && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
+                    {connection?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{connection.follower_count.toLocaleString()} followers</p>}
                   </div>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  {tiktokConnection && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
-                  {tiktokConnection?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{tiktokConnection.follower_count.toLocaleString()} followers</p>}
-                </div>
-              </div>
+              ))}
               {COMING_SOON_SOCIALS.map(platform => (
                 <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "10px 14px", marginBottom: "8px" }}>
                   <p style={{ fontSize: "13px", color: "#888", fontWeight: 500 }}>{platform}</p>
                   <span style={{ fontSize: "10px", padding: "3px 9px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
                 </div>
               ))}
-              {!tiktokConnection && (
+              {!anyConnected && (
                 <p style={{ fontSize: "11px", color: "#888", lineHeight: 1.6 }}>
-                  Connect TikTok in Manage Accounts to show a verified badge here.
+                  Connect TikTok or Instagram in Manage Accounts to show a verified badge here.
                 </p>
               )}
             </div>
@@ -582,7 +592,7 @@ const loadFavourites = async () => {
         )}
 
         {/* Empty state — only covers content/audience/tier/links, not bio/industry/location */}
-        {!contentTypes.length && !targetAudience && !targetTier && !website && !instagram && !tiktok && !socialConnections.some(c => c.platform === "tiktok") && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
+        {!contentTypes.length && !targetAudience && !targetTier && !website && !instagram && !tiktok && !socialConnections.length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◈</div>
             <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>

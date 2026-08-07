@@ -8,6 +8,7 @@ import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "
 import { logEvent } from "../lib/debugLog";
 import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same folder
 import TikTokIcon from "../components/TikTokIcon";
+import InstagramIcon from "../components/InstagramIcon";
 import { startSocialConnect, getSocialConnections, type SocialConnection, type SocialPlatform } from "../lib/social";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
@@ -31,7 +32,11 @@ const CREATOR_TIERS = [
   { label: "Elite/Mega Impact", sub: "1M+: Cultural celebrity & global visibility", value: "mega" }
 ];
 const TOTAL_SCREENS = 8;
-const COMING_SOON_SOCIALS = ["Instagram", "YouTube", "Twitter/X", "Pinterest"];
+const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
+const CONNECTABLE_SOCIALS: { platform: SocialPlatform; label: string; icon: (size: number) => React.ReactNode }[] = [
+  { platform: "tiktok", label: "TikTok", icon: (size) => <TikTokIcon size={size} /> },
+  { platform: "instagram", label: "Instagram", icon: (size) => <InstagramIcon size={size} /> },
+];
 
 export default function BrandOnboarding({ navigate, setPendingEmail }: Props) {
   const [screen, setScreen] = useState(0);
@@ -111,8 +116,8 @@ const [showOtp, setShowOtp] = useState(false);
       const params = new URLSearchParams(window.location.search);
       const connected = params.get("social_connected");
       const socialError = params.get("social_error");
-      if (connected === "tiktok") {
-        setSocialNotice("TikTok connected.");
+      if (connected === "tiktok" || connected === "instagram") {
+        setSocialNotice(`${connected === "tiktok" ? "TikTok" : "Instagram"} connected.`);
       } else if (socialError) {
         setSocialNotice(`Couldn't connect: ${socialError}`);
       }
@@ -538,12 +543,12 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 </div>
     </div>,
 
-    // Screen 6 — Connect TikTok
+    // Screen 6 — Connect socials
     <div key={6}>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your TikTok</h1>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your socials</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
-        Verified brands get more replies from creators. Connect your TikTok to show a verified account on your profile — no posting access needed, just proof it's really you.
+        Verified brands get more replies from creators. Connect TikTok or Instagram to show a verified account on your profile — no posting access needed, just proof it's really you.
       </p>
       {socialNotice && (
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -552,29 +557,29 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {(() => {
-          const connection = socialConnections.find(c => c.platform === "tiktok");
+        {CONNECTABLE_SOCIALS.map(({ platform, label, icon }) => {
+          const connection = socialConnections.find(c => c.platform === platform);
           return (
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+            <div key={platform} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <TikTokIcon size={22} />
+                  {icon(22)}
                   <div>
-                    <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>TikTok</p>
+                    <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
                     {connection && <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                   </div>
                 </div>
                 {connection ? (
                   <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Connected ✓</span>
                 ) : (
-                  <span onClick={() => handleConnectSocial("tiktok")} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== "tiktok" ? 0.4 : 1 }}>
-                    {connectingPlatform === "tiktok" ? "Connecting..." : "Connect"}
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                    {connectingPlatform === platform ? "Connecting..." : "Connect"}
                   </span>
                 )}
               </div>
             </div>
           );
-        })()}
+        })}
         {COMING_SOON_SOCIALS.map(platform => (
           <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
             <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
@@ -621,7 +626,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       if (!isOAuthUser && password !== confirm) return "Passwords must match";
       return "Continue →";
     }
-    if (screen === 6) return socialConnections.some(c => c.platform === "tiktok") ? "Continue →" : "Skip for now →";
+    if (screen === 6) return socialConnections.length > 0 ? "Continue →" : "Skip for now →";
     if (screen === 7) return "Review Agreements & Deploy →";
     return "Continue →";
   };
