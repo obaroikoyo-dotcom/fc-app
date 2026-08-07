@@ -9,6 +9,8 @@ import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, typ
 import TikTokIcon from "../components/TikTokIcon";
 import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, getBrandReviews, formatResponseTime, type BrandTrackRecord, type BrandReview } from "../lib/brandStats";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
 const COMING_SOON_SOCIALS = ["Instagram", "YouTube", "Twitter/X", "Pinterest"];
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
@@ -136,6 +138,9 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
   const [trackRecord, setTrackRecord] = useState<BrandTrackRecord | null>(null);
   const [reviews, setReviews] = useState<BrandReview[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const showProfileSkeleton = useDelayedLoading(profileLoading);
+  const hasProfileLoadedOnce = useHasLoadedOnce(profileLoading);
 
   // Favourites
   const [favouritedCreators, setFavouritedCreators] = useState<any[]>([]);
@@ -191,6 +196,7 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
   };
 
   const loadProfile = async () => {
+    try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUserId(user.id);
@@ -227,6 +233,9 @@ setCancelledAtPeriodEnd(data.subscription_cancel_at_period_end || false);
     const [record, reviewRows] = await Promise.all([getBrandTrackRecord(user.id), getBrandReviews(user.id)]);
     setTrackRecord(record);
     setReviews(reviewRows);
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const handleRequestVerification = async () => {
@@ -353,7 +362,61 @@ const loadFavourites = async () => {
   );
 
   // ─── PUBLIC PROFILE VIEW ──────────────────────────────────────────────────
-  const renderProfile = () => (
+  const renderProfile = () => {
+    if (profileLoading && !hasProfileLoadedOnce && !showProfileSkeleton) {
+      return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+    }
+
+    if (profileLoading && !hasProfileLoadedOnce) {
+      const pulse = "pulse 1.5s ease-in-out infinite";
+      const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
+        <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+      );
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+          <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+            {bar("100px", "18px")}
+            {bar("36px", "36px", { borderRadius: "8px" })}
+          </div>
+          <div style={{ padding: "1.5rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))" }}>
+            {/* Logo + name */}
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
+              {bar("72px", "72px", { borderRadius: "14px", flexShrink: 0 })}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {bar("140px", "20px")}
+                {bar("100px", "13px")}
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
+              {bar("100%", "13px")}
+              {bar("85%", "13px")}
+            </div>
+
+            {/* Tags */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "1.5rem" }}>
+              {[70, 90, 60].map((w, i) => <div key={i}>{bar(`${w}px`, "26px", { borderRadius: "20px" })}</div>)}
+            </div>
+
+            <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
+
+            {/* Content sections */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {[0, 1, 2].map(i => (
+                <div key={i}>
+                  {bar("100px", "11px", { marginBottom: "8px" })}
+                  {bar("160px", "13px")}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Brand Profile</span>
@@ -528,7 +591,8 @@ const loadFavourites = async () => {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   // ─── SETTINGS SHELL ───────────────────────────────────────────────────────
   const renderSettingsHeader = (title: string, onBack: () => void) => (

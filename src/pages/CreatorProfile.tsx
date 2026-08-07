@@ -9,6 +9,8 @@ import VerifiedBadge from "../components/VerifiedBadge";
 import StarRating from "../components/StarRating";
 import { getCreatorTrackRecord, getCreatorReviews, formatTurnaroundTime, type CreatorTrackRecord, type CreatorReview } from "../lib/creatorStats";
 import { checkAndSendReminders } from "../lib/applicationReminders";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -79,6 +81,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [trackRecord, setTrackRecord] = useState<CreatorTrackRecord | null>(null);
   const [reviews, setReviews] = useState<CreatorReview[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const showProfileSkeleton = useDelayedLoading(profileLoading);
+  const hasProfileLoadedOnce = useHasLoadedOnce(profileLoading);
   const [favTab, setFavTab] = useState<"creators" | "campaigns">("campaigns");
   const profileHeaderRef = useRef<HTMLDivElement>(null);
   const [profileHeaderHeight, setProfileHeaderHeight] = useState(56);
@@ -267,6 +272,7 @@ const [withdrawError, setWithdrawError] = useState("");
   };
 
   const loadProfile = async () => {
+    try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     setUserId(user.id);
@@ -308,6 +314,9 @@ const [withdrawError, setWithdrawError] = useState("");
     setReviews(reviewRows);
 
     checkAndSendReminders(user.id);
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const loadFavourites = async () => {
@@ -501,7 +510,61 @@ setTimeout(() => setSaved(false), 2000);
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
-  const renderProfile = () => (
+  const renderProfile = () => {
+    if (profileLoading && !hasProfileLoadedOnce && !showProfileSkeleton) {
+      return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+    }
+
+    if (profileLoading && !hasProfileLoadedOnce) {
+      const pulse = "pulse 1.5s ease-in-out infinite";
+      const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
+        <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+      );
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+          <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+          <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+            {bar("90px", "18px")}
+            {bar("36px", "36px", { borderRadius: "8px" })}
+          </div>
+          <div style={{ padding: "1.5rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))" }}>
+            {/* Avatar + name */}
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
+              {bar("72px", "72px", { borderRadius: "50%", flexShrink: 0 })}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {bar("140px", "20px")}
+                {bar("100px", "13px")}
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
+              {bar("100%", "13px")}
+              {bar("85%", "13px")}
+            </div>
+
+            {/* Tags */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "1.5rem" }}>
+              {[70, 90, 60].map((w, i) => <div key={i}>{bar(`${w}px`, "26px", { borderRadius: "20px" })}</div>)}
+            </div>
+
+            <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
+
+            {/* Platforms/content sections */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {[0, 1, 2].map(i => (
+                <div key={i}>
+                  {bar("100px", "11px", { marginBottom: "8px" })}
+                  {bar("160px", "13px")}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div ref={profileHeaderRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
@@ -707,7 +770,8 @@ setTimeout(() => setSaved(false), 2000);
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   // ─── SETTINGS SHELL ───────────────────────────────────────────────────────
   const renderSettingsHeader = (title: string, onBack: () => void) => (
