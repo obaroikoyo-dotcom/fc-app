@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { listUsers, setAccountStatus, type UserSearchResult } from "../lib/moderation";
+import { useDelayedLoading } from "../lib/useDelayedLoading";
+import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 
@@ -33,6 +35,8 @@ export default function AdminReview({ goBack }: Props) {
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const showSkeleton = useDelayedLoading(loading);
+  const hasLoadedOnce = useHasLoadedOnce(loading);
   const [actioningId, setActioningId] = useState<string | null>(null);
   const [users, setUsers] = useState<UserSearchResult[]>([]);
   const [usersLoaded, setUsersLoaded] = useState(false);
@@ -141,8 +145,40 @@ export default function AdminReview({ goBack }: Props) {
     </div>
   );
 
-  if (loading) {
+  if (loading && !hasLoadedOnce && !showSkeleton) {
     return <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>{header}</div>;
+  }
+
+  if (loading && !hasLoadedOnce) {
+    const pulse = "pulse 1.5s ease-in-out infinite";
+    const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
+      <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+    );
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+        {header}
+        <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{ flex: 1, padding: "14px", display: "flex", justifyContent: "center" }}>{bar("60px", "12px")}</div>
+          ))}
+        </div>
+        <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                {bar("32px", "32px", { borderRadius: "8px" })}
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {bar("120px", "13px")}
+                  {bar("80px", "10px")}
+                </div>
+              </div>
+              {bar("100%", "32px", { borderRadius: "8px" })}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (!authorized) {
@@ -239,7 +275,18 @@ export default function AdminReview({ goBack }: Props) {
               style={{ width: "100%", background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", marginBottom: "1rem", boxSizing: "border-box" as const }}
             />
             {!usersLoaded ? (
-              <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>Loading accounts...</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#1a1a1a", animation: "pulse 1.5s ease-in-out infinite", flexShrink: 0 }} />
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
+                      <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ width: "160px", height: "10px", borderRadius: "4px", background: "#1a1a1a", animation: "pulse 1.5s ease-in-out infinite" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : filteredUsers.length === 0 ? (
               <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>{userQuery ? "No matching accounts." : "No accounts found."}</p>
             ) : (
