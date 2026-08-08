@@ -3,7 +3,7 @@ import { useId } from "react";
 export default function InstagramIcon({ size = 16 }: { size?: number }) {
   const gradientId = `ig-gradient-${useId()}`;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className="instagram-icon" width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">
           <stop stopColor="#FFDD55" />
