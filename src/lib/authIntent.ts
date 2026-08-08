@@ -21,3 +21,19 @@ export function peekGoogleLoginIntent(): boolean {
 export function clearGoogleLoginIntent() {
   sessionStorage.removeItem(KEY);
 }
+
+const APPLE_KEY = "fc_apple_login_intent";
+
+// Same purpose as the Google flag above, kept as a separate key so the two
+// providers can't clobber each other if both somehow fire in one session.
+export function markAppleLoginIntent() {
+  sessionStorage.setItem(APPLE_KEY, "1");
+}
+
+export function peekAppleLoginIntent(): boolean {
+  return sessionStorage.getItem(APPLE_KEY) === "1";
+}
+
+export function clearAppleLoginIntent() {
+  sessionStorage.removeItem(APPLE_KEY);
+}

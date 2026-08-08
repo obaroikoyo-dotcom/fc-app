@@ -27,6 +27,12 @@ export async function signInWithGoogleIdToken(idToken: string, nonce: string) {
   return supabase.auth.signInWithIdToken({ provider: "google", token: idToken, nonce });
 }
 
+// Same shape as signInWithGoogleIdToken, used by AppleSignInButton's
+// onCredential callback.
+export async function signInWithAppleIdToken(idToken: string, nonce: string) {
+  return supabase.auth.signInWithIdToken({ provider: "apple", token: idToken, nonce });
+}
+
 // Supabase's internal auth lock (serializes token-refresh across tabs) can
 // get stuck if a refresh was in-flight when the tab was backgrounded and
 // timer throttling prevented it from ever completing - every subsequent

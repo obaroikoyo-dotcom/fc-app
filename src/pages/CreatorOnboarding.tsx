@@ -4,8 +4,9 @@ import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
 import { type Page } from "../App";
-import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
+import { supabase, signInWithGoogleIdToken, signInWithAppleIdToken } from "../lib/supabase";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import AppleSignInButton from "../components/AppleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, getSocialPostOptions, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption } from "../lib/social";
@@ -18,6 +19,12 @@ const GoogleIcon = (
     <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
     <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z" />
     <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
+  </svg>
+);
+
+const AppleIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+    <path d="M16.365 1.43c0 1.14-.415 2.19-1.15 2.99-.83.9-2.16 1.59-3.29 1.5-.14-1.09.42-2.24 1.14-2.98.8-.84 2.2-1.47 3.3-1.51zM20.5 17.14c-.5 1.16-.74 1.68-1.38 2.72-.9 1.44-2.16 3.24-3.73 3.25-1.4.02-1.76-.92-3.65-.91-1.89.01-2.29.93-3.69.91-1.57-.02-2.76-1.63-3.66-3.07-2.5-4-2.77-8.68-1.22-11.17.95-1.53 2.53-2.53 4.27-2.55 1.5-.03 2.62.98 3.85.98 1.22 0 2.9-1.21 4.9-1.03.83.03 3.17.34 4.66 2.53-.12.08-2.78 1.63-2.75 4.85.03 3.86 3.4 5.14 3.4 5.14z" />
   </svg>
 );
 
@@ -286,6 +293,23 @@ const [showOtp, setShowOtp] = useState(false);
     // this. Without updating it here directly, the screen keeps showing the
     // email/password form (even though sign-in already succeeded) until the
     // user leaves and comes back and the mount effect finally catches up.
+    if (data.user) {
+      setIsOAuthUser(true);
+      setEmail(data.user.email || "");
+    }
+  };
+
+  const handleAppleCredential = async (idToken: string, nonce: string) => {
+    saveOnboardingDraft("creator", {
+      name, birthDay, birthMonth, birthYear, selectedNiches, location,
+      selectedPlatforms, socialLinks, followerCounts, contentTypes, rates, termsAccepted,
+      screen: 5,
+    });
+    const { data, error: idTokenError } = await signInWithAppleIdToken(idToken, nonce);
+    if (idTokenError) {
+      setError(idTokenError.message);
+      return;
+    }
     if (data.user) {
       setIsOAuthUser(true);
       setEmail(data.user.email || "");
@@ -654,6 +678,14 @@ const [showOtp, setShowOtp] = useState(false);
               {GoogleIcon} Continue with Google
             </div>
           </GoogleSignInButton>
+
+          <AppleSignInButton onCredential={handleAppleCredential}>
+            <div
+              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+            >
+              {AppleIcon} Continue with Apple
+            </div>
+          </AppleSignInButton>
         </div>
       )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}

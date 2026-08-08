@@ -4,9 +4,10 @@ import Logo from "../components/Logo";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import AppleSignInButton from "../components/AppleSignInButton";
 import { type Page } from "../App";
-import { supabase, signInWithGoogleIdToken } from "../lib/supabase";
-import { markGoogleLoginIntent, clearGoogleLoginIntent } from "../lib/authIntent";
+import { supabase, signInWithGoogleIdToken, signInWithAppleIdToken } from "../lib/supabase";
+import { markGoogleLoginIntent, clearGoogleLoginIntent, markAppleLoginIntent, clearAppleLoginIntent } from "../lib/authIntent";
 
 interface Props { navigate: (p: Page) => void; }
 
@@ -16,6 +17,12 @@ const GoogleIcon = (
     <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z" />
     <path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z" />
     <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z" />
+  </svg>
+);
+
+const AppleIcon = (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+    <path d="M16.365 1.43c0 1.14-.415 2.19-1.15 2.99-.83.9-2.16 1.59-3.29 1.5-.14-1.09.42-2.24 1.14-2.98.8-.84 2.2-1.47 3.3-1.51zM20.5 17.14c-.5 1.16-.74 1.68-1.38 2.72-.9 1.44-2.16 3.24-3.73 3.25-1.4.02-1.76-.92-3.65-.91-1.89.01-2.29.93-3.69.91-1.57-.02-2.76-1.63-3.66-3.07-2.5-4-2.77-8.68-1.22-11.17.95-1.53 2.53-2.53 4.27-2.55 1.5-.03 2.62.98 3.85.98 1.22 0 2.9-1.21 4.9-1.03.83.03 3.17.34 4.66 2.53-.12.08-2.78 1.63-2.75 4.85.03 3.86 3.4 5.14 3.4 5.14z" />
   </svg>
 );
 
@@ -55,6 +62,33 @@ export default function Login({ navigate }: Props) {
     clearGoogleLoginIntent();
     // Successful sign-in is picked up by App.tsx's onAuthStateChange, which
     // handles routing from here.
+  };
+
+  const handleAppleCredential = async (idToken: string, nonce: string) => {
+    setError("");
+    markAppleLoginIntent();
+
+    const { data, error: idTokenError } = await signInWithAppleIdToken(idToken, nonce);
+    if (idTokenError) {
+      clearAppleLoginIntent();
+      setError(idTokenError.message);
+      return;
+    }
+
+    // Same phantom-account guard as the Google handler above - signInWithIdToken
+    // silently creates a new account for an Apple identity that's never signed
+    // in before, which isn't what "sign in" should do here.
+    if (data.user) {
+      const { data: profile } = await supabase.from("profiles").select("id").eq("id", data.user.id).maybeSingle();
+      if (!profile) {
+        await supabase.auth.signOut();
+        clearAppleLoginIntent();
+        setError("No account found for that Apple account. Try signing up instead.");
+        return;
+      }
+    }
+
+    clearAppleLoginIntent();
   };
 
   const handleLogin = async () => {
@@ -122,11 +156,19 @@ export default function Login({ navigate }: Props) {
           <div style={{ flex: 1, height: "1px", background: "#222" }} />
         </div>
 
-        <GoogleSignInButton onCredential={handleGoogleCredential}>
-          <Button variant="outline" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-            {GoogleIcon} Continue with Google
-          </Button>
-        </GoogleSignInButton>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <GoogleSignInButton onCredential={handleGoogleCredential}>
+            <Button variant="outline" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+              {GoogleIcon} Continue with Google
+            </Button>
+          </GoogleSignInButton>
+
+          <AppleSignInButton onCredential={handleAppleCredential}>
+            <Button variant="outline" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+              {AppleIcon} Continue with Apple
+            </Button>
+          </AppleSignInButton>
+        </div>
 
         <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#888" }}>
           Don't have an account?{" "}

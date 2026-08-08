@@ -29,7 +29,7 @@ import { supabase, forceSignOut } from "./lib/supabase";
 import { withTimeout } from "./lib/withTimeout";
 import { logEvent } from "./lib/debugLog";
 import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
-import { peekGoogleLoginIntent, clearGoogleLoginIntent } from "./lib/authIntent";
+import { peekGoogleLoginIntent, clearGoogleLoginIntent, peekAppleLoginIntent, clearAppleLoginIntent } from "./lib/authIntent";
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
 import { autoRequestPush } from "./lib/push";
 
@@ -306,8 +306,8 @@ export default function App() {
           // Login.tsx handles telling them that and signing the phantom
           // session back out itself. Stay out of its way rather than
           // routing to role-select first.
-          if (peekGoogleLoginIntent()) {
-            logEvent("syncUserRoute: no profile, Google login-intent flag set - deferring to Login page");
+          if (peekGoogleLoginIntent() || peekAppleLoginIntent()) {
+            logEvent("syncUserRoute: no profile, OAuth login-intent flag set - deferring to Login page");
             return;
           }
 
@@ -469,6 +469,8 @@ export default function App() {
         // the Login page, so don't yank it away to role-select.
         if (peekGoogleLoginIntent()) {
           clearGoogleLoginIntent();
+        } else if (peekAppleLoginIntent()) {
+          clearAppleLoginIntent();
         } else {
           setPage("role-select");
         }
