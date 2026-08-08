@@ -82,7 +82,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
+          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: August 2026</p>
 
           <p>Welcome to FlipCollab. By creating an account and using our platform, you agree to these Terms & Conditions. Please read them carefully.</p>
 
@@ -164,7 +164,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
 
 <div>
   <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. App Store Compliance</span>
-  <span>FlipCollab is distributed through the Apple App Store and Google Play Store. Use of the app is also subject to the respective platform's terms of service. Apple Inc. and Google LLC are not responsible for the app or its content. Any claims relating to the app must be directed to FlipCollab, not to Apple or Google.</span>
+  <span>If FlipCollab is distributed through the Apple App Store or Google Play Store, use of the app is also subject to the respective platform's terms of service. Apple Inc. and Google LLC are not responsible for the app or its content. Any claims relating to the app must be directed to FlipCollab, not to Apple or Google.</span>
 </div>
 
           <div>

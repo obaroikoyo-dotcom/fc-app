@@ -78,7 +78,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
+          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: August 2026</p>
 
           <p>This Privacy Policy explains how FlipCollab ("we", "us", "our") collects, uses, and protects your personal data when you use our platform. FlipCollab is operated from the United Kingdom and complies with the UK GDPR and the Data Protection Act 2018.</p>
 
@@ -129,12 +129,17 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Data Retention</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Social Sign-In & Linked Accounts</span>
+            <span>You may sign in or verify your account using Google, Apple, TikTok, or Instagram. We only receive what the provider shares when you sign in — typically your name and email, or a private relay email if you use Apple's Hide My Email. We use this data solely to create and authenticate your account, never for advertising, and we do not attempt to identify you if you choose to keep your email private.</span>
+          </div>
+
+          <div>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. Data Retention</span>
             <span>We retain your data for as long as your account is active. If you delete your account, your personal data is deleted within 30 days, except where we are legally required to retain it (e.g. payment records for tax purposes, which are retained for 6 years under UK law).</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. Your Rights</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>8. Your Rights</span>
             <span>Under UK GDPR you have the right to:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
               <li>Access the personal data we hold about you</li>
@@ -148,27 +153,27 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>8. Cookies</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>9. Cookies</span>
             <span>FlipCollab uses essential cookies and local storage to keep you logged in and remember your preferences. We do not use tracking or advertising cookies.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>9. Security</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Security</span>
             <span>We use industry-standard security measures including encrypted connections (HTTPS), secure authentication via Supabase, and PCI-compliant payment processing via Stripe. No system is 100% secure — if you suspect unauthorised access to your account, contact us immediately.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Children</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>11. Children</span>
             <span>FlipCollab is not intended for users under 18. We do not knowingly collect data from minors. If we become aware of this, the account will be deleted immediately.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>11. Changes to This Policy</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. Changes to This Policy</span>
             <span>We may update this policy from time to time. We will notify you of significant changes via email or an in-app notice. Continued use of the platform after changes constitutes acceptance.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. Contact</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>13. Contact</span>
             <span>For any privacy-related questions email <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
           </div>
 

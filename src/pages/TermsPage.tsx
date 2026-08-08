@@ -11,7 +11,7 @@ const SECTIONS = [
   { t: "10. Limitation of Liability", b: "FlipCollab isn't liable for indirect or consequential losses, including brand-creator disputes." },
   { t: "11. Governing Law", b: "Governed by the laws of England and Wales." },
   { t: "12. In-App Purchases", b: "Subscription fees are recurring and cancellable anytime. No refunds for partial periods." },
-  { t: "13. App Store Compliance", b: "Claims must be directed to FlipCollab, not Apple or Google." },
+  { t: "13. App Store Compliance", b: "If FlipCollab is distributed via the Apple App Store or Google Play Store, use is also subject to that platform's terms. Apple and Google aren't responsible for the app; claims must be directed to FlipCollab, not to them." },
   { t: "14. Contact", b: "hello@flipcollab.com" },
 ];
 
@@ -23,7 +23,7 @@ export default function TermsPage() {
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
           Terms of Service
         </h1>
-        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: January 2026</p>
+        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: August 2026</p>
         <p style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6, marginBottom: "2rem" }}>
           By using FlipCollab you agree to these Terms. You must be at least 18 years old.
         </p>
