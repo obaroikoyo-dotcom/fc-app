@@ -100,6 +100,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
 
   // Settings-specific data
   const [walletBalance, setWalletBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
+  const [releasedCampaignIds, setReleasedCampaignIds] = useState<Set<string>>(new Set());
   const [transactions, setTransactions] = useState<any[]>([]);
   const [walletTab, setWalletTab] = useState<"balance" | "withdraw" | "history">("balance");
   const [favourites, setFavourites] = useState<any[]>([]);
@@ -374,11 +376,20 @@ const [withdrawError, setWithdrawError] = useState("");
   if (!user) return;
   const { data } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
   const { data: withdrawals } = await supabase.from("withdrawal_requests").select("amount, status").eq("creator_id", user.id);
+  // A transaction's Stripe status turning "completed" just means the card
+  // was charged - the payout itself is only released once the linked
+  // application reaches "paid" (deliverable posted/confirmed, or manually
+  // released). Only released amounts are actually withdrawable.
+  const { data: apps } = await supabase.from("applications").select("campaign_id, status").eq("creator_id", user.id);
+  const released = new Set((apps || []).filter(a => a.status === "paid").map(a => a.campaign_id));
+  setReleasedCampaignIds(released);
   if (data) {
     setTransactions(data);
-    const earned = data.filter(t => t.status !== "failed").reduce((sum, t) => sum + t.creator_payout, 0);
+    const earned = data.filter(t => t.status !== "failed" && released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
+    const pending = data.filter(t => t.status !== "failed" && !released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
     const withdrawn = withdrawals ? withdrawals.filter(w => w.status === "completed" || w.status === "pending").reduce((sum, w) => sum + w.amount, 0) : 0;
     setWalletBalance(earned - withdrawn);
+    setPendingBalance(pending);
   }
 };
 
@@ -1097,17 +1108,24 @@ setTimeout(() => setSaved(false), 2000);
               <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <p style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
+              {pendingBalance > 0 && (
+                <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "8px" }}>+£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} escrowed — released once deliverables are posted/confirmed.</p>
+              )}
               {transactions.length > 0 && (
                 <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
-                  {transactions.map((t, i) => (
+                  {transactions.map((t, i) => {
+                    const isReleased = t.status !== "failed" && releasedCampaignIds.has(t.campaign_id);
+                    const label = t.status === "failed" ? "failed" : isReleased ? "released" : "escrowed - awaiting delivery";
+                    return (
                     <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                       <div>
                         <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{(t as any).campaigns?.name || "Campaign"}</p>
-                        <p style={{ fontSize: "10px", color: "#888", marginTop: "2px", textTransform: "uppercase" }}>{t.status}</p>
+                        <p style={{ fontSize: "10px", color: "#888", marginTop: "2px", textTransform: "uppercase" }}>{label}</p>
                       </div>
-                      <p style={{ fontSize: "13px", color: t.status === "completed" ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                      <p style={{ fontSize: "13px", color: isReleased ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1117,6 +1135,9 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
       <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+      {pendingBalance > 0 && (
+        <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "4px" }}>£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} more escrowed until deliverables are posted/confirmed</p>
+      )}
     </div>
     <div>
       <label style={labelStyle}>Withdraw to</label>

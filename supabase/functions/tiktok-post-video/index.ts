@@ -132,7 +132,12 @@ serve(async (req) => {
     const initData = await initRes.json();
     const publishId = initData?.data?.publish_id;
     const uploadUrl = initData?.data?.upload_url;
-    if (!publishId || !uploadUrl) throw new Error("TikTok post init failed: " + JSON.stringify(initData));
+    if (!publishId || !uploadUrl) {
+      if (initData?.error?.code === "unaudited_client_can_only_post_to_private_accounts") {
+        throw new Error("TikTok hasn't finished auditing FlipCollab yet, so it only allows posting to Private accounts in the meantime. In the TikTok app, go to Profile > Menu > Settings and privacy > Privacy > turn on Private account, then try posting again.");
+      }
+      throw new Error("TikTok post init failed: " + JSON.stringify(initData));
+    }
 
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",

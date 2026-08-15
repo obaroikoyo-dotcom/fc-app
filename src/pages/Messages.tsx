@@ -112,6 +112,7 @@ const CHAT_OPENED_PREFIX = "👋 Chat Opened!";
 const PAYMENT_CONFIRMED_PREFIX = "💰 Payment secured!";
 
 const CARD_ELEMENT_OPTIONS = {
+  hidePostalCode: true,
   style: {
     base: { fontSize: "14px", color: "#fff", fontFamily: "'DM Sans', sans-serif", "::placeholder": { color: "#999" } },
     invalid: { color: "#ff3b30" },
@@ -334,10 +335,10 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireTikTokPost ? "#34c759" : "#333"}`, background: requireTikTokPost ? "#34c759" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireTikTokPost ? "✓" : ""}</div>
         <div>
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
-            Require a TikTok post before releasing payout
+            Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
             <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(52,199,89,0.15)", color: "#34c759", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
           </p>
-          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.5 }}>Your card is charged now, but funds stay held until the creator posts the deliverable to TikTok and it's confirmed live. You can still release manually anytime.</p>
+          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.5 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and use "Release Payment Manually" once you have the file — funds release the same way.</p>
         </div>
       </div>
 
@@ -371,6 +372,7 @@ interface EscrowDeliveryCardProps {
 // TikTok at all (in-person handoffs, etc).
 function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, currentUserId, applicationStatus, onReleased }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
+  const [platform, setPlatform] = useState("TikTok");
   const [uploading, setUploading] = useState(false);
   const [tiktokConnected, setTiktokConnected] = useState(false);
   const [myPost, setMyPost] = useState<CampaignPost | null>(null);
@@ -382,8 +384,9 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
 
   useEffect(() => {
     (async () => {
-      const { data: app } = await supabase.from("applications").select("deliverable_url").eq("id", applicationId).single();
+      const { data: app } = await supabase.from("applications").select("deliverable_url, platforms").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+      if (app?.platforms?.[0]) setPlatform(app.platforms[0]);
 
       const connections = await getSocialConnections(currentUserId);
       setTiktokConnected(connections.some(c => c.platform === "tiktok"));
@@ -477,13 +480,13 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
       {canCreatorPost && deliverableUrl && (
         <div>
           {!tiktokConnected ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Connect TikTok from Settings → Manage Accounts to post this and get paid.</p>
+            <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Manage Accounts to post this and get paid.</p>
           ) : !myPost ? (
             <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
-              {posting ? "Posting..." : "Post to TikTok & Get Paid"}
+              {posting ? "Posting..." : `Post to ${platform} & Get Paid`}
             </div>
           ) : myPost.status === "processing" ? (
-            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to TikTok... this can take a minute.</p>
+            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to {platform}... this can take a minute.</p>
           ) : myPost.status === "published" ? (
             <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted — payout released.</p>
           ) : (
@@ -495,15 +498,15 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
       {canBrandPost && deliverableUrl && (
         <div>
           {!tiktokConnected ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Connect your own TikTok from Settings to post this content.</p>
+            <p style={{ fontSize: "11px", color: "#999" }}>Connect your own {platform} from Settings to post this content.</p>
           ) : !myPost ? (
             <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
-              {posting ? "Posting..." : "Post to Your TikTok"}
+              {posting ? "Posting..." : `Post to Your ${platform}`}
             </div>
           ) : myPost.status === "processing" ? (
-            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to TikTok...</p>
+            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to {platform}...</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted to your TikTok.</p>
+            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted to your {platform}.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -512,7 +515,7 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
 
       {role === "brand" && applicationStatus === "funded" && (
         <div onClick={!releasing ? handleManualRelease : undefined} style={{ marginTop: "10px", padding: "11px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: releasing ? "#555" : "#777", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
-          {releasing ? "Releasing..." : "Release Payment Manually (e.g. delivered off-platform)"}
+          {releasing ? "Releasing..." : "Release Payment Manually (e.g. you're posting this yourself, or it was delivered off-platform)"}
         </div>
       )}
     </div>
@@ -1724,7 +1727,7 @@ return (
         <>
           {/* IN-CHAT DEAL DESK WIDGET */}
           {activeConvo?.application_id && (
-            <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", paddingTop: stickyHeight ? `calc(${stickyHeight}px + 12px)` : "6rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
                 <p style={{ textTransform: "uppercase", fontSize: "9px", color: "#888", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
                 <p style={{ color: "#ccc", fontSize: "13px", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "2px" }}>{activeConvo.campaign_name || "Active Brief"}</p>
@@ -1766,7 +1769,7 @@ return (
                         Funded — Post to Get Paid
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
-                        Upload your deliverable and post it to TikTok below - your payout releases automatically once it's confirmed live.
+                        Upload your deliverable and post it below - your payout releases automatically once it's confirmed live.
                       </p>
                     </>
                   ) : (
@@ -1785,7 +1788,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `${inputBarHeight + 112}px` : "12rem" }}>
+          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: activeConvo?.application_id ? "1rem" : (stickyHeight ? `${stickyHeight}px` : "6rem"), paddingBottom: inputBarHeight ? `${inputBarHeight + 112}px` : "12rem" }}>
             {activeConvo?.application_id && currentUserId
               && (activeConvo.application_status === "funded" || activeConvo.application_status === "paid")
               && (

@@ -227,9 +227,14 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
         {/* Campaign title */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{campaign.name}</p>
-            <p style={{ fontSize: "12px", color: "#888" }}>{campaign.brand_profiles?.name || "Brand"}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            {campaign.brand_profiles?.logo_url && (
+              <img src={campaign.brand_profiles.logo_url} style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover", background: "#111", border: "1px solid #1a1a1a", flexShrink: 0 }} />
+            )}
+            <div>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{campaign.name}</p>
+              <p style={{ fontSize: "12px", color: "#888" }}>{campaign.brand_profiles?.name || "Brand"}</p>
+            </div>
           </div>
           {campaign.type === "paid" && (
             <div style={{ textAlign: "right" }}>
@@ -340,20 +345,24 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
     <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 10px 0" }}>Media asset kit</p>
     {[
-      { label: "Logos", files: campaign.asset_logos },
-      { label: "Overlays", files: campaign.asset_overlays },
-      { label: "Ref videos", files: campaign.asset_style_videos },
-      { label: "B-roll", files: campaign.asset_broll },
+      { label: "Logos", files: campaign.asset_logos, kind: "image" as const },
+      { label: "Overlays", files: campaign.asset_overlays, kind: "image" as const },
+      { label: "Ref videos", files: campaign.asset_style_videos, kind: "video" as const },
+      { label: "B-roll", files: campaign.asset_broll, kind: "auto" as const },
     ].filter(g => g.files?.length > 0).map(group => (
-      <div key={group.label} style={{ marginBottom: "8px" }}>
-        <p style={{ fontSize: "10px", color: "#777", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 5px 0" }}>{group.label}</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
-          {group.files.map((url, i) => (
-            <a key={i} href={url} target="_blank" rel="noreferrer"
-              style={{ fontSize: "11px", color: "#999", textDecoration: "none", padding: "5px 8px", background: "#0a0a0a", border: "1px solid #161616", borderRadius: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>
-              {group.label.toLowerCase()}-{i + 1} — view file
-            </a>
-          ))}
+      <div key={group.label} style={{ marginBottom: "10px" }}>
+        <p style={{ fontSize: "10px", color: "#777", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 6px 0" }}>{group.label}</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+          {group.files.map((url, i) => {
+            const isVideo = group.kind === "video" || (group.kind === "auto" && /\.(mp4|mov|webm|m4v)(\?|$)/i.test(url));
+            return isVideo ? (
+              <video key={i} src={url} controls style={{ width: "150px", height: "150px", borderRadius: "8px", background: "#000", objectFit: "cover" }} />
+            ) : (
+              <a key={i} href={url} target="_blank" rel="noreferrer" style={{ display: "block", width: "80px", height: "80px", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a", background: "#fff", flexShrink: 0 }}>
+                <img src={url} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+              </a>
+            );
+          })}
         </div>
       </div>
     ))}

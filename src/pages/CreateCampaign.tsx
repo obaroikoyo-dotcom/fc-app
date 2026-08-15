@@ -1,5 +1,6 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
 import { supabase } from "../lib/supabase";
+import { NICHES } from "../lib/niches";
 
 export interface EditableCampaign {
   id: string;
@@ -406,7 +407,10 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
           <div>
             <label style={lbl}>Niche / category</label>
-            <input style={inp} placeholder="Beauty, Fitness..." value={niche} onChange={e => setNiche(e.target.value)} />
+            <select style={{ ...inp, cursor: "pointer" }} value={niche} onChange={e => setNiche(e.target.value)}>
+              <option value="" disabled>Select</option>
+              {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+            </select>
           </div>
           <div>
             <label style={lbl}>Deadline</label>

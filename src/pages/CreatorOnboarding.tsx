@@ -9,6 +9,7 @@ import GoogleSignInButton from "../components/GoogleSignInButton";
 import AppleSignInButton from "../components/AppleSignInButton";
 import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "../lib/onboardingDraft";
 import { logEvent } from "../lib/debugLog";
+import { NICHES } from "../lib/niches";
 import { startSocialConnect, getSocialConnections, getSocialPostOptions, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption } from "../lib/social";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
@@ -28,7 +29,6 @@ const AppleIcon = (
   </svg>
 );
 
-const NICHES = ["Tech", "Beauty", "Fitness", "Gaming", "Fashion", "Food", "Travel", "Lifestyle", "Finance", "Parenting", "Education", "Sports", "Music", "Comedy", "Art", "Wellness", "Pets", "DIY", "Business", "Automotive"];
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs"];
 const TOTAL_SCREENS = 9;
