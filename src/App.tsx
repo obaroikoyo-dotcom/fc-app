@@ -265,7 +265,7 @@ export default function App() {
 
   const navigateToProfile = (id: string) => {
     setViewingProfileId(id);
-    setPage("public-profile");
+    navigate("public-profile");
   };
 
   const navigateToBrandProfile = (id: string) => {
