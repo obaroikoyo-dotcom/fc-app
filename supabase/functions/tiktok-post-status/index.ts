@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,6 +65,12 @@ serve(async (req) => {
     );
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     if (userError || !user) throw new Error("Not authenticated");
+
+    const withinLimit = await checkRateLimit(supabase, "tiktok-post-status", clientIdentifier(req, user.id), {
+      windowSeconds: 60,
+      maxRequests: 30,
+    });
+    if (!withinLimit) return rateLimitResponse(corsHeaders);
 
     const { data: post, error: postError } = await supabase
       .from("campaign_posts")

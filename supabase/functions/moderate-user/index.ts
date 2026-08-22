@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +39,13 @@ serve(async (req) => {
       });
     }
 
+    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
+    const withinLimit = await checkRateLimit(supabaseAdmin, "moderate-user", clientIdentifier(req, caller.id), {
+      windowSeconds: 60,
+      maxRequests: 20,
+    });
+    if (!withinLimit) return rateLimitResponse(corsHeaders);
+
     const { user_id, action } = await req.json();
     if (!user_id || (action !== "ban" && action !== "unban")) {
       return new Response(JSON.stringify({ error: "Invalid request" }), {
@@ -46,7 +54,6 @@ serve(async (req) => {
       });
     }
 
-    const supabaseAdmin = createClient(supabaseUrl, serviceKey);
     const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
       ban_duration: action === "ban" ? PERMANENT_BAN_DURATION : "none",
     });

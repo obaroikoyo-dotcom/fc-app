@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier } from "../_shared/rateLimit.ts";
 
 const APP_URL = "https://flipcollab.com";
 const CALLBACK_URL = "https://otbcvpgtxxidgtbxgzpo.supabase.co/functions/v1/social-oauth-callback";
@@ -183,6 +184,12 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
+
+    const withinLimit = await checkRateLimit(supabase, "social-oauth-callback", clientIdentifier(req, verified.userId), {
+      windowSeconds: 60,
+      maxRequests: 20,
+    });
+    if (!withinLimit) return redirectTo("/?social_error=rate_limited");
 
     if (verified.platform === "instagram") {
       await handleInstagram(code, supabase, verified.userId);

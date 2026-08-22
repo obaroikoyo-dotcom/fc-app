@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,12 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user || user.id !== brand_id) throw new Error("Unauthorized");
+
+    const withinLimit = await checkRateLimit(supabase, "create-subscription", clientIdentifier(req, user.id), {
+      windowSeconds: 600,
+      maxRequests: 5,
+    });
+    if (!withinLimit) return rateLimitResponse(corsHeaders);
 
 const addressParams: Record<string, string> = {};
 if (billing_address?.line1) addressParams["address[line1]"] = billing_address.line1;

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,6 +39,12 @@ serve(async (req) => {
     );
     const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     if (userError || !user) throw new Error("Not authenticated");
+
+    const withinLimit = await checkRateLimit(supabase, "social-oauth-start", clientIdentifier(req, user.id), {
+      windowSeconds: 60,
+      maxRequests: 10,
+    });
+    if (!withinLimit) return rateLimitResponse(corsHeaders);
 
     const stateSecret = Deno.env.get("SOCIAL_OAUTH_STATE_SECRET") ?? "";
     const payload = `${user.id}:${platform}:${crypto.randomUUID()}`;

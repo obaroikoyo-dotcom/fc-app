@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14?target=deno";
+import { checkRateLimit, clientIdentifier } from "../_shared/rateLimit.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2023-10-16",
@@ -28,6 +29,14 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
+
+  // Signature is already verified above, so this only guards against
+  // abnormal volume (retries/DoS), not spoofed callers - generous limit.
+  const withinLimit = await checkRateLimit(supabase, "stripe-webhook", clientIdentifier(req), {
+    windowSeconds: 60,
+    maxRequests: 60,
+  });
+  if (!withinLimit) return new Response(JSON.stringify({ error: "Too many requests" }), { status: 429 });
 
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;

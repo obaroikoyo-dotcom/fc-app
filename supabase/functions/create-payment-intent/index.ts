@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,10 +17,33 @@ serve(async (req) => {
 
     console.log("Received payment request:", { brand_id, creator_id, campaign_id, is_enterprise, stripe_customer_id });
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+
+    // This function (like every other one in this project) isn't gated by
+    // verify_jwt, so confirm the caller actually IS the brand paying -
+    // previously the brand_id/campaign match below was the only check,
+    // which anyone could satisfy by just passing a real brand_id/campaign_id
+    // pair and creating live Stripe payment intents + transaction rows on
+    // that brand's behalf.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user: caller }, error: callerError } = await callerClient.auth.getUser();
+    if (callerError || !caller || caller.id !== brand_id) {
+      return new Response(JSON.stringify({ error: "Not authorized" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+
+    const withinLimit = await checkRateLimit(supabase, "create-payment-intent", clientIdentifier(req, caller.id), {
+      windowSeconds: 300,
+      maxRequests: 10,
+    });
+    if (!withinLimit) return rateLimitResponse(corsHeaders);
 
     const { data: campaign } = await supabase.from("campaigns").select("budget, brand_id").eq("id", campaign_id).single();
     if (!campaign) throw new Error("Campaign not found");
