@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { releasePayoutForApplication } from "../_shared/releasePayout.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,9 +81,16 @@ serve(async (req) => {
     if (postError || !post) throw new Error("Post not found");
     if (post.posted_by_user_id !== user.id) throw new Error("Not authorized for this post");
 
-    // Already resolved - no need to hit TikTok again.
+    // Already resolved - no need to hit TikTok again. Still report payout
+    // status since a prior attempt may have published but failed to
+    // release (e.g. creator wasn't connected to Stripe yet).
     if (post.status !== "processing") {
-      return new Response(JSON.stringify({ status: post.status }), {
+      let payoutReleased: boolean | undefined;
+      if (post.status === "published") {
+        const { data: app } = await supabase.from("applications").select("status").eq("id", post.application_id).single();
+        payoutReleased = app?.status === "paid";
+      }
+      return new Response(JSON.stringify({ status: post.status, payout_released: payoutReleased }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -116,23 +124,29 @@ serve(async (req) => {
       // a deal that opted into the TikTok-gated flow, and only if it
       // hasn't already been released some other way (e.g. the brand's
       // manual release button).
+      let payoutReleased: boolean | undefined;
+      let payoutError: string | undefined;
       if (post.posted_by_role === "creator") {
         const { data: application } = await supabase
           .from("applications")
-          .select("id, campaign_id, creator_id, payout_release_mode, status")
+          .select("id, payout_release_mode, status")
           .eq("id", post.application_id)
           .single();
 
         if (application && application.payout_release_mode === "tiktok_gated" && application.status !== "paid") {
-          await supabase.from("applications").update({ status: "paid" }).eq("id", application.id);
-          await supabase.from("transactions").update({ status: "completed" })
-            .eq("campaign_id", application.campaign_id)
-            .eq("creator_id", application.creator_id)
-            .eq("status", "pending");
+          const result = await releasePayoutForApplication(supabase, application.id);
+          payoutReleased = result.released;
+          if (!result.released) {
+            payoutError = result.reason === "not_connected"
+              ? "The creator hasn't finished setting up payouts yet."
+              : result.error;
+          }
+        } else {
+          payoutReleased = application?.status === "paid";
         }
       }
 
-      return new Response(JSON.stringify({ status: "published", post_url: postUrl }), {
+      return new Response(JSON.stringify({ status: "published", post_url: postUrl, payout_released: payoutReleased, payout_error: payoutError }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });

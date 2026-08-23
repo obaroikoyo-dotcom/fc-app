@@ -46,7 +46,7 @@ export async function postDeliverableToTikTok(applicationId: string): Promise<{ 
   return authedFetch("tiktok-post-video", { application_id: applicationId });
 }
 
-export async function pollPostStatus(campaignPostId: string): Promise<{ status: "processing" | "published" | "failed"; post_url?: string | null; detail?: string }> {
+export async function pollPostStatus(campaignPostId: string): Promise<{ status: "processing" | "published" | "failed"; post_url?: string | null; detail?: string; payout_released?: boolean; payout_error?: string }> {
   return authedFetch("tiktok-post-status", { campaign_post_id: campaignPostId });
 }
 
@@ -60,13 +60,11 @@ export async function getCampaignPosts(applicationId: string): Promise<CampaignP
 }
 
 // The brand's manual escape hatch for deals that never touch TikTok at
-// all (in-person handoffs, etc.) - releases held funds directly, same
-// end state as the auto-release path. Relies on the existing "brands can
-// update own transactions" RLS policy, same as the normal pay flow.
-export async function releasePaymentManually(applicationId: string, campaignId: string, creatorId: string) {
-  await supabase.from("applications").update({ status: "paid" }).eq("id", applicationId);
-  await supabase.from("transactions").update({ status: "completed" })
-    .eq("campaign_id", campaignId)
-    .eq("creator_id", creatorId)
-    .eq("status", "pending");
+// all (in-person handoffs, etc.), and also used for the ungated "instant"
+// pay flow - creates the actual Stripe Transfer to the creator's connected
+// account, so this has to go through the edge function rather than writing
+// applications/transactions status directly (the Stripe secret key can
+// never reach the browser).
+export async function releasePayout(applicationId: string): Promise<{ released: boolean; alreadyReleased?: boolean; transfer_id?: string }> {
+  return authedFetch("release-payout", { application_id: applicationId });
 }

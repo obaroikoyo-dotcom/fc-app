@@ -11,8 +11,9 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import VerifiedBadge from "../components/VerifiedBadge";
-import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePaymentManually, type CampaignPost } from "../lib/campaignDelivery";
+import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePayout, type CampaignPost } from "../lib/campaignDelivery";
 import { getSocialConnections } from "../lib/social";
+import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -145,6 +146,11 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   // Defaults on - protects the brand from paying for a deliverable that
   // never actually gets posted. Still fully optional; they can uncheck it.
   const [requireTikTokPost, setRequireTikTokPost] = useState(true);
+  const [payoutsEnabled, setPayoutsEnabled] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    getCreatorPayoutsEnabled(paymentApp.creator_id).then(setPayoutsEnabled).catch(() => setPayoutsEnabled(null));
+  }, [paymentApp.creator_id]);
 
   const brandFee = isEnterprise ? 0 : Math.round(campaignBudget * 0.05);
   const totalCharge = campaignBudget + brandFee;
@@ -215,9 +221,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       // confirmed live (or the brand manually releases it later). Ungated
       // deals keep the exact previous behavior - charge and release in the
       // same instant.
+      // Both paths land on "funded" first - actual release (the real Stripe
+      // Transfer to the creator) always goes through releasePayout, either
+      // right away below (ungated) or later via the TikTok/manual triggers.
       const { error: updateError } = await supabase
         .from("applications")
-        .update(requireTikTokPost ? { status: "funded", payout_release_mode: "tiktok_gated" } : { status: "paid" })
+        .update({ status: "funded", payout_release_mode: requireTikTokPost ? "tiktok_gated" : "instant" })
         .eq("id", paymentApp.id);
 
       if (updateError) {
@@ -228,14 +237,14 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       }
 
       if (!requireTikTokPost) {
-        // Mark the transaction completed immediately rather than waiting on
-        // the Stripe webhook, so the creator's payout balance updates right away.
-        const { error: txError } = await supabase
-          .from("transactions")
-          .update({ status: "completed" })
-          .eq("stripe_payment_intent_id", confirmResult.paymentIntent.id);
-
-        if (txError) console.error("Failed to mark transaction completed:", txError);
+        // If this fails (e.g. the creator hasn't finished payout setup),
+        // funds simply stay held as "funded" - same recoverable state as
+        // any other release attempt, nothing partial or lost.
+        try {
+          await releasePayout(paymentApp.id);
+        } catch (err) {
+          console.error("Instant release didn't complete, funds remain held:", err);
+        }
       }
 
       await notifyAndPush({
@@ -342,6 +351,10 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       </div>
 
+      {payoutsEnabled === false && (
+        <p style={{ fontSize: "11px", color: "#ff9500", marginBottom: "10px", lineHeight: 1.5 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
+      )}
+
       {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "10px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: "10px" }}>
@@ -356,8 +369,6 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
 interface EscrowDeliveryCardProps {
   applicationId: string;
-  campaignId: string;
-  creatorId: string;
   role: "creator" | "brand";
   currentUserId: string;
   applicationStatus: string;
@@ -370,7 +381,7 @@ interface EscrowDeliveryCardProps {
 // deliverable to their own TikTok once that release has already
 // happened, and can always manually release for deals that never touch
 // TikTok at all (in-person handoffs, etc).
-function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, currentUserId, applicationStatus, onReleased }: EscrowDeliveryCardProps) {
+function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
   const [platform, setPlatform] = useState("TikTok");
   const [uploading, setUploading] = useState(false);
@@ -408,7 +419,10 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
         if (result.status !== "processing") {
           if (pollRef.current) clearInterval(pollRef.current);
           setMyPost(prev => prev ? { ...prev, status: result.status } : prev);
-          if (result.status === "published" && role === "creator") onReleased();
+          // Only reflect release in the parent's application_status once the
+          // payout actually went through - the post can succeed while the
+          // Transfer itself is still blocked (e.g. creator not connected yet).
+          if (result.status === "published" && role === "creator" && result.payout_released) onReleased();
         }
       } catch {
         // Transient errors just get retried on the next tick.
@@ -447,7 +461,7 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
     setReleasing(true);
     setError("");
     try {
-      await releasePaymentManually(applicationId, campaignId, creatorId);
+      await releasePayout(applicationId);
       onReleased();
     } catch (err) {
       setError((err as Error).message || "Failed to release payment");
@@ -488,7 +502,11 @@ function EscrowDeliveryCard({ applicationId, campaignId, creatorId, role, curren
           ) : myPost.status === "processing" ? (
             <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to {platform}... this can take a minute.</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted — payout released.</p>
+            applicationStatus === "paid" ? (
+              <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted — payout released.</p>
+            ) : (
+              <p style={{ fontSize: "11px", color: "#ff9500" }}>✓ Posted — payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
+            )
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -1794,8 +1812,6 @@ return (
               && (
               <EscrowDeliveryCard
                 applicationId={activeConvo.application_id}
-                campaignId={activeConvo.campaign_id || ""}
-                creatorId={role === "brand" ? (activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1) : currentUserId}
                 role={role === "brand" ? "brand" : "creator"}
                 currentUserId={currentUserId}
                 applicationStatus={activeConvo.application_status}

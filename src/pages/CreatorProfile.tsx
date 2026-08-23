@@ -11,6 +11,11 @@ import { getCreatorTrackRecord, getCreatorReviews, formatTurnaroundTime, type Cr
 import { checkAndSendReminders } from "../lib/applicationReminders";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { getConnectAccountSession, getConnectStatus, type ConnectStatus } from "../lib/stripeConnect";
+import { STRIPE_PUBLIC_KEY } from "../lib/stripe";
+import { COUNTRIES } from "../lib/countries";
+import { loadConnectAndInitialize, type StripeConnectInstance } from "@stripe/connect-js";
+import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectPayouts } from "@stripe/react-connect-js";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -103,7 +108,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [pendingBalance, setPendingBalance] = useState(0);
   const [releasedCampaignIds, setReleasedCampaignIds] = useState<Set<string>>(new Set());
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [walletTab, setWalletTab] = useState<"balance" | "withdraw" | "history">("balance");
+  const [walletTab, setWalletTab] = useState<"balance" | "method" | "history">("balance");
   const [favourites, setFavourites] = useState<any[]>([]);
   const [campaignFavourites, setCampaignFavourites] = useState<any[]>([]);
   const [appliedCampaigns, setAppliedCampaigns] = useState<any[]>([]);
@@ -119,15 +124,11 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
-  const [withdrawMethod, setWithdrawMethod] = useState("");
-const [withdrawAmount, setWithdrawAmount] = useState("");
-const [withdrawPaypal, setWithdrawPaypal] = useState("");
-const [withdrawBankName, setWithdrawBankName] = useState("");
-const [withdrawAccountNumber, setWithdrawAccountNumber] = useState("");
-const [withdrawSortCode, setWithdrawSortCode] = useState("");
-const [withdrawing, setWithdrawing] = useState(false);
-const [withdrawSuccess, setWithdrawSuccess] = useState(false);
-const [withdrawError, setWithdrawError] = useState("");
+  const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
+  const [connectCountry, setConnectCountry] = useState("GB");
+  const [connectInstance, setConnectInstance] = useState<StripeConnectInstance | null>(null);
+  const [connectingPayouts, setConnectingPayouts] = useState(false);
+  const [connectError, setConnectError] = useState("");
 
   // Reports & Blocked
   const [blockedUsers, setBlockedUsers] = useState<{ id: string; blockRowId: string; name: string; avatar: string | null; role: string }[]>([]);
@@ -153,6 +154,7 @@ const [withdrawError, setWithdrawError] = useState("");
     loadWithdrawalRequests();
     loadReportsBlocked();
     loadSocialConnections();
+    loadConnectStatus();
 
     const params = new URLSearchParams(window.location.search);
     const connected = params.get("social_connected");
@@ -235,6 +237,51 @@ const [withdrawError, setWithdrawError] = useState("");
       setSocialNotice(`Couldn't start connection: ${(err as Error).message}`);
       setConnectingPlatform(null);
     }
+  };
+
+  const loadConnectStatus = async () => {
+    try {
+      setConnectStatus(await getConnectStatus());
+    } catch (err) {
+      console.error("Failed to load Stripe Connect status:", err);
+    }
+  };
+
+  // Mounts Stripe's embedded onboarding/management UI inline - no redirect,
+  // no separate Stripe-branded page. fetchClientSecret re-fetches a fresh
+  // session each time Stripe's components need one.
+  const handleConnectPayouts = async () => {
+    setConnectingPayouts(true);
+    setConnectError("");
+    try {
+      const alreadyConnected = connectStatus?.connected;
+      const instance = loadConnectAndInitialize({
+        publishableKey: STRIPE_PUBLIC_KEY,
+        fetchClientSecret: async () => {
+          const { client_secret } = await getConnectAccountSession(alreadyConnected ? undefined : connectCountry);
+          return client_secret;
+        },
+        appearance: {
+          variables: {
+            colorPrimary: "#ffffff",
+            colorBackground: "#111111",
+            colorText: "#ffffff",
+            colorBorder: "#1a1a1a",
+            buttonPrimaryColorBackground: "#ffffff",
+            buttonPrimaryColorText: "#0a0a0a",
+          },
+        },
+      });
+      setConnectInstance(instance);
+    } catch (err) {
+      setConnectError((err as Error).message || "Couldn't start payout setup.");
+    }
+    setConnectingPayouts(false);
+  };
+
+  const handleOnboardingExit = () => {
+    setConnectInstance(null);
+    loadConnectStatus();
   };
 
   const handleDisconnectSocial = async (platform: SocialPlatform) => {
@@ -419,48 +466,6 @@ const [withdrawError, setWithdrawError] = useState("");
   const toggleAgeRange = (a: string) => setAudienceAgeRanges(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
   const updateCollab = (i: number, k: string, v: string) => setCollabs(prev => prev.map((c, idx) => idx === i ? { ...c, [k]: v } : c));
   
-  const handleWithdraw = async () => {
-    if (!userId || !withdrawAmount || !withdrawMethod) return;
-    const amount = parseFloat(withdrawAmount);
-    if (amount <= 0 || amount > walletBalance / 100) {
-      setWithdrawError("Invalid amount.");
-      return;
-    }
-    if (withdrawMethod === "paypal" && !withdrawPaypal) {
-      setWithdrawError("Enter your PayPal email.");
-      return;
-    }
-    if (withdrawMethod === "bank" && (!withdrawBankName || !withdrawAccountNumber || !withdrawSortCode)) {
-      setWithdrawError("Fill in all bank details.");
-      return;
-    }
-    setWithdrawing(true);
-    setWithdrawError("");
-    const { error } = await supabase.from("withdrawal_requests").insert({
-      creator_id: userId,
-      amount: Math.round(amount * 100),
-      method: withdrawMethod,
-      paypal_email: withdrawMethod === "paypal" ? withdrawPaypal : null,
-      bank_name: withdrawMethod === "bank" ? withdrawBankName : null,
-      account_number: withdrawMethod === "bank" ? withdrawAccountNumber : null,
-      sort_code: withdrawMethod === "bank" ? withdrawSortCode : null,
-      status: "pending",
-    });
-    setWithdrawing(false);
-    if (error) {
-      setWithdrawError("Failed to submit. Try again.");
-    } else {
-      setWalletBalance(prev => prev - Math.round(amount * 100));
-      await loadWithdrawalRequests();
-      setWithdrawSuccess(true);
-      setWithdrawAmount("");
-      setWithdrawPaypal("");
-      setWithdrawBankName("");
-      setWithdrawAccountNumber("");
-      setWithdrawSortCode("");
-      setTimeout(() => setWithdrawSuccess(false), 3000);
-    }
-  };
   const saveProfile = async () => {
     if (!userId) return;
     setSaving(true);
@@ -1100,7 +1105,7 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.25rem" }}>
         <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
-            {(["balance", "withdraw", "history"] as const).map(t => (
+            {(["balance", "method", "history"] as const).map(t => (
   <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
 ))}
           </div>
@@ -1131,52 +1136,45 @@ setTimeout(() => setSaved(false), 2000);
               )}
             </div>
           )}
-          {walletTab === "withdraw" && (
-  <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-    <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
-      <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "4px" }}>Available to withdraw</p>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-      {pendingBalance > 0 && (
-        <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "4px" }}>£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} more escrowed until deliverables are posted/confirmed</p>
-      )}
-    </div>
-    <div>
-      <label style={labelStyle}>Withdraw to</label>
-      <select style={{ ...inputStyle, appearance: "none" }} value={withdrawMethod} onChange={e => { setWithdrawMethod(e.target.value); setWithdrawError(""); }}>
-        <option value="">Select method</option>
-        <option value="paypal">PayPal</option>
-        <option value="bank">Bank Account</option>
-      </select>
-    </div>
-    {withdrawMethod === "paypal" && (
+          {walletTab === "method" && (
+  <div style={{ padding: "1.5rem" }}>
+    {connectStatus?.payouts_enabled ? (
       <div>
-        <label style={labelStyle}>PayPal Email</label>
-        <input style={inputStyle} placeholder="your@paypal.com" type="email" value={withdrawPaypal} onChange={e => setWithdrawPaypal(e.target.value)} />
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
+          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#34c759" }} />
+          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>Payouts active</p>
+        </div>
+        {connectInstance ? (
+          <ConnectComponentsProvider connectInstance={connectInstance}>
+            <ConnectPayouts onLoadError={() => setConnectError("Couldn't load payout details.")} />
+          </ConnectComponentsProvider>
+        ) : (
+          <span onClick={() => !connectingPayouts && handleConnectPayouts()} style={{ fontSize: "11px", padding: "8px 16px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPayouts ? "default" : "pointer" }}>
+            {connectingPayouts ? "Loading..." : "Manage payout details"}
+          </span>
+        )}
+      </div>
+    ) : connectInstance ? (
+      <ConnectComponentsProvider connectInstance={connectInstance}>
+        <ConnectAccountOnboarding onExit={handleOnboardingExit} onLoadError={() => setConnectError("Couldn't load payout setup.")} />
+      </ConnectComponentsProvider>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Set up payouts to receive funds directly to your bank account. Your details are verified securely - FlipCollab never sees or stores them.</p>
+        {!connectStatus?.connected && (
+          <div>
+            <label style={labelStyle}>Country</label>
+            <select style={{ ...inputStyle, appearance: "none" }} value={connectCountry} onChange={e => setConnectCountry(e.target.value)}>
+              {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+            </select>
+          </div>
+        )}
+        {connectError && <p style={{ fontSize: "12px", color: "#ff4444", margin: 0 }}>{connectError}</p>}
+        <div onClick={!connectingPayouts ? handleConnectPayouts : undefined} style={{ padding: "13px", borderRadius: "8px", background: connectingPayouts ? "#1a1a1a" : "#fff", color: connectingPayouts ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: connectingPayouts ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          {connectingPayouts ? "Loading..." : connectStatus?.connected ? "Continue Setup" : "Set Up Payouts"}
+        </div>
       </div>
     )}
-    {withdrawMethod === "bank" && (
-      <>
-        <div>
-          <label style={labelStyle}>Bank Name</label>
-          <input style={inputStyle} placeholder="e.g. Barclays" value={withdrawBankName} onChange={e => setWithdrawBankName(e.target.value)} />
-        </div>
-        <div>
-          <label style={labelStyle}>Account Number</label>
-          <input style={inputStyle} placeholder="12345678" value={withdrawAccountNumber} onChange={e => setWithdrawAccountNumber(e.target.value)} />
-        </div>
-        <div>
-          <label style={labelStyle}>Sort Code</label>
-          <input style={inputStyle} placeholder="00-00-00" value={withdrawSortCode} onChange={e => setWithdrawSortCode(e.target.value)} />
-        </div>
-      </>
-    )}
-    <input style={inputStyle} placeholder="Amount (£)" type="number" value={withdrawAmount} onChange={e => setWithdrawAmount(e.target.value)} />
-    {withdrawError && <p style={{ fontSize: "12px", color: "#ff4444", margin: 0 }}>{withdrawError}</p>}
-    {withdrawSuccess && <p style={{ fontSize: "12px", color: "#34c759", margin: 0 }}>Request submitted. We'll process it within 24 hours.</p>}
-    <div onClick={!withdrawing ? handleWithdraw : undefined} style={{ padding: "13px", borderRadius: "8px", background: walletBalance > 0 && withdrawMethod && withdrawAmount ? "#fff" : "#1a1a1a", color: walletBalance > 0 && withdrawMethod && withdrawAmount ? "#0a0a0a" : "#333", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: walletBalance > 0 && withdrawMethod && withdrawAmount ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-      {withdrawing ? "Submitting..." : "Request Withdrawal"}
-    </div>
-    <p style={{ fontSize: "11px", color: "#777", textAlign: "center" }}>Withdrawals processed within 24 hours.</p>
   </div>
 )}
           {walletTab === "history" && (

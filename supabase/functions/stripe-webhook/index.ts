@@ -41,9 +41,12 @@ serve(async (req) => {
   if (event.type === "payment_intent.succeeded") {
     const paymentIntent = event.data.object as Stripe.PaymentIntent;
 
+    // latest_charge is captured so release-payout can later create a
+    // Stripe Transfer tied to this specific charge's funds (source_transaction)
+    // rather than the platform's general balance.
     const { error } = await supabase
       .from("transactions")
-      .update({ status: "completed" })
+      .update({ status: "completed", stripe_charge_id: paymentIntent.latest_charge as string })
       .eq("stripe_payment_intent_id", paymentIntent.id);
 
     if (error) {

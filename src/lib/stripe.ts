@@ -1,6 +1,6 @@
 import { loadStripe } from "@stripe/stripe-js";
 
-const STRIPE_PUBLIC_KEY = "pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j";
+export const STRIPE_PUBLIC_KEY = "pk_test_51Sq7IJPnrgzNkKOXz2ArNbCZsR08JzDCLLRTJAPikyixpxkGUyLPecoQJtNVrgwiXGhbAtp8JJZBwlwfUIBZHbct00PXVDX24j";
 
 // We wrap the initialization safely. 
 // If loadStripe fails or isn't installed, it won't take down your entire React app.

@@ -50,3 +50,18 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/moderate-user/deno.json"
 entrypoint = "./functions/moderate-user/index.ts"
+
+[functions.connect-account-session]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/connect-account-session/index.ts"
+
+[functions.connect-account-status]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/connect-account-status/index.ts"
+
+[functions.release-payout]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/release-payout/index.ts"
