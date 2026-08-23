@@ -838,6 +838,7 @@ setTimeout(() => setSaved(false), 2000);
         {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
         {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"))}
 {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"))}
+        {settingsRow("Accessibility Statement", "Our approach & how to report issues", () => window.open("https://accessibility.flipcollab.com", "_blank"))}
         {settingsRow("Debug Log", "For troubleshooting freezes", () => setSettingsSection("debug-log"))}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>

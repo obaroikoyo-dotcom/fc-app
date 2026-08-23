@@ -1,6 +1,7 @@
 import AboutPage from "./pages/AboutPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import TermsPage from "./pages/TermsPage";
+import AccessibilityPage from "./pages/AccessibilityPage";
 import SplashScreen from "./pages/SplashScreen";
 import BrandOnboarding from "./pages/BrandOnboarding";
 import PublicProfile from "./pages/PublicProfile";
@@ -199,6 +200,7 @@ export default function App() {
   if (subdomain === "about") return <AboutPage />;
   if (subdomain === "privacy") return <PrivacyPolicyPage />;
   if (subdomain === "terms") return <TermsPage />;
+  if (subdomain === "accessibility") return <AccessibilityPage />;
 
   const [page, setPage] = useState<Page>("splash");
   const [, setHistory] = useState<Page[]>([]);
