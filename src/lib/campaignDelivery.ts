@@ -29,7 +29,7 @@ async function authedFetch(path: string, body: Record<string, unknown>) {
   return data;
 }
 
-export async function uploadDeliverable(applicationId: string, file: File): Promise<string> {
+export async function uploadDeliverable(applicationId: string, creatorId: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop();
   const path = `deliverables/${applicationId}_${Date.now()}.${ext}`;
   const { error } = await supabase.storage.from("campaign-pitches").upload(path, file, { cacheControl: "3600" });
@@ -38,7 +38,7 @@ export async function uploadDeliverable(applicationId: string, file: File): Prom
   await supabase.from("applications").update({
     deliverable_url: data.publicUrl,
     deliverable_uploaded_at: new Date().toISOString(),
-  }).eq("id", applicationId);
+  }).eq("id", applicationId).eq("creator_id", creatorId);
   return data.publicUrl;
 }
 

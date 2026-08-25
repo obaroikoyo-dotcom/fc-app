@@ -163,16 +163,19 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       await withTimeout(async () => {
         const { data, error } = await supabase
           .from("campaigns")
-          .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise, verified), applications(creator_id, status, message)`)
+          .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise, verified)`)
           .order("created_at", { ascending: false });
 
         if (!error && data) {
           const activeUid = userId || currentUserId;
-          const blockedIds = activeUid ? await getBlockedUserIds(activeUid) : [];
+          const [blockedIds, myApps] = await Promise.all([
+            activeUid ? getBlockedUserIds(activeUid) : Promise.resolve([]),
+            activeUid ? supabase.from("applications").select("campaign_id, status, message").eq("creator_id", activeUid).then(r => r.data || []) : Promise.resolve([]),
+          ]);
           const parsed: Campaign[] = data
             .filter((c: any) => !blockedIds.includes(c.brand_id))
             .map((c: any) => {
-              const myApp = c.applications?.find((a: any) => a.creator_id === activeUid);
+              const myApp = myApps.find((a: any) => a.campaign_id === c.id);
               return {
                 ...c,
                 my_application: myApp ? { status: myApp.status, message: myApp.message } : undefined

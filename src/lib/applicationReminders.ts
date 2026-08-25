@@ -24,12 +24,12 @@ export async function checkAndSendReminders(creatorId: string): Promise<void> {
     const brandId = app.campaigns?.brand_id;
     if (!brandId) continue;
 
-    const { error } = await supabase.from("notifications").insert({
-      user_id: brandId,
-      type: "application_reminder",
-      title: "Application waiting on you",
-      body: `A creator applied to "${app.campaigns?.name || "your campaign"}" over a day ago and is still waiting to hear back.`,
-      data: { campaign_id: app.campaign_id },
+    const { error } = await supabase.rpc("notify_user", {
+      target_user_id: brandId,
+      notif_type: "application_reminder",
+      notif_title: "Application waiting on you",
+      notif_body: `A creator applied to "${app.campaigns?.name || "your campaign"}" over a day ago and is still waiting to hear back.`,
+      notif_data: { campaign_id: app.campaign_id },
     });
     if (error) continue;
 

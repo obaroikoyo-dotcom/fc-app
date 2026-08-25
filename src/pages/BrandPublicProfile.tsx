@@ -95,7 +95,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
         const { data } = await supabase
           .from("brand_profiles")
-          .select("*")
+          .select("name, bio, niche, location, website, instagram, tiktok, avatar_url, logo_url, company_name, industry, target_audience, content_types, budget_range, verified")
           .eq("id", profileId)
           .single();
 

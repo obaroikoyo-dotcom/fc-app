@@ -69,7 +69,13 @@ interface NotifyPayload {
 }
 
 export async function notifyAndPush(payload: NotifyPayload) {
-  const { error } = await supabase.from("notifications").insert(payload);
+  const { error } = await supabase.rpc("notify_user", {
+    target_user_id: payload.user_id,
+    notif_type: payload.type,
+    notif_title: payload.title,
+    notif_body: payload.body,
+    notif_data: payload.data ?? {},
+  });
   if (error) console.error("Failed to insert notification:", error);
 
   try {

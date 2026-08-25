@@ -13,9 +13,9 @@ serve(async (req) => {
   }
 
   try {
-    const { brand_id, creator_id, campaign_id, is_enterprise, stripe_customer_id, billing_address, billing_name } = await req.json();
+    const { brand_id, creator_id, campaign_id, stripe_customer_id, billing_address, billing_name } = await req.json();
 
-    console.log("Received payment request:", { brand_id, creator_id, campaign_id, is_enterprise, stripe_customer_id });
+    console.log("Received payment request:", { brand_id, creator_id, campaign_id, stripe_customer_id });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 
@@ -49,6 +49,27 @@ serve(async (req) => {
     if (!campaign) throw new Error("Campaign not found");
     if (campaign.brand_id !== brand_id) throw new Error("Unauthorized");
     const amount = Math.round(parseFloat(campaign.budget) * 100);
+
+    // creator_id was previously trusted straight from the request body with
+    // no check it corresponds to a real application on this campaign -
+    // matches Messages.tsx's own "payable" definition (not already paid,
+    // funded, or rejected).
+    const { data: eligibleApp } = await supabase
+      .from("applications")
+      .select("id")
+      .eq("campaign_id", campaign_id)
+      .eq("creator_id", creator_id)
+      .not("status", "in", "(paid,funded,rejected)")
+      .maybeSingle();
+    if (!eligibleApp) throw new Error("No eligible application for this creator on this campaign");
+
+    // is_enterprise was previously trusted straight from the request body -
+    // any brand could pass is_enterprise: true and pay 0% fees regardless of
+    // whether they actually have an active Enterprise subscription. Read the
+    // real, server-authoritative flag instead (locked down against
+    // self-editing by the brand_profiles trigger).
+    const { data: brandProfile } = await supabase.from("brand_profiles").select("is_enterprise").eq("id", brand_id).single();
+    const is_enterprise = !!brandProfile?.is_enterprise;
 
     // New card: persist the billing address on the brand so it can be reused
     // (and snapshotted) on future payments made with the saved card.

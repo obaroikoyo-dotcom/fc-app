@@ -169,8 +169,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   }
 
   const deleteCampaign = async (id: string) => {
+    if (!currentUserId) return;
     if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
-    await supabase.from("campaigns").delete().eq("id", id);
+    await supabase.from("campaigns").delete().eq("id", id).eq("brand_id", currentUserId);
     setCampaigns(prev => prev.filter(c => c.id !== id));
   };
 

@@ -194,10 +194,11 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
     }
   };
 
-  const handleUnblock = async (blockRowId: string, userId: string) => {
+  const handleUnblock = async (blockRowId: string, blockedUserId: string) => {
+    if (!userId) return;
     setUnblockLoading(blockRowId);
-    const { error } = await supabase.from("blocks").delete().eq("id", blockRowId);
-    if (!error) setBlockedUsers(prev => prev.filter(b => b.id !== userId));
+    const { error } = await supabase.from("blocks").delete().eq("id", blockRowId).eq("blocker_id", userId);
+    if (!error) setBlockedUsers(prev => prev.filter(b => b.id !== blockedUserId));
     setUnblockLoading(null);
   };
 

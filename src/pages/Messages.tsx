@@ -436,7 +436,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     setUploading(true);
     setError("");
     try {
-      const url = await uploadDeliverable(applicationId, file);
+      const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
     } catch (err) {
       setError((err as Error).message || "Upload failed");
@@ -1092,6 +1092,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   };
 
   const screenOutApp = async (app: LinkedApplication) => {
+    if (!currentUserId) return;
+    const { data: campaign } = await supabase.from("campaigns").select("brand_id").eq("id", app.campaign_id).single();
+    if (campaign?.brand_id !== currentUserId) return;
     await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
     setCampaignPickerFor(null);
     // Patch locally right away - loadConversations() below only refreshes
@@ -1180,6 +1183,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     const userId = userData.user?.id;
     if (!userId) { setActionLoading(null); return; }
 
+    const { data: campaign } = await supabase.from("campaigns").select("brand_id").eq("id", app.campaign_id).single();
+    if (campaign?.brand_id !== userId) { setActionLoading(null); return; }
+
     // Swap instant approval to chatting phase so terms can be negotiated inside messages first
     await supabase.from("applications").update({ status: "accepted", responded_at: new Date().toISOString() }).eq("id", app.id);
     await supabase.from("campaigns").update({ updated_at: new Date().toISOString() }).eq("id", app.campaign_id);
@@ -1249,9 +1255,13 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   };
 
   const handleReject = async (app: Application) => {
+    if (!currentUserId) return;
     setActionLoading(app.id);
     setActiveApplication(prev => prev ? { ...prev, status: "rejected" } : null);
-    await supabase.from("applications").update({ status: "rejected", responded_at: new Date().toISOString() }).eq("id", app.id);
+    const { data: campaign } = await supabase.from("campaigns").select("brand_id").eq("id", app.campaign_id).single();
+    if (campaign?.brand_id === currentUserId) {
+      await supabase.from("applications").update({ status: "rejected", responded_at: new Date().toISOString() }).eq("id", app.id);
+    }
     setActionLoading(null);
     setActiveCampaign(prev => prev ? {
       ...prev,

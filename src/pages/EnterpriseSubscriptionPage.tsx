@@ -13,7 +13,7 @@ const CARD_ELEMENT_OPTIONS = {
       fontSize: "14px",
       color: "#fff",
       fontFamily: "'DM Sans', sans-serif",
-      "::placeholder": { color: "#999" },
+      "::placeholder": { color: "#999" }, 
     },
     invalid: { color: "#ff3b30" },
   },
@@ -186,10 +186,10 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
       return;
     }
 
-    // Paying for Enterprise is itself a strong enough signal of a real
-    // business to also grant the verified badge, on top of whatever the
-    // email-domain check already decided.
-    await supabase.from("brand_profiles").update({ is_enterprise: true, verified: true }).eq("id", user.id);
+    // is_enterprise/verified are now set server-side by create-subscription
+    // once it confirms the Stripe subscription actually succeeded - setting
+    // them here from the client would let anyone grant themselves both for
+    // free with no real payment.
     onLoadingChange(false);
     onSuccess();
   };

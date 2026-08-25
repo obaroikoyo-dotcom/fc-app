@@ -93,6 +93,10 @@ if (customer.error) throw new Error(`Stripe customer error: ${customer.error.mes
     const subscription = await subRes.json();
     if (subscription.error) throw new Error(`Stripe subscription error: ${subscription.error.message}`);
 
+    // is_enterprise/verified only get set here, server-side, once Stripe
+    // confirms the subscription is actually active - previously the client
+    // set these itself after this call returned, which let anyone grant
+    // themselves both (0% platform fees + a verified badge) for free.
     const { error: dbError } = await supabase.from("brand_profiles").update({
       stripe_customer_id: customer.id,
       stripe_subscription_id: subscription.id,
@@ -105,6 +109,7 @@ if (customer.error) throw new Error(`Stripe customer error: ${customer.error.mes
       billing_state: billing_address?.state || null,
       billing_postal_code: billing_address?.postal_code || null,
       billing_country: billing_address?.country || null,
+      ...(subscription.status === "active" ? { is_enterprise: true, verified: true } : {}),
     }).eq("id", brand_id);
 
     if (dbError) throw new Error(`Supabase update failed: ${dbError.message}`);

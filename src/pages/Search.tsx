@@ -10,7 +10,7 @@ import VerifiedBadge from "../components/VerifiedBadge";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
-  id: string; role: string; email: string;
+  id: string; role: string;
   creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; follower_counts?: Record<string, string>; rates?: { post?: string; story?: string; reel?: string; video?: string; ugc?: string }; } | null;
   brand_profiles?: { name: string; niche: string; location: string; avatar_url?: string; verified?: boolean; } | null;
 }
@@ -108,7 +108,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
             setUserRole(data.role);
           }
         }
-        const { data: profiles } = await supabase.from("profiles").select(`*, creator_profiles(*), brand_profiles(*)`);
+        const { data: profiles } = await supabase.from("profiles").select(`id, role, creator_profiles(name, niche, location, available, hashtags, avatar_url, follower_counts, rates), brand_profiles(name, niche, location, avatar_url, verified)`);
         if (profiles) {
           const blockedIds = user ? await getBlockedUserIds(user.id) : [];
           setAllProfiles(profiles.filter(p => !blockedIds.includes(p.id)));
@@ -221,7 +221,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 600 }}>
-                    {cp?.name || bp?.name || p.email}
+                    {cp?.name || bp?.name || "FlipCollab User"}
                     {!isC && bp?.verified && <VerifiedBadge size={13} />}
                   </p>
                   <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && maxFollowers(cp) > 0 ? ` · ${maxFollowers(cp).toLocaleString()} fans` : ""}</p>

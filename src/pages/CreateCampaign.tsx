@@ -198,7 +198,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           return;
         }
         const { data, error: updateError } = await supabase.from("campaigns")
-          .update(fields).eq("id", editingCampaign.id).select().single();
+          .update(fields).eq("id", editingCampaign.id).eq("brand_id", user.id).select().single();
         if (updateError || !data) { setError("Failed to save changes. Please try again."); return; }
         campaign = data;
       } else {
@@ -220,7 +220,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       if (styleVideoUrls.length) assetUpdates.asset_style_videos = styleVideoUrls;
       if (brollUrls.length) assetUpdates.asset_broll = brollUrls;
       if (Object.keys(assetUpdates).length > 0) {
-        await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id);
+        await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id).eq("brand_id", user.id);
       }
       setPosted(true);
       setTimeout(() => { setPosted(false); onPosted(); }, 1500);

@@ -22,11 +22,10 @@ serve(async (req) => {
 
     // This function (like every other one in this project) isn't gated by
     // verify_jwt, so confirm the caller is a signed-in FlipCollab user
-    // before dispatching - previously anyone who found this URL could spam
-    // push notifications to any user id. The target user_id legitimately
-    // differs from the caller (e.g. a brand action notifies a creator), so
-    // this only checks that SOME real session made the request, not that
-    // it's the target's own.
+    // before dispatching, AND that they have a real relationship to the
+    // target (shared campaign/application, or an existing conversation) -
+    // previously any signed-in user could push arbitrary content to any
+    // user id with only "some session exists" checked.
     const authHeader = req.headers.get("Authorization") ?? "";
     const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
       global: { headers: { Authorization: authHeader } },
@@ -34,6 +33,14 @@ serve(async (req) => {
     const { data: { user: caller }, error: callerError } = await callerClient.auth.getUser();
     if (callerError || !caller) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: canNotify } = await callerClient.rpc("can_notify_user", { target_user_id: user_id });
+    if (!canNotify) {
+      return new Response(JSON.stringify({ error: "Not authorized to notify this user" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

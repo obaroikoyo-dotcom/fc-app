@@ -100,7 +100,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
         // Try creator_profiles first
         const { data: creatorData } = await supabase
           .from("creator_profiles")
-          .select("*")
+          .select("name, bio, avatar_url, niche, location, age, gender, available, platforms, social_links, follower_counts, engagement_rates, content_types, languages, audience_age_range, audience_location, rates, collabs")
           .eq("id", profileId)
           .single();
 
@@ -124,10 +124,11 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
           return;
         }
 
-        // Fall back to brand_profiles
+        // Fall back to brand_profiles - only the fields CreatorData actually
+        // renders are shared between the two shapes.
         const { data: brandData } = await supabase
           .from("brand_profiles")
-          .select("*")
+          .select("name, bio, avatar_url, niche, location")
           .eq("id", profileId)
           .single();
 
