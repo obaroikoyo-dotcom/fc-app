@@ -71,7 +71,7 @@ serve(async (req) => {
         "capabilities[transfers][requested]": "true",
         "controller[stripe_dashboard][type]": "none",
         "controller[fees][payer]": "application",
-        "controller[losses][payments]": "application",
+        "controller[losses][payments]": "stripe",
         "controller[requirement_collection]": "stripe",
       }));
       if (!stripeAccount.id) {
