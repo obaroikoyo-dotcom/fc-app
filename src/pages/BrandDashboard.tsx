@@ -309,24 +309,27 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const appCount = c.applications?.length || 0;
 
                 return (
-                  <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1.25rem" }}>
+                  <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1rem" }}>
 
                     {/* Header Row */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                       <div
                         onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
-                        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}
+                        style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
                       >
-                        <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
+                        <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
                           {brandLogo ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
                         </div>
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#999" }}>
-                          {brandName || "Brand"}
-                          {brandVerified && <VerifiedBadge size={11} />}
-                        </span>
+                        <div>
+                          <p style={{ display: "flex", alignItems: "center", gap: "4px", color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>
+                            {brandName || "Brand"}
+                            {brandVerified && <VerifiedBadge size={12} />}
+                          </p>
+                          {c.niche && <p style={{ color: "#888", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>}
+                        </div>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         {isOwn && feedTab === "discover" && (
                           <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", border: "1px solid #333", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             Your Preview
@@ -358,9 +361,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <div>
-                        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 700, color: "#fff", margin: "0 0 12px 0" }}>{c.name}</p>
-                      </div>
+                      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
                       {c.video_required && (
                         <span style={{ flexShrink: 0, fontSize: "10px", color: "#999", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
                           Video Pitch Required
@@ -368,8 +369,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       )}
                     </div>
 
-                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "12px", color: "#999", marginBottom: "12px" }}>
-                      {c.niche && <span style={{ borderRight: "1px solid #222", paddingRight: "14px" }}>{c.niche}</span>}
+                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "11px", color: "#888", marginBottom: "12px" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Posted:</span>
                         <span style={{ color: "#aaa" }}>{formatRelativeTime(c.created_at, now)}</span>
@@ -383,8 +383,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     </div>
 
                     {c.platforms?.length > 0 && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px", marginBottom: "12px" }}>
-                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "11px", padding: "3px 8px", border: "1px solid #222", borderRadius: "20px", color: "#888" }}>{p}</span>)}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "10px", padding: "2px 8px", border: "1px solid #1f1f1f", borderRadius: "20px", color: "#999", background: "#0d0d0d" }}>{p}</span>)}
                       </div>
                     )}
 
@@ -396,7 +396,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     )}
 
                     {/* Bottom Row */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "12px", marginTop: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
                       {c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
