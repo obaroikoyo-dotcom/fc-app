@@ -25,19 +25,23 @@ interface CreatorData {
   avatar_url?: string;
   niche: string;
   location: string;
-  age: string;
-  gender: string;
-  available: boolean;
-  platforms: string[];
-  social_links: Record<string, string>;
-  follower_counts: Record<string, string>;
-  engagement_rates: Record<string, string>;
-  content_types: string[];
-  languages: string[];
-  audience_age_range: string;
-  audience_location: string;
-  rates: { post: string; story: string; reel: string; video: string; ugc: string };
-  collabs: { brand: string; description: string }[];
+  // Everything below is only ever populated on the creator_profiles path -
+  // the brand_profiles fallback (a brand viewed through this same page)
+  // only ever has the five fields above, and the render code already
+  // treats all of these as possibly absent (optional chaining throughout).
+  age?: string;
+  gender?: string;
+  available?: boolean;
+  platforms?: string[];
+  social_links?: Record<string, string>;
+  follower_counts?: Record<string, string>;
+  engagement_rates?: Record<string, string>;
+  content_types?: string[];
+  languages?: string[];
+  audience_age_range?: string;
+  audience_location?: string;
+  rates?: { post: string; story: string; reel: string; video: string; ugc: string };
+  collabs?: { brand: string; description: string }[];
 }
 
 export default function PublicProfile({ profileId, goBack, navigateToMessages }: Props) {
@@ -485,7 +489,7 @@ const startDM = async () => {
           <div style={dividerStyle} />
 
           {/* Platforms */}
-          {creator.platforms?.length > 0 && (
+          {creator.platforms && creator.platforms.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Platforms</label>
               {creator.platforms.map(p => {
@@ -495,7 +499,7 @@ const startDM = async () => {
                 <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
                     <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
-                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{verified?.username || creator.social_links[p]}</p>}
+                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{verified?.username || creator.social_links?.[p]}</p>}
                   </div>
                   <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
                     {followers != null && <span>{followers.toLocaleString()} followers{verified && " ✓"}</span>}
@@ -529,7 +533,7 @@ const startDM = async () => {
           )}
 
           {/* Content Types */}
-          {creator.content_types?.length > 0 && (
+          {creator.content_types && creator.content_types.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Content I Create</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -539,7 +543,7 @@ const startDM = async () => {
           )}
 
           {/* Languages */}
-          {creator.languages?.length > 0 && (
+          {creator.languages && creator.languages.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Languages</label>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -578,7 +582,7 @@ const startDM = async () => {
           <div style={dividerStyle} />
 
           {/* Past Collabs */}
-          {creator.collabs?.filter(c => c.brand).length > 0 && (
+          {creator.collabs && creator.collabs.filter(c => c.brand).length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Past Collabs</label>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

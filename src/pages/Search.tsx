@@ -115,7 +115,11 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
         const { data: profiles } = await supabase.from("profiles").select(`id, role, creator_profiles(name, niche, location, available, hashtags, avatar_url, follower_counts, rates), brand_profiles(name, niche, location, avatar_url, verified)`);
         if (profiles) {
           const blockedIds = user ? await getBlockedUserIds(user.id) : [];
-          setAllProfiles(profiles.filter(p => !blockedIds.includes(p.id)));
+          // supabase-js can't tell this is a one-to-one relation without
+          // generated DB types, so it infers creator_profiles/brand_profiles
+          // as arrays - at runtime (and everywhere this is read below,
+          // e.g. p.creator_profiles?.name) it's actually a single object.
+          setAllProfiles((profiles as unknown as Profile[]).filter(p => !blockedIds.includes(p.id)));
         }
       }, 10000, "Search.loadProfiles");
     } catch (err) {
