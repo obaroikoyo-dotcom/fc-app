@@ -80,6 +80,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
+  const [hasMountedPostTab, setHasMountedPostTab] = useState(tab === "post");
+  useEffect(() => { if (tab === "post") setHasMountedPostTab(true); }, [tab]);
   const [trackRecord, setTrackRecord] = useState<BrandTrackRecord | null>(null);
 
   useLayoutEffect(() => {
@@ -399,16 +401,16 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
                           <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
-                            £{budgetVal.toLocaleString()}
+                            £{budgetVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           {isOwn && (
                             <span style={{ fontSize: "10px", color: "#aaa", marginTop: "4px", lineHeight: 1.3 }}>
                               {isEnterprise
                                 ? <span style={{ color: "#34c759", fontWeight: 500 }}>0% platform fee (Enterprise)</span>
-                                : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString()}</span> (+5% fee)</>
+                                : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (+5% fee)</>
                               }
                               <br />
-                              Creator nets <span style={{ color: "#fff", fontWeight: 500 }}>£{creatorNetPayout.toLocaleString()}</span>{!isEnterprise && " (-10% cut)"}
+                              Creator nets <span style={{ color: "#fff", fontWeight: 500 }}>£{creatorNetPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>{!isEnterprise && " (-10% cut)"}
                             </span>
                           )}
                         </div>
@@ -430,9 +432,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           </div>
         )}
 
-        {/* Post Tab */}
-        {tab === "post" && (
-          <div key="post" className="page-enter">
+        {/* Post Tab - stays mounted (just hidden) once first shown, rather
+            than unmounting on every tab switch, so in-progress typed fields
+            and uploaded assets survive navigating away and back. */}
+        {hasMountedPostTab && (
+          <div style={{ display: tab === "post" ? "block" : "none" }} className="page-enter">
             <CreateCampaign
               isEnterprise={isEnterprise}
               editingCampaign={editingCampaign as EditableCampaign | null}

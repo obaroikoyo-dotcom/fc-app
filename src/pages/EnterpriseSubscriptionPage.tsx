@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
@@ -299,6 +299,43 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState("");
+  // Nothing previously checked whether the brand was already subscribed
+  // before showing this pitch/payment flow - a brand who got no
+  // confirmation after paying once (e.g. closed the modal mid-payment)
+  // could easily end up starting a second, parallel subscription here.
+  const [currentSubscription, setCurrentSubscription] = useState<{ isEnterprise: boolean; cancelAtPeriodEnd: boolean } | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("brand_profiles").select("is_enterprise, subscription_cancel_at_period_end").eq("id", user.id).single();
+      if (data) setCurrentSubscription({ isEnterprise: !!data.is_enterprise, cancelAtPeriodEnd: !!data.subscription_cancel_at_period_end });
+    })();
+  }, []);
+
+  if (currentSubscription?.isEnterprise) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px" }}>
+          <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#999", cursor: "pointer" }}>←</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
+          <div style={{ fontSize: "40px", marginBottom: "1rem" }}>✓</div>
+          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're already on Enterprise</p>
+          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
+            {currentSubscription.cancelAtPeriodEnd
+              ? "Your subscription is set to cancel at the end of the current billing period. You'll keep 0% fees until then."
+              : "Platform fees are waived for you and your creators. Manage or cancel your subscription from Settings."}
+          </p>
+          <div className="tap-btn" onClick={() => navigate("brand-profile")} style={{ padding: "13px 24px", borderRadius: "8px", border: "1px solid #222", color: "#ccc", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+            Go to Settings
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
@@ -399,7 +436,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <div className="tap-btn" onClick={() => setShowModal(true)} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
   Upgrade to Enterprise
 </div>
-          <p style={{ fontSize: "11px", color: "#777", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime.</p>
+          <p style={{ fontSize: "11px", color: "#777", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime — takes effect at the end of your current billing period.</p>
           <p style={{ fontSize: "11px", color: "#777", marginTop: "6px", textAlign: "center" }}>Plan cannot be changed after subscribing. Cancel and resubscribe to switch.</p>
         </div>
 
@@ -409,7 +446,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
             {[
               { q: "How does 0% fees work?", a: "Once Enterprise activates, platform fee calculations are bypassed at checkout — for both you and every creator you work with." },
               { q: "Are card processing fees separate?", a: "Yes. Standard Stripe processing fees remain. Enterprise only waives FlipCollab's own platform service fees." },
-              { q: "Can I cancel anytime?", a: "Yes. Enterprise is subscription-based and can be cancelled with 30 days' notice. No lock-in contracts." },
+              { q: "Can I cancel anytime?", a: "Yes, from Settings, with no notice period required. Your 0% fees stay active until the end of the billing period you've already paid for, then the subscription ends. No lock-in contracts." },
             ].map(({ q, a }) => (
               <div key={q} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                 <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>{q}</p>
@@ -436,7 +473,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
                   <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Complete Your Upgrade</p>
-                  <span className="tap-btn" onClick={() => setShowModal(false)} style={{ color: "#888", fontSize: "20px", cursor: "pointer", lineHeight: 1 }}>×</span>
+                  <span className="tap-btn" onClick={() => !paymentLoading && setShowModal(false)} style={{ color: paymentLoading ? "#444" : "#888", fontSize: "20px", cursor: paymentLoading ? "default" : "pointer", lineHeight: 1 }}>×</span>
                 </div>
 
                 <div style={{ display: "flex", gap: "8px", marginBottom: "1.25rem" }}>

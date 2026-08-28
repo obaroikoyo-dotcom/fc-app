@@ -7,6 +7,8 @@ import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { getBlockedUserIds } from "../lib/blocks";
 import VerifiedBadge from "../components/VerifiedBadge";
+import { usePersistedState } from "../lib/usePersistedState";
+import { useScrollRestoration } from "../lib/useScrollRestoration";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
@@ -74,18 +76,20 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
 }
 
 export default function Search({ navigateToProfile, navigateToMessages }: Props) {
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "creators" | "brands">("all");
+  const [query, setQuery] = usePersistedState("fc_search_query", "");
+  const [filter, setFilter] = usePersistedState<"all" | "creators" | "brands">("fc_search_filter", "all");
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [niche, setNiche] = useState("");
-  const [followers, setFollowers] = useState("");
-  const [sortBy, setSortBy] = useState("");
+  const [niche, setNiche] = usePersistedState("fc_search_niche", "");
+  const [followers, setFollowers] = usePersistedState("fc_search_followers", "");
+  const [sortBy, setSortBy] = usePersistedState("fc_search_sortby", "");
+  const [visibleCount, setVisibleCount] = useState(10);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(210);
+  const scrollRef = useScrollRestoration("fc_search_scroll", !loading);
 
   useLayoutEffect(() => {
     const el = headerRef.current;
@@ -138,7 +142,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
     navigateToMessages(userRole === "brand" ? "messages-brand" : "messages-creator", convoId);
   };
 
-  const filtered = allProfiles.filter(p => {
+  const filteredAll = allProfiles.filter(p => {
     if (filter === "creators" && p.role !== "creator") return false;
     if (filter === "brands" && p.role !== "brand") return false;
 
@@ -161,7 +165,13 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
     if (sortBy === "followers") return maxFollowers(b.creator_profiles) - maxFollowers(a.creator_profiles);
     if (sortBy === "name") return (a.creator_profiles?.name || a.brand_profiles?.name || "").localeCompare(b.creator_profiles?.name || b.brand_profiles?.name || "");
     return 0;
-  }).slice(0, 10);
+  });
+  // Slicing a batch at a time instead of rendering the whole filtered set
+  // keeps the DOM light regardless of how large the underlying table gets -
+  // everything past visibleCount is already computed, just not rendered yet,
+  // so "Load More" reveals instantly with no fetch/recompute.
+  const filtered = filteredAll.slice(0, visibleCount);
+  useEffect(() => { setVisibleCount(10); }, [query, filter, niche, followers, sortBy]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
@@ -195,7 +205,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: `${headerHeight + 16}px`, display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: `${headerHeight + 16}px`, display: "flex", flexDirection: "column", gap: "10px" }}>
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3, 4, 5].map(i => (
@@ -231,6 +241,11 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
               </div>
             );
           })
+        )}
+        {filtered.length > 0 && filteredAll.length > filtered.length && (
+          <div onClick={() => setVisibleCount(c => c + 10)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #222", textAlign: "center", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer", marginTop: "4px" }}>
+            Load More ({filteredAll.length - filtered.length} more)
+          </div>
         )}
       </div>
     </div>

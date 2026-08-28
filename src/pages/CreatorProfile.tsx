@@ -123,7 +123,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [rateVisible, setRateVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
-  const [withdrawalRequests, setWithdrawalRequests] = useState<any[]>([]);
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [connectCountry, setConnectCountry] = useState("GB");
   const [connectInstance, setConnectInstance] = useState<StripeConnectInstance | null>(null);
@@ -151,7 +150,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     loadFavourites();
     loadCampaignFavourites();
     loadWallet();
-    loadWithdrawalRequests();
     loadReportsBlocked();
     loadSocialConnections();
     loadConnectStatus();
@@ -176,7 +174,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   .channel("wallet-updates")
   .on("postgres_changes", { event: "*", schema: "public", table: "transactions" }, () => {
     loadWallet();
-    loadWithdrawalRequests();
   })
   .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
     loadWallet();
@@ -408,35 +405,25 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (data) setCampaignFavourites(data);
   };
 
-  const loadWithdrawalRequests = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase
-      .from("withdrawal_requests")
-      .select("*")
-      .eq("creator_id", user.id)
-      .order("created_at", { ascending: false });
-    if (data) setWithdrawalRequests(data);
-  };
-
   const loadWallet = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   const { data } = await supabase.from("transactions").select("*, campaigns(name)").eq("creator_id", user.id).order("created_at", { ascending: false });
-  const { data: withdrawals } = await supabase.from("withdrawal_requests").select("amount, status").eq("creator_id", user.id);
   // A transaction's Stripe status turning "completed" just means the card
   // was charged - the payout itself is only released once the linked
   // application reaches "paid" (deliverable posted/confirmed, or manually
-  // released). Only released amounts are actually withdrawable.
+  // released).
   const { data: apps } = await supabase.from("applications").select("campaign_id, status").eq("creator_id", user.id);
   const released = new Set((apps || []).filter(a => a.status === "paid").map(a => a.campaign_id));
   setReleasedCampaignIds(released);
   if (data) {
     setTransactions(data);
+    // Released amounts have already been sent to Stripe (real Transfers,
+    // see release-payout) - there's no separate "withdrawal" step anymore
+    // to subtract, unlike the old manual-payout system this replaced.
     const earned = data.filter(t => t.status !== "failed" && released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
     const pending = data.filter(t => t.status !== "failed" && !released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
-    const withdrawn = withdrawals ? withdrawals.filter(w => w.status === "completed" || w.status === "pending").reduce((sum, w) => sum + w.amount, 0) : 0;
-    setWalletBalance(earned - withdrawn);
+    setWalletBalance(earned);
     setPendingBalance(pending);
   }
 };
@@ -1115,6 +1102,7 @@ setTimeout(() => setSaved(false), 2000);
               <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
               <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
               <p style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
+              <p style={{ fontSize: "10px", color: "#666", marginTop: "6px" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
                 <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "8px" }}>+£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} escrowed — released once deliverables are posted/confirmed.</p>
               )}
@@ -1180,15 +1168,20 @@ setTimeout(() => setSaved(false), 2000);
 )}
           {walletTab === "history" && (
             <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "10px" }}>
-              {withdrawalRequests.length === 0 ? (
-                <p style={{ fontSize: "12px", color: "#888", textAlign: "center", padding: "2rem" }}>No withdrawal requests yet</p>
-              ) : withdrawalRequests.map((r, i) => (
+              {/* Real payouts now go through Stripe Transfers, not the old
+                  manual withdrawal_requests table - this reads the same
+                  released transactions the Balance tab totals up, so a
+                  creator who's actually been paid never sees an empty
+                  "No withdrawal requests yet" that looks like they weren't. */}
+              {transactions.filter(t => t.payout_released_at).length === 0 ? (
+                <p style={{ fontSize: "12px", color: "#888", textAlign: "center", padding: "2rem" }}>No payouts released yet</p>
+              ) : transactions.filter(t => t.payout_released_at).map((t, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
                   <div>
-                    <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>£{(r.amount / 100).toFixed(2)}</p>
-                    <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>{r.method} · {new Date(r.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>{(t as any).campaigns?.name || "Campaign"}</p>
+                    <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>{new Date(t.payout_released_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
                   </div>
-                  <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: `1px solid ${r.status === "completed" ? "#34c759" : r.status === "rejected" ? "#ff4444" : "#555"}`, color: r.status === "completed" ? "#34c759" : r.status === "rejected" ? "#ff4444" : "#777", textTransform: "uppercase" }}>{r.status}</span>
+                  <p style={{ fontSize: "13px", color: "#34c759", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
               ))}
             </div>
@@ -1441,7 +1434,7 @@ setTimeout(() => setSaved(false), 2000);
       {renderSettingsHeader("Help Centre", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {[
-          { q: "How do I get paid?", a: "Once a brand approves your content, funds are released from escrow to your wallet. You can withdraw via PayPal or bank transfer." },
+          { q: "How do I get paid?", a: "Once a brand approves your content, funds are released from escrow and transferred directly to your connected Stripe account - set this up once in Payouts, and every future release goes straight to your bank on Stripe's own payout schedule." },
           { q: "What is the platform fee?", a: "FlipCollab deducts a 10% platform fee from your earnings on each completed collaboration. Brands are charged an additional 5% on their end." },
           { q: "How do I apply to campaigns?", a: "Browse campaigns in the Explore tab. Tap Apply, write a pitch message, select your platforms, and submit." },
           { q: "Can I message brands directly?", a: "Yes — use the Search tab to find brands and tap DM to start a conversation." },

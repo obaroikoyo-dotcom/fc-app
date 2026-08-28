@@ -126,7 +126,7 @@ interface PaymentModalProps {
   isEnterprise: boolean;
   currentUserId: string | null;
   savedCard: { last4: string; brand: string; pm_id: string } | null;
-  onSuccess: (app: Application) => void;
+  onSuccess: (app: Application, status: "funded" | "paid") => void;
   onClose: () => void;
 }
 
@@ -154,6 +154,11 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
   const brandFee = isEnterprise ? 0 : Math.round(campaignBudget * 0.05);
   const totalCharge = campaignBudget + brandFee;
+  // Mirrors create-payment-intent's exact rounding (creatorCut then
+  // subtracted from the budget) so this pre-payment display can never show
+  // a different number than what actually gets charged/recorded.
+  const creatorCut = isEnterprise ? 0 : Math.round(campaignBudget * 0.10);
+  const creatorPayoutDisplay = campaignBudget - creatorCut;
 
   const handlePay = async () => {
     if (!stripe || !currentUserId) return;
@@ -176,11 +181,21 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     } : undefined;
 
     const res = await supabase.functions.invoke("create-payment-intent", {
-  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, is_enterprise: isEnterprise, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
+  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, require_tiktok_post: requireTikTokPost, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
 });
 
     if (res.error || !res.data?.clientSecret) {
-      setError("Failed to create payment. Try again.");
+      // Surface the specific reason when the edge function gave one (e.g.
+      // "already paid for" / "already went through") rather than a generic
+      // message that would just prompt another retry.
+      let message = "Failed to create payment. Try again.";
+      try {
+        const errBody = await (res.error as any)?.context?.json();
+        if (errBody?.error) message = errBody.error;
+      } catch {
+        // Fall back to the generic message above.
+      }
+      setError(message);
       setProcessing(false);
       return;
     }
@@ -236,12 +251,18 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         return;
       }
 
+      // Tracks what actually happened, not what we hoped would happen - the
+      // caller's UI (e.g. showing/hiding "Release Payment Manually") needs
+      // to reflect the real database state, not assume every payment ends
+      // up "paid" the instant the card is charged.
+      let finalStatus: "funded" | "paid" = "funded";
       if (!requireTikTokPost) {
         // If this fails (e.g. the creator hasn't finished payout setup),
         // funds simply stay held as "funded" - same recoverable state as
         // any other release attempt, nothing partial or lost.
         try {
-          await releasePayout(paymentApp.id);
+          const result = await releasePayout(paymentApp.id);
+          if (result.released) finalStatus = "paid";
         } catch (err) {
           console.error("Instant release didn't complete, funds remain held:", err);
         }
@@ -258,7 +279,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       });
 
       setProcessing(false);
-      onSuccess(paymentApp);
+      onSuccess(paymentApp, finalStatus);
     } else {
       console.warn("Payment not yet succeeded, status:", confirmResult.paymentIntent?.status);
       setError(`Payment status: ${confirmResult.paymentIntent?.status || "unknown"}. Please try again.`);
@@ -274,7 +295,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
           <span style={{ color: "#999", fontSize: "13px" }}>Creator Payout {isEnterprise ? "(100%)" : "(90%)"}</span>
-          <span style={{ color: "#fff", fontSize: "13px" }}>£{((campaignBudget * (isEnterprise ? 1 : 0.90)) / 100).toFixed(2)}</span>
+          <span style={{ color: "#fff", fontSize: "13px" }}>£{(creatorPayoutDisplay / 100).toFixed(2)}</span>
         </div>
         {!isEnterprise && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
@@ -358,7 +379,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "10px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: "10px" }}>
-        <div onClick={onClose} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>Cancel</div>
+        <div onClick={!processing ? onClose : undefined} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: processing ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const }}>Cancel</div>
         <div onClick={!processing ? handlePay : undefined} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: processing ? "#1a1a1a" : "#fff", color: processing ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const, transition: "all 0.2s" }}>
           {processing ? "Processing..." : `Pay £${(totalCharge / 100).toFixed(2)}`}
         </div>
@@ -470,7 +491,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   };
 
   const canBrandPost = role === "brand" && applicationStatus === "paid";
-  const canCreatorPost = role === "creator" && applicationStatus === "funded";
+  // Includes "paid" too - not just "funded" - so the creator's own
+  // confirmation (below) doesn't disappear the moment they're actually
+  // paid, which is exactly the state it's meant to describe.
+  const canCreatorPost = role === "creator" && (applicationStatus === "funded" || applicationStatus === "paid");
 
   return (
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
@@ -493,7 +517,13 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {canCreatorPost && deliverableUrl && (
         <div>
-          {!tiktokConnected ? (
+          {applicationStatus === "paid" ? (
+            // Already released, regardless of how (TikTok confirm, manual
+            // release, or instant) - always show the confirmation rather
+            // than re-deriving it from myPost, which can be null for
+            // deals released a way that never touched TikTok at all.
+            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
+          ) : !tiktokConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Manage Accounts to post this and get paid.</p>
           ) : !myPost ? (
             <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
@@ -502,11 +532,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           ) : myPost.status === "processing" ? (
             <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to {platform}... this can take a minute.</p>
           ) : myPost.status === "published" ? (
-            applicationStatus === "paid" ? (
-              <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted — payout released.</p>
-            ) : (
-              <p style={{ fontSize: "11px", color: "#ff9500" }}>✓ Posted — payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
-            )
+            <p style={{ fontSize: "11px", color: "#ff9500" }}>✓ Posted — payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -1800,6 +1826,15 @@ return (
                         Upload your deliverable and post it below - your payout releases automatically once it's confirmed live.
                       </p>
                     </>
+                  ) : activeConvo.application_status === "paid" ? (
+                    <>
+                      <span style={{ fontSize: "11px", color: "#34c759", background: "#0f1f14", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a3a24", fontWeight: 500 }}>
+                        ✓ Payout Released
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                        This deal is complete - your payout has been sent to your connected account.
+                      </p>
+                    </>
                   ) : (
                     <>
                       <span style={{ fontSize: "11px", color: "#aaa", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
@@ -2036,20 +2071,24 @@ return (
               currentUserId={currentUserId}
               savedCard={savedCard}
               onClose={() => setShowPayment(false)}
-              onSuccess={async (app) => {
+              onSuccess={async (app, status) => {
                 setShowPayment(false);
                 // Patch only the specific application that was actually
                 // paid - with multiple campaigns open at once, blindly
                 // setting the conversation's top-level status would mark
                 // the wrong one as paid if it wasn't the "latest" one.
+                // status reflects what actually happened server-side - a
+                // TikTok-gated payment lands on "funded" (held), not "paid".
                 setActiveConvo(prev => prev ? {
                   ...prev,
-                  application_status: prev.application_id === app.id ? "paid" : prev.application_status,
-                  linked_applications: prev.linked_applications?.map(a => a.id === app.id ? { ...a, status: "paid" } : a),
+                  application_status: prev.application_id === app.id ? status : prev.application_status,
+                  linked_applications: prev.linked_applications?.map(a => a.id === app.id ? { ...a, status } : a),
                 } : null);
 
                 if (activeConvo && currentUserId) {
-                  const paymentText = `${PAYMENT_CONFIRMED_PREFIX} Funds for "${app.campaign_name}" are held in escrow until content is approved.`;
+                  const paymentText = status === "paid"
+                    ? `${PAYMENT_CONFIRMED_PREFIX} Payment for "${app.campaign_name}" has been released to the creator.`
+                    : `${PAYMENT_CONFIRMED_PREFIX} Funds for "${app.campaign_name}" are held in escrow until content is approved.`;
                   const now = new Date().toISOString();
                   const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: paymentText }).select().single();
                   if (inserted) appendMessage(inserted);

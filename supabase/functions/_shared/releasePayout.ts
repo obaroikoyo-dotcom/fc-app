@@ -79,6 +79,29 @@ export async function releasePayoutForApplication(
       return { released: false, reason: "transfer_failed", error: "Payment hasn't finished settling yet - try again shortly." };
     }
 
+    // Atomically claim this transaction before creating the real Stripe
+    // Transfer - the earlier read-then-check above isn't itself atomic, so
+    // two triggers firing at nearly the same instant (e.g. a TikTok
+    // auto-release landing the same moment as a manual click) could both
+    // pass it and both create a real Transfer for the same money. A single
+    // UPDATE ... WHERE stripe_transfer_id IS NULL is row-locked by Postgres,
+    // so only one concurrent caller can ever win this claim; the other gets
+    // zero rows back and backs off instead of double-paying the creator.
+    const sentinel = "pending";
+    const { data: claimed } = await supabaseAdmin
+      .from("transactions")
+      .update({ stripe_transfer_id: sentinel })
+      .eq("id", transaction.id)
+      .is("stripe_transfer_id", null)
+      .select("id")
+      .maybeSingle();
+
+    if (!claimed) {
+      // Someone else claimed it first - by the time this branch is reached
+      // it's already released or about to be.
+      return { released: true, alreadyReleased: true };
+    }
+
     const params = new URLSearchParams({
       amount: String(transaction.creator_payout),
       currency: "gbp",
@@ -99,6 +122,10 @@ export async function releasePayoutForApplication(
 
     if (!transfer.id) {
       console.error("Stripe transfer failed for application", applicationId, transfer);
+      // Release the claim so a future retry (any of the three trigger
+      // paths) can actually attempt this again instead of being
+      // permanently blocked by the sentinel.
+      await supabaseAdmin.from("transactions").update({ stripe_transfer_id: null }).eq("id", transaction.id);
       return { released: false, reason: "transfer_failed", error: transfer.error?.message || "Stripe transfer failed" };
     }
 

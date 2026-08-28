@@ -40,6 +40,22 @@ serve(async (req) => {
     });
     if (!withinLimit) return rateLimitResponse(corsHeaders);
 
+// Nothing previously stopped an already-subscribed brand from creating a
+// second, parallel recurring subscription (e.g. if they got no confirmation
+// after their first payment and just tried again) - only one
+// stripe_subscription_id is ever tracked, so the earlier one would keep
+// billing invisibly, unmanageable from inside FlipCollab.
+const { data: currentBrand } = await supabase.from("brand_profiles").select("is_enterprise, stripe_subscription_id").eq("id", brand_id).single();
+if (currentBrand?.is_enterprise && currentBrand.stripe_subscription_id) {
+  const subCheckRes = await fetch(`https://api.stripe.com/v1/subscriptions/${currentBrand.stripe_subscription_id}`, {
+    headers: { "Authorization": `Bearer ${secretKey}` },
+  });
+  const existingSub = await subCheckRes.json();
+  if (existingSub.status && ["active", "trialing", "past_due"].includes(existingSub.status)) {
+    throw new Error("You already have an active Enterprise subscription.");
+  }
+}
+
 const addressParams: Record<string, string> = {};
 if (billing_address?.line1) addressParams["address[line1]"] = billing_address.line1;
 if (billing_address?.line2) addressParams["address[line2]"] = billing_address.line2;

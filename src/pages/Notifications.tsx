@@ -7,7 +7,8 @@ import { useDelayedLoading } from "../lib/useDelayedLoading";
 
 interface Props {
   navigate: (p: Page) => void;
-  setTargetData?: (data: any) => void;
+  navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void;
+  userRole: "creator" | "brand" | null;
   onRead?: () => void;
 }
 
@@ -26,7 +27,7 @@ interface Notification {
   actor_avatar?: string | null;
 }
 
-export default function Notifications({ navigate, setTargetData, onRead }: Props) {
+export default function Notifications({ navigate, navigateToMessages, userRole, onRead }: Props) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
@@ -101,12 +102,14 @@ export default function Notifications({ navigate, setTargetData, onRead }: Props
 
   const handleNotificationClick = (notif: Notification) => {
     if (!notif.data) return;
+    const messagesPage = userRole === "brand" ? "messages-brand" : "messages-creator";
 
-    if (notif.type === "new_message" && notif.data.conversation_id) {
-      if (setTargetData) setTargetData({ activeConversationId: notif.data.conversation_id });
-      navigate("messages" as Page);
-    } else if (notif.type === "campaign_application" || notif.type === "campaign_accepted") {
-      navigate("messages" as Page); 
+    if ((notif.type === "new_message" || notif.type === "campaign_chatting") && notif.data.conversation_id) {
+      navigateToMessages(messagesPage, notif.data.conversation_id);
+    } else if (notif.type === "payment_received" || notif.type === "campaign_application" || notif.type === "application_reminder") {
+      // These don't carry a conversation_id - land on the messages list for
+      // the right role rather than attempting a broken deep-link.
+      navigate(messagesPage);
     }
   };
 

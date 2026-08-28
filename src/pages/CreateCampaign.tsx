@@ -82,6 +82,7 @@ const sectionTitle = (label: string, sub: string) => (
 );
 
 export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnterprise, editingCampaign }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [name, setName] = useState("");
   const [objective, setObjective] = useState("");
   const [objectiveOther, setObjectiveOther] = useState("");
@@ -170,8 +171,10 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
     return urls;
   };
 
+  const scrollToTop = () => containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   const postCampaign = async () => {
-    if (!name.trim()) { setError("Campaign title is required."); return; }
+    if (!name.trim()) { setError("Campaign title is required."); scrollToTop(); return; }
     if (objective === "Other" && !objectiveOther.trim()) { setError("Please describe your objective."); return; }
     if (campaignType === "paid" && numericBudget <= 0) { setError("Enter a budget for paid campaigns."); return; }
     setError(null);
@@ -330,7 +333,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div ref={containerRef} style={{ display: "flex", flexDirection: "column" }}>
 
       {/* Section 1 — Mechanics */}
       <div style={card}>
@@ -372,15 +375,15 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             {numericBudget > 0 && (
               <div style={{ background: "#0a0a0a", border: "1px solid #161616", borderRadius: "6px", padding: "10px 12px", marginTop: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
-                  <span>Base budget</span><span>£{numericBudget.toLocaleString()}</span>
+                  <span>Base budget</span><span>£{numericBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
                   <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
-                  <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>£{platformFee.toLocaleString()}</span>
+                  <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <hr style={{ border: "0", borderTop: "1px solid #161616", margin: "6px 0" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
-                  <span>Total</span><span style={{ color: "#34c759" }}>£{totalCost.toLocaleString()}</span>
+                  <span>Total</span><span style={{ color: "#34c759" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#777", marginTop: "4px" }}>
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>

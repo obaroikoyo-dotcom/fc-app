@@ -44,14 +44,32 @@ serve(async (req) => {
     // latest_charge is captured so release-payout can later create a
     // Stripe Transfer tied to this specific charge's funds (source_transaction)
     // rather than the platform's general balance.
-    const { error } = await supabase
+    const { data: tx, error } = await supabase
       .from("transactions")
       .update({ status: "completed", stripe_charge_id: paymentIntent.latest_charge as string })
-      .eq("stripe_payment_intent_id", paymentIntent.id);
+      .eq("stripe_payment_intent_id", paymentIntent.id)
+      .select("campaign_id, creator_id, payout_release_mode")
+      .maybeSingle();
 
     if (error) {
       console.error("Failed to update transaction:", error);
       return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+
+    // Safety net: the client normally flips the matching application to
+    // "funded" itself right after the charge confirms, but if that update
+    // never lands (dropped connection, closed tab), the application would
+    // stay "accepted" - which still looks payable, risking a second real
+    // charge for the same deal on retry. The webhook is the one thing
+    // guaranteed to fire once Stripe confirms the charge, so it reconciles
+    // this independently of whatever the client managed to do.
+    if (tx) {
+      await supabase
+        .from("applications")
+        .update({ status: "funded", payout_release_mode: tx.payout_release_mode || "tiktok_gated" })
+        .eq("campaign_id", tx.campaign_id)
+        .eq("creator_id", tx.creator_id)
+        .not("status", "in", "(funded,paid,rejected)");
     }
   }
 
@@ -62,6 +80,21 @@ serve(async (req) => {
       .from("transactions")
       .update({ status: "failed" })
       .eq("stripe_payment_intent_id", paymentIntent.id);
+  }
+
+  // Fires when a subscription actually ends - either the brand canceled
+  // (cancel-subscription sets cancel_at_period_end, this fires once that
+  // period is up) or Stripe gave up retrying a failed renewal charge. This
+  // is the only place is_enterprise ever gets turned back off - verified
+  // is deliberately left alone, since it can also come from the separate
+  // admin verification_requests approval flow and a lapsed subscription
+  // shouldn't silently strip a badge earned that way.
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+    await supabase
+      .from("brand_profiles")
+      .update({ is_enterprise: false, subscription_cancel_at_period_end: false })
+      .eq("stripe_subscription_id", subscription.id);
   }
 
   return new Response(JSON.stringify({ received: true }), { status: 200 });

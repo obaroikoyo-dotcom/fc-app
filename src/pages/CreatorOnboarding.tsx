@@ -169,6 +169,48 @@ const [showOtp, setShowOtp] = useState(false);
   const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
   const [savingSelection, setSavingSelection] = useState(false);
 
+  // Restored unconditionally, regardless of auth state - a plain refresh
+  // during the early, pre-signup screens has no Supabase session yet, so
+  // gating this behind a logged-in user (as before) meant it only ever
+  // resumed after an OAuth redirect and silently did nothing on a normal
+  // refresh, which looked like an inconsistent/broken feature.
+  useEffect(() => {
+    const draft = peekOnboardingDraft("creator");
+    logEvent(`CreatorOnboarding mount: draftFound=${!!draft}`);
+    if (draft) {
+      if (typeof draft.name === "string") setName(draft.name);
+      if (typeof draft.birthDay === "string") setBirthDay(draft.birthDay);
+      if (typeof draft.birthMonth === "string") setBirthMonth(draft.birthMonth);
+      if (typeof draft.birthYear === "string") setBirthYear(draft.birthYear);
+      if (Array.isArray(draft.selectedNiches)) setSelectedNiches(draft.selectedNiches as string[]);
+      if (typeof draft.location === "string") setLocation(draft.location);
+      if (Array.isArray(draft.selectedPlatforms)) setSelectedPlatforms(draft.selectedPlatforms as string[]);
+      if (draft.socialLinks && typeof draft.socialLinks === "object") setSocialLinks(draft.socialLinks as Record<string, string>);
+      if (draft.followerCounts && typeof draft.followerCounts === "object") setFollowerCounts(draft.followerCounts as Record<string, string>);
+      if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
+      if (draft.rates && typeof draft.rates === "object") setRates(draft.rates as typeof rates);
+      if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
+      setScreen(typeof draft.screen === "number" ? draft.screen : 5);
+    }
+  }, []);
+
+  // Autosaves on every step change, on top of the existing pre-redirect
+  // saves below (which are still needed for same-screen redirects, like
+  // connecting a social account, where screen doesn't change). Skips the
+  // very first run (mount) - otherwise this would fire before the restore
+  // effect's setState calls above have landed and overwrite a just-restored
+  // draft with blank defaults.
+  const skippedFirstAutosave = useRef(false);
+  useEffect(() => {
+    if (!skippedFirstAutosave.current) { skippedFirstAutosave.current = true; return; }
+    saveOnboardingDraft("creator", {
+      name, birthDay, birthMonth, birthYear, selectedNiches, location,
+      selectedPlatforms, socialLinks, followerCounts, contentTypes, rates, termsAccepted,
+      screen,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       logEvent(`CreatorOnboarding mount: hasUser=${!!user} emailConfirmed=${!!user?.email_confirmed_at} provider=${user?.app_metadata?.provider ?? "n/a"}`);
@@ -180,28 +222,6 @@ const [showOtp, setShowOtp] = useState(false);
       }
 
       if (user.email_confirmed_at) {
-        // Resuming after a redirect (Google sign-in, or connecting a
-        // social account from screen 6) tore down component state -
-        // restore whatever was filled in and jump back to where they
-        // left off instead of starting over.
-        const draft = peekOnboardingDraft("creator");
-        logEvent(`CreatorOnboarding mount: draftFound=${!!draft}`);
-        if (draft) {
-          if (typeof draft.name === "string") setName(draft.name);
-          if (typeof draft.birthDay === "string") setBirthDay(draft.birthDay);
-          if (typeof draft.birthMonth === "string") setBirthMonth(draft.birthMonth);
-          if (typeof draft.birthYear === "string") setBirthYear(draft.birthYear);
-          if (Array.isArray(draft.selectedNiches)) setSelectedNiches(draft.selectedNiches as string[]);
-          if (typeof draft.location === "string") setLocation(draft.location);
-          if (Array.isArray(draft.selectedPlatforms)) setSelectedPlatforms(draft.selectedPlatforms as string[]);
-          if (draft.socialLinks && typeof draft.socialLinks === "object") setSocialLinks(draft.socialLinks as Record<string, string>);
-          if (draft.followerCounts && typeof draft.followerCounts === "object") setFollowerCounts(draft.followerCounts as Record<string, string>);
-          if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
-          if (draft.rates && typeof draft.rates === "object") setRates(draft.rates as typeof rates);
-          if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
-          setScreen(typeof draft.screen === "number" ? draft.screen : 5);
-        }
-
         getSocialConnections(user.id).then(setSocialConnections);
       }
 

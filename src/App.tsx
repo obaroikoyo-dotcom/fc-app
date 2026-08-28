@@ -513,7 +513,7 @@ export default function App() {
 
   if (loading && page !== "splash") {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="app-shell" style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "#777", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
       </div>
     );
@@ -521,7 +521,7 @@ export default function App() {
 
   if (accountBlocked) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+      <div className="app-shell" style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
         <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "0.75rem" }}>
           {accountBlocked.status === "banned" ? "Account banned" : "Account suspended"}
@@ -576,11 +576,10 @@ export default function App() {
       case "messages-brand": return <Messages navigate={navigate} role="brand" navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} openConvoId={openConvoId} onConvoOpened={() => setOpenConvoId(null)} onRead={fetchGlobalUnreadCount} />;
       case "notifications-creator":
 case "notifications-brand":
-  return <Notifications navigate={navigate} onRead={fetchGlobalUnreadCount} />;
+  return <Notifications navigate={navigate} onRead={fetchGlobalUnreadCount} navigateToMessages={navigateToMessages} userRole={userRole} />;
 case "enterprise":
   return <EnterpriseSubscriptionPage navigate={navigate} />;
 case "apply-campaign":
-  console.log("apply-campaign route hit, id:", applyingCampaignId);
   return <ApplyCampaign navigate={navigate} campaignId={applyingCampaignId || ""} goBack={goBack} />;
       case "search-creator":
       case "search-brand": 
@@ -602,7 +601,7 @@ case "apply-campaign":
   };
 
   return (
-    <div style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", height: "100vh", overflow: "hidden" }}>
+    <div className="app-shell" style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", overflow: "hidden" }}>
       <style>{`
   ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); } img.no-reinvert { filter: none; } svg.verified-badge, svg.google-icon, svg.tiktok-icon, svg.instagram-icon { filter: invert(1) hue-rotate(180deg); }` : ""}
   @keyframes pageEnter {

@@ -1,9 +1,9 @@
 const SECTIONS = [
   { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
-  { t: "2. Data We Collect", b: "Name, email, profile info, payment data via Stripe, messages, campaign content, and device/usage data." },
-  { t: "3. How We Use Your Data", b: "To run your account, match brands with creators, process payments, send transactional emails, resolve disputes, and comply with legal obligations." },
+  { t: "2. Data We Collect", b: "Name, email, profile info, billing address, messages, campaign content, and device/usage data. Card details and, for creators, bank/identity details for payouts are collected and verified directly by Stripe - FlipCollab never sees or stores them." },
+  { t: "3. How We Use Your Data", b: "To run your account, match brands with creators, process payments and payouts, send transactional emails, resolve disputes, and comply with legal obligations." },
   { t: "4. Legal Basis", b: "Contract performance, legitimate interests (security, fraud prevention), and legal obligation." },
-  { t: "5. Third-Party Services", b: "Supabase (database/auth, EU), Stripe (payments, PCI-DSS), Vercel (hosting), and optional sign-in via Google, Apple, TikTok, or Instagram. We do not sell your data." },
+  { t: "5. Third-Party Services", b: "Supabase (database/auth, EU), Stripe and Stripe Connect (payments and creator payouts, PCI-DSS), Vercel (hosting), and optional sign-in via Google, Apple, TikTok, or Instagram. We do not sell your data." },
   { t: "6. Social Sign-In & Linked Accounts", b: "If you sign in or verify your account with Google, Apple, TikTok, or Instagram, we only receive what that provider shares (typically your name and email, or a private relay email if you use Apple's Hide My Email). We use it solely to create and authenticate your account, never for advertising, and we do not attempt to identify you if you choose to keep your email private." },
   { t: "7. Data Retention", b: "Retained while your account is active. Deleted within 30 days of account deletion, except payment records kept 6 years under UK law." },
   { t: "8. Your Rights", b: "Access, correction, deletion, objection, portability, and the right to complain to the ICO (ico.org.uk). Email us to exercise these." },

@@ -65,3 +65,8 @@ entrypoint = "./functions/connect-account-status/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/release-payout/index.ts"
+
+[functions.cancel-subscription]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/cancel-subscription/index.ts"

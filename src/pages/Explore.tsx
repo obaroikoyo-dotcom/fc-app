@@ -7,6 +7,8 @@ import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { getBlockedUserIds } from "../lib/blocks";
 import VerifiedBadge from "../components/VerifiedBadge";
+import { usePersistedState } from "../lib/usePersistedState";
+import { useScrollRestoration } from "../lib/useScrollRestoration";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -103,7 +105,7 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
 export default function Explore({ navigate, navigateToProfile, navigateToApply }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
-  const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
+  const [feedTab, setFeedTab] = usePersistedState<"discover" | "pitches">("fc_explore_feedtab", "discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
@@ -112,10 +114,11 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [bookmarked, setBookmarked] = useState<string[]>([]);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [selectedNiche, setSelectedNiche] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState("");
-  const [sortBy, setSortBy] = useState<"newest" | "budget">("newest");
+  const [selectedNiche, setSelectedNiche] = usePersistedState("fc_explore_niche", "");
+  const [selectedPlatform, setSelectedPlatform] = usePersistedState("fc_explore_platform", "");
+  const [sortBy, setSortBy] = usePersistedState<"newest" | "budget">("fc_explore_sortby", "newest");
   const [now, setNow] = useState(new Date());
+  const scrollRef = useScrollRestoration("fc_explore_scroll", !loading);
 
   useLayoutEffect(() => {
     if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
@@ -265,7 +268,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       </div>
 
       {/* Campaign Feed */}
-<div style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem" }}>
+<div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem" }}>
       <div key={feedTab} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

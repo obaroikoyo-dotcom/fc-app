@@ -40,6 +40,35 @@ html, body {
   height: 100%;
 }
 
+/* The app is built as a single fixed-width mobile layout with no responsive
+   breakpoints of its own - every sticky header, bottom nav, input bar, and
+   modal overlay throughout the app uses position:fixed with left/right/top:0,
+   which by default scopes to the true browser viewport. translateZ(0) makes
+   this wrapper a CSS "containing block", which re-scopes all of those
+   descendants to ITS box instead - the same trick the app's inverted-theme
+   filter already does today as an unrelated side effect. That's what lets a
+   single wrapper constrain the whole app on larger screens (below) without
+   editing every individual fixed-position element across 30+ files.
+   Harmless at true mobile widths, where this box already IS the viewport. */
+.app-shell {
+  height: 100%;
+  transform: translateZ(0);
+}
+
+/* Below this, the app fills the real viewport exactly as before - phones
+   and small tablets get the unmodified, unconstrained mobile layout. Above
+   it, the same layout is centered in a fixed-width column with a subtle
+   frame (reusing the app's existing #1a1a1a card-border language) instead
+   of stretching full-bleed or floating in a sea of bare background. */
+@media (min-width: 640px) {
+  .app-shell {
+    max-width: 480px;
+    margin: 0 auto;
+    border-left: 1px solid #1a1a1a;
+    border-right: 1px solid #1a1a1a;
+  }
+}
+
 /* --- Dynamic Theme Inversion Filter Rules --- */
 .inverted-theme {
   filter: invert(1) hue-rotate(180deg);

@@ -13,7 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { brand_id, creator_id, campaign_id, stripe_customer_id, billing_address, billing_name } = await req.json();
+    const { brand_id, creator_id, campaign_id, stripe_customer_id, billing_address, billing_name, require_tiktok_post } = await req.json();
+    const payoutReleaseMode = require_tiktok_post === false ? "instant" : "tiktok_gated";
 
     console.log("Received payment request:", { brand_id, creator_id, campaign_id, stripe_customer_id });
 
@@ -62,6 +63,53 @@ serve(async (req) => {
       .not("status", "in", "(paid,funded,rejected)")
       .maybeSingle();
     if (!eligibleApp) throw new Error("No eligible application for this creator on this campaign");
+
+    // Guards against double-charging: if a payment for this exact deal was
+    // already started (e.g. the brand's confirmation never made it back to
+    // the browser after a real charge, and they tried Pay again), don't
+    // blindly create a second Stripe charge. Check what actually happened
+    // to the earlier one instead of trusting local app state, which is
+    // exactly what could be stale/wrong here.
+    const { data: existingTx } = await supabase
+      .from("transactions")
+      .select("id, status, stripe_payment_intent_id")
+      .eq("campaign_id", campaign_id)
+      .eq("creator_id", creator_id)
+      .in("status", ["pending", "completed"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingTx) {
+      if (existingTx.status === "completed") {
+        throw new Error("This deal has already been paid for.");
+      }
+      // status === "pending" - ask Stripe what actually happened rather than
+      // assuming the worst or blindly creating a new charge.
+      const checkRes = await fetch(`https://api.stripe.com/v1/payment_intents/${existingTx.stripe_payment_intent_id}`, {
+        headers: { "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}` },
+      });
+      const existingPI = await checkRes.json();
+      if (existingPI.status === "succeeded") {
+        // The charge actually went through - our own record just hasn't
+        // caught up yet (webhook lag). Don't create a second charge; the
+        // webhook/reconciliation will resolve the rest shortly.
+        throw new Error("This payment already went through - refresh in a moment.");
+      }
+      if (existingPI.status && existingPI.status !== "canceled") {
+        // Still genuinely incomplete (e.g. requires_payment_method) - reuse
+        // the same PaymentIntent instead of creating a duplicate one.
+        return new Response(JSON.stringify({
+          clientSecret: existingPI.client_secret,
+          paymentIntentId: existingPI.id,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      // Otherwise (canceled, or Stripe couldn't be reached) fall through and
+      // create a fresh one below.
+    }
 
     // is_enterprise was previously trusted straight from the request body -
     // any brand could pass is_enterprise: true and pay 0% fees regardless of
@@ -143,6 +191,7 @@ serve(async (req) => {
       platform_fee: brandFee + creatorCut,
       status: "pending",
       stripe_payment_intent_id: paymentIntent.id,
+      payout_release_mode: payoutReleaseMode,
       billing_name: billing_name || null,
       billing_address_line1: billing?.line1 || null,
       billing_address_line2: billing?.line2 || null,
@@ -152,7 +201,22 @@ serve(async (req) => {
       billing_country: billing?.country || null,
     });
 
-    if (insertError) console.error("Failed to insert transaction:", insertError);
+    if (insertError) {
+      // The client is never given a clientSecret to confirm at this point,
+      // so no real charge can happen from here - safe to cancel the
+      // now-orphaned PaymentIntent rather than leave a charge that could
+      // never be recorded, released, or reconciled by anything.
+      console.error("Failed to insert transaction, canceling orphaned PaymentIntent:", insertError);
+      try {
+        await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntent.id}/cancel`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}` },
+        });
+      } catch (cancelErr) {
+        console.error("Failed to cancel orphaned PaymentIntent:", cancelErr);
+      }
+      throw new Error("Failed to record payment. Please try again.");
+    }
 
     return new Response(JSON.stringify({
       clientSecret: paymentIntent.client_secret,

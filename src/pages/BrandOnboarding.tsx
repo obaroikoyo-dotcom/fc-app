@@ -87,6 +87,44 @@ const [showOtp, setShowOtp] = useState(false);
 
   const logoRef = useRef<HTMLInputElement>(null);
 
+  // Restored unconditionally, regardless of auth state - a plain refresh
+  // during the early, pre-signup screens has no Supabase session yet, so
+  // gating this behind a logged-in user (as before) meant it only ever
+  // resumed after an OAuth redirect and silently did nothing on a normal
+  // refresh, which looked like an inconsistent/broken feature.
+  useEffect(() => {
+    const draft = peekOnboardingDraft("brand");
+    logEvent(`BrandOnboarding mount: draftFound=${!!draft}`);
+    if (draft) {
+      if (typeof draft.companyName === "string") setCompanyName(draft.companyName);
+      if (Array.isArray(draft.selectedIndustries)) setSelectedIndustries(draft.selectedIndustries as string[]);
+      if (typeof draft.location === "string") setLocation(draft.location);
+      if (typeof draft.website === "string") setWebsite(draft.website);
+      if (typeof draft.bio === "string") setBio(draft.bio);
+      if (typeof draft.targetAudience === "string") setTargetAudience(draft.targetAudience);
+      if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
+      if (typeof draft.targetTier === "string") setTargetTier(draft.targetTier);
+      if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
+      setScreen(typeof draft.screen === "number" ? draft.screen : 5);
+    }
+  }, []);
+
+  // Autosaves on every step change, on top of the existing pre-redirect
+  // saves below (still needed for same-screen redirects, like connecting a
+  // social account, where screen doesn't change). Skips the very first run
+  // (mount) so it doesn't fire before the restore effect's setState calls
+  // above have landed and overwrite a just-restored draft with blank
+  // defaults.
+  const skippedFirstAutosave = useRef(false);
+  useEffect(() => {
+    if (!skippedFirstAutosave.current) { skippedFirstAutosave.current = true; return; }
+    saveOnboardingDraft("brand", {
+      companyName, selectedIndustries, location, website, bio, targetAudience,
+      contentTypes, targetTier, termsAccepted, screen,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       logEvent(`BrandOnboarding mount: hasUser=${!!user} emailConfirmed=${!!user?.email_confirmed_at} provider=${user?.app_metadata?.provider ?? "n/a"}`);
@@ -98,25 +136,6 @@ const [showOtp, setShowOtp] = useState(false);
       }
 
       if (user.email_confirmed_at) {
-        // Resuming after a redirect (Google sign-in, or connecting TikTok
-        // from the new screen) tore down component state - restore whatever
-        // was filled in and jump back to where they left off instead of
-        // starting over.
-        const draft = peekOnboardingDraft("brand");
-        logEvent(`BrandOnboarding mount: draftFound=${!!draft}`);
-        if (draft) {
-          if (typeof draft.companyName === "string") setCompanyName(draft.companyName);
-          if (Array.isArray(draft.selectedIndustries)) setSelectedIndustries(draft.selectedIndustries as string[]);
-          if (typeof draft.location === "string") setLocation(draft.location);
-          if (typeof draft.website === "string") setWebsite(draft.website);
-          if (typeof draft.bio === "string") setBio(draft.bio);
-          if (typeof draft.targetAudience === "string") setTargetAudience(draft.targetAudience);
-          if (Array.isArray(draft.contentTypes)) setContentTypes(draft.contentTypes as string[]);
-          if (typeof draft.targetTier === "string") setTargetTier(draft.targetTier);
-          if (typeof draft.termsAccepted === "boolean") setTermsAccepted(draft.termsAccepted);
-          setScreen(typeof draft.screen === "number" ? draft.screen : 5);
-        }
-
         getSocialConnections(user.id).then(setSocialConnections);
       }
 
