@@ -137,6 +137,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const [cardName, setCardName] = useState("");
   const [billingLine1, setBillingLine1] = useState("");
   const [billingLine2, setBillingLine2] = useState("");
+  const [showLine2, setShowLine2] = useState(false);
   const [billingCity, setBillingCity] = useState("");
   const [billingState, setBillingState] = useState("");
   const [billingPostalCode, setBillingPostalCode] = useState("");
@@ -288,30 +289,30 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   };
 
   return (
-    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "85vh", overflowY: "auto", padding: "1.5rem" }}>
-      <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "8px" }}>Confirm Deal & Pay</h3>
-      <p style={{ color: "#999", fontSize: "13px", marginBottom: "1.5rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
+    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "90vh", overflowY: "auto", padding: "1.25rem" }}>
+      <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
+      <p style={{ color: "#999", fontSize: "12px", marginBottom: "1rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
 
-      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "0.85rem", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
           <span style={{ color: "#999", fontSize: "13px" }}>Creator Payout {isEnterprise ? "(100%)" : "(90%)"}</span>
           <span style={{ color: "#fff", fontSize: "13px" }}>£{(creatorPayoutDisplay / 100).toFixed(2)}</span>
         </div>
         {!isEnterprise && (
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
             <span style={{ color: "#999", fontSize: "13px" }}>Platform Fee (5%)</span>
             <span style={{ color: "#fff", fontSize: "13px" }}>£{(brandFee / 100).toFixed(2)}</span>
           </div>
         )}
-        <div style={{ borderTop: "1px solid #222", paddingTop: "8px", display: "flex", justifyContent: "space-between" }}>
+        <div style={{ borderTop: "1px solid #222", paddingTop: "6px", display: "flex", justifyContent: "space-between" }}>
           <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>Total</span>
           <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>£{(totalCharge / 100).toFixed(2)}</span>
         </div>
       </div>
 
       {savedCard && (
-        <div style={{ marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div onClick={() => setUseNewCard(false)} style={{ display: "flex", alignItems: "center", gap: "12px", background: !useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${!useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "12px 14px", cursor: "pointer" }}>
+        <div style={{ marginBottom: "0.75rem", display: "flex", flexDirection: "column", gap: "6px" }}>
+          <div onClick={() => setUseNewCard(false)} style={{ display: "flex", alignItems: "center", gap: "10px", background: !useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${!useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "9px 14px", cursor: "pointer" }}>
             <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${!useNewCard ? "#fff" : "#444"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {!useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />}
             </div>
@@ -320,7 +321,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
               <p style={{ color: "#888", fontSize: "11px", marginTop: "2px" }}>Saved card</p>
             </div>
           </div>
-          <div onClick={() => setUseNewCard(true)} style={{ display: "flex", alignItems: "center", gap: "12px", background: useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "12px 14px", cursor: "pointer" }}>
+          <div onClick={() => setUseNewCard(true)} style={{ display: "flex", alignItems: "center", gap: "10px", background: useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "9px 14px", cursor: "pointer" }}>
             <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${useNewCard ? "#fff" : "#444"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />}
             </div>
@@ -330,29 +331,33 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       )}
 
       {useNewCard && (
-        <div style={{ marginBottom: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ marginBottom: "0.85rem", display: "flex", flexDirection: "column", gap: "8px" }}>
           <div>
-            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Cardholder Name</label>
-            <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Cardholder Name</label>
+            <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
           </div>
           <div>
-            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Card Details</label>
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "13px 14px" }}>
+            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Card Details</label>
+            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 13px" }}>
               <CardElement options={CARD_ELEMENT_OPTIONS} />
             </div>
           </div>
           <div>
-            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Billing Address</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <input value={billingLine1} onChange={e => setBillingLine1(e.target.value)} placeholder="Address line 1" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-              <input value={billingLine2} onChange={e => setBillingLine2(e.target.value)} placeholder="Address line 2 (optional)" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="City" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="County/State" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Billing Address</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <input value={billingLine1} onChange={e => setBillingLine1(e.target.value)} placeholder="Address line 1" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              {showLine2 ? (
+                <input value={billingLine2} onChange={e => setBillingLine2(e.target.value)} placeholder="Address line 2 (optional)" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+              ) : (
+                <span onClick={() => setShowLine2(true)} style={{ fontSize: "11px", color: "#888", cursor: "pointer", padding: "2px 0" }}>+ Add address line 2</span>
+              )}
+              <div style={{ display: "flex", gap: "6px" }}>
+                <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="City" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="County/State" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
               </div>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="Postal code" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
+              <div style={{ display: "flex", gap: "6px" }}>
+                <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="Postal code" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
                   {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
               </div>
@@ -361,26 +366,26 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       )}
 
-      <div onClick={() => setRequireTikTokPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireTikTokPost ? "rgba(52,199,89,0.06)" : "#111", border: `1px solid ${requireTikTokPost ? "rgba(52,199,89,0.35)" : "#1a1a1a"}`, borderRadius: "8px", padding: "12px 14px", marginBottom: "1rem", cursor: "pointer" }}>
+      <div onClick={() => setRequireTikTokPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireTikTokPost ? "rgba(52,199,89,0.06)" : "#111", border: `1px solid ${requireTikTokPost ? "rgba(52,199,89,0.35)" : "#1a1a1a"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
         <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireTikTokPost ? "#34c759" : "#333"}`, background: requireTikTokPost ? "#34c759" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireTikTokPost ? "✓" : ""}</div>
         <div>
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
             Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
             <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(52,199,89,0.15)", color: "#34c759", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
           </p>
-          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.5 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and use "Release Payment Manually" once you have the file — funds release the same way.</p>
+          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and use "Release Payment Manually" once you have the file — funds release the same way.</p>
         </div>
       </div>
 
       {payoutsEnabled === false && (
-        <p style={{ fontSize: "11px", color: "#ff9500", marginBottom: "10px", lineHeight: 1.5 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
+        <p style={{ fontSize: "11px", color: "#ff9500", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
       )}
 
-      {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "10px" }}>{error}</p>}
+      {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: "10px" }}>
-        <div onClick={!processing ? onClose : undefined} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: processing ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const }}>Cancel</div>
-        <div onClick={!processing ? handlePay : undefined} style={{ flex: 2, padding: "14px", borderRadius: "8px", background: processing ? "#1a1a1a" : "#fff", color: processing ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const, transition: "all 0.2s" }}>
+        <div onClick={!processing ? onClose : undefined} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: processing ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const }}>Cancel</div>
+        <div onClick={!processing ? handlePay : undefined} style={{ flex: 2, padding: "12px", borderRadius: "8px", background: processing ? "#1a1a1a" : "#fff", color: processing ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const, transition: "all 0.2s" }}>
           {processing ? "Processing..." : `Pay £${(totalCharge / 100).toFixed(2)}`}
         </div>
       </div>
@@ -2057,7 +2062,7 @@ return (
       )}
 
       {showPayment && paymentApp && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1rem", overflowY: "auto" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1rem" }}>
           <div style={{ margin: "auto 0" }}>
           <Elements stripe={stripePromise}>
             <PaymentModalContent
