@@ -115,6 +115,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [appliedCampaigns, setAppliedCampaigns] = useState<any[]>([]);
   const [appFilter, setAppFilter] = useState<"all" | "pending" | "accepted" | "rejected">("all");
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     isPushEnabled().then(setNotificationsEnabled);
@@ -868,19 +870,39 @@ setTimeout(() => setSaved(false), 2000);
           <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Sign Out
           </div>
-          <div onClick={async () => {
-            const confirmed = window.confirm("Are you sure you want to delete your account? This cannot be undone.");
-            if (!confirmed) return;
-            if (userId) {
-              await supabase.from("profiles").delete().eq("id", userId);
-              await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
-            }
-            await forceSignOut();
-          }} style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <div onClick={() => setShowDeleteConfirm(true)} style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Delete Account
           </div>
         </div>
       </div>
+
+      {showDeleteConfirm && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div style={{ background: "#0a0a0a", border: "1px solid rgba(255,68,68,0.3)", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem", boxSizing: "border-box" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "rgba(255,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem", fontSize: "20px" }}>⚠️</div>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "8px" }}>Delete your account?</h3>
+            <p style={{ color: "#999", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+              This is <span style={{ color: "#ff4444", fontWeight: 600 }}>permanent and cannot be undone</span>. Your profile, campaign history, messages, and any pending balances will be gone for good — there's no way to recover them afterwards.
+            </p>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <div onClick={() => !deletingAccount && setShowDeleteConfirm(false)} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: deletingAccount ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", textTransform: "uppercase" }}>
+                Cancel
+              </div>
+              <div onClick={async () => {
+                if (deletingAccount) return;
+                setDeletingAccount(true);
+                if (userId) {
+                  await supabase.from("profiles").delete().eq("id", userId);
+                  await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+                }
+                await forceSignOut();
+              }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: deletingAccount ? "#3a1414" : "#ff4444", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", textTransform: "uppercase" }}>
+                {deletingAccount ? "Deleting..." : "Delete"}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
