@@ -1150,7 +1150,18 @@ setTimeout(() => setSaved(false), 2000);
       </div>
     ) : connectInstance ? (
       <ConnectComponentsProvider connectInstance={connectInstance}>
-        <ConnectAccountOnboarding onExit={handleOnboardingExit} onLoadError={() => setConnectError("Couldn't load payout setup.")} />
+        <ConnectAccountOnboarding
+          onExit={handleOnboardingExit}
+          onLoadError={() => setConnectError("Couldn't load payout setup.")}
+          collectionOptions={{
+            fields: "currently_due",
+            // These are already silently filled in server-side (business_type:
+            // individual, business_profile.url: flipcollab.com) - excluding them
+            // stops the component from ever showing or letting creators edit
+            // them, instead of just relying on the prefilled value sticking.
+            requirements: { exclude: ["business_profile.url", "business_profile.product_description"] },
+          }}
+        />
       </ConnectComponentsProvider>
     ) : (
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
