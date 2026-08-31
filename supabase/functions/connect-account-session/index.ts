@@ -69,6 +69,7 @@ serve(async (req) => {
         country: country.toUpperCase(),
         email: caller.email ?? "",
         "capabilities[transfers][requested]": "true",
+        "capabilities[card_payments][requested]": "true",
         "controller[stripe_dashboard][type]": "none",
         "controller[fees][payer]": "application",
         "controller[losses][payments]": "stripe",
