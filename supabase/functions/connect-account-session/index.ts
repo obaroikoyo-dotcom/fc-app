@@ -70,17 +70,20 @@ serve(async (req) => {
         email: caller.email ?? "",
         // Every creator is a person getting paid personally, never a
         // registered company - pre-filling this skips Stripe's "what type
-        // of business is this" question and the onboarding form collects
-        // personal details (name, DOB, address, bank account) instead of
-        // business ones.
+        // of business is this" question. Requesting only `transfers` (no
+        // `card_payments`) keeps onboarding down to personal details, bank
+        // account, and ToS - card_payments pulls in merchant-facing fields
+        // (statement descriptor, support phone, product description) that
+        // make it feel like opening a business, which this must never do.
+        // `stripe_dashboard.type: express` (rather than `none`) is what
+        // lets Stripe accept transfers-only with the platform bearing
+        // losses - creators never see or use the Express Dashboard itself,
+        // since we only ever render the embedded components inline.
         business_type: "individual",
-        "business_profile[mcc]": "7311",
-        "business_profile[product_description]": "Social media content creation and brand collaborations",
         "capabilities[transfers][requested]": "true",
-        "capabilities[card_payments][requested]": "true",
-        "controller[stripe_dashboard][type]": "none",
+        "controller[stripe_dashboard][type]": "express",
         "controller[fees][payer]": "application",
-        "controller[losses][payments]": "stripe",
+        "controller[losses][payments]": "application",
         "controller[requirement_collection]": "stripe",
       }));
       if (!stripeAccount.id) {
