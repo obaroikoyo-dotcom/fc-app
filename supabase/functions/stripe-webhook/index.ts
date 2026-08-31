@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@14?target=deno";
 import { checkRateLimit, clientIdentifier } from "../_shared/rateLimit.ts";
+import { releasePayoutForApplication } from "../_shared/releasePayout.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2023-10-16",
@@ -95,6 +96,62 @@ serve(async (req) => {
       .from("brand_profiles")
       .update({ is_enterprise: false, subscription_cancel_at_period_end: false })
       .eq("stripe_subscription_id", subscription.id);
+  }
+
+  // A creator's payout release can fail with "not_connected" if their
+  // Stripe payout setup wasn't finished yet at the moment a post got
+  // confirmed live or an instant payment landed - nothing previously
+  // retried that once they actually finished setup, leaving them stuck
+  // showing "payout pending" until the brand happened to click manual
+  // release again. This picks it back up automatically.
+  if (event.type === "account.updated") {
+    const account = event.data.object as Stripe.Account;
+    if (account.payouts_enabled) {
+      const { data: creatorAccount } = await supabase
+        .from("creator_stripe_accounts")
+        .update({
+          payouts_enabled: true,
+          charges_enabled: !!account.charges_enabled,
+          details_submitted: !!account.details_submitted,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("stripe_account_id", account.id)
+        .select("user_id")
+        .maybeSingle();
+
+      if (creatorAccount) {
+        const { data: pendingApps } = await supabase
+          .from("applications")
+          .select("id, payout_release_mode")
+          .eq("creator_id", creatorAccount.user_id)
+          .eq("status", "funded")
+          .not("payout_release_mode", "is", null);
+
+        for (const app of pendingApps || []) {
+          // Instant-mode deals are always eligible once funded. TikTok-gated
+          // ones must already have a confirmed live post - payouts becoming
+          // enabled is never itself a reason to skip that check.
+          let eligible = app.payout_release_mode === "instant";
+          if (!eligible && app.payout_release_mode === "tiktok_gated") {
+            const { data: post } = await supabase
+              .from("campaign_posts")
+              .select("id")
+              .eq("application_id", app.id)
+              .eq("posted_by_role", "creator")
+              .eq("status", "published")
+              .maybeSingle();
+            eligible = !!post;
+          }
+          if (eligible) {
+            try {
+              await releasePayoutForApplication(supabase, app.id);
+            } catch (err) {
+              console.error("Auto-retry release failed for application", app.id, err);
+            }
+          }
+        }
+      }
+    }
   }
 
   return new Response(JSON.stringify({ received: true }), { status: 200 });
