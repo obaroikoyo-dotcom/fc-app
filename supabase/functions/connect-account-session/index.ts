@@ -68,6 +68,14 @@ serve(async (req) => {
       const stripeAccount = await stripeFetch("accounts", new URLSearchParams({
         country: country.toUpperCase(),
         email: caller.email ?? "",
+        // Every creator is a person getting paid personally, never a
+        // registered company - pre-filling this skips Stripe's "what type
+        // of business is this" question and the onboarding form collects
+        // personal details (name, DOB, address, bank account) instead of
+        // business ones.
+        business_type: "individual",
+        "business_profile[mcc]": "7311",
+        "business_profile[product_description]": "Social media content creation and brand collaborations",
         "capabilities[transfers][requested]": "true",
         "capabilities[card_payments][requested]": "true",
         "controller[stripe_dashboard][type]": "none",
