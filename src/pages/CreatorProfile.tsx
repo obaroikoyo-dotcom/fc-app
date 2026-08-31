@@ -259,6 +259,10 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
           const { client_secret } = await getConnectAccountSession(alreadyConnected ? undefined : connectCountry);
           return client_secret;
         },
+        // These components render inside an iframe, which can't see fonts
+        // loaded on our own page - without this, `fontFamily` below silently
+        // falls back to a generic system font instead of actually using DM Sans.
+        fonts: [{ cssSrc: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" }],
         appearance: {
           variables: {
             colorPrimary: "#ffffff",
