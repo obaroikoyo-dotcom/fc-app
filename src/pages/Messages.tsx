@@ -289,7 +289,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   };
 
   return (
-    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "90vh", overflowY: "auto", padding: "1.25rem" }}>
+    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "90vh", overflowY: "auto", padding: "1.25rem", boxSizing: "border-box" }}>
       <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
       <p style={{ color: "#999", fontSize: "12px", marginBottom: "1rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
 
@@ -2063,7 +2063,7 @@ return (
 
       {showPayment && paymentApp && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1rem" }}>
-          <div style={{ margin: "auto 0" }}>
+          <div style={{ margin: "auto 0", width: "100%", maxWidth: "480px" }}>
           <Elements stripe={stripePromise}>
             <PaymentModalContent
               paymentApp={paymentApp}
