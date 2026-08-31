@@ -264,9 +264,14 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             colorPrimary: "#ffffff",
             colorBackground: "#111111",
             colorText: "#ffffff",
+            colorSecondaryText: "#999999",
             colorBorder: "#1a1a1a",
+            colorDanger: "#ff3b30",
             buttonPrimaryColorBackground: "#ffffff",
             buttonPrimaryColorText: "#0a0a0a",
+            fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+            borderRadius: "8px",
+            spacingUnit: "4px",
           },
         },
       });
@@ -1149,7 +1154,7 @@ setTimeout(() => setSaved(false), 2000);
       </ConnectComponentsProvider>
     ) : (
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Set up payouts to receive funds directly to your bank account. Your details are verified securely - FlipCollab never sees or stores them.</p>
+        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Set up payouts to receive funds directly to your bank account. Just your name, date of birth, address, and bank details - takes about a minute. Verified securely by Stripe; FlipCollab never sees or stores them.</p>
         {!connectStatus?.connected && (
           <div>
             <label style={labelStyle}>Country</label>
