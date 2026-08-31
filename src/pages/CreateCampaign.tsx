@@ -36,6 +36,8 @@ interface AssetFile {
 const DELIVERABLES = [
   "TikTok Video", "IG Reel", "IG Story", "YouTube Short",
   "Static Post", "Podcast Mention", "Blog Post", "X / Twitter Post",
+  "YouTube Video", "IG Carousel", "TikTok LIVE", "UGC Content Package",
+  "Pinterest Pin", "LinkedIn Post",
 ];
 
 const OBJECTIVES = [
