@@ -554,11 +554,12 @@ export default function App() {
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": 
         return (
-          <CreatorProfile 
-            navigate={navigate} 
+          <CreatorProfile
+            navigate={navigate}
             navigateToProfile={navigateToProfile}
             toggleTheme={toggleTheme}
             isInverted={isInverted}
+            onRead={fetchGlobalUnreadCount}
           />
         );
       case "brand-profile":

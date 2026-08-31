@@ -22,6 +22,7 @@ interface Props {
   navigateToProfile: (id: string) => void;
   toggleTheme: () => void;
   isInverted: boolean;
+  onRead?: () => void;
 }
 
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
@@ -52,7 +53,7 @@ type SettingsSection =
   | "debug-log"
   | "reports-blocked";
 
-export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted }: Props) {
+export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted, onRead }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
   const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
 
@@ -118,6 +119,26 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   useEffect(() => {
     isPushEnabled().then(setNotificationsEnabled);
   }, []);
+
+  // Viewing the Balance tab is the actual moment a creator sees their
+  // payment reflected - mark payment_received notifications read here
+  // instead of whenever Messages happens to load, which cleared the red
+  // dot before anyone had actually seen the payment.
+  useEffect(() => {
+    if (walletTab !== "balance") return;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", user.id)
+        .eq("type", "payment_received")
+        .eq("read", false)
+        .select("id");
+      if (data && data.length > 0 && onRead) onRead();
+    })();
+  }, [walletTab]);
   const [notifError, setNotifError] = useState("");
   const [profileVisible, setProfileVisible] = useState(true);
   const [rateVisible, setRateVisible] = useState(true);

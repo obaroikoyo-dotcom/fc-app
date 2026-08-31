@@ -694,21 +694,17 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
         console.error("Failed to load blocked users:", err);
       }
       await loadConversations();
-      // Only clear the notification types actually surfaced by this tab for
-      // each role - a blanket "mark everything read" here previously wiped
-      // out notifications the user hadn't actually seen yet (e.g. a payment
-      // popup queued for later), which is why the badge could clear too early.
+      // Don't blanket-mark new_message/campaign_chatting/campaign_application
+      // read just because the Messages *list* loaded - that fired before the
+      // user had actually opened the specific conversation or campaign the
+      // notification was about, so the red dot could vanish before anyone
+      // saw it. Each of those types already has its own precise read-marking
+      // right where it's actually seen: markConvoRead below (opening a
+      // specific conversation), and the campaign-click handler further down
+      // (opening a specific campaign's applicants). payment_received is
+      // handled separately, when the creator views their Balance tab.
       if (role === "brand") {
         loadApplications();
-        await supabase.from("notifications").update({ read: true })
-          .eq("user_id", user.id).eq("read", false)
-          .in("type", ["new_message", "campaign_application"]);
-        if (onRead) onRead();
-      } else {
-        await supabase.from("notifications").update({ read: true })
-          .eq("user_id", user.id).eq("read", false)
-          .in("type", ["new_message", "campaign_chatting", "payment_received"]);
-        if (onRead) onRead();
       }
       await fetchUnreadMessages(user.id);
 
