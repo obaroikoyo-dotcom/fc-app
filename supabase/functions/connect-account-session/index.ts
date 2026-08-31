@@ -80,6 +80,10 @@ serve(async (req) => {
         // losses - creators never see or use the Express Dashboard itself,
         // since we only ever render the embedded components inline.
         business_type: "individual",
+        // Stripe still asks for a "business website" even for individual,
+        // transfers-only accounts - prefilling it removes that question
+        // from the form entirely instead of making the creator answer it.
+        "business_profile[url]": "https://www.flipcollab.com",
         "capabilities[transfers][requested]": "true",
         "controller[stripe_dashboard][type]": "express",
         "controller[fees][payer]": "application",
