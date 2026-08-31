@@ -15,7 +15,7 @@ import { getConnectAccountSession, getConnectStatus, type ConnectStatus } from "
 import { STRIPE_PUBLIC_KEY } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import { loadConnectAndInitialize, type StripeConnectInstance } from "@stripe/connect-js";
-import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectPayouts } from "@stripe/react-connect-js";
+import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectAccountManagement } from "@stripe/react-connect-js";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -1134,17 +1134,18 @@ setTimeout(() => setSaved(false), 2000);
   <div style={{ padding: "1.5rem" }}>
     {connectStatus?.payouts_enabled ? (
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#34c759" }} />
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>Payouts active</p>
         </div>
+        <p style={{ fontSize: "11px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>Your balance and payout history are on the Balance and History tabs above.</p>
         {connectInstance ? (
           <ConnectComponentsProvider connectInstance={connectInstance}>
-            <ConnectPayouts onLoadError={() => setConnectError("Couldn't load payout details.")} />
+            <ConnectAccountManagement onLoadError={() => setConnectError("Couldn't load account details.")} />
           </ConnectComponentsProvider>
         ) : (
           <span onClick={() => !connectingPayouts && handleConnectPayouts()} style={{ fontSize: "11px", padding: "8px 16px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPayouts ? "default" : "pointer" }}>
-            {connectingPayouts ? "Loading..." : "Manage payout details"}
+            {connectingPayouts ? "Loading..." : "Update bank details"}
           </span>
         )}
       </div>
