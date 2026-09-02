@@ -604,25 +604,25 @@ const startDM = async () => {
                 <label style={labelStyle}>Track Record</label>
                 <div style={{ display: "flex", gap: "10px", marginBottom: "1.25rem" }}>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
                   </div>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                     {trackRecord.avgRating != null ? (
                       <>
                         <StarRating rating={trackRecord.avgRating} size={13} />
-                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                       </>
                     ) : (
                       <>
-                        <p style={{ color: "#999", fontSize: "13px" }}>—</p>
-                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                        <p style={{ color: "#999", fontSize: "13px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>—</p>
+                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
                       </>
                     )}
                   </div>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
+                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Avg. turnaround</p>
                   </div>
                 </div>
 

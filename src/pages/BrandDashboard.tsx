@@ -227,22 +227,22 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             {feedTab === "yours" && trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0) && (
               <div style={{ display: "flex", gap: "10px" }}>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px" }}>Completed</p>
+                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
+                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   {trackRecord.avgRating != null ? (
                     <>
                       <StarRating rating={trackRecord.avgRating} size={12} />
-                      <p style={{ color: "#999", fontSize: "10px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                      <p style={{ color: "#999", fontSize: "10px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                     </>
                   ) : (
-                    <p style={{ color: "#999", fontSize: "10px" }}>No ratings yet</p>
+                    <p style={{ color: "#999", fontSize: "10px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
                   )}
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700 }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
-                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px" }}>Avg. reply time</p>
+                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
+                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Avg. reply time</p>
                 </div>
               </div>
             )}
