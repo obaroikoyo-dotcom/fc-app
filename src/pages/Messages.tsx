@@ -943,6 +943,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
       .from("campaigns")
       .select("id, name")
       .eq("brand_id", user.id)
+      .eq("is_draft", false)
       .order("created_at", { ascending: false });
 
     if (!campaignData) return;

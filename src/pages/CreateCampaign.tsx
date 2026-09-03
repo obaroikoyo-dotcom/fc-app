@@ -243,15 +243,43 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       if (Object.keys(assetUpdates).length > 0) {
         await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id).eq("brand_id", user.id);
       }
-      // Successfully saved to the real campaign row - the draft state has
-      // served its purpose, clear it so the next "Post a Campaign" doesn't
-      // open pre-filled with this one's now-stale data.
+      // Successfully saved to the real campaign row - the stored draft has
+      // served its purpose, safe to drop immediately.
       ["name", "objective", "objectiveOther", "budget", "type", "deadline", "niche", "deliverables", "videoRequired", "vibe", "dos", "donts", "promoCode", "landingLink", "utmCode"]
         .forEach(k => sessionStorage.removeItem(`fc_create_campaign_${k}`));
       ["logos", "overlays", "styleVideos", "broll"].forEach(k => clearMemoryPersistedState(`fc_create_campaign_${k}`));
 
       setPosted(true);
-      setTimeout(() => { setPosted(false); onPosted(); }, 1500);
+      setTimeout(() => {
+        setPosted(false);
+        // This component stays mounted (just hidden) across tab switches
+        // rather than unmounting, so clearing storage above isn't enough -
+        // the in-memory state itself has to be reset too, or the next
+        // "Post a Campaign" would keep showing this one's stale values
+        // instead of a blank form. Deferred to here (rather than right
+        // after saving) so the fields don't visibly blank out underneath
+        // the "Posted ✓" confirmation before the tab switches away.
+        setName("");
+        setObjective("");
+        setObjectiveOther("");
+        setBudget("");
+        setCampaignType("paid");
+        setDeadline("");
+        setNiche("");
+        setDeliverables([]);
+        setVideoRequired(false);
+        setVibe("");
+        setDos([""]);
+        setDonts([""]);
+        setPromoCode("");
+        setLandingLink("");
+        setUtmCode("");
+        setLogos([]);
+        setOverlays([]);
+        setStyleVideos([]);
+        setBroll([]);
+        onPosted();
+      }, 1500);
     } catch (e) {
       console.error(e);
       setError("Something went wrong. Please try again.");
