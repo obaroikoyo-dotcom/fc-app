@@ -1213,9 +1213,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       const now = new Date().toISOString();
       const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl, media_type: "video" }).select().single();
       if (inserted) appendMessage(inserted);
-      await supabase.from("conversations").update({ last_message: "📹 Video", last_message_at: now }).eq("id", activeConvo.id);
+      await supabase.from("conversations").update({ last_message: "Video", last_message_at: now }).eq("id", activeConvo.id);
       setConversations(prev => {
-        const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "📹 Video", last_message_at: now } : c);
+        const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "Video", last_message_at: now } : c);
         return updated.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
       });
 
@@ -1244,9 +1244,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       const now = new Date().toISOString();
       const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", image_url: imageUrl, media_type: "image" }).select().single();
       if (inserted) appendMessage(inserted);
-      await supabase.from("conversations").update({ last_message: "📷 Photo", last_message_at: now }).eq("id", activeConvo.id);
+      await supabase.from("conversations").update({ last_message: "Photo", last_message_at: now }).eq("id", activeConvo.id);
       setConversations(prev => {
-        const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "📷 Photo", last_message_at: now } : c);
+        const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "Photo", last_message_at: now } : c);
         return updated.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
       });
 
@@ -2206,26 +2206,39 @@ return (
       {actionSheetFor && (
         <div onClick={() => setActionSheetFor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: "1px solid #222", borderTop: "1px solid #222", borderRadius: "16px 16px 0 0", width: "100%", maxWidth: "480px", padding: "0.5rem", paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom, 0px))" }}>
-            <div
-              onClick={() => { reactToMessage(actionSheetFor.id, "❤️"); setActionSheetFor(null); }}
-              style={{ padding: "14px 16px", fontSize: "14px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "12px" }}
-            >
-              ❤️ React
+            <div style={{ display: "flex", justifyContent: "space-around", padding: "10px 8px 14px", borderBottom: "1px solid #1a1a1a", marginBottom: "4px" }}>
+              {REACTION_EMOJI.map(emoji => (
+                <span
+                  key={emoji}
+                  onClick={() => { reactToMessage(actionSheetFor.id, emoji); setActionSheetFor(null); }}
+                  style={{ fontSize: "24px", cursor: "pointer", lineHeight: 1, padding: "4px" }}
+                >
+                  {emoji}
+                </span>
+              ))}
             </div>
             {actionSheetFor.sender_id === currentUserId && !actionSheetFor.read_at && !actionSheetFor.video_url && !actionSheetFor.image_url && actionSheetFor.text && (
               <div
                 onClick={() => startEditMessage(actionSheetFor)}
-                style={{ padding: "14px 16px", fontSize: "14px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "12px", borderTop: "1px solid #1a1a1a" }}
+                style={{ padding: "14px 16px", fontSize: "14px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "14px" }}
               >
-                ✏️ Edit
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                  <path d="M12 20h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Edit
               </div>
             )}
             {actionSheetFor.sender_id === currentUserId && (
               <div
                 onClick={() => deleteMessage(actionSheetFor.id)}
-                style={{ padding: "14px 16px", fontSize: "14px", color: "#ff4d4d", cursor: "pointer", display: "flex", alignItems: "center", gap: "12px", borderTop: "1px solid #1a1a1a" }}
+                style={{ padding: "14px 16px", fontSize: "14px", color: "#ff4d4d", cursor: "pointer", display: "flex", alignItems: "center", gap: "14px", borderTop: "1px solid #1a1a1a" }}
               >
-                🗑️ Delete for everyone
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                  <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Delete for everyone
               </div>
             )}
             <div
