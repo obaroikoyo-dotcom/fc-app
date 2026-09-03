@@ -346,7 +346,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         )}
                         {isOwn && feedTab === "yours" && (c as any).is_draft && (
                           <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px", color: "#999", fontWeight: 500, letterSpacing: "0.04em" }}>
-                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ff9500", flexShrink: 0 }} />
+                            <span className="true-color" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ff9500", flexShrink: 0 }} />
                             Draft
                           </span>
                         )}
@@ -367,6 +367,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                               </span>
                             )}
                             <span
+                              className="true-color"
                               onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
                               title="Delete"
                               style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "26px", height: "26px", color: "#ff4d4d", cursor: "pointer" }}
