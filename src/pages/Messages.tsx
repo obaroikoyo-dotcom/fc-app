@@ -13,6 +13,7 @@ import { COUNTRIES } from "../lib/countries";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePayout, type CampaignPost } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
+import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
@@ -1888,7 +1889,7 @@ return (
                         )}
                       </div>
                       <span style={{ fontSize: "11px", color: isUnread ? "#fff" : "#444", fontWeight: isUnread ? 600 : 400 }}>
-                        {new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}
+                        {parseUtc(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
                     <p style={{ fontSize: "12px", color: (iBlocked || theyBlocked) ? "#ff4d4d" : isUnread ? "#eee" : "#444", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -2081,7 +2082,7 @@ return (
                       {!m.deleted_at && editingMessageId !== m.id && (
                         <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
                           {m.edited_at && <span style={{ fontStyle: "italic", marginRight: "4px" }}>edited</span>}
-                          {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          {parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>
                       )}
                       {uniqueEmoji.length > 0 && (
