@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
-import { deletePrefix } from "../_shared/r2Client.ts";
+import { wipeAllUserMedia } from "../_shared/r2Client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,17 +47,7 @@ serve(async (req) => {
     // eating quota. Best-effort cleanup before the account itself goes;
     // failures here shouldn't block the actual account deletion.
     try {
-      const { data: ownedCampaigns } = await supabaseAdmin
-        .from("campaigns")
-        .select("id")
-        .eq("brand_id", user_id);
-
-      for (const campaign of ownedCampaigns ?? []) {
-        await deletePrefix(`campaign-assets/${user_id}/${campaign.id}/`);
-      }
-
-      await deletePrefix(`creators/${user_id}.`);
-      await deletePrefix(`brands/${user_id}.`);
+      await wipeAllUserMedia(supabaseAdmin, user_id);
     } catch (storageErr) {
       console.error("Storage cleanup failed (continuing with account deletion):", storageErr);
     }

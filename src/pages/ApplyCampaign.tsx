@@ -8,6 +8,7 @@ import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { censorProfanity } from "../lib/profanity";
 import { uploadToR2 } from "../lib/r2Upload";
+import { validateVideoFile } from "../lib/videoDuration";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -99,11 +100,12 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const togglePlatform = (p: string) =>
     setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
 
-  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 300 * 1024 * 1024) {
-      setFormError("Video must be under 300MB.");
+    const validationError = await validateVideoFile(file);
+    if (validationError) {
+      setFormError(validationError);
       setVideoFile(null);
       return;
     }

@@ -75,3 +75,13 @@ entrypoint = "./functions/cancel-subscription/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/r2-presigned-url/index.ts"
+
+[functions.r2-delete-assets]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/r2-delete-assets/index.ts"
+
+[functions.r2-scheduled-cleanup]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/r2-scheduled-cleanup/index.ts"

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { wipeAllUserMedia } from "../_shared/r2Client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,6 +58,14 @@ serve(async (req) => {
     const { error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
       ban_duration: action === "ban" ? PERMANENT_BAN_DURATION : "none",
     });
+
+    if (!error && action === "ban") {
+      try {
+        await wipeAllUserMedia(supabaseAdmin, user_id);
+      } catch (storageErr) {
+        console.error("Storage cleanup failed for banned user (ban itself still applied):", storageErr);
+      }
+    }
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {

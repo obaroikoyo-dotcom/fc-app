@@ -1096,7 +1096,7 @@ const renderPrivacyPolicy = () => (
         { t: "3. How We Use Your Data", b: "To run your account, match brands with creators, process payments, send transactional emails, resolve disputes, and comply with legal obligations." },
         { t: "4. Legal Basis", b: "Contract performance, legitimate interests (security, fraud prevention), and legal obligation." },
         { t: "5. Third-Party Services", b: "Supabase (database/auth, EU), Stripe (payments, PCI-DSS), Vercel (hosting). We do not sell your data." },
-        { t: "6. Data Retention", b: "Retained while your account is active. Deleted within 30 days of account deletion, except payment records kept 6 years under UK law." },
+        { t: "6. Data Retention", b: "Retained while your account is active. Deleted within 30 days of account deletion, except payment records kept 6 years under UK law. Photos and videos shared during a deal are automatically deleted once that deal closes (typically within 24 hours of payout, immediately if declined, or after 7 days of inactivity) - the conversation and its text always stay. Deleting your account or being banned removes all of your media immediately." },
         { t: "7. Your Rights", b: "Access, correction, deletion, objection, portability, and the right to complain to the ICO (ico.org.uk). Email us to exercise these." },
         { t: "8. Cookies", b: "Essential cookies only. No tracking or advertising cookies." },
         { t: "9. Security", b: "HTTPS, Supabase auth, and Stripe PCI compliance. Contact us immediately if you suspect unauthorised access." },

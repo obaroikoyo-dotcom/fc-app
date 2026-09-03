@@ -13,6 +13,7 @@ import { COUNTRIES } from "../lib/countries";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePayout, type CampaignPost } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
+import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 
@@ -80,6 +81,9 @@ interface Message {
   sender_id: string;
   text: string;
   video_url?: string | null;
+  image_url?: string | null;
+  media_expired_at?: string | null;
+  media_type?: "video" | "image" | null;
   created_at: string;
   read_at?: string | null;
 }
@@ -410,6 +414,7 @@ interface EscrowDeliveryCardProps {
 // TikTok at all (in-person handoffs, etc).
 function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
+  const [mediaDeleteAt, setMediaDeleteAt] = useState<string | null>(null);
   const [platform, setPlatform] = useState("TikTok");
   const [uploading, setUploading] = useState(false);
   const [tiktokConnected, setTiktokConnected] = useState(false);
@@ -422,9 +427,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
   useEffect(() => {
     (async () => {
-      const { data: app } = await supabase.from("applications").select("deliverable_url, platforms").eq("id", applicationId).single();
+      const { data: app } = await supabase.from("applications").select("deliverable_url, platforms, media_delete_at").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
       if (app?.platforms?.[0]) setPlatform(app.platforms[0]);
+      if (app?.media_delete_at) setMediaDeleteAt(app.media_delete_at);
 
       const connections = await getSocialConnections(currentUserId);
       setTiktokConnected(connections.some(c => c.platform === "tiktok"));
@@ -460,8 +466,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
     setError("");
+    const validationError = await validateVideoFile(file);
+    if (validationError) { setError(validationError); return; }
+    setUploading(true);
     try {
       const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
@@ -505,6 +513,12 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   return (
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
       <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
+
+      {mediaDeleteAt && new Date(mediaDeleteAt).getTime() > Date.now() && (
+        <p style={{ fontSize: "10px", color: "#ff9500", background: "rgba(255,149,0,0.08)", border: "1px solid rgba(255,149,0,0.2)", borderRadius: "6px", padding: "8px 10px", marginBottom: "10px", lineHeight: 1.5 }}>
+          ⓘ Videos/photos in this conversation will be removed on {new Date(mediaDeleteAt).toLocaleDateString([], { month: "short", day: "numeric" })} to save storage - the conversation itself stays.
+        </p>
+      )}
 
       {role === "creator" && !deliverableUrl && (
         <>
@@ -1171,12 +1185,14 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
 
   const sendVideo = async (file: File) => {
     if (!activeConvo || !currentUserId) return;
+    const validationError = await validateVideoFile(file);
+    if (validationError) { alert(validationError); return; }
     setChatVideoUploading(true);
     try {
       const videoUrl = await uploadToR2({ purpose: "message-media", file, conversation_id: activeConvo.id });
 
       const now = new Date().toISOString();
-      const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl }).select().single();
+      const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl, media_type: "video" }).select().single();
       if (inserted) appendMessage(inserted);
       await supabase.from("conversations").update({ last_message: "📹 Video", last_message_at: now }).eq("id", activeConvo.id);
       setConversations(prev => {
@@ -1194,6 +1210,37 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       });
     } catch (err) {
       console.error("Failed to send video:", err);
+    } finally {
+      setChatVideoUploading(false);
+    }
+  };
+
+  const sendImage = async (file: File) => {
+    if (!activeConvo || !currentUserId) return;
+    if (file.size > 15 * 1024 * 1024) { alert("Image must be under 15MB."); return; }
+    setChatVideoUploading(true);
+    try {
+      const imageUrl = await uploadToR2({ purpose: "message-media", file, conversation_id: activeConvo.id });
+
+      const now = new Date().toISOString();
+      const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", image_url: imageUrl, media_type: "image" }).select().single();
+      if (inserted) appendMessage(inserted);
+      await supabase.from("conversations").update({ last_message: "📷 Photo", last_message_at: now }).eq("id", activeConvo.id);
+      setConversations(prev => {
+        const updated = prev.map(c => c.id === activeConvo.id ? { ...c, last_message: "📷 Photo", last_message_at: now } : c);
+        return updated.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
+      });
+
+      const receiverId = activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1;
+      await notifyAndPush({
+        user_id: receiverId,
+        type: "new_message",
+        title: "New Message",
+        body: `${currentUserName} sent you a photo`,
+        data: { conversation_id: activeConvo.id }
+      });
+    } catch (err) {
+      console.error("Failed to send image:", err);
     } finally {
       setChatVideoUploading(false);
     }
@@ -1904,13 +1951,28 @@ return (
                   <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", flexDirection: mine ? "row-reverse" : "row" }}>
                     <div
                       onDoubleClick={() => reactToMessage(m.id, "❤️")}
-                      style={{ position: "relative", maxWidth: "75%", padding: m.video_url ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "#fff" : "#111", color: mine ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}
+                      style={{ position: "relative", maxWidth: "75%", padding: (m.video_url || m.image_url) ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "#fff" : "#111", color: mine ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}
                     >
-                      {m.video_url && (
-                        <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
+                      {m.media_expired_at ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "2px 0", opacity: 0.7 }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                            <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+                          </svg>
+                          <span style={{ fontStyle: "italic" }}>This {m.media_type === "image" ? "photo" : "video"} is no longer available - ask them to resend it</span>
+                        </div>
+                      ) : (
+                        <>
+                          {m.video_url && (
+                            <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
+                          )}
+                          {m.image_url && (
+                            <img src={m.image_url} style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", display: "block", objectFit: "cover" }} />
+                          )}
+                        </>
                       )}
-                      {m.text && <p style={{ padding: m.video_url ? "8px 6px 0" : 0 }}>{m.text}</p>}
-                      <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: m.video_url ? "0 6px" : 0 }}>
+                      {m.text && !m.media_expired_at && <p style={{ padding: (m.video_url || m.image_url) ? "8px 6px 0" : 0 }}>{m.text}</p>}
+                      <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
                         {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       {uniqueEmoji.length > 0 && (
@@ -1982,12 +2044,14 @@ return (
                 <input
                   ref={chatVideoInputRef}
                   type="file"
-                  accept="video/*"
+                  accept="image/*,video/*"
                   style={{ display: "none" }}
                   onChange={e => {
                     const file = e.target.files?.[0];
                     e.target.value = "";
-                    if (file) sendVideo(file);
+                    if (!file) return;
+                    if (file.type.startsWith("image/")) sendImage(file);
+                    else sendVideo(file);
                   }}
                 />
                 <div

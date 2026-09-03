@@ -135,7 +135,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. Data Retention</span>
-            <span>We retain your data for as long as your account is active. If you delete your account, your personal data is deleted within 30 days, except where we are legally required to retain it (e.g. payment records for tax purposes, which are retained for 6 years under UK law).</span>
+            <span>We retain your data for as long as your account is active. If you delete your account, your personal data is deleted within 30 days, except where we are legally required to retain it (e.g. payment records for tax purposes, which are retained for 6 years under UK law). Photos and videos shared during a deal are automatically deleted once that deal closes - typically within 24 hours of payout, immediately if a pitch is declined, or after 7 days of inactivity - though the conversation and its text always stay. Deleting your account or being banned removes all of your media immediately.</span>
           </div>
 
           <div>
