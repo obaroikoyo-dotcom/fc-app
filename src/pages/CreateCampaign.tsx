@@ -1,6 +1,7 @@
 ﻿import React, { useState, useRef, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { NICHES } from "../lib/niches";
+import { usePersistedState } from "../lib/usePersistedState";
 
 export interface EditableCampaign {
   id: string;
@@ -85,19 +86,24 @@ const sectionTitle = (label: string, sub: string) => (
 
 export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnterprise, editingCampaign }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [name, setName] = useState("");
-  const [objective, setObjective] = useState("");
-  const [objectiveOther, setObjectiveOther] = useState("");
-  const [budget, setBudget] = useState("");
-  const [campaignType, setCampaignType] = useState<"paid" | "gifted">("paid");
-  const [deadline, setDeadline] = useState("");
-  const [niche, setNiche] = useState("");
-  const [deliverables, setDeliverables] = useState<string[]>([]);
-  const [videoRequired, setVideoRequired] = useState(false);
+  // Persisted (not plain useState) so a brand's in-progress new campaign
+  // survives navigating away entirely - e.g. clicking "Bypass platform fees"
+  // to check out Enterprise - and back, instead of the whole form silently
+  // resetting on remount. Uploaded files (logos/overlays/etc.) can't be
+  // serialized this way and aren't covered - that's a smaller, separate gap.
+  const [name, setName] = usePersistedState("fc_create_campaign_name", "");
+  const [objective, setObjective] = usePersistedState("fc_create_campaign_objective", "");
+  const [objectiveOther, setObjectiveOther] = usePersistedState("fc_create_campaign_objectiveOther", "");
+  const [budget, setBudget] = usePersistedState("fc_create_campaign_budget", "");
+  const [campaignType, setCampaignType] = usePersistedState<"paid" | "gifted">("fc_create_campaign_type", "paid");
+  const [deadline, setDeadline] = usePersistedState("fc_create_campaign_deadline", "");
+  const [niche, setNiche] = usePersistedState("fc_create_campaign_niche", "");
+  const [deliverables, setDeliverables] = usePersistedState<string[]>("fc_create_campaign_deliverables", []);
+  const [videoRequired, setVideoRequired] = usePersistedState("fc_create_campaign_videoRequired", false);
   const [platforms] = useState<string[]>([]);
-  const [vibe, setVibe] = useState("");
-  const [dos, setDos] = useState<string[]>([""]);
-  const [donts, setDonts] = useState<string[]>([""]);
+  const [vibe, setVibe] = usePersistedState("fc_create_campaign_vibe", "");
+  const [dos, setDos] = usePersistedState<string[]>("fc_create_campaign_dos", [""]);
+  const [donts, setDonts] = usePersistedState<string[]>("fc_create_campaign_donts", [""]);
   const [logos, setLogos] = useState<AssetFile[]>([]);
   const [overlays, setOverlays] = useState<AssetFile[]>([]);
   const [styleVideos, setStyleVideos] = useState<AssetFile[]>([]);
@@ -106,9 +112,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const overlaysRef = useRef<HTMLInputElement | null>(null);
   const styleVideosRef = useRef<HTMLInputElement | null>(null);
   const brollRef = useRef<HTMLInputElement | null>(null);
-  const [promoCode, setPromoCode] = useState("");
-  const [landingLink, setLandingLink] = useState("");
-  const [utmCode, setUtmCode] = useState("");
+  const [promoCode, setPromoCode] = usePersistedState("fc_create_campaign_promoCode", "");
+  const [landingLink, setLandingLink] = usePersistedState("fc_create_campaign_landingLink", "");
+  const [utmCode, setUtmCode] = usePersistedState("fc_create_campaign_utmCode", "");
   const [posting, setPosting] = useState(false);
   const [posted, setPosted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -227,6 +233,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       if (Object.keys(assetUpdates).length > 0) {
         await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id).eq("brand_id", user.id);
       }
+      // Successfully saved to the real campaign row - the sessionStorage
+      // draft has served its purpose, clear it so the next "Post a Campaign"
+      // doesn't open pre-filled with this one's now-stale data.
+      ["name", "objective", "objectiveOther", "budget", "type", "deadline", "niche", "deliverables", "videoRequired", "vibe", "dos", "donts", "promoCode", "landingLink", "utmCode"]
+        .forEach(k => sessionStorage.removeItem(`fc_create_campaign_${k}`));
+
       setPosted(true);
       setTimeout(() => { setPosted(false); onPosted(); }, 1500);
     } catch (e) {
