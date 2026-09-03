@@ -178,6 +178,21 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
     await supabase.from("campaigns").delete().eq("id", id).eq("brand_id", currentUserId);
     setCampaigns(prev => prev.filter(c => c.id !== id));
+
+    // The DB row is gone, but any logos/overlays/style videos/b-roll
+    // uploaded for it were never actually deleted from Storage - clean
+    // those up too instead of leaving them to eat quota forever.
+    try {
+      for (const folder of ["logos", "overlays", "style-videos", "broll"]) {
+        const dirPath = `campaign-assets/${currentUserId}/${id}/${folder}`;
+        const { data: files } = await supabase.storage.from("campaign-assets").list(dirPath);
+        if (files && files.length > 0) {
+          await supabase.storage.from("campaign-assets").remove(files.map(f => `${dirPath}/${f.name}`));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to clean up campaign assets in storage:", err);
+    }
   };
 
   return (
