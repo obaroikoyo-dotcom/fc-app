@@ -84,6 +84,7 @@ interface Message {
   image_url?: string | null;
   media_expired_at?: string | null;
   media_type?: "video" | "image" | null;
+  media_removed_reason?: "expired" | "deleted" | null;
   created_at: string;
   read_at?: string | null;
 }
@@ -1027,7 +1028,14 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${convo.id}` }, payload => {
         const updated = payload.new as Message;
-        setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, read_at: updated.read_at } : m));
+        setMessages(prev => prev.map(m => m.id === updated.id ? {
+          ...m,
+          read_at: updated.read_at,
+          video_url: updated.video_url,
+          image_url: updated.image_url,
+          media_expired_at: updated.media_expired_at,
+          media_removed_reason: updated.media_removed_reason,
+        } : m));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, payload => {
         const row = (payload.new ?? payload.old) as { message_id: string; user_id: string; emoji: string } | undefined;
@@ -1243,6 +1251,21 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       console.error("Failed to send image:", err);
     } finally {
       setChatVideoUploading(false);
+    }
+  };
+
+  // Sender-only "delete for everyone" - the message row (and its text, if
+  // any) stays, only the attached video/image is removed, both from R2 and
+  // from the row. The realtime UPDATE handler above propagates this to the
+  // other person's screen live, same as any other message change.
+  const deleteMessageMedia = async (messageId: string) => {
+    if (!window.confirm("Delete this for both of you? This cannot be undone.")) return;
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, video_url: null, image_url: null, media_expired_at: new Date().toISOString(), media_removed_reason: "deleted" } : m));
+    try {
+      const { error } = await supabase.functions.invoke("delete-message-media", { body: { message_id: messageId } });
+      if (error) throw error;
+    } catch (err) {
+      console.error("Failed to delete message media:", err);
     }
   };
 
@@ -1959,17 +1982,33 @@ return (
                             <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
                           </svg>
-                          <span style={{ fontStyle: "italic" }}>This {m.media_type === "image" ? "photo" : "video"} is no longer available - ask them to resend it</span>
+                          <span style={{ fontStyle: "italic" }}>
+                            {m.media_removed_reason === "deleted"
+                              ? (mine ? `You deleted this ${m.media_type === "image" ? "photo" : "video"}` : `This ${m.media_type === "image" ? "photo" : "video"} was deleted`)
+                              : `This ${m.media_type === "image" ? "photo" : "video"} is no longer available - ask them to resend it`}
+                          </span>
                         </div>
                       ) : (
-                        <>
+                        <div style={{ position: "relative" }}>
                           {m.video_url && (
                             <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
                           )}
                           {m.image_url && (
                             <img src={m.image_url} style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", display: "block", objectFit: "cover" }} />
                           )}
-                        </>
+                          {mine && (
+                            <span
+                              onClick={e => { e.stopPropagation(); deleteMessageMedia(m.id); }}
+                              title="Delete for both of you"
+                              style={{ position: "absolute", top: "6px", right: "6px", width: "24px", height: "24px", borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                            >
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </span>
+                          )}
+                        </div>
                       )}
                       {m.text && !m.media_expired_at && <p style={{ padding: (m.video_url || m.image_url) ? "8px 6px 0" : 0 }}>{m.text}</p>}
                       <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>

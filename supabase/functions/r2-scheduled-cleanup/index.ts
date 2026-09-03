@@ -86,7 +86,7 @@ serve(async (req) => {
 
               if (mediaMessages && mediaMessages.length > 0) {
                 await supabaseAdmin.from("messages")
-                  .update({ video_url: null, image_url: null, media_expired_at: new Date().toISOString() })
+                  .update({ video_url: null, image_url: null, media_expired_at: new Date().toISOString(), media_removed_reason: "expired" })
                   .eq("conversation_id", conversation.id)
                   .is("media_expired_at", null)
                   .or("video_url.not.is.null,image_url.not.is.null");
