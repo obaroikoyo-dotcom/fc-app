@@ -1896,7 +1896,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: activeConvo?.application_id ? "1rem" : (stickyHeight ? `${stickyHeight}px` : "6rem"), paddingBottom: inputBarHeight ? `${inputBarHeight + 72}px` : "9rem" }}>
+          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: activeConvo?.application_id ? "1rem" : (stickyHeight ? `${stickyHeight}px` : "6rem"), paddingBottom: inputBarHeight ? `${inputBarHeight + 65}px` : "8rem" }}>
             {activeConvo?.application_id && currentUserId
               && (activeConvo.application_status === "funded" || activeConvo.application_status === "paid")
               && (
@@ -2026,7 +2026,7 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div ref={inputBarRef} style={{ position: "fixed", bottom: "3.5rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
+          <div ref={inputBarRef} style={{ position: "fixed", bottom: "3.05rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <NoEntryIcon /> You've blocked this user — unblock in Settings to message
