@@ -167,6 +167,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         const { data, error } = await supabase
           .from("campaigns")
           .select(`*, brand_profiles(name, niche, avatar_url, is_enterprise, verified)`)
+          .eq("is_draft", false)
           .order("created_at", { ascending: false });
 
         if (!error && data) {

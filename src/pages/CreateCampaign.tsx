@@ -2,6 +2,7 @@
 import { supabase } from "../lib/supabase";
 import { NICHES } from "../lib/niches";
 import { usePersistedState } from "../lib/usePersistedState";
+import { useMemoryPersistedState, clearMemoryPersistedState } from "../lib/useMemoryPersistedState";
 
 export interface EditableCampaign {
   id: string;
@@ -20,6 +21,7 @@ export interface EditableCampaign {
   promo_code?: string;
   landing_link?: string;
   utm_code?: string;
+  is_draft?: boolean;
 }
 
 interface Props {
@@ -104,10 +106,13 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const [vibe, setVibe] = usePersistedState("fc_create_campaign_vibe", "");
   const [dos, setDos] = usePersistedState<string[]>("fc_create_campaign_dos", [""]);
   const [donts, setDonts] = usePersistedState<string[]>("fc_create_campaign_donts", [""]);
-  const [logos, setLogos] = useState<AssetFile[]>([]);
-  const [overlays, setOverlays] = useState<AssetFile[]>([]);
-  const [styleVideos, setStyleVideos] = useState<AssetFile[]>([]);
-  const [broll, setBroll] = useState<AssetFile[]>([]);
+  // Files can't go through sessionStorage (not serializable) - kept alive in
+  // an in-memory module store instead, which is enough to survive a
+  // React-level remount without needing to survive an actual page reload.
+  const [logos, setLogos] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_logos", []);
+  const [overlays, setOverlays] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_overlays", []);
+  const [styleVideos, setStyleVideos] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_styleVideos", []);
+  const [broll, setBroll] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_broll", []);
   const logosRef = useRef<HTMLInputElement | null>(null);
   const overlaysRef = useRef<HTMLInputElement | null>(null);
   const styleVideosRef = useRef<HTMLInputElement | null>(null);
@@ -181,10 +186,14 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
   const scrollToTop = () => containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const postCampaign = async () => {
-    if (!name.trim()) { setError("Campaign title is required."); scrollToTop(); return; }
-    if (objective === "Other" && !objectiveOther.trim()) { setError("Please describe your objective."); return; }
-    if (campaignType === "paid" && numericBudget <= 0) { setError("Enter a budget for paid campaigns."); return; }
+  const postCampaign = async (asDraft = false) => {
+    // Drafts are for saving incomplete progress - skip the requirements
+    // that only make sense for something about to go live to creators.
+    if (!asDraft) {
+      if (!name.trim()) { setError("Campaign title is required."); scrollToTop(); return; }
+      if (objective === "Other" && !objectiveOther.trim()) { setError("Please describe your objective."); return; }
+      if (campaignType === "paid" && numericBudget <= 0) { setError("Enter a budget for paid campaigns."); return; }
+    }
     setError(null);
     setPosting(true);
     try {
@@ -192,13 +201,14 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       if (!user) { setError("You must be logged in to post a campaign."); return; }
       const finalObjective = objective === "Other" ? objectiveOther : objective;
       const fields = {
-        name, description: vibe,
+        name: name.trim() || "Untitled draft", description: vibe,
         budget: campaignType === "paid" ? numericBudget : 0,
         type: campaignType,
         niche, platforms, deadline, video_required: videoRequired,
         objective: finalObjective, deliverables, vibe,
         dos: dos.filter(d => d.trim()), donts: donts.filter(d => d.trim()),
         promo_code: promoCode, landing_link: landingLink, utm_code: utmCode,
+        is_draft: asDraft,
       };
       let campaign: { id: string } | null;
       if (editingCampaign) {
@@ -233,11 +243,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       if (Object.keys(assetUpdates).length > 0) {
         await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id).eq("brand_id", user.id);
       }
-      // Successfully saved to the real campaign row - the sessionStorage
-      // draft has served its purpose, clear it so the next "Post a Campaign"
-      // doesn't open pre-filled with this one's now-stale data.
+      // Successfully saved to the real campaign row - the draft state has
+      // served its purpose, clear it so the next "Post a Campaign" doesn't
+      // open pre-filled with this one's now-stale data.
       ["name", "objective", "objectiveOther", "budget", "type", "deadline", "niche", "deliverables", "videoRequired", "vibe", "dos", "donts", "promoCode", "landingLink", "utmCode"]
         .forEach(k => sessionStorage.removeItem(`fc_create_campaign_${k}`));
+      ["logos", "overlays", "styleVideos", "broll"].forEach(k => clearMemoryPersistedState(`fc_create_campaign_${k}`));
 
       setPosted(true);
       setTimeout(() => { setPosted(false); onPosted(); }, 1500);
@@ -509,23 +520,38 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         </div>
       )}
 
-      <div
-        onClick={!posting ? postCampaign : undefined}
-        style={{
-          padding: "13px",
-          borderRadius: "6px",
-          background: posted ? "#0f0f0f" : posting ? "#0f0f0f" : "#fff",
-          color: posted ? "#34c759" : posting ? "#444" : "#0a0a0a",
-          border: posted ? "1px solid #1a1a1a" : posting ? "1px solid #1e1e1e" : "1px solid #fff",
-          fontSize: "12px", fontWeight: 600, textAlign: "center",
-          cursor: posting ? "default" : "pointer",
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          transition: "all 0.2s", marginBottom: "1rem",
-        }}
-      >
-        {editingCampaign
-          ? (posting ? "Saving..." : posted ? "Saved ✓" : "Save Changes")
-          : (posting ? "Posting..." : posted ? "Posted ✓" : "Post Campaign")}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "1rem" }}>
+        <div
+          onClick={!posting ? () => postCampaign(true) : undefined}
+          style={{
+            flex: 1, padding: "13px", borderRadius: "6px",
+            background: "transparent",
+            color: posting ? "#444" : "#999",
+            border: "1px solid #1e1e1e",
+            fontSize: "12px", fontWeight: 600, textAlign: "center",
+            cursor: posting ? "default" : "pointer",
+            letterSpacing: "0.08em", textTransform: "uppercase",
+          }}
+        >
+          Save as Draft
+        </div>
+        <div
+          onClick={!posting ? () => postCampaign(false) : undefined}
+          style={{
+            flex: 2, padding: "13px", borderRadius: "6px",
+            background: posted ? "#0f0f0f" : posting ? "#0f0f0f" : "#fff",
+            color: posted ? "#34c759" : posting ? "#444" : "#0a0a0a",
+            border: posted ? "1px solid #1a1a1a" : posting ? "1px solid #1e1e1e" : "1px solid #fff",
+            fontSize: "12px", fontWeight: 600, textAlign: "center",
+            cursor: posting ? "default" : "pointer",
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            transition: "all 0.2s",
+          }}
+        >
+          {editingCampaign
+            ? (posting ? "Saving..." : posted ? "Saved ✓" : "Save Changes")
+            : (posting ? "Posting..." : posted ? "Posted ✓" : "Post Campaign")}
+        </div>
       </div>
 
     </div>

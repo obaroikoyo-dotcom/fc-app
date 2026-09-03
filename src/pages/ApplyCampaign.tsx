@@ -73,6 +73,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           .from("campaigns")
           .select("*, brand_profiles(name, logo_url, is_enterprise)")
           .eq("id", campaignId)
+          .eq("is_draft", false)
           .single();
         if (data) setCampaign(data);
 

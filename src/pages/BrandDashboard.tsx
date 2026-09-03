@@ -100,9 +100,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           if (bp?.logo_url) setMyLogo(bp.logo_url);
           getBrandTrackRecord(user.id).then(setTrackRecord);
 
+          // Other brands' drafts are never fetched at all - only this
+          // brand's own rows are allowed through regardless of draft state.
           const { data } = await supabase
             .from("campaigns")
             .select(`*, applications(id), brand_profiles(name, logo_url, verified)`)
+            .or(`brand_id.eq.${user.id},is_draft.eq.false`)
             .order("created_at", { ascending: false });
 
           if (data) {
@@ -279,6 +282,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               const filtered = campaigns.filter(c => {
                 const isOwn = c.brand_id === currentUserId;
                 if (feedTab === "yours" && !isOwn) return false;
+                // Drafts are only ever visible on your own "Your Campaigns"
+                // list, never in Market - even your own.
+                if (feedTab === "discover" && (c as any).is_draft) return false;
                 if (selectedNiche && c.niche !== selectedNiche) return false;
                 if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
                 return true;
@@ -333,6 +339,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         {isOwn && feedTab === "discover" && (
                           <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", border: "1px solid #333", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
                             Your Preview
+                          </span>
+                        )}
+                        {isOwn && feedTab === "yours" && (c as any).is_draft && (
+                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "rgba(255,149,0,0.1)", border: "1px solid rgba(255,149,0,0.3)", color: "#ff9500", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                            Draft
                           </span>
                         )}
                         {isOwn && feedTab === "yours" ? (
