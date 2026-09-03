@@ -12,6 +12,7 @@ import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, getBrandReviews, formatResponseTime, type BrandTrackRecord, type BrandReview } from "../lib/brandStats";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { uploadToR2 } from "../lib/r2Upload";
 
 const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
 const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {
@@ -295,15 +296,14 @@ const loadFavourites = async () => {
   const handleLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
-    const fileExt = file.name.split(".").pop();
-    const filePath = `brands/${userId}.${fileExt}`;
-    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-    if (!error) {
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      const bustedUrl = `${data.publicUrl}?t=${Date.now()}`;
+    try {
+      const publicUrl = await uploadToR2({ purpose: "avatar", file });
+      const bustedUrl = `${publicUrl}?t=${Date.now()}`;
       setLogo(bustedUrl);
       setLogoUrl(bustedUrl);
       await supabase.from("brand_profiles").update({ logo_url: bustedUrl, avatar_url: bustedUrl }).eq("id", userId);
+    } catch (err) {
+      console.error("Failed to upload logo:", err);
     }
   };
 

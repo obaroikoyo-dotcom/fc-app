@@ -70,3 +70,8 @@ entrypoint = "./functions/release-payout/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/cancel-subscription/index.ts"
+
+[functions.r2-presigned-url]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/r2-presigned-url/index.ts"

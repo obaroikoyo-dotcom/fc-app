@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { NICHES } from "../lib/niches";
 import { usePersistedState } from "../lib/usePersistedState";
 import { useMemoryPersistedState, clearMemoryPersistedState } from "../lib/useMemoryPersistedState";
+import { uploadToR2 } from "../lib/r2Upload";
 
 export interface EditableCampaign {
   id: string;
@@ -168,17 +169,14 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const removeAsset = (id: string, setter: React.Dispatch<React.SetStateAction<AssetFile[]>>) =>
     setter(prev => prev.filter(a => a.id !== id));
 
-  const uploadAssets = async (userId: string, campaignId: string, files: AssetFile[], folder: string): Promise<string[]> => {
+  const uploadAssets = async (_userId: string, campaignId: string, files: AssetFile[], folder: string): Promise<string[]> => {
     const urls: string[] = [];
     for (const asset of files) {
-      const ext = asset.file.name.split(".").pop();
-      const path = `campaign-assets/${userId}/${campaignId}/${folder}/${Date.now()}-${Math.random()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("campaign-assets").upload(path, asset.file, { upsert: true });
-      if (uploadError) {
-        console.error(`Failed to upload ${asset.file.name}:`, uploadError);
-      } else {
-        const { data } = supabase.storage.from("campaign-assets").getPublicUrl(path);
-        urls.push(data.publicUrl);
+      try {
+        const publicUrl = await uploadToR2({ purpose: "campaign-asset", file: asset.file, campaign_id: campaignId, folder });
+        urls.push(publicUrl);
+      } catch (err) {
+        console.error(`Failed to upload ${asset.file.name}:`, err);
       }
     }
     return urls;

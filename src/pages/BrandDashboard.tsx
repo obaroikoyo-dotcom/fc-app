@@ -180,16 +180,12 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     setCampaigns(prev => prev.filter(c => c.id !== id));
 
     // The DB row is gone, but any logos/overlays/style videos/b-roll
-    // uploaded for it were never actually deleted from Storage - clean
-    // those up too instead of leaving them to eat quota forever.
+    // uploaded for it were never actually deleted from storage - clean
+    // those up too instead of leaving them to eat quota forever. R2 deletes
+    // need to happen server-side (the client has no R2 credentials, by
+    // design), hence the edge function round-trip here.
     try {
-      for (const folder of ["logos", "overlays", "style-videos", "broll"]) {
-        const dirPath = `campaign-assets/${currentUserId}/${id}/${folder}`;
-        const { data: files } = await supabase.storage.from("campaign-assets").list(dirPath);
-        if (files && files.length > 0) {
-          await supabase.storage.from("campaign-assets").remove(files.map(f => `${dirPath}/${f.name}`));
-        }
-      }
+      await supabase.functions.invoke("r2-delete-assets", { body: { campaign_id: id } });
     } catch (err) {
       console.error("Failed to clean up campaign assets in storage:", err);
     }

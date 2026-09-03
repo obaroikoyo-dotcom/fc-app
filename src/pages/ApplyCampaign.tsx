@@ -7,6 +7,7 @@ import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { censorProfanity } from "../lib/profanity";
+import { uploadToR2 } from "../lib/r2Upload";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -125,16 +126,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
     if (videoFile) {
       try {
-        const ext = videoFile.name.split('.').pop();
-        const filePath = `pitches/${currentUserId}_${campaign.id}_${Date.now()}.${ext}`;
-        const { data: uploadData, error: storageError } = await supabase.storage
-          .from("campaign-pitches")
-          .upload(filePath, videoFile, { cacheControl: "3600", upsert: true });
-        if (storageError) throw storageError;
-        if (uploadData) {
-          const { data: urlData } = supabase.storage.from("campaign-pitches").getPublicUrl(filePath);
-          uploadedVideoUrl = urlData.publicUrl;
-        }
+        uploadedVideoUrl = await uploadToR2({ purpose: "pitch", file: videoFile, campaign_id: campaign.id });
         setUploadProgress(100);
       } catch (err) {
         setFormError(err instanceof Error ? err.message : "Failed to upload video.");

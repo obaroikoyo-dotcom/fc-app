@@ -16,6 +16,7 @@ import { STRIPE_PUBLIC_KEY } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import { loadConnectAndInitialize, type StripeConnectInstance } from "@stripe/connect-js";
 import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectPayouts } from "@stripe/react-connect-js";
+import { uploadToR2 } from "../lib/r2Upload";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -463,12 +464,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const handlePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
-    const fileExt = file.name.split(".").pop();
-    const filePath = `creators/${userId}.${fileExt}`;
-    const { error } = await supabase.storage.from("avatars").upload(filePath, file, { upsert: true });
-    if (!error) {
-      const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-      const bustedUrl = `${data.publicUrl}?t=${Date.now()}`;
+    try {
+      const publicUrl = await uploadToR2({ purpose: "avatar", file });
+      const bustedUrl = `${publicUrl}?t=${Date.now()}`;
       setProfilePic(bustedUrl);
       setAvatarUrl(bustedUrl);
       const { data: existing } = await supabase.from("creator_profiles").select("id").eq("id", userId).single();
@@ -477,6 +475,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       } else {
         await supabase.from("creator_profiles").insert({ id: userId, avatar_url: bustedUrl });
       }
+    } catch (err) {
+      console.error("Failed to upload avatar:", err);
     }
   };
 

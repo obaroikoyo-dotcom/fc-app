@@ -11,6 +11,7 @@ import { saveOnboardingDraft, peekOnboardingDraft, clearOnboardingDraft } from "
 import { logEvent } from "../lib/debugLog";
 import { NICHES } from "../lib/niches";
 import { startSocialConnect, getSocialConnections, getSocialPostOptions, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption } from "../lib/social";
+import { uploadToR2 } from "../lib/r2Upload";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -480,12 +481,11 @@ const [showOtp, setShowOtp] = useState(false);
 
       let avatarUrl = null;
       if (profileFile) {
-        const fileExt = profileFile.name.split(".").pop()?.toLowerCase();
-        const filePath = `creators/${user.id}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, profileFile, { upsert: true });
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+        try {
+          const publicUrl = await uploadToR2({ purpose: "avatar", file: profileFile });
+          avatarUrl = `${publicUrl}?t=${Date.now()}`;
+        } catch (err) {
+          console.error("Failed to upload avatar:", err);
         }
       }
 

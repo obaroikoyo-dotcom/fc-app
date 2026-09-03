@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { uploadToR2 } from "./r2Upload";
 
 export interface CampaignPost {
   id: string;
@@ -30,16 +31,12 @@ async function authedFetch(path: string, body: Record<string, unknown>) {
 }
 
 export async function uploadDeliverable(applicationId: string, creatorId: string, file: File): Promise<string> {
-  const ext = file.name.split(".").pop();
-  const path = `deliverables/${applicationId}_${Date.now()}.${ext}`;
-  const { error } = await supabase.storage.from("campaign-pitches").upload(path, file, { cacheControl: "3600" });
-  if (error) throw error;
-  const { data } = supabase.storage.from("campaign-pitches").getPublicUrl(path);
+  const publicUrl = await uploadToR2({ purpose: "deliverable", file, application_id: applicationId });
   await supabase.from("applications").update({
-    deliverable_url: data.publicUrl,
+    deliverable_url: publicUrl,
     deliverable_uploaded_at: new Date().toISOString(),
   }).eq("id", applicationId).eq("creator_id", creatorId);
-  return data.publicUrl;
+  return publicUrl;
 }
 
 export async function postDeliverableToTikTok(applicationId: string): Promise<{ campaign_post_id: string; publish_id: string }> {

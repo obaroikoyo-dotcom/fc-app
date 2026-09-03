@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { deletePrefix } from "../_shared/r2Client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,32 +43,21 @@ serve(async (req) => {
     if (!withinLimit) return rateLimitResponse(corsHeaders);
 
     // Deleting the DB rows (or the auth user, which cascades to them) never
-    // touched Storage - uploaded files were left behind forever, silently
+    // touched storage - uploaded files were left behind forever, silently
     // eating quota. Best-effort cleanup before the account itself goes;
     // failures here shouldn't block the actual account deletion.
     try {
-      const ASSET_FOLDERS = ["logos", "overlays", "style-videos", "broll"];
       const { data: ownedCampaigns } = await supabaseAdmin
         .from("campaigns")
         .select("id")
         .eq("brand_id", user_id);
 
       for (const campaign of ownedCampaigns ?? []) {
-        for (const folder of ASSET_FOLDERS) {
-          const dirPath = `campaign-assets/${user_id}/${campaign.id}/${folder}`;
-          const { data: files } = await supabaseAdmin.storage.from("campaign-assets").list(dirPath);
-          if (files && files.length > 0) {
-            await supabaseAdmin.storage.from("campaign-assets").remove(files.map(f => `${dirPath}/${f.name}`));
-          }
-        }
+        await deletePrefix(`campaign-assets/${user_id}/${campaign.id}/`);
       }
 
-      for (const folder of ["creators", "brands"]) {
-        const { data: avatarFiles } = await supabaseAdmin.storage.from("avatars").list(folder, { search: user_id });
-        if (avatarFiles && avatarFiles.length > 0) {
-          await supabaseAdmin.storage.from("avatars").remove(avatarFiles.map(f => `${folder}/${f.name}`));
-        }
-      }
+      await deletePrefix(`creators/${user_id}.`);
+      await deletePrefix(`brands/${user_id}.`);
     } catch (storageErr) {
       console.error("Storage cleanup failed (continuing with account deletion):", storageErr);
     }

@@ -11,6 +11,7 @@ import TermsModal from "./TermsModal"; // Assumes TermsModal is in the same fold
 import TikTokIcon from "../components/TikTokIcon";
 import InstagramIcon from "../components/InstagramIcon";
 import { startSocialConnect, getSocialConnections, type SocialConnection, type SocialPlatform } from "../lib/social";
+import { uploadToR2 } from "../lib/r2Upload";
 
 interface Props { navigate: (p: Page) => void; setPendingEmail: (email: string) => void; }
 
@@ -344,17 +345,11 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
       let logoUrl = null;
       if (logoFile) {
-        const fileExt = logoFile.name.split(".").pop()?.toLowerCase();
-        const filePath = `brands/${user.id}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, logoFile, { upsert: true });
-
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(filePath);
-          logoUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-        } else {
-          console.log("Asset upload catch:", uploadError.message);
+        try {
+          const publicUrl = await uploadToR2({ purpose: "avatar", file: logoFile });
+          logoUrl = `${publicUrl}?t=${Date.now()}`;
+        } catch (err) {
+          console.log("Asset upload catch:", (err as Error).message);
         }
       }
 

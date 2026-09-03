@@ -12,6 +12,7 @@ import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePayout, type CampaignPost } from "../lib/campaignDelivery";
+import { uploadToR2 } from "../lib/r2Upload";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 
@@ -1172,12 +1173,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     if (!activeConvo || !currentUserId) return;
     setChatVideoUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${activeConvo.id}/${currentUserId}_${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from("message-media").upload(path, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: urlData } = supabase.storage.from("message-media").getPublicUrl(path);
-      const videoUrl = urlData.publicUrl;
+      const videoUrl = await uploadToR2({ purpose: "message-media", file, conversation_id: activeConvo.id });
 
       const now = new Date().toISOString();
       const { data: inserted } = await supabase.from("messages").insert({ conversation_id: activeConvo.id, sender_id: currentUserId, text: "", video_url: videoUrl }).select().single();
