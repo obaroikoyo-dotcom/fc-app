@@ -96,7 +96,7 @@ export async function submitCreatorReview(params: { creatorId: string; brandId: 
 
 export function formatTurnaroundTime(hours: number | null): string | null {
   if (hours == null) return null;
-  if (hours < 1) return "under an hour";
+  if (hours < 1) return "Under an hour";
   if (hours < 24) return `${Math.round(hours)}h`;
   return `${Math.round(hours / 24)}d`;
 }
