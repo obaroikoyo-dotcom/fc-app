@@ -396,6 +396,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
     outline: "none",
     width: "100%",
     fontFamily: "inherit",
+    boxSizing: "border-box",
   };
 
   const chipStyle = (active: boolean): React.CSSProperties => ({

@@ -520,6 +520,7 @@ const [showOtp, setShowOtp] = useState(false);
     outline: "none",
     width: "100%",
     fontFamily: "inherit",
+    boxSizing: "border-box",
   };
 
   const chipStyle = (active: boolean): React.CSSProperties => ({

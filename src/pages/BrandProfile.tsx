@@ -344,7 +344,7 @@ const loadFavourites = async () => {
   const inputStyle: React.CSSProperties = {
     background: "#111", border: "1px solid #222", borderRadius: "8px",
     padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none",
-    width: "100%", fontFamily: "inherit",
+    width: "100%", fontFamily: "inherit", boxSizing: "border-box",
   };
   const labelStyle: React.CSSProperties = {
     fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em",
