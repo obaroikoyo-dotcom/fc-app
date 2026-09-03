@@ -403,6 +403,17 @@ export default function App() {
 
         logEvent(`initializeAuth: hasSession=${!!session} provider=${session?.user?.app_metadata?.provider ?? "n/a"} emailConfirmed=${!!session?.user?.email_confirmed_at}`);
 
+        // Claim this user for onAuthStateChange's de-dup guard as soon as the
+        // session is known, not after the splash wait below - the listener's
+        // own initial SIGNED_IN event fires well within that 3s window, and
+        // without an early claim it doesn't know a sync is already running,
+        // so it starts a redundant second one. If that second one hits any
+        // network hiccup, its own fallback can land after this one already
+        // set the correct page, flashing role-select for a moment.
+        if (session?.user?.email_confirmed_at) {
+          lastAuthUserId = session.user.id;
+        }
+
         // Don't swap away from the splash page until its own animation
         // has had time to finish, but don't add this on top of network time.
         await minSplashDuration;
@@ -413,7 +424,6 @@ export default function App() {
             setPendingEmail(session.user.email || "");
             setPage("verify-email");
           } else {
-            lastAuthUserId = session.user.id;
             oneSignalLogin(session.user.id);
             setTimeout(() => autoRequestPush(session.user.id), 3000);
             await syncUserRoute(session.user.id);
