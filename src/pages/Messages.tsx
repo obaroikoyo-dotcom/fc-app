@@ -85,6 +85,8 @@ interface Message {
   media_expired_at?: string | null;
   media_type?: "video" | "image" | null;
   media_removed_reason?: "expired" | "deleted" | null;
+  deleted_at?: string | null;
+  edited_at?: string | null;
   created_at: string;
   read_at?: string | null;
 }
@@ -604,6 +606,12 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [otherIsTyping, setOtherIsTyping] = useState(false);
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({});
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [actionSheetFor, setActionSheetFor] = useState<Message | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressFiredRef = useRef(false);
   const chatChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
@@ -1030,11 +1038,14 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
         const updated = payload.new as Message;
         setMessages(prev => prev.map(m => m.id === updated.id ? {
           ...m,
+          text: updated.text,
           read_at: updated.read_at,
           video_url: updated.video_url,
           image_url: updated.image_url,
           media_expired_at: updated.media_expired_at,
           media_removed_reason: updated.media_removed_reason,
+          deleted_at: updated.deleted_at,
+          edited_at: updated.edited_at,
         } : m));
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "message_reactions" }, payload => {
@@ -1254,19 +1265,66 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     }
   };
 
-  // Sender-only "delete for everyone" - the message row (and its text, if
-  // any) stays, only the attached video/image is removed, both from R2 and
-  // from the row. The realtime UPDATE handler above propagates this to the
-  // other person's screen live, same as any other message change.
-  const deleteMessageMedia = async (messageId: string) => {
+  // Full "delete for everyone" - text and any media, distinct from the
+  // automatic retention policy's media-only cleanup. The realtime UPDATE
+  // handler propagates this to the other person's screen live.
+  const deleteMessage = async (messageId: string) => {
     if (!window.confirm("Delete this for both of you? This cannot be undone.")) return;
-    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, video_url: null, image_url: null, media_expired_at: new Date().toISOString(), media_removed_reason: "deleted" } : m));
+    setActionSheetFor(null);
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, text: "", video_url: null, image_url: null, deleted_at: new Date().toISOString() } : m));
     try {
       const { error } = await supabase.functions.invoke("delete-message-media", { body: { message_id: messageId } });
       if (error) throw error;
     } catch (err) {
-      console.error("Failed to delete message media:", err);
+      console.error("Failed to delete message:", err);
     }
+  };
+
+  const startEditMessage = (m: Message) => {
+    setActionSheetFor(null);
+    setEditingMessageId(m.id);
+    setEditingText(m.text);
+  };
+
+  const cancelEditMessage = () => {
+    setEditingMessageId(null);
+    setEditingText("");
+  };
+
+  const saveEditMessage = async () => {
+    if (!editingMessageId || !editingText.trim()) return;
+    setEditSaving(true);
+    try {
+      const { error } = await supabase.functions.invoke("edit-message", { body: { message_id: editingMessageId, text: editingText.trim() } });
+      if (error) throw error;
+      setMessages(prev => prev.map(m => m.id === editingMessageId ? { ...m, text: editingText.trim(), edited_at: new Date().toISOString() } : m));
+      setEditingMessageId(null);
+      setEditingText("");
+    } catch (err) {
+      const message = (() => {
+        try { return (err as any)?.context?.json ? undefined : (err as Error).message; } catch { return "Failed to save edit."; }
+      })();
+      alert(message || "Failed to save edit - it may have already been seen.");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  // Long-press (touch) opens the same action sheet a right-click does on
+  // desktop - the two are treated as equivalent gestures for this menu.
+  const handlePressStart = (m: Message) => {
+    longPressFiredRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      longPressFiredRef.current = true;
+      setActionSheetFor(m);
+    }, 450);
+  };
+  const handlePressEnd = () => {
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+  };
+  const handleContextMenu = (e: React.MouseEvent, m: Message) => {
+    e.preventDefault();
+    setActionSheetFor(m);
   };
 
   const handleAccept = async (app: Application) => {
@@ -1973,47 +2031,59 @@ return (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
                   <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", flexDirection: mine ? "row-reverse" : "row" }}>
                     <div
-                      onDoubleClick={() => reactToMessage(m.id, "❤️")}
-                      style={{ position: "relative", maxWidth: "75%", padding: (m.video_url || m.image_url) ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "#fff" : "#111", color: mine ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}
+                      onDoubleClick={() => !m.deleted_at && reactToMessage(m.id, "❤️")}
+                      onContextMenu={e => !m.deleted_at && handleContextMenu(e, m)}
+                      onTouchStart={() => !m.deleted_at && handlePressStart(m)}
+                      onTouchEnd={handlePressEnd}
+                      onTouchMove={handlePressEnd}
+                      style={{ position: "relative", maxWidth: "75%", padding: (m.video_url || m.image_url) ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "#fff" : "#111", color: mine ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid #1a1a1a", cursor: "pointer", userSelect: "none" }}
                     >
-                      {m.media_expired_at ? (
+                      {m.deleted_at ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "2px 0", opacity: 0.7 }}>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                            <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                          <span style={{ fontStyle: "italic" }}>{mine ? "You deleted this message" : "This message was deleted"}</span>
+                        </div>
+                      ) : editingMessageId === m.id ? (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px", minWidth: "200px" }} onClick={e => e.stopPropagation()}>
+                          <textarea
+                            autoFocus
+                            value={editingText}
+                            onChange={e => setEditingText(e.target.value)}
+                            style={{ background: "transparent", border: "none", outline: "none", color: "inherit", fontSize: "13px", fontFamily: "inherit", resize: "none", minHeight: "50px" }}
+                          />
+                          <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+                            <span onClick={cancelEditMessage} style={{ fontSize: "11px", opacity: 0.7, cursor: "pointer", textTransform: "uppercase" as const }}>Cancel</span>
+                            <span onClick={!editSaving ? saveEditMessage : undefined} style={{ fontSize: "11px", fontWeight: 700, cursor: editSaving ? "default" : "pointer", textTransform: "uppercase" as const }}>{editSaving ? "Saving..." : "Save"}</span>
+                          </div>
+                        </div>
+                      ) : m.media_expired_at ? (
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "2px 0", opacity: 0.7 }}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                             <path d="M12 8v4l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
                           </svg>
-                          <span style={{ fontStyle: "italic" }}>
-                            {m.media_removed_reason === "deleted"
-                              ? (mine ? `You deleted this ${m.media_type === "image" ? "photo" : "video"}` : `This ${m.media_type === "image" ? "photo" : "video"} was deleted`)
-                              : `This ${m.media_type === "image" ? "photo" : "video"} is no longer available - ask them to resend it`}
-                          </span>
+                          <span style={{ fontStyle: "italic" }}>This {m.media_type === "image" ? "photo" : "video"} is no longer available - ask them to resend it</span>
                         </div>
                       ) : (
-                        <div style={{ position: "relative" }}>
+                        <>
                           {m.video_url && (
                             <video src={m.video_url} controls style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", background: "#000", display: "block" }} />
                           )}
                           {m.image_url && (
                             <img src={m.image_url} style={{ width: "100%", maxWidth: "260px", borderRadius: "10px", display: "block", objectFit: "cover" }} />
                           )}
-                          {mine && (
-                            <span
-                              onClick={e => { e.stopPropagation(); deleteMessageMedia(m.id); }}
-                              title="Delete for both of you"
-                              style={{ position: "absolute", top: "6px", right: "6px", width: "24px", height: "24px", borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                                <path d="M3 6h18" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-                                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </span>
-                          )}
-                        </div>
+                        </>
                       )}
-                      {m.text && !m.media_expired_at && <p style={{ padding: (m.video_url || m.image_url) ? "8px 6px 0" : 0 }}>{m.text}</p>}
-                      <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </p>
+                      {m.text && !m.deleted_at && !m.media_expired_at && editingMessageId !== m.id && <p style={{ padding: (m.video_url || m.image_url) ? "8px 6px 0" : 0 }}>{m.text}</p>}
+                      {!m.deleted_at && editingMessageId !== m.id && (
+                        <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
+                          {m.edited_at && <span style={{ fontStyle: "italic", marginRight: "4px" }}>edited</span>}
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                      )}
                       {uniqueEmoji.length > 0 && (
                         <div style={{ position: "absolute", bottom: "-10px", [mine ? "left" : "right"]: "-4px", display: "flex", gap: "2px" }}>
                           {uniqueEmoji.map(emoji => (
@@ -2128,6 +2198,41 @@ return (
             <p style={{ color: "#ccc", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>{paymentPopup.body}</p>
             <div onClick={() => setPaymentPopup(null)} style={{ padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
               Got it
+            </div>
+          </div>
+        </div>
+      )}
+
+      {actionSheetFor && (
+        <div onClick={() => setActionSheetFor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: "1px solid #222", borderTop: "1px solid #222", borderRadius: "16px 16px 0 0", width: "100%", maxWidth: "480px", padding: "0.5rem", paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom, 0px))" }}>
+            <div
+              onClick={() => { reactToMessage(actionSheetFor.id, "❤️"); setActionSheetFor(null); }}
+              style={{ padding: "14px 16px", fontSize: "14px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "12px" }}
+            >
+              ❤️ React
+            </div>
+            {actionSheetFor.sender_id === currentUserId && !actionSheetFor.read_at && !actionSheetFor.video_url && !actionSheetFor.image_url && actionSheetFor.text && (
+              <div
+                onClick={() => startEditMessage(actionSheetFor)}
+                style={{ padding: "14px 16px", fontSize: "14px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "12px", borderTop: "1px solid #1a1a1a" }}
+              >
+                ✏️ Edit
+              </div>
+            )}
+            {actionSheetFor.sender_id === currentUserId && (
+              <div
+                onClick={() => deleteMessage(actionSheetFor.id)}
+                style={{ padding: "14px 16px", fontSize: "14px", color: "#ff4d4d", cursor: "pointer", display: "flex", alignItems: "center", gap: "12px", borderTop: "1px solid #1a1a1a" }}
+              >
+                🗑️ Delete for everyone
+              </div>
+            )}
+            <div
+              onClick={() => setActionSheetFor(null)}
+              style={{ padding: "14px 16px", fontSize: "14px", color: "#888", cursor: "pointer", textAlign: "center", borderTop: "1px solid #1a1a1a", marginTop: "4px" }}
+            >
+              Cancel
             </div>
           </div>
         </div>

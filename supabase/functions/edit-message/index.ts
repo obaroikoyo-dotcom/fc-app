@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { S3Client, DeleteObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.600.0";
 import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
@@ -8,24 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BUCKET = Deno.env.get("R2_BUCKET_NAME") ?? "";
-const ACCOUNT_ID = Deno.env.get("R2_ACCOUNT_ID") ?? "";
-
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: Deno.env.get("R2_ACCESS_KEY_ID") ?? "",
-    secretAccessKey: Deno.env.get("R2_SECRET_ACCESS_KEY") ?? "",
-  },
-});
-
-// Sender-initiated "delete for everyone" - full message (text and any
-// media), not just the media-only cleanup the automatic retention policy
-// does. Distinct from that policy on purpose: retention must never touch
-// text (kept as potential deal evidence), but a person choosing to unsend
-// their own message is a different, ordinary messaging feature - matches
-// how WhatsApp/iMessage "delete for everyone" actually behaves.
+// Editing is only allowed before the recipient has actually seen the
+// message - enforced here, not just hidden client-side, since a client-only
+// restriction could be trivially bypassed by anyone calling this directly.
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -47,22 +31,22 @@ serve(async (req) => {
 
     const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
-    const withinLimit = await checkRateLimit(supabaseAdmin, "delete-message-media", clientIdentifier(req, caller.id), {
+    const withinLimit = await checkRateLimit(supabaseAdmin, "edit-message", clientIdentifier(req, caller.id), {
       windowSeconds: 60,
       maxRequests: 30,
     });
     if (!withinLimit) return rateLimitResponse(corsHeaders);
 
-    const { message_id } = await req.json();
-    if (!message_id) {
-      return new Response(JSON.stringify({ error: "message_id is required" }), {
+    const { message_id, text } = await req.json();
+    if (!message_id || typeof text !== "string" || !text.trim()) {
+      return new Response(JSON.stringify({ error: "message_id and non-empty text are required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { data: message } = await supabaseAdmin
       .from("messages")
-      .select("id, sender_id, video_url, image_url, media_expired_at, deleted_at")
+      .select("id, sender_id, read_at, deleted_at, video_url, image_url")
       .eq("id", message_id)
       .maybeSingle();
 
@@ -72,26 +56,24 @@ serve(async (req) => {
       });
     }
     if (message.deleted_at) {
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(JSON.stringify({ error: "This message was deleted." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (message.video_url || message.image_url) {
+      return new Response(JSON.stringify({ error: "Media messages can't be edited." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (message.read_at) {
+      return new Response(JSON.stringify({ error: "Can't edit a message that's already been seen." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const url = !message.media_expired_at ? (message.video_url || message.image_url) : null;
-    if (url) {
-      const key = new URL(url).pathname.replace(/^\//, "");
-      try {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
-      } catch (err) {
-        console.error("R2 delete failed (continuing to clear the message row):", err);
-      }
-    }
-
     await supabaseAdmin.from("messages").update({
-      text: "",
-      video_url: null,
-      image_url: null,
-      deleted_at: new Date().toISOString(),
+      text: text.trim(),
+      edited_at: new Date().toISOString(),
     }).eq("id", message_id);
 
     return new Response(JSON.stringify({ success: true }), {
@@ -99,7 +81,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("delete-message-media error:", err);
+    console.error("edit-message error:", err);
     return new Response(JSON.stringify({ error: String((err as Error).message || err) }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

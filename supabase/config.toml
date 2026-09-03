@@ -90,3 +90,8 @@ entrypoint = "./functions/r2-scheduled-cleanup/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/delete-message-media/index.ts"
+
+[functions.edit-message]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/edit-message/index.ts"
