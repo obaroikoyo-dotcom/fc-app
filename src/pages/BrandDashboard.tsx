@@ -369,9 +369,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                             <span
                               onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
                               title="Delete"
-                              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "26px", height: "26px", color: "#777", cursor: "pointer" }}
-                              onMouseEnter={e => (e.currentTarget.style.color = "#ff4d4d")}
-                              onMouseLeave={e => (e.currentTarget.style.color = "#777")}
+                              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "26px", height: "26px", color: "#ff4d4d", cursor: "pointer" }}
+                              onMouseEnter={e => (e.currentTarget.style.color = "#ff7a70")}
+                              onMouseLeave={e => (e.currentTarget.style.color = "#ff4d4d")}
                             >
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                                 <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
