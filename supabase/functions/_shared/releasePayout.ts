@@ -143,3 +143,64 @@ export async function releasePayoutForApplication(
   await supabaseAdmin.from("applications").update({ status: "paid" }).eq("id", applicationId);
   return { released: true };
 }
+
+export type RefundResult =
+  | { refunded: true; refundId?: string }
+  | { refunded: false; reason: "no_transaction" | "already_released" | "refund_failed"; error?: string };
+
+// The admin-review counterpart to releasePayoutForApplication - refunds the
+// brand's original charge. Only ever reachable for a transaction that
+// hasn't been released yet (a real dispute is raised while status is still
+// "funded", before any Stripe Transfer to the creator exists), so this is
+// always a clean charge refund, never a transfer clawback.
+export async function refundApplication(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  applicationId: string
+): Promise<RefundResult> {
+  const { data: application, error: appError } = await supabaseAdmin
+    .from("applications")
+    .select("id, campaign_id, creator_id")
+    .eq("id", applicationId)
+    .single();
+  if (appError || !application) {
+    return { refunded: false, reason: "no_transaction", error: "Application not found" };
+  }
+
+  const { data: transaction, error: txError } = await supabaseAdmin
+    .from("transactions")
+    .select("id, stripe_charge_id, stripe_transfer_id, status")
+    .eq("campaign_id", application.campaign_id)
+    .eq("creator_id", application.creator_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (txError || !transaction) {
+    return { refunded: false, reason: "no_transaction", error: "No matching transaction found" };
+  }
+  if (transaction.stripe_transfer_id) {
+    return { refunded: false, reason: "already_released", error: "Funds were already released to the creator - this needs manual handling, not a refund." };
+  }
+  if (!transaction.stripe_charge_id) {
+    return { refunded: false, reason: "no_transaction", error: "Payment hasn't finished settling yet - try again shortly." };
+  }
+
+  const refundRes = await fetch("https://api.stripe.com/v1/refunds", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({ charge: transaction.stripe_charge_id }),
+  });
+  const refund = await refundRes.json();
+
+  if (!refund.id) {
+    console.error("Stripe refund failed for application", applicationId, refund);
+    return { refunded: false, reason: "refund_failed", error: refund.error?.message || "Stripe refund failed" };
+  }
+
+  await supabaseAdmin.from("transactions").update({ status: "refunded" }).eq("id", transaction.id);
+  await supabaseAdmin.from("applications").update({ status: "refunded" }).eq("id", applicationId);
+  return { refunded: true, refundId: refund.id };
+}

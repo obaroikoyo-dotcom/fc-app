@@ -425,6 +425,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [myPost, setMyPost] = useState<CampaignPost | null>(null);
   const [posting, setPosting] = useState(false);
   const [releasing, setReleasing] = useState(false);
+  const [showDisputeForm, setShowDisputeForm] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputing, setDisputing] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -508,6 +511,29 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     setReleasing(false);
   };
 
+  const handleRaiseDispute = async () => {
+    if (!disputeReason.trim()) return;
+    setDisputing(true);
+    setError("");
+    try {
+      const { error: fnError } = await supabase.functions.invoke("raise-dispute", { body: { application_id: applicationId, reason: disputeReason.trim() } });
+      if (fnError) {
+        let message = "Failed to raise dispute.";
+        try {
+          const errBody = await (fnError as any)?.context?.json();
+          if (errBody?.error) message = errBody.error;
+        } catch { /* fall back to generic message */ }
+        throw new Error(message);
+      }
+      setShowDisputeForm(false);
+      setDisputeReason("");
+      onReleased();
+    } catch (err) {
+      setError((err as Error).message || "Failed to raise dispute");
+    }
+    setDisputing(false);
+  };
+
   const canBrandPost = role === "brand" && applicationStatus === "paid";
   // Includes "paid" too - not just "funded" - so the creator's own
   // confirmation (below) doesn't disappear the moment they're actually
@@ -584,6 +610,43 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       {role === "brand" && applicationStatus === "funded" && (
         <div onClick={!releasing ? handleManualRelease : undefined} style={{ marginTop: "10px", padding: "11px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: releasing ? "#555" : "#777", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
           {releasing ? "Releasing..." : "Release Payment Manually (e.g. you're posting this yourself, or it was delivered off-platform)"}
+        </div>
+      )}
+
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && (
+        showDisputeForm ? (
+          <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,59,48,0.2)", background: "rgba(255,59,48,0.05)" }}>
+            <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>What's wrong with this delivery?</p>
+            <textarea
+              value={disputeReason}
+              onChange={e => setDisputeReason(e.target.value)}
+              placeholder="Explain the issue - an admin will review this and the chat history before deciding."
+              style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+            />
+            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+              <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid #222", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+                Cancel
+              </div>
+              <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing ? "#3a1414" : "#ff3b30", color: "#fff", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
+                {disputing ? "Submitting..." : "Submit Dispute"}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#ff9500", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+            Dispute This Delivery
+          </div>
+        )
+      )}
+
+      {applicationStatus === "disputed" && (
+        <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,149,0,0.25)", background: "rgba(255,149,0,0.06)" }}>
+          <p style={{ fontSize: "12px", color: "#ff9500", fontWeight: 600 }}>Dispute under review</p>
+          <p style={{ fontSize: "11px", color: "#999", marginTop: "4px", lineHeight: 1.5 }}>
+            {role === "brand"
+              ? "You've raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it."
+              : "The brand has raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it. You'll be notified once it's resolved."}
+          </p>
         </div>
       )}
     </div>
@@ -1926,6 +1989,14 @@ return (
                     <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a" }}>
                       Funded — Awaiting Post
                     </span>
+                  ) : activeConvo.application_status === "disputed" ? (
+                    <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a" }}>
+                      Dispute Under Review
+                    </span>
+                  ) : activeConvo.application_status === "refunded" ? (
+                    <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
+                      Refunded
+                    </span>
                   ) : activeConvo.application_status === "rejected" ? (
                     <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
                       Folder Closed (Declined)
@@ -1962,6 +2033,24 @@ return (
                         This deal is complete - your payout has been sent to your connected account.
                       </p>
                     </>
+                  ) : activeConvo.application_status === "disputed" ? (
+                    <>
+                      <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a", fontWeight: 500 }}>
+                        Dispute Under Review
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                        The brand has raised an issue with this delivery - a FlipCollab admin is reviewing it and will decide the outcome.
+                      </p>
+                    </>
+                  ) : activeConvo.application_status === "refunded" ? (
+                    <>
+                      <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
+                        Refunded to Brand
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                        After review, this payment was refunded to the brand and won't be released.
+                      </p>
+                    </>
                   ) : (
                     <>
                       <span style={{ fontSize: "11px", color: "#aaa", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
@@ -1987,7 +2076,11 @@ return (
                 role={role === "brand" ? "brand" : "creator"}
                 currentUserId={currentUserId}
                 applicationStatus={activeConvo.application_status}
-                onReleased={() => setActiveConvo(prev => prev ? { ...prev, application_status: "paid" } : prev)}
+                onReleased={async () => {
+                  if (!activeConvo?.application_id) return;
+                  const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();
+                  if (data) setActiveConvo(prev => prev ? { ...prev, application_status: data.status } : prev);
+                }}
               />
             )}
             {messages.length === 0 && (

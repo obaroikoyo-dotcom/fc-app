@@ -124,7 +124,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Payments & Escrow</span>
-            <span>All payments are processed through Stripe. FlipCollab holds funds in escrow until content is approved by the brand. Disputes must be raised within 7 days of content delivery by contacting hello@flipcollab.com.</span>
+            <span>All payments are processed through Stripe. FlipCollab holds funds in escrow until content is approved by the brand, or released automatically after 7 days if the brand takes no action. A brand can dispute a delivery in-app within that same 7-day window; a FlipCollab admin reviews it and decides on a refund or release.</span>
           </div>
 
           <div>

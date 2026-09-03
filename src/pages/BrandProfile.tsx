@@ -1123,7 +1123,7 @@ const renderTerms = () => (
         { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
         { t: "2. Your Account", b: "Keep credentials secure. FlipCollab isn't liable for unauthorised access. You can delete your account anytime from settings." },
         { t: "3. Brand Responsibilities", b: "Post accurate campaign information. Don't pay creators outside FlipCollab to bypass fees — results in immediate termination." },
-        { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved. Disputes must be raised within 7 days to hello@flipcollab.com." },
+        { t: "4. Payments & Escrow", b: "All payments via Stripe. Funds held in escrow until content is approved, released automatically after 7 days if you take no action, or refunded if you raise a dispute in-app and it's upheld after FlipCollab review." },
         { t: "5. Payment Delays", b: "Delays may occur during maintenance or incidents. All escrow funds are guaranteed to be processed once normal operations resume." },
         { t: "6. Platform Fees", b: "A 5% fee is added to brand payments. Enterprise brands get 0% fees." },
         { t: "7. Prohibited Content", b: "No illegal, hateful, explicit, discriminatory, or misleading content. Violations result in account suspension or termination." },

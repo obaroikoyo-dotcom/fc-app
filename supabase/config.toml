@@ -95,3 +95,18 @@ entrypoint = "./functions/delete-message-media/index.ts"
 enabled = true
 verify_jwt = false
 entrypoint = "./functions/edit-message/index.ts"
+
+[functions.raise-dispute]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/raise-dispute/index.ts"
+
+[functions.resolve-dispute]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/resolve-dispute/index.ts"
+
+[functions.auto-release-payments]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/auto-release-payments/index.ts"

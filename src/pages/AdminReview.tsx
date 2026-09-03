@@ -29,11 +29,23 @@ interface ReportRow {
   reported_name: string;
 }
 
+interface DisputeRow {
+  id: string;
+  application_id: string;
+  reason: string;
+  created_at: string;
+  brand_name: string;
+  creator_name: string;
+  campaign_name: string;
+}
+
 export default function AdminReview({ goBack }: Props) {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<"verification" | "reports" | "accounts">("verification");
+  const [tab, setTab] = useState<"verification" | "reports" | "disputes" | "accounts">("verification");
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
+  const [disputes, setDisputes] = useState<DisputeRow[]>([]);
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
@@ -114,6 +126,22 @@ export default function AdminReview({ goBack }: Props) {
       setReports([]);
     }
 
+    const { data: disputeRows } = await supabase
+      .from("disputes")
+      .select("id, application_id, reason, created_at, applications(campaign_id, campaigns(name, brand_id, brand_profiles(name)), creator_id, creator_profiles(name))")
+      .eq("status", "open")
+      .order("created_at", { ascending: true });
+
+    setDisputes((disputeRows || []).map((d: any) => ({
+      id: d.id,
+      application_id: d.application_id,
+      reason: d.reason,
+      created_at: d.created_at,
+      brand_name: d.applications?.campaigns?.brand_profiles?.name || "Brand",
+      creator_name: d.applications?.creator_profiles?.name || "Creator",
+      campaign_name: d.applications?.campaigns?.name || "Campaign",
+    })));
+
     setLoading(false);
   };
 
@@ -136,6 +164,22 @@ export default function AdminReview({ goBack }: Props) {
     const { error } = await supabase.rpc("resolve_report", { target_report_id: id });
     setActioningId(null);
     if (!error) setReports(prev => prev.filter(r => r.id !== id));
+  };
+
+  const handleResolveDispute = async (id: string, resolution: "refund" | "release") => {
+    setResolvingId(id);
+    const { error } = await supabase.functions.invoke("resolve-dispute", { body: { dispute_id: id, resolution } });
+    setResolvingId(null);
+    if (!error) {
+      setDisputes(prev => prev.filter(d => d.id !== id));
+    } else {
+      let message = "Failed to resolve dispute.";
+      try {
+        const errBody = await (error as any)?.context?.json();
+        if (errBody?.error) message = errBody.error;
+      } catch { /* fall back to generic message */ }
+      alert(message);
+    }
   };
 
   const header = (
@@ -201,6 +245,9 @@ export default function AdminReview({ goBack }: Props) {
         <button onClick={() => setTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid #fff" : "2px solid transparent", color: tab === "reports" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Reports ({reports.length})
         </button>
+        <button onClick={() => setTab("disputes")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "disputes" ? "2px solid #fff" : "2px solid transparent", color: tab === "disputes" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+          Disputes ({disputes.length})
+        </button>
         <button onClick={() => setTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid #fff" : "2px solid transparent", color: tab === "accounts" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Accounts
         </button>
@@ -262,6 +309,44 @@ export default function AdminReview({ goBack }: Props) {
                   </div>
                 </div>
               ))}
+            </div>
+          )
+        )}
+
+        {tab === "disputes" && (
+          disputes.length === 0 ? (
+            <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open disputes.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {disputes.map(d => {
+                const daysOpen = Math.floor((Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24));
+                return (
+                  <div key={d.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{d.brand_name} vs {d.creator_name}</p>
+                      <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: daysOpen >= 3 ? "rgba(255,59,48,0.1)" : "#1a1a1a", border: `1px solid ${daysOpen >= 3 ? "rgba(255,59,48,0.3)" : "#222"}`, color: daysOpen >= 3 ? "#ff4d4d" : "#888", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", flexShrink: 0 }}>
+                        {daysOpen === 0 ? "Today" : `${daysOpen}d open`}
+                      </span>
+                    </div>
+                    <p style={{ color: "#888", fontSize: "10px", marginBottom: "8px" }}>{d.campaign_name} · {new Date(d.created_at).toLocaleString()}</p>
+                    <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "12px" }}>{d.reason}</p>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <div
+                        onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "refund")}
+                        style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.3)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
+                      >
+                        {resolvingId === d.id ? "..." : "Refund Brand"}
+                      </div>
+                      <div
+                        onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "release")}
+                        style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
+                      >
+                        Release to Creator
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )
         )}
