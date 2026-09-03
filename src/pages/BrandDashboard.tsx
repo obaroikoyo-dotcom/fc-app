@@ -189,6 +189,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {/* Header */}
         <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {tab === "post" && (
+              <span onClick={() => { setEditingCampaign(null); setTab("campaigns"); }} style={{ fontSize: "20px", color: "#fff", cursor: "pointer", marginRight: "4px" }}>←</span>
+            )}
             <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
               {tab === "campaigns" ? "Campaigns" : editingCampaign ? "Edit Campaign" : "Post Campaign"}
             </span>
