@@ -1160,15 +1160,16 @@ setTimeout(() => setSaved(false), 2000);
                 boxShadow: "0 12px 30px -12px rgba(0,0,0,0.6)",
               }}>
                 <p aria-hidden="true" style={{
-                  position: "absolute", right: "-6px", bottom: "-22px",
+                  position: "absolute", top: "50%", left: "50%",
+                  transform: "translate(-50%, -50%)",
                   fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                  fontSize: "52px", letterSpacing: "0.02em",
+                  fontSize: "44px", letterSpacing: "0.04em",
                   color: "rgba(255,255,255,0.035)",
                   whiteSpace: "nowrap", pointerEvents: "none",
                 }}>FLIPCOLLAB</p>
 
                 <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.06em", marginBottom: "10px", position: "relative" }}>
-                  Your <strong style={{ color: "#ddd" }}>flipcollab</strong> balance
+                  Your balance
                 </p>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "34px", fontWeight: 800, color: "#fff", lineHeight: 1, position: "relative" }}>
                   £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
