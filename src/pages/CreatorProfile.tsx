@@ -1160,9 +1160,8 @@ setTimeout(() => setSaved(false), 2000);
                 boxShadow: "0 12px 30px -12px rgba(0,0,0,0.6)",
               }}>
                 <p aria-hidden="true" style={{
-                  position: "absolute", bottom: "10px", left: "50%",
-                  transform: "translateX(-50%) scaleY(1.3)",
-                  transformOrigin: "bottom",
+                  position: "absolute", top: "50%", left: "50%",
+                  transform: "translate(-50%, -50%)",
                   fontFamily: "'Syne', sans-serif", fontWeight: 800,
                   fontSize: "36px", letterSpacing: "0.02em",
                   color: "rgba(255,255,255,0.035)",
