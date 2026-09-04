@@ -1179,12 +1179,6 @@ setTimeout(() => setSaved(false), 2000);
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, position: "relative" }}>
                   £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
-
-                <div style={{ height: "1px", background: "rgba(255,255,255,0.14)", margin: "20px 0 14px", position: "relative" }} />
-
-                <p style={{ fontSize: "14px", color: "#ccc", position: "relative" }}>
-                  £{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} available
-                </p>
               </div>
 
               <p style={{ fontSize: "11px", color: "#888", marginTop: "14px", textAlign: "center" }}>Platform matching fee automatically deducted.</p>
