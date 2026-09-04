@@ -105,7 +105,7 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
 export default function Explore({ navigate, navigateToProfile, navigateToApply }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
-  const [feedTab, setFeedTab] = usePersistedState<"discover" | "pitches">("fc_explore_feedtab", "discover");
+  const [feedTab, setFeedTab] = useState<"discover" | "pitches">("discover");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
