@@ -1153,28 +1153,37 @@ setTimeout(() => setSaved(false), 2000);
               <div style={{
                 position: "relative",
                 overflow: "hidden",
-                borderRadius: "20px",
-                minHeight: "160px",
-                padding: "1.5rem",
-                background: "radial-gradient(120% 140% at 100% 0%, #1e1e1e 0%, #0d0d0d 55%, #050505 100%)",
-                border: "1px solid #232323",
-                boxShadow: "0 12px 30px -12px rgba(0,0,0,0.6)",
+                borderRadius: "22px",
+                padding: "1.75rem 1.75rem 2.5rem",
+                background: "linear-gradient(160deg, #1a1a1a 0%, #0d0d0d 60%, #060606 100%)",
+                border: "1px solid #262626",
+                boxShadow: "0 14px 34px -14px rgba(0,0,0,0.65)",
               }}>
-                <p aria-hidden="true" style={{
-                  position: "absolute", bottom: "-20px", left: "50%",
-                  transform: "translateX(-50%)",
-                  width: "100%", textAlign: "center",
-                  fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                  fontSize: "58px", letterSpacing: "0.01em",
-                  color: "rgba(255,255,255,0.07)",
-                  whiteSpace: "nowrap", pointerEvents: "none",
-                }}>FLIPCOLLAB</p>
+                <div style={{
+                  position: "absolute", left: 0, right: 0, bottom: "-6px",
+                  textAlign: "center", overflow: "hidden",
+                }}>
+                  <p aria-hidden="true" style={{
+                    margin: 0,
+                    fontFamily: "'Syne', sans-serif", fontWeight: 800,
+                    fontSize: "clamp(38px, 17vw, 62px)", letterSpacing: "0.01em",
+                    color: "rgba(255,255,255,0.07)",
+                    lineHeight: 1,
+                    whiteSpace: "nowrap", pointerEvents: "none",
+                  }}>FLIPCOLLAB</p>
+                </div>
 
-                <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.06em", marginBottom: "10px", position: "relative" }}>
+                <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px", position: "relative" }}>
                   Your balance
                 </p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "34px", fontWeight: 800, color: "#fff", lineHeight: 1, position: "relative" }}>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, position: "relative" }}>
                   £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+
+                <div style={{ height: "1px", background: "rgba(255,255,255,0.14)", margin: "20px 0 14px", position: "relative" }} />
+
+                <p style={{ fontSize: "14px", color: "#ccc", position: "relative" }}>
+                  £{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} available
                 </p>
               </div>
 
