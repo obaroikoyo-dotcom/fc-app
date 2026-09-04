@@ -1154,16 +1154,16 @@ setTimeout(() => setSaved(false), 2000);
                 position: "relative",
                 overflow: "hidden",
                 borderRadius: "20px",
-                padding: "1.5rem 1.5rem 3rem",
+                padding: "1.5rem 1.5rem 4.5rem",
                 background: "radial-gradient(120% 140% at 100% 0%, #1e1e1e 0%, #0d0d0d 55%, #050505 100%)",
                 border: "1px solid #232323",
                 boxShadow: "0 12px 30px -12px rgba(0,0,0,0.6)",
               }}>
                 <p aria-hidden="true" style={{
-                  position: "absolute", bottom: "10px", left: "50%",
+                  position: "absolute", bottom: "14px", left: "50%",
                   transform: "translateX(-50%)",
                   fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                  fontSize: "36px", letterSpacing: "0.02em",
+                  fontSize: "32px", letterSpacing: "0.02em",
                   color: "rgba(255,255,255,0.035)",
                   whiteSpace: "nowrap", pointerEvents: "none",
                 }}>FLIPCOLLAB</p>
