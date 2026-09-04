@@ -1166,7 +1166,7 @@ setTimeout(() => setSaved(false), 2000);
                   <p aria-hidden="true" style={{
                     margin: 0,
                     fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                    fontSize: "38px", letterSpacing: "0",
+                    fontSize: "33px", letterSpacing: "0",
                     color: "rgba(255,255,255,0.07)",
                     lineHeight: 1,
                     whiteSpace: "nowrap", pointerEvents: "none",
