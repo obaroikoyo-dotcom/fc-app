@@ -1163,8 +1163,8 @@ setTimeout(() => setSaved(false), 2000);
                   position: "absolute", top: "50%", left: "50%",
                   transform: "translate(-50%, -50%)",
                   fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                  fontSize: "44px", letterSpacing: "0.04em",
-                  color: "rgba(255,255,255,0.035)",
+                  fontSize: "28px", letterSpacing: "0.02em",
+                  color: "rgba(255,255,255,0.05)",
                   whiteSpace: "nowrap", pointerEvents: "none",
                 }}>FLIPCOLLAB</p>
 
