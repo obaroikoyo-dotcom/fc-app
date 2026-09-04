@@ -1149,13 +1149,42 @@ setTimeout(() => setSaved(false), 2000);
 ))}
           </div>
           {walletTab === "balance" && (
-            <div style={{ padding: "1.5rem", textAlign: "center" }}>
-              <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Available Balance (Net)</p>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "36px", fontWeight: 800, color: "#fff" }}>£{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-              <p style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>Platform matching fee automatically deducted.</p>
-              <p style={{ fontSize: "10px", color: "#666", marginTop: "6px" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
+            <div style={{ padding: "1.5rem" }}>
+              <div style={{
+                position: "relative",
+                overflow: "hidden",
+                borderRadius: "20px",
+                padding: "1.5rem",
+                background: "radial-gradient(120% 140% at 100% 0%, #1e1e1e 0%, #0d0d0d 55%, #050505 100%)",
+                border: "1px solid #232323",
+                boxShadow: "0 12px 30px -12px rgba(0,0,0,0.6)",
+              }}>
+                <p aria-hidden="true" style={{
+                  position: "absolute", right: "-6px", bottom: "-22px",
+                  fontFamily: "'Syne', sans-serif", fontWeight: 800,
+                  fontSize: "52px", letterSpacing: "0.02em",
+                  color: "rgba(255,255,255,0.035)",
+                  whiteSpace: "nowrap", pointerEvents: "none",
+                }}>FLIPCOLLAB</p>
+
+                <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.06em", marginBottom: "10px", position: "relative" }}>
+                  Your <strong style={{ color: "#ddd" }}>flipcollab</strong> balance
+                </p>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "34px", fontWeight: 800, color: "#fff", lineHeight: 1, position: "relative" }}>
+                  £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+
+                <div style={{ height: "1px", background: "rgba(255,255,255,0.12)", margin: "16px 0" }} />
+
+                <p style={{ fontSize: "13px", color: "#ccc", position: "relative" }}>
+                  £{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} available
+                </p>
+              </div>
+
+              <p style={{ fontSize: "11px", color: "#888", marginTop: "14px", textAlign: "center" }}>Platform matching fee automatically deducted.</p>
+              <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
-                <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "8px" }}>+£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} escrowed — released once deliverables are posted/confirmed.</p>
+                <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "8px", textAlign: "center" }}>+£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} escrowed — released once deliverables are posted/confirmed.</p>
               )}
               {transactions.length > 0 && (
                 <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
