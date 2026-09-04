@@ -1154,7 +1154,7 @@ setTimeout(() => setSaved(false), 2000);
                 position: "relative",
                 overflow: "hidden",
                 borderRadius: "20px",
-                padding: "1.5rem",
+                padding: "1.5rem 1.5rem 3rem",
                 background: "radial-gradient(120% 140% at 100% 0%, #1e1e1e 0%, #0d0d0d 55%, #050505 100%)",
                 border: "1px solid #232323",
                 boxShadow: "0 12px 30px -12px rgba(0,0,0,0.6)",
