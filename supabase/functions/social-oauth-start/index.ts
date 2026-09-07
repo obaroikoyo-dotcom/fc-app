@@ -57,7 +57,7 @@ serve(async (req) => {
         client_id: clientId,
         redirect_uri: CALLBACK_URL,
         response_type: "code",
-        scope: "instagram_business_basic",
+        scope: "instagram_business_basic,instagram_business_content_publish",
         state,
       });
       authorizeUrl = `https://www.instagram.com/oauth/authorize?${params.toString()}`;

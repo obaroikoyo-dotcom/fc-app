@@ -39,12 +39,28 @@ export async function uploadDeliverable(applicationId: string, creatorId: string
   return publicUrl;
 }
 
-export async function postDeliverableToTikTok(applicationId: string): Promise<{ campaign_post_id: string; publish_id: string }> {
-  return authedFetch("tiktok-post-video", { application_id: applicationId });
+export type DeliveryPlatform = "tiktok" | "instagram";
+
+// A campaign's declared platform (e.g. "TikTok Video", "IG Reel", "IG Story",
+// "IG Carousel") maps to whichever connected-account gating flow actually
+// supports posting on the creator's behalf - everything else (YouTube, UGC
+// packages, etc.) has no gated-posting integration and falls back to manual
+// release only.
+export function deliveryPlatformFor(platform: string | undefined | null): DeliveryPlatform | null {
+  if (!platform) return null;
+  if (platform.toLowerCase().startsWith("tiktok")) return "tiktok";
+  if (platform.toLowerCase().startsWith("ig ") || platform.toLowerCase().startsWith("instagram")) return "instagram";
+  return null;
 }
 
-export async function pollPostStatus(campaignPostId: string): Promise<{ status: "processing" | "published" | "failed"; post_url?: string | null; detail?: string; payout_released?: boolean; payout_error?: string }> {
-  return authedFetch("tiktok-post-status", { campaign_post_id: campaignPostId });
+export async function postDeliverable(platform: DeliveryPlatform, applicationId: string): Promise<{ campaign_post_id: string }> {
+  const fn = platform === "instagram" ? "instagram-post-content" : "tiktok-post-video";
+  return authedFetch(fn, { application_id: applicationId });
+}
+
+export async function pollPostStatus(platform: DeliveryPlatform, campaignPostId: string): Promise<{ status: "processing" | "published" | "failed"; post_url?: string | null; detail?: string; payout_released?: boolean; payout_error?: string }> {
+  const fn = platform === "instagram" ? "instagram-post-status" : "tiktok-post-status";
+  return authedFetch(fn, { campaign_post_id: campaignPostId });
 }
 
 export async function getCampaignPosts(applicationId: string): Promise<CampaignPost[]> {

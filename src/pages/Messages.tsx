@@ -11,7 +11,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import VerifiedBadge from "../components/VerifiedBadge";
-import { uploadDeliverable, postDeliverableToTikTok, pollPostStatus, getCampaignPosts, releasePayout, type CampaignPost } from "../lib/campaignDelivery";
+import { uploadDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
 import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
@@ -153,9 +153,13 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const [billingCountry, setBillingCountry] = useState("GB");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
+  // Only TikTok and Instagram have a real post-verification integration -
+  // everything else (YouTube, UGC packages, etc.) has no gated flow at all,
+  // so this deal is always "instant" release + manual confirmation for those.
+  const deliveryPlatform = deliveryPlatformFor(paymentApp.platforms?.[0]);
   // Defaults on - protects the brand from paying for a deliverable that
   // never actually gets posted. Still fully optional; they can uncheck it.
-  const [requireTikTokPost, setRequireTikTokPost] = useState(true);
+  const [requireGatedPost, setRequireGatedPost] = useState(true);
   const [payoutsEnabled, setPayoutsEnabled] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -190,8 +194,9 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       country: billingCountry,
     } : undefined;
 
+    const gatedPlatform = deliveryPlatform && requireGatedPost ? deliveryPlatform : null;
     const res = await supabase.functions.invoke("create-payment-intent", {
-  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, require_tiktok_post: requireTikTokPost, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
+  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, gated_platform: gatedPlatform, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
 });
 
     if (res.error || !res.data?.clientSecret) {
@@ -242,16 +247,16 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
     if (confirmResult.paymentIntent?.status === "succeeded") {
       // Gated deals: charge now, but hold the transaction and leave the
-      // application out of "paid" until a creator-posted TikTok video is
-      // confirmed live (or the brand manually releases it later). Ungated
-      // deals keep the exact previous behavior - charge and release in the
-      // same instant.
+      // application out of "paid" until a creator-posted video is confirmed
+      // live on the campaign's platform (or the brand manually releases it
+      // later). Ungated deals keep the exact previous behavior - charge and
+      // release in the same instant.
       // Both paths land on "funded" first - actual release (the real Stripe
       // Transfer to the creator) always goes through releasePayout, either
-      // right away below (ungated) or later via the TikTok/manual triggers.
+      // right away below (ungated) or later via the gated/manual triggers.
       const { error: updateError } = await supabase
         .from("applications")
-        .update({ status: "funded", payout_release_mode: requireTikTokPost ? "tiktok_gated" : "instant" })
+        .update({ status: "funded", payout_release_mode: gatedPlatform ? `${gatedPlatform}_gated` : "instant" })
         .eq("id", paymentApp.id);
 
       if (updateError) {
@@ -266,7 +271,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       // to reflect the real database state, not assume every payment ends
       // up "paid" the instant the card is charged.
       let finalStatus: "funded" | "paid" = "funded";
-      if (!requireTikTokPost) {
+      if (!gatedPlatform) {
         // If this fails (e.g. the creator hasn't finished payout setup),
         // funds simply stay held as "funded" - same recoverable state as
         // any other release attempt, nothing partial or lost.
@@ -282,8 +287,8 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         user_id: paymentApp.creator_id,
         type: "payment_received",
         title: "Payment Received",
-        body: requireTikTokPost
-          ? `Funds for "${paymentApp.campaign_name}" are secured. Post your deliverable video to TikTok from the chat to release your payout.`
+        body: gatedPlatform
+          ? `Funds for "${paymentApp.campaign_name}" are secured. Post your deliverable video to ${paymentApp.platforms?.[0] || "the platform"} from the chat to release your payout.`
           : `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Refresh and check Payouts in Settings to see your balance.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
@@ -375,8 +380,9 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       )}
 
-      <div onClick={() => setRequireTikTokPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireTikTokPost ? "rgba(52,199,89,0.06)" : "#111", border: `1px solid ${requireTikTokPost ? "rgba(52,199,89,0.35)" : "#1a1a1a"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
-        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireTikTokPost ? "#34c759" : "#333"}`, background: requireTikTokPost ? "#34c759" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireTikTokPost ? "✓" : ""}</div>
+      {deliveryPlatform && (
+      <div onClick={() => setRequireGatedPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireGatedPost ? "rgba(52,199,89,0.06)" : "#111", border: `1px solid ${requireGatedPost ? "rgba(52,199,89,0.35)" : "#1a1a1a"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
+        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireGatedPost ? "#34c759" : "#333"}`, background: requireGatedPost ? "#34c759" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireGatedPost ? "✓" : ""}</div>
         <div>
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
             Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
@@ -385,6 +391,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
           <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and use "Release Payment Manually" once you have the file — funds release the same way.</p>
         </div>
       </div>
+      )}
+      {!deliveryPlatform && (
+      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem" }}>
+        <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.4 }}>{paymentApp.platforms?.[0] || "This platform"} doesn't support automatic post verification - funds are held in escrow and you'll release payment manually once delivery is confirmed.</p>
+      </div>
+      )}
 
       {payoutsEnabled === false && (
         <p style={{ fontSize: "11px", color: "#ff9500", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
@@ -420,8 +432,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
   const [mediaDeleteAt, setMediaDeleteAt] = useState<string | null>(null);
   const [platform, setPlatform] = useState("TikTok");
+  const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>("tiktok");
   const [uploading, setUploading] = useState(false);
-  const [tiktokConnected, setTiktokConnected] = useState(false);
+  const [socialConnected, setSocialConnected] = useState(false);
   const [myPost, setMyPost] = useState<CampaignPost | null>(null);
   const [posting, setPosting] = useState(false);
   const [releasing, setReleasing] = useState(false);
@@ -436,26 +449,31 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     (async () => {
       const { data: app } = await supabase.from("applications").select("deliverable_url, platforms, media_delete_at").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
-      if (app?.platforms?.[0]) setPlatform(app.platforms[0]);
+      const resolvedPlatform = app?.platforms?.[0] || "TikTok";
+      setPlatform(resolvedPlatform);
+      const resolvedDeliveryPlatform = deliveryPlatformFor(resolvedPlatform);
+      setDeliveryPlatform(resolvedDeliveryPlatform);
       if (app?.media_delete_at) setMediaDeleteAt(app.media_delete_at);
 
-      const connections = await getSocialConnections(currentUserId);
-      setTiktokConnected(connections.some(c => c.platform === "tiktok"));
+      if (resolvedDeliveryPlatform) {
+        const connections = await getSocialConnections(currentUserId);
+        setSocialConnected(connections.some(c => c.platform === resolvedDeliveryPlatform));
+      }
 
       const posts = await getCampaignPosts(applicationId);
       const mine = posts.find(p => p.posted_by_user_id === currentUserId) || null;
       setMyPost(mine);
-      if (mine && mine.status === "processing") startPolling(mine.id);
+      if (mine && mine.status === "processing" && resolvedDeliveryPlatform) startPolling(mine.id, resolvedDeliveryPlatform);
     })();
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId]);
 
-  const startPolling = (campaignPostId: string) => {
+  const startPolling = (campaignPostId: string, forPlatform: DeliveryPlatform) => {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
       try {
-        const result = await pollPostStatus(campaignPostId);
+        const result = await pollPostStatus(forPlatform, campaignPostId);
         if (result.status !== "processing") {
           if (pollRef.current) clearInterval(pollRef.current);
           setMyPost(prev => prev ? { ...prev, status: result.status } : prev);
@@ -487,14 +505,15 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   };
 
   const handlePost = async () => {
+    if (!deliveryPlatform) return;
     setPosting(true);
     setError("");
     try {
-      const { campaign_post_id } = await postDeliverableToTikTok(applicationId);
+      const { campaign_post_id } = await postDeliverable(deliveryPlatform, applicationId);
       setMyPost({ id: campaign_post_id, application_id: applicationId, posted_by_user_id: currentUserId, posted_by_role: role, status: "processing", post_url: null, created_at: new Date().toISOString(), published_at: null });
-      startPolling(campaign_post_id);
+      startPolling(campaign_post_id, deliveryPlatform);
     } catch (err) {
-      setError((err as Error).message || "Failed to post to TikTok");
+      setError((err as Error).message || `Failed to post to ${platform}`);
     }
     setPosting(false);
   };
@@ -573,7 +592,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // than re-deriving it from myPost, which can be null for
             // deals released a way that never touched TikTok at all.
             <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
-          ) : !tiktokConnected ? (
+          ) : !deliveryPlatform ? (
+            <p style={{ fontSize: "11px", color: "#999" }}>{platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.</p>
+          ) : !socialConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Manage Accounts to post this and get paid.</p>
           ) : !myPost ? (
             <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
@@ -591,7 +612,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {canBrandPost && deliverableUrl && (
         <div>
-          {!tiktokConnected ? (
+          {!deliveryPlatform ? null : !socialConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect your own {platform} from Settings to post this content.</p>
           ) : !myPost ? (
             <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>

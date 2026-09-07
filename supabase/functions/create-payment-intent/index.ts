@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { brand_id, creator_id, campaign_id, stripe_customer_id, billing_address, billing_name, require_tiktok_post } = await req.json();
-    const payoutReleaseMode = require_tiktok_post === false ? "instant" : "tiktok_gated";
+    const { brand_id, creator_id, campaign_id, stripe_customer_id, billing_address, billing_name, gated_platform } = await req.json();
+    const payoutReleaseMode = gated_platform === "tiktok" || gated_platform === "instagram" ? `${gated_platform}_gated` : "instant";
 
     console.log("Received payment request:", { brand_id, creator_id, campaign_id, stripe_customer_id });
 

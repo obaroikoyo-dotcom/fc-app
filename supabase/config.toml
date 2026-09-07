@@ -45,6 +45,18 @@ verify_jwt = false
 import_map = "./functions/tiktok-post-status/deno.json"
 entrypoint = "./functions/tiktok-post-status/index.ts"
 
+[functions.instagram-post-content]
+enabled = true
+verify_jwt = false
+import_map = "./functions/instagram-post-content/deno.json"
+entrypoint = "./functions/instagram-post-content/index.ts"
+
+[functions.instagram-post-status]
+enabled = true
+verify_jwt = false
+import_map = "./functions/instagram-post-status/deno.json"
+entrypoint = "./functions/instagram-post-status/index.ts"
+
 [functions.moderate-user]
 enabled = true
 verify_jwt = false
