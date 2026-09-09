@@ -190,7 +190,10 @@ async function handleYoutube(code: string, supabase: ReturnType<typeof createCli
 
   const channelId = channel.id;
   const channelTitle = channel.snippet?.title || null;
-  const subscriberCount = channel.statistics?.hiddenSubscriberCount ? null : parseInt(channel.statistics?.subscriberCount ?? "", 10) || null;
+  // Was `parseInt(...) || null` - that turns a genuine 0-subscriber channel
+  // into null too, since 0 is falsy, dropping a real (if unexciting) value.
+  const parsedSubscriberCount = parseInt(channel.statistics?.subscriberCount ?? "", 10);
+  const subscriberCount = channel.statistics?.hiddenSubscriberCount || Number.isNaN(parsedSubscriberCount) ? null : parsedSubscriberCount;
   const uploadsPlaylistId = channel.contentDetails?.relatedPlaylists?.uploads;
 
   // refresh_token is only present on the very first consent (or when
