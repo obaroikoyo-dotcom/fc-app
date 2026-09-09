@@ -229,8 +229,7 @@ const [showOtp, setShowOtp] = useState(false);
       const params = new URLSearchParams(window.location.search);
       const connected = params.get("social_connected");
       const socialError = params.get("social_error");
-      if (connected === "instagram" || connected === "tiktok") {
-        setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected. Choose which videos to feature.`);
+      if (connected === "instagram" || connected === "tiktok" || connected === "youtube") {
         openPostPicker(connected);
       } else if (socialError) {
         setSocialNotice(`Couldn't connect: ${socialError}`);
@@ -980,7 +979,7 @@ const buttonLabel = () => {
   <div style={{ position: "fixed", inset: 0, background: "#0a0a0a", zIndex: 9999, display: "flex", flexDirection: "column" }}>
     <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
       <span onClick={() => setPickerPlatform(null)} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform === "instagram" ? "Instagram" : "TikTok"} videos</span>
+      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform ? PLATFORM_LABEL[pickerPlatform] : ""} videos</span>
     </div>
     <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "6rem" }}>
       <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>

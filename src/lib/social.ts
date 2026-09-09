@@ -2,6 +2,16 @@ import { supabase } from "./supabase";
 
 export type SocialPlatform = "instagram" | "tiktok" | "youtube";
 
+// Centralized so adding a platform can't silently mislabel it somewhere -
+// this exact bug happened when youtube was added and several call sites
+// still had a hardcoded `=== "instagram" ? "Instagram" : "TikTok"` ternary
+// that fell through to "TikTok" for anything else, including YouTube.
+export const SOCIAL_PLATFORM_LABEL: Record<SocialPlatform, string> = {
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  youtube: "YouTube",
+};
+
 export interface SocialConnection {
   platform: SocialPlatform;
   username: string | null;

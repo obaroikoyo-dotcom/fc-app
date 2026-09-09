@@ -4,7 +4,7 @@ import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { getLog, clearLog } from "../lib/debugLog";
-import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
+import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, SOCIAL_PLATFORM_LABEL, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
 import VerifiedBadge from "../components/VerifiedBadge";
 import StarRating from "../components/StarRating";
 import { getCreatorTrackRecord, getCreatorReviews, formatTurnaroundTime, type CreatorTrackRecord, type CreatorReview } from "../lib/creatorStats";
@@ -182,7 +182,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     const connected = params.get("social_connected");
     const socialError = params.get("social_error");
     if (connected) {
-      setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected.`);
       setSettingsSection("manage-accounts");
       setView("settings");
     } else if (socialError) {
@@ -671,7 +670,7 @@ setTimeout(() => setSaved(false), 2000);
             {socialConnections.filter(c => c.username).length > 0 && (
               <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
                 {socialConnections.filter(c => c.username).map((c, i) => (
-                  <span key={c.platform}>{i > 0 ? "  ·  " : ""}{c.platform === "instagram" ? "Instagram" : "TikTok"} @{c.username}</span>
+                  <span key={c.platform}>{i > 0 ? "  ·  " : ""}{SOCIAL_PLATFORM_LABEL[c.platform]} @{c.username}</span>
                 ))}
               </p>
             )}
@@ -1043,7 +1042,7 @@ setTimeout(() => setSaved(false), 2000);
   // ─── MANAGE ACCOUNTS ──────────────────────────────────────────────────────
   const renderPostPicker = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
-      {renderSettingsHeader(`Choose ${pickerPlatform === "instagram" ? "Instagram" : "TikTok"} videos`, () => setPickerPlatform(null))}
+      {renderSettingsHeader(`Choose ${pickerPlatform ? SOCIAL_PLATFORM_LABEL[pickerPlatform] : ""} videos`, () => setPickerPlatform(null))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
           Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected).

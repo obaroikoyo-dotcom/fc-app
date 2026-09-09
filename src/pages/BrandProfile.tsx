@@ -73,8 +73,7 @@ export default function BrandProfile({ navigate, toggleTheme, isInverted }: Prop
       const params = new URLSearchParams(window.location.search);
       const connected = params.get("social_connected");
       const socialError = params.get("social_error");
-      if (connected === "instagram" || connected === "tiktok") {
-        setSocialNotice(`${connected === "instagram" ? "Instagram" : "TikTok"} connected.`);
+      if (connected) {
         setSettingsSection("manage-accounts");
         setView("settings");
       } else if (socialError) {

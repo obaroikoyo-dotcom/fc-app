@@ -5,7 +5,7 @@ import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
-import { getSocialPosts, getPublicSocialInfo, type SocialPost, type PublicSocialInfo } from "../lib/social";
+import { getSocialPosts, getPublicSocialInfo, SOCIAL_PLATFORM_LABEL, type SocialPost, type PublicSocialInfo } from "../lib/social";
 import StarRating from "../components/StarRating";
 import {
   getCreatorTrackRecord, getCreatorReviews, getReviewableCreatorCampaigns, submitCreatorReview, formatTurnaroundTime,
@@ -493,7 +493,7 @@ const startDM = async () => {
             <div style={sectionStyle}>
               <label style={labelStyle}>Platforms</label>
               {creator.platforms.map(p => {
-                const verified = socialInfo.find(s => (s.platform === "instagram" ? "Instagram" : "TikTok") === p);
+                const verified = socialInfo.find(s => SOCIAL_PLATFORM_LABEL[s.platform] === p);
                 const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
                 return (
                 <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
@@ -518,7 +518,7 @@ const startDM = async () => {
               {socialInfo.length > 0 && (
                 <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
                   {socialInfo.map((s, i) => (
-                    <span key={s.platform}>{i > 0 ? "  ·  " : ""}{s.platform === "instagram" ? "Instagram" : "TikTok"} @{s.username}{s.follower_count != null ? ` (${s.follower_count.toLocaleString()})` : ""}</span>
+                    <span key={s.platform}>{i > 0 ? "  ·  " : ""}{SOCIAL_PLATFORM_LABEL[s.platform]} @{s.username}{s.follower_count != null ? ` (${s.follower_count.toLocaleString()})` : ""}</span>
                   ))}
                 </p>
               )}
