@@ -41,16 +41,31 @@ export async function uploadDeliverable(applicationId: string, creatorId: string
 
 export type DeliveryPlatform = "tiktok" | "instagram";
 
+// The Instagram side of the gated-posting integration (edge functions, DB
+// columns) is fully built, but Meta's instagram_business_content_publish
+// permission needs App Review approval before it'll actually work for real
+// creator accounts - flip this on once that's approved and the whole flow
+// (including the "Coming Soon" UI below) picks it up with no other changes.
+const INSTAGRAM_GATING_ENABLED = false;
+
 // A campaign's declared platform (e.g. "TikTok Video", "IG Reel", "IG Story",
-// "IG Carousel") maps to whichever connected-account gating flow actually
-// supports posting on the creator's behalf - everything else (YouTube, UGC
-// packages, etc.) has no gated-posting integration and falls back to manual
-// release only.
-export function deliveryPlatformFor(platform: string | undefined | null): DeliveryPlatform | null {
+// "IG Carousel") maps to which social platform it targets, regardless of
+// whether gated posting is actually enabled for it yet - lets the UI tell
+// "Instagram, coming soon" apart from "no integration at all" (YouTube, UGC
+// packages, etc.).
+export function socialPlatformFor(platform: string | undefined | null): DeliveryPlatform | null {
   if (!platform) return null;
   if (platform.toLowerCase().startsWith("tiktok")) return "tiktok";
   if (platform.toLowerCase().startsWith("ig ") || platform.toLowerCase().startsWith("instagram")) return "instagram";
   return null;
+}
+
+// The gating flow actually usable right now - same as socialPlatformFor,
+// except Instagram is withheld until INSTAGRAM_GATING_ENABLED flips on.
+export function deliveryPlatformFor(platform: string | undefined | null): DeliveryPlatform | null {
+  const social = socialPlatformFor(platform);
+  if (social === "instagram" && !INSTAGRAM_GATING_ENABLED) return null;
+  return social;
 }
 
 export async function postDeliverable(platform: DeliveryPlatform, applicationId: string): Promise<{ campaign_post_id: string }> {

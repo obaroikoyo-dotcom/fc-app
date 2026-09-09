@@ -11,7 +11,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import VerifiedBadge from "../components/VerifiedBadge";
-import { uploadDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
+import { uploadDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
 import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
@@ -39,6 +39,33 @@ const AddReactionIcon = () => (
     <path d="M9 9.5h.01M15 9.5h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
   </svg>
 );
+
+const ClockIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M12 7v5l3.5 2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+// Same card shape as the "Require a post" checkbox it sits alongside
+// (title + pill on one line, explainer beneath) so a platform without a
+// live gated-posting integration reads as an intentional state, not a
+// leftover placeholder - used both for "not supported at all" (YouTube,
+// UGC packages) and "Instagram, pending Meta's App Review approval."
+function ComingSoonNotice({ title, pillLabel, pillColor, body }: { title: string; pillLabel: string; pillColor: string; body: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", color: "#777" }}>
+      <ClockIcon />
+      <div>
+        <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+          {title}
+          <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: `${pillColor}26`, color: pillColor, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{pillLabel}</span>
+        </p>
+        <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>{body}</p>
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   navigate: (p: Page) => void;
@@ -392,10 +419,21 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       </div>
       )}
-      {!deliveryPlatform && (
-      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem" }}>
-        <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.4 }}>{paymentApp.platforms?.[0] || "This platform"} doesn't support automatic post verification - funds are held in escrow and you'll release payment manually once delivery is confirmed.</p>
-      </div>
+      {!deliveryPlatform && socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" && (
+        <ComingSoonNotice
+          title="Instagram post verification"
+          pillLabel="Coming Soon"
+          pillColor="#ff9500"
+          body="Automatic release once your Instagram post is confirmed live isn't available yet - funds are held in escrow and you'll release payment manually once delivery is confirmed."
+        />
+      )}
+      {!deliveryPlatform && socialPlatformFor(paymentApp.platforms?.[0]) !== "instagram" && (
+        <ComingSoonNotice
+          title={`${paymentApp.platforms?.[0] || "This platform"} post verification`}
+          pillLabel="Not Available"
+          pillColor="#888"
+          body="This platform doesn't support automatic post verification - funds are held in escrow and you'll release payment manually once delivery is confirmed."
+        />
       )}
 
       {payoutsEnabled === false && (
@@ -593,7 +631,11 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // deals released a way that never touched TikTok at all.
             <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>{platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.</p>
+            <p style={{ fontSize: "11px", color: "#999" }}>
+              {socialPlatformFor(platform) === "instagram"
+                ? "Automatic Instagram post verification is coming soon - ask the brand to release your payment manually once they've confirmed delivery."
+                : `${platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.`}
+            </p>
           ) : !socialConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Manage Accounts to post this and get paid.</p>
           ) : !myPost ? (
