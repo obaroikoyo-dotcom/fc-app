@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-export type SocialPlatform = "instagram" | "tiktok";
+export type SocialPlatform = "instagram" | "tiktok" | "youtube";
 
 export interface SocialConnection {
   platform: SocialPlatform;

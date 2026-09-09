@@ -162,6 +162,85 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
   }
 }
 
+async function handleYoutube(code: string, supabase: ReturnType<typeof createClient>, userId: string) {
+  const clientId = Deno.env.get("GOOGLE_YOUTUBE_CLIENT_ID") ?? "";
+  const clientSecret = Deno.env.get("GOOGLE_YOUTUBE_CLIENT_SECRET") ?? "";
+
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code,
+      grant_type: "authorization_code",
+      redirect_uri: CALLBACK_URL,
+    }),
+  });
+  const tokenData = await tokenRes.json();
+  if (!tokenData.access_token) throw new Error("YouTube token exchange failed: " + JSON.stringify(tokenData));
+
+  const channelRes = await fetch(
+    "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails&mine=true",
+    { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
+  );
+  const channelData = await channelRes.json();
+  const channel = channelData?.items?.[0];
+  if (!channel) throw new Error("Couldn't find a YouTube channel on this Google account.");
+
+  const channelId = channel.id;
+  const channelTitle = channel.snippet?.title || null;
+  const subscriberCount = channel.statistics?.hiddenSubscriberCount ? null : parseInt(channel.statistics?.subscriberCount ?? "", 10) || null;
+  const uploadsPlaylistId = channel.contentDetails?.relatedPlaylists?.uploads;
+
+  // refresh_token is only present on the very first consent (or when
+  // prompt=consent forces re-issuing it, which social-oauth-start already
+  // sets) - a reconnect where Google omits it means the previous one is
+  // still valid, so keep it rather than overwriting with null.
+  const { data: existing } = await supabase
+    .from("social_connections")
+    .select("refresh_token")
+    .eq("user_id", userId)
+    .eq("platform", "youtube")
+    .maybeSingle();
+
+  await supabase.from("social_connections").upsert({
+    user_id: userId,
+    platform: "youtube",
+    platform_user_id: channelId,
+    username: channelTitle,
+    follower_count: subscriberCount,
+    access_token: tokenData.access_token,
+    refresh_token: tokenData.refresh_token || existing?.refresh_token || null,
+    expires_at: new Date(Date.now() + (tokenData.expires_in || 3600) * 1000).toISOString(),
+    connected_at: new Date().toISOString(),
+  }, { onConflict: "user_id,platform" });
+
+  if (uploadsPlaylistId) {
+    const videosRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploadsPlaylistId}&maxResults=20`,
+      { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
+    );
+    const videosData = await videosRes.json();
+    const posts = (videosData?.items || []).map((v: any, i: number) => ({
+      user_id: userId,
+      platform: "youtube",
+      post_id: v.snippet?.resourceId?.videoId,
+      post_url: v.snippet?.resourceId?.videoId ? `https://www.youtube.com/watch?v=${v.snippet.resourceId.videoId}` : null,
+      thumbnail_url: v.snippet?.thumbnails?.high?.url || v.snippet?.thumbnails?.default?.url,
+      caption: v.snippet?.title || null,
+      posted_at: v.snippet?.publishedAt || null,
+      cached_at: new Date().toISOString(),
+      username: channelTitle,
+      follower_count: subscriberCount,
+      featured: i < 5,
+    })).filter((p: any) => p.post_id && p.post_url && p.thumbnail_url);
+    if (posts.length) {
+      await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
+    }
+  }
+}
+
 serve(async (req) => {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
@@ -195,6 +274,8 @@ serve(async (req) => {
       await handleInstagram(code, supabase, verified.userId);
     } else if (verified.platform === "tiktok") {
       await handleTiktok(code, supabase, verified.userId);
+    } else if (verified.platform === "youtube") {
+      await handleYoutube(code, supabase, verified.userId);
     } else {
       return redirectTo("/?social_error=unknown_platform");
     }

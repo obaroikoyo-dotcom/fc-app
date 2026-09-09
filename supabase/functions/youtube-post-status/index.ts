@@ -1,0 +1,166 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { releasePayoutForApplication } from "../_shared/releasePayout.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+async function getFreshAccessToken(supabase: ReturnType<typeof createClient>, userId: string): Promise<string> {
+  const { data: connection } = await supabase
+    .from("social_connections")
+    .select("access_token, refresh_token, expires_at")
+    .eq("user_id", userId)
+    .eq("platform", "youtube")
+    .single();
+
+  if (!connection) throw new Error("YouTube is not connected for this account.");
+
+  const expiresAt = connection.expires_at ? new Date(connection.expires_at).getTime() : 0;
+  if (expiresAt > Date.now() + 60_000) {
+    return connection.access_token;
+  }
+
+  if (!connection.refresh_token) throw new Error("YouTube connection expired - reconnect the account.");
+
+  const clientId = Deno.env.get("GOOGLE_YOUTUBE_CLIENT_ID") ?? "";
+  const clientSecret = Deno.env.get("GOOGLE_YOUTUBE_CLIENT_SECRET") ?? "";
+  const refreshRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: connection.refresh_token,
+    }),
+  });
+  const refreshData = await refreshRes.json();
+  if (!refreshData.access_token) throw new Error("Failed to refresh YouTube token: " + JSON.stringify(refreshData));
+
+  await supabase.from("social_connections").update({
+    access_token: refreshData.access_token,
+    expires_at: new Date(Date.now() + (refreshData.expires_in || 3600) * 1000).toISOString(),
+  }).eq("user_id", userId).eq("platform", "youtube");
+
+  return refreshData.access_token;
+}
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const { campaign_post_id } = await req.json();
+    if (!campaign_post_id) throw new Error("campaign_post_id is required");
+
+    const authHeader = req.headers.get("Authorization") || "";
+    const jwt = authHeader.replace("Bearer ", "");
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
+    if (userError || !user) throw new Error("Not authenticated");
+
+    const withinLimit = await checkRateLimit(supabase, "youtube-post-status", clientIdentifier(req, user.id), {
+      windowSeconds: 60,
+      maxRequests: 30,
+    });
+    if (!withinLimit) return rateLimitResponse(corsHeaders);
+
+    const { data: post, error: postError } = await supabase
+      .from("campaign_posts")
+      .select("id, application_id, posted_by_user_id, posted_by_role, youtube_video_id, status")
+      .eq("id", campaign_post_id)
+      .single();
+    if (postError || !post) throw new Error("Post not found");
+    if (post.posted_by_user_id !== user.id) throw new Error("Not authorized for this post");
+
+    // Already resolved - no need to hit YouTube again. Still report payout
+    // status since a prior attempt may have published but failed to
+    // release (e.g. creator wasn't connected to Stripe yet).
+    if (post.status !== "processing") {
+      let payoutReleased: boolean | undefined;
+      if (post.status === "published") {
+        const { data: app } = await supabase.from("applications").select("status").eq("id", post.application_id).single();
+        payoutReleased = app?.status === "paid";
+      }
+      return new Response(JSON.stringify({ status: post.status, payout_released: payoutReleased }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    const accessToken = await getFreshAccessToken(supabase, user.id);
+    const statusRes = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=status&id=${post.youtube_video_id}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const statusData = await statusRes.json();
+    const uploadStatus = statusData?.items?.[0]?.status?.uploadStatus;
+
+    if (uploadStatus === "processed") {
+      const postUrl = `https://www.youtube.com/watch?v=${post.youtube_video_id}`;
+
+      await supabase.from("campaign_posts").update({
+        status: "published",
+        published_at: new Date().toISOString(),
+        post_url: postUrl,
+      }).eq("id", campaign_post_id);
+
+      // Auto-release: only when the CREATOR's own post just went live for
+      // a deal that opted into the YouTube-gated flow, and only if it
+      // hasn't already been released some other way (e.g. the brand's
+      // manual release button).
+      let payoutReleased: boolean | undefined;
+      let payoutError: string | undefined;
+      if (post.posted_by_role === "creator") {
+        const { data: application } = await supabase
+          .from("applications")
+          .select("id, payout_release_mode, status")
+          .eq("id", post.application_id)
+          .single();
+
+        if (application && application.payout_release_mode === "youtube_gated" && application.status !== "paid") {
+          const result = await releasePayoutForApplication(supabase, application.id);
+          payoutReleased = result.released;
+          if (!result.released) {
+            payoutError = result.reason === "not_connected"
+              ? "The creator hasn't finished setting up payouts yet."
+              : result.error;
+          }
+        } else {
+          payoutReleased = application?.status === "paid";
+        }
+      }
+
+      return new Response(JSON.stringify({ status: "published", post_url: postUrl, payout_released: payoutReleased, payout_error: payoutError }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    if (uploadStatus === "failed" || uploadStatus === "rejected" || !statusData?.items?.length) {
+      await supabase.from("campaign_posts").update({ status: "failed" }).eq("id", campaign_post_id);
+      return new Response(JSON.stringify({ status: "failed", detail: uploadStatus || "video_not_found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    return new Response(JSON.stringify({ status: "processing" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+  } catch (err) {
+    console.error("youtube-post-status error:", err);
+    return new Response(JSON.stringify({ error: String((err as Error).message || err) }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
+});

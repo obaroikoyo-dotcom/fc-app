@@ -419,15 +419,15 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
       </div>
       )}
-      {!deliveryPlatform && socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" && (
+      {!deliveryPlatform && (socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" || socialPlatformFor(paymentApp.platforms?.[0]) === "youtube") && (
         <ComingSoonNotice
-          title="Instagram post verification"
+          title={`${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post verification`}
           pillLabel="Coming Soon"
           pillColor="#ff9500"
-          body="Automatic release once your Instagram post is confirmed live isn't available yet - funds are held in escrow and you'll release payment manually once delivery is confirmed."
+          body={`Automatic release once your ${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post is confirmed live isn't available yet - funds are held in escrow and you'll release payment manually once delivery is confirmed.`}
         />
       )}
-      {!deliveryPlatform && socialPlatformFor(paymentApp.platforms?.[0]) !== "instagram" && (
+      {!deliveryPlatform && !socialPlatformFor(paymentApp.platforms?.[0]) && (
         <ComingSoonNotice
           title={`${paymentApp.platforms?.[0] || "This platform"} post verification`}
           pillLabel="Not Available"
@@ -632,8 +632,8 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
             <p style={{ fontSize: "11px", color: "#999" }}>
-              {socialPlatformFor(platform) === "instagram"
-                ? "Automatic Instagram post verification is coming soon - ask the brand to release your payment manually once they've confirmed delivery."
+              {socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
+                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - ask the brand to release your payment manually once they've confirmed delivery.`
                 : `${platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.`}
             </p>
           ) : !socialConnected ? (

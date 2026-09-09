@@ -57,6 +57,18 @@ verify_jwt = false
 import_map = "./functions/instagram-post-status/deno.json"
 entrypoint = "./functions/instagram-post-status/index.ts"
 
+[functions.youtube-post-content]
+enabled = true
+verify_jwt = false
+import_map = "./functions/youtube-post-content/deno.json"
+entrypoint = "./functions/youtube-post-content/index.ts"
+
+[functions.youtube-post-status]
+enabled = true
+verify_jwt = false
+import_map = "./functions/youtube-post-status/deno.json"
+entrypoint = "./functions/youtube-post-status/index.ts"
+
 [functions.moderate-user]
 enabled = true
 verify_jwt = false

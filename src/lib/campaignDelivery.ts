@@ -39,43 +39,59 @@ export async function uploadDeliverable(applicationId: string, creatorId: string
   return publicUrl;
 }
 
-export type DeliveryPlatform = "tiktok" | "instagram";
+export type DeliveryPlatform = "tiktok" | "instagram" | "youtube";
 
-// The Instagram side of the gated-posting integration (edge functions, DB
-// columns) is fully built, but Meta's instagram_business_content_publish
-// permission needs App Review approval before it'll actually work for real
-// creator accounts - flip this on once that's approved and the whole flow
-// (including the "Coming Soon" UI below) picks it up with no other changes.
+// Each of these gates a fully-built integration (edge functions, DB
+// columns) behind a flag until its own external prerequisite clears - flip
+// one on and the whole flow (including the "Coming Soon" UI below) picks it
+// up with no other changes:
+// - Instagram: Meta's instagram_business_content_publish permission needs
+//   App Review approval.
+// - YouTube: works for accounts explicitly added as Google testers today;
+//   needs a Google-side security assessment (CASA) to open to everyone.
 const INSTAGRAM_GATING_ENABLED = false;
+const YOUTUBE_GATING_ENABLED = false;
 
 // A campaign's declared platform (e.g. "TikTok Video", "IG Reel", "IG Story",
-// "IG Carousel") maps to which social platform it targets, regardless of
-// whether gated posting is actually enabled for it yet - lets the UI tell
-// "Instagram, coming soon" apart from "no integration at all" (YouTube, UGC
-// packages, etc.).
+// "IG Carousel", "YouTube Short") maps to which social platform it targets,
+// regardless of whether gated posting is actually enabled for it yet - lets
+// the UI tell "Instagram, coming soon" apart from "no integration at all"
+// (UGC packages, etc.).
 export function socialPlatformFor(platform: string | undefined | null): DeliveryPlatform | null {
   if (!platform) return null;
-  if (platform.toLowerCase().startsWith("tiktok")) return "tiktok";
-  if (platform.toLowerCase().startsWith("ig ") || platform.toLowerCase().startsWith("instagram")) return "instagram";
+  const p = platform.toLowerCase();
+  if (p.startsWith("tiktok")) return "tiktok";
+  if (p.startsWith("ig ") || p.startsWith("instagram")) return "instagram";
+  if (p.startsWith("youtube")) return "youtube";
   return null;
 }
 
 // The gating flow actually usable right now - same as socialPlatformFor,
-// except Instagram is withheld until INSTAGRAM_GATING_ENABLED flips on.
+// except platforms withheld by their own *_GATING_ENABLED flag return null.
 export function deliveryPlatformFor(platform: string | undefined | null): DeliveryPlatform | null {
   const social = socialPlatformFor(platform);
   if (social === "instagram" && !INSTAGRAM_GATING_ENABLED) return null;
+  if (social === "youtube" && !YOUTUBE_GATING_ENABLED) return null;
   return social;
 }
 
+const POST_CONTENT_FN: Record<DeliveryPlatform, string> = {
+  tiktok: "tiktok-post-video",
+  instagram: "instagram-post-content",
+  youtube: "youtube-post-content",
+};
+const POST_STATUS_FN: Record<DeliveryPlatform, string> = {
+  tiktok: "tiktok-post-status",
+  instagram: "instagram-post-status",
+  youtube: "youtube-post-status",
+};
+
 export async function postDeliverable(platform: DeliveryPlatform, applicationId: string): Promise<{ campaign_post_id: string }> {
-  const fn = platform === "instagram" ? "instagram-post-content" : "tiktok-post-video";
-  return authedFetch(fn, { application_id: applicationId });
+  return authedFetch(POST_CONTENT_FN[platform], { application_id: applicationId });
 }
 
 export async function pollPostStatus(platform: DeliveryPlatform, campaignPostId: string): Promise<{ status: "processing" | "published" | "failed"; post_url?: string | null; detail?: string; payout_released?: boolean; payout_error?: string }> {
-  const fn = platform === "instagram" ? "instagram-post-status" : "tiktok-post-status";
-  return authedFetch(fn, { campaign_post_id: campaignPostId });
+  return authedFetch(POST_STATUS_FN[platform], { campaign_post_id: campaignPostId });
 }
 
 export async function getCampaignPosts(applicationId: string): Promise<CampaignPost[]> {

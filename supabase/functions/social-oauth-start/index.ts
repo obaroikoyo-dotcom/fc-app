@@ -27,7 +27,7 @@ serve(async (req) => {
 
   try {
     const { platform } = await req.json();
-    if (platform !== "instagram" && platform !== "tiktok") {
+    if (platform !== "instagram" && platform !== "tiktok" && platform !== "youtube") {
       throw new Error("Unsupported platform");
     }
 
@@ -61,7 +61,7 @@ serve(async (req) => {
         state,
       });
       authorizeUrl = `https://www.instagram.com/oauth/authorize?${params.toString()}`;
-    } else {
+    } else if (platform === "tiktok") {
       const clientKey = Deno.env.get("TIKTOK_CLIENT_KEY") ?? "";
       const params = new URLSearchParams({
         client_key: clientKey,
@@ -71,6 +71,22 @@ serve(async (req) => {
         state,
       });
       authorizeUrl = `https://www.tiktok.com/v2/auth/authorize/?${params.toString()}`;
+    } else {
+      // access_type=offline + prompt=consent so Google actually issues a
+      // refresh_token - without both, a returning user who already granted
+      // access once just gets a bare access token again (no refresh_token
+      // in the response), which breaks re-posting after the ~1hr token expires.
+      const clientId = Deno.env.get("GOOGLE_YOUTUBE_CLIENT_ID") ?? "";
+      const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: CALLBACK_URL,
+        response_type: "code",
+        scope: "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
+        access_type: "offline",
+        prompt: "consent",
+        state,
+      });
+      authorizeUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
     }
 
     return new Response(JSON.stringify({ url: authorizeUrl }), {
