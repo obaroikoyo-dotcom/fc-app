@@ -8,6 +8,7 @@ import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import VerifiedBadge from "../components/VerifiedBadge";
 import TikTokIcon from "../components/TikTokIcon";
 import InstagramIcon from "../components/InstagramIcon";
+import YouTubeIcon from "../components/YouTubeIcon";
 import StarRating from "../components/StarRating";
 import { getPublicSocialInfo, type PublicSocialInfo, type SocialPlatform } from "../lib/social";
 import {
@@ -19,8 +20,9 @@ const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
 const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {
   tiktok: (size) => <TikTokIcon size={size} />,
   instagram: (size) => <InstagramIcon size={size} />,
+  youtube: (size) => <YouTubeIcon size={size} />,
 };
-const SOCIAL_LABEL: Record<SocialPlatform, string> = { tiktok: "TikTok", instagram: "Instagram" };
+const SOCIAL_LABEL: Record<SocialPlatform, string> = { tiktok: "TikTok", instagram: "Instagram", youtube: "YouTube" };
 
 interface Props {
   navigate: (p: Page) => void;

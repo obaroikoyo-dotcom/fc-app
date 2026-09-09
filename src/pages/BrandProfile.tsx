@@ -8,6 +8,7 @@ import { getLog, clearLog } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, type SocialConnection, type SocialPlatform } from "../lib/social";
 import TikTokIcon from "../components/TikTokIcon";
 import InstagramIcon from "../components/InstagramIcon";
+import YouTubeIcon from "../components/YouTubeIcon";
 import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, getBrandReviews, formatResponseTime, type BrandTrackRecord, type BrandReview } from "../lib/brandStats";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -18,8 +19,9 @@ const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
 const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {
   tiktok: (size) => <TikTokIcon size={size} />,
   instagram: (size) => <InstagramIcon size={size} />,
+  youtube: (size) => <YouTubeIcon size={size} />,
 };
-const SOCIAL_LABEL: Record<SocialPlatform, string> = { tiktok: "TikTok", instagram: "Instagram" };
+const SOCIAL_LABEL: Record<SocialPlatform, string> = { tiktok: "TikTok", instagram: "Instagram", youtube: "YouTube" };
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 
 interface Props {
