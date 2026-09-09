@@ -1153,38 +1153,41 @@ setTimeout(() => setSaved(false), 2000);
               <div style={{
                 position: "relative",
                 overflow: "hidden",
-                borderRadius: "22px",
-                padding: "1.75rem 1.75rem 2.5rem",
-                background: "linear-gradient(160deg, #1a1a1a 0%, #0d0d0d 60%, #060606 100%)",
-                border: "1px solid #262626",
-                boxShadow: "0 14px 34px -14px rgba(0,0,0,0.65)",
+                borderRadius: "20px",
+                padding: "1.5rem 1.75rem 1.75rem",
+                background: "radial-gradient(140% 100% at 0% 0%, #202020 0%, #121212 45%, #0a0a0a 100%)",
+                border: "1px solid rgba(255,255,255,0.09)",
+                boxShadow: "0 16px 32px -16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}>
-                <div style={{
-                  position: "absolute", left: 0, right: 0, bottom: "-6px",
-                  textAlign: "center", overflow: "hidden",
-                }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+                  <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                    Your balance
+                  </p>
                   <p aria-hidden="true" style={{
-                    margin: 0,
                     fontFamily: "'Syne', sans-serif", fontWeight: 800,
-                    fontSize: "33px", letterSpacing: "0",
-                    color: "rgba(255,255,255,0.07)",
-                    lineHeight: 1,
-                    whiteSpace: "nowrap", pointerEvents: "none",
+                    fontSize: "10px", letterSpacing: "0.16em",
+                    color: "rgba(255,255,255,0.32)",
                   }}>FLIPCOLLAB</p>
                 </div>
 
-                <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px", position: "relative" }}>
-                  Your balance
-                </p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, position: "relative" }}>
+                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, marginTop: "10px", fontVariantNumeric: "tabular-nums" }}>
                   £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
+
+                {pendingBalance > 0 && (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "14px", padding: "5px 10px", borderRadius: "20px", background: "rgba(255,149,0,0.12)", border: "1px solid rgba(255,149,0,0.25)" }}>
+                    <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#ff9500", flexShrink: 0 }} />
+                    <p style={{ fontSize: "11px", color: "#ff9500", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                      £{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pending
+                    </p>
+                  </div>
+                )}
               </div>
 
               <p style={{ fontSize: "11px", color: "#888", marginTop: "14px", textAlign: "center" }}>Platform matching fee automatically deducted.</p>
               <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
-                <p style={{ fontSize: "11px", color: "#ff9500", marginTop: "8px", textAlign: "center" }}>+£{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} escrowed — released once deliverables are posted/confirmed.</p>
+                <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Pending funds release once deliverables are posted and confirmed.</p>
               )}
               {transactions.length > 0 && (
                 <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
