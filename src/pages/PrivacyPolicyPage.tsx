@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 const SECTIONS = [
   { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
   { t: "2. Information We Collect", b: "Your name, email, profile details, messages, campaign content, and basic device/usage data. Payment details - and, for creators, the bank details needed for payouts - are collected and verified directly by Stripe. We never see or store them ourselves." },
@@ -15,6 +17,10 @@ const SECTIONS = [
 ];
 
 export default function PrivacyPolicyPage() {
+  useEffect(() => {
+    document.title = "Privacy Policy | FlipCollab";
+  }, []);
+
   return (
     <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
@@ -34,6 +40,9 @@ export default function PrivacyPolicyPage() {
             </div>
           ))}
         </div>
+        <p style={{ fontSize: "12px", color: "#888", marginTop: "2rem" }}>
+          See also our <a href="https://terms.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Terms of Service</a>.
+        </p>
       </div>
     </div>
   );

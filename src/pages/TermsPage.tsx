@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 const SECTIONS = [
   { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
   { t: "2. Your Account", b: "Keep credentials secure. FlipCollab isn't liable for unauthorised access. You can delete your account anytime from settings." },
@@ -16,6 +18,10 @@ const SECTIONS = [
 ];
 
 export default function TermsPage() {
+  useEffect(() => {
+    document.title = "Terms of Service | FlipCollab";
+  }, []);
+
   return (
     <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
@@ -35,6 +41,9 @@ export default function TermsPage() {
             </div>
           ))}
         </div>
+        <p style={{ fontSize: "12px", color: "#888", marginTop: "2rem" }}>
+          See also our <a href="https://privacy.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Privacy Policy</a>.
+        </p>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 const PARAGRAPHS = [
   "FlipCollab was created with a simple idea: collaborations between brands and creators should be easier, faster, and more transparent.",
   "Today, finding the right partnership can be frustrating on both sides. Brands spend countless hours searching for creators who genuinely align with their audience, while creators often struggle to discover opportunities that match their content, values, and goals. Too many great collaborations never happen because the process is scattered across emails, direct messages, spreadsheets, and multiple platforms.",
@@ -11,6 +13,10 @@ const PARAGRAPHS = [
 ];
 
 export default function AboutPage() {
+  useEffect(() => {
+    document.title = "About | FlipCollab";
+  }, []);
+
   return (
     <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
@@ -36,7 +42,8 @@ export default function AboutPage() {
         </h2>
         <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
           To provide this service, FlipCollab collects account information (such as your name and email), profile details you choose to add (bio, niche, social links), messages and campaign content exchanged on the platform, and payment information processed securely through Stripe. This data is used solely to operate your account, match brands with creators, process payments, and enable messaging between the two parties - it is never sold to third parties. Full details are available in our{" "}
-          <a href="https://privacy.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Privacy Policy</a>.
+          <a href="https://privacy.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Privacy Policy</a> and{" "}
+          <a href="https://terms.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Terms of Service</a>.
         </p>
       </div>
     </div>
