@@ -34,7 +34,7 @@ const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "P
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs", "Hauls", "GRWM", "Comparisons", "Skits", "Livestreams", "Carousels", "Podcasts", "Testimonials"];
 const TOTAL_SCREENS = 9;
 const PLATFORM_LABEL: Record<SocialPlatform, string> = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube" };
-const UNAVAILABLE_PLATFORMS = ["YouTube", "Twitter/X", "Facebook", "Pinterest"];
+const UNAVAILABLE_PLATFORMS = ["Instagram", "Twitter/X", "Facebook", "Pinterest"];
 
 function usernamesMatch(typed: string, real: string | null): boolean {
   if (!typed || !real) return true;
@@ -730,7 +730,7 @@ const [showOtp, setShowOtp] = useState(false);
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
-        Connect Instagram or TikTok to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile. The account you connect should match the username you entered earlier.
+        Connect TikTok or YouTube to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile. The account you connect should match the username you entered earlier.
       </p>
       {socialNotice && (
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -739,7 +739,7 @@ const [showOtp, setShowOtp] = useState(false);
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {(["instagram", "tiktok"] as SocialPlatform[]).map(platform => {
+        {(["tiktok", "youtube"] as SocialPlatform[]).map(platform => {
           const connection = socialConnections.find(c => c.platform === platform);
           const label = PLATFORM_LABEL[platform];
           const typedUsername = socialLinks[label];
