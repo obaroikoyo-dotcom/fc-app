@@ -84,48 +84,48 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>1. Who We Are</span>
-            <span>FlipCollab is a creator collaboration marketplace connecting brands with content creators. For data protection queries, contact us at <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
+            <span>FlipCollab is a creator collaboration marketplace connecting brands with content creators. If you have any questions about how we handle your data, reach us at <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>2. Data We Collect</span>
-            <span>We collect the following personal data when you use FlipCollab:</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>2. Information We Collect</span>
+            <span>To run FlipCollab, we collect:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li>Name and email address</li>
-              <li>Profile information (avatar, bio, location, niche, social links)</li>
-              <li>Payment data processed via Stripe (we do not store card details)</li>
+              <li>Your name and email address</li>
+              <li>Profile details you choose to share (photo, bio, location, niche, social links)</li>
               <li>Messages and campaign content you create on the platform</li>
-              <li>Device and usage data (IP address, browser type, session data)</li>
+              <li>Basic device and usage data, like your browser type and IP address</li>
+              <li>Payment details, handled directly by Stripe - we never see or store your card number</li>
             </ul>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>3. How We Use Your Data</span>
-            <span>We use your data to:</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>3. How We Use It</span>
+            <span>We use this information to:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
               <li>Create and manage your account</li>
               <li>Match brands with creators</li>
               <li>Process payments and manage escrow</li>
-              <li>Send transactional emails (account activity, payment confirmations)</li>
+              <li>Send you account and payment-related emails</li>
               <li>Resolve disputes and enforce our Terms & Conditions</li>
-              <li>Comply with legal obligations</li>
+              <li>Meet our legal obligations</li>
             </ul>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Legal Basis for Processing</span>
-            <span>We process your data under the following lawful bases: contract performance (to provide the service you signed up for), legitimate interests (platform security, fraud prevention), and legal obligation (where required by law).</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Our Legal Basis</span>
+            <span>We only process your data when we have a proper legal reason to - most commonly because it's necessary to provide the service you've signed up for, because it's in our legitimate interest to keep the platform safe and fraud-free, or because we're required to by law.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Third-Party Services</span>
-            <span>We use the following third-party services to operate FlipCollab:</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Trusted Partners We Work With</span>
+            <span>FlipCollab runs on a small number of established, reputable service providers, each of which only receives the data they need to do their job:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "#fff" }}>Supabase</strong> — database and authentication (data stored in EU)</li>
-              <li><strong style={{ color: "#fff" }}>Stripe</strong> — payment processing (PCI-DSS compliant)</li>
-              <li><strong style={{ color: "#fff" }}>Vercel</strong> — app hosting</li>
+              <li><strong style={{ color: "#fff" }}>Supabase</strong> — our database and account sign-in</li>
+              <li><strong style={{ color: "#fff" }}>Stripe</strong> — payments and creator payouts, a global leader in payment security</li>
+              <li><strong style={{ color: "#fff" }}>Vercel</strong> — hosting the app</li>
             </ul>
-            <span style={{ display: "block", marginTop: "8px" }}>Each provider has their own privacy policy and data processing terms. We do not sell your data to any third party.</span>
+            <span style={{ display: "block", marginTop: "8px" }}>We don't sell your data to anyone, for any reason.</span>
           </div>
 
           <div>
@@ -134,8 +134,8 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. Data Retention</span>
-            <span>We retain your data for as long as your account is active. If you delete your account, your personal data is deleted within 30 days, except where we are legally required to retain it (e.g. payment records for tax purposes, which are retained for 6 years under UK law). Photos and videos shared during a deal are automatically deleted once that deal closes - typically within 24 hours of payout, immediately if a pitch is declined, or after 7 days of inactivity - though the conversation and its text always stay. Deleting your account or being banned removes all of your media immediately.</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. How Long We Keep Your Data</span>
+            <span>We keep your information for as long as your account is active. If you delete your account, your personal data is removed within 30 days - except records we're legally required to hold onto for longer, such as payment records, which UK law requires us to keep for 6 years. Photos and videos exchanged during a deal aren't kept forever either: they're automatically cleared once a deal is complete or after a period of inactivity, though the conversation itself always stays so both sides have a record of what was agreed. If your account is deleted or restricted, everything - including media - is removed immediately.</span>
           </div>
 
           <div>
@@ -158,8 +158,8 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Security</span>
-            <span>We use industry-standard security measures including encrypted connections (HTTPS), secure authentication via Supabase, and PCI-compliant payment processing via Stripe. No system is 100% secure — if you suspect unauthorised access to your account, contact us immediately.</span>
+            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Keeping Your Data Secure</span>
+            <span>Security is something we take seriously, not an afterthought. Every connection to FlipCollab is encrypted, and all payments are handled by Stripe, which meets the highest global standard for payment security - we never see or store your card or bank details ourselves. No system is completely immune to risk, so if you ever notice anything suspicious on your account, let us know straight away.</span>
           </div>
 
           <div>
