@@ -6,6 +6,7 @@ import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push
 import { getLog, clearLog } from "../lib/debugLog";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, SOCIAL_PLATFORM_LABEL, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
 import VerifiedBadge from "../components/VerifiedBadge";
+import SettingsIcon from "../components/SettingsIcon";
 import TikTokIcon from "../components/TikTokIcon";
 import InstagramIcon from "../components/InstagramIcon";
 import YouTubeIcon from "../components/YouTubeIcon";
@@ -544,20 +545,25 @@ setTimeout(() => setSaved(false), 2000);
     color: active ? "#0a0a0a" : "#555",
     fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
   });
-  const settingsRow = (label: string, sub: string, onClick: () => void, danger = false): React.ReactNode => (
-    <div onClick={onClick} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0", borderBottom: "1px solid #111", cursor: "pointer" }}>
-      <div>
-        <p style={{ fontSize: "14px", color: danger ? "#ff4444" : "#fff", fontWeight: 500 }}>{label}</p>
+  const settingsRow = (label: string, sub: string, onClick: () => void, icon?: string, isLast = false): React.ReactNode => (
+    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
+      {icon && (
+        <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <SettingsIcon name={icon} color="#ccc" size={16} />
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
         {sub && <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
       </div>
-      {!danger && <span style={{ color: "#777", fontSize: "16px" }}>›</span>}
+      <span style={{ color: "#777", fontSize: "16px", flexShrink: 0 }}>›</span>
     </div>
   );
+  const sectionCard = (rows: React.ReactNode) => (
+    <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
+  );
   const sectionHeader = (title: string, first = false) => (
-    <>
-      {!first && <div style={{ borderTop: "1px solid #1a1a1a", marginTop: "28px" }} />}
-      <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: first ? "4px 0 8px" : "20px 0 8px" }}>{title}</p>
-    </>
+    <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? 0 : "26px", padding: "0 2px 10px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
@@ -872,32 +878,42 @@ setTimeout(() => setSaved(false), 2000);
 
       <div style={{ padding: "0 1.25rem" }}>
         {sectionHeader("Account Settings", true)}
-        {settingsRow("Edit Profile", "Name, bio, niche, location, platforms", () => setSettingsSection("edit-profile"))}
-        {settingsRow("Niche Selection", "Choose your content categories", () => setSettingsSection("niche-selection"))}
-        {settingsRow("Connect Social Platforms", "Link TikTok, Instagram and more", () => setSettingsSection("manage-accounts"))}
-        {settingsRow("Payouts", `Balance: £${(walletBalance / 100).toFixed(2)}`, () => setSettingsSection("payouts"))}
-        {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"))}
-        {settingsRow("Visibility", "Control what others see", () => setSettingsSection("visibility"))}
-        {settingsRow("Share Profile", "Get your shareable link", () => setSettingsSection("share-profile"))}
+        {sectionCard(<>
+          {settingsRow("Edit Profile", "Name, bio, niche, location, platforms", () => setSettingsSection("edit-profile"), "edit-profile")}
+          {settingsRow("Niche Selection", "Choose your content categories", () => setSettingsSection("niche-selection"), "niche")}
+          {settingsRow("Connect Social Platforms", "Link TikTok, Instagram and more", () => setSettingsSection("manage-accounts"), "social")}
+          {settingsRow("Payouts", `Balance: £${(walletBalance / 100).toFixed(2)}`, () => setSettingsSection("payouts"), "payouts")}
+          {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"), "notifications")}
+          {settingsRow("Visibility", "Control what others see", () => setSettingsSection("visibility"), "visibility")}
+          {settingsRow("Share Profile", "Get your shareable link", () => setSettingsSection("share-profile"), "share", true)}
+        </>)}
 
         {sectionHeader("FlipCollab Activity")}
-        {settingsRow("Favourited Creators & Campaigns", `${favourites.length + campaignFavourites.length} saved`, () => setSettingsSection("favourites"))}
-        {settingsRow("Applications", `${appliedCampaigns.length} total`, () => setSettingsSection("applications"))}
-        {settingsRow("Reported & Blocked", `${blockedUsers.length} blocked · ${myReports.length} reported`, () => setSettingsSection("reports-blocked"))}
+        {sectionCard(<>
+          {settingsRow("Favourited Creators & Campaigns", `${favourites.length + campaignFavourites.length} saved`, () => setSettingsSection("favourites"), "favourites")}
+          {settingsRow("Applications", `${appliedCampaigns.length} total`, () => setSettingsSection("applications"), "applications")}
+          {settingsRow("Reported & Blocked", `${blockedUsers.length} blocked · ${myReports.length} reported`, () => setSettingsSection("reports-blocked"), "reported-blocked", true)}
+        </>)}
 
         {sectionHeader("What Brands Look At")}
-        {settingsRow("Audience & Rates", "Age ranges, location, rate card", () => setSettingsSection("audience-data"))}
-        {settingsRow("Past Collaborations", `${collabs.filter(c => c.brand).length} added`, () => setSettingsSection("past-collabs"))}
+        {sectionCard(<>
+          {settingsRow("Audience & Rates", "Age ranges, location, rate card", () => setSettingsSection("audience-data"), "audience-rates")}
+          {settingsRow("Past Collaborations", `${collabs.filter(c => c.brand).length} added`, () => setSettingsSection("past-collabs"), "past-collabs", true)}
+        </>)}
 
         {isAdmin && sectionHeader("Admin")}
-        {isAdmin && settingsRow("Admin Review", "Verification requests & reports", () => navigate("admin-review"))}
+        {isAdmin && sectionCard(
+          settingsRow("Admin Review", "Verification requests & reports", () => navigate("admin-review"), "admin", true)
+        )}
 
         {sectionHeader("General")}
-        {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"))}
-        {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"))}
-        {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"))}
-{settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"))}
-        {settingsRow("Debug Log", "For troubleshooting freezes", () => setSettingsSection("debug-log"))}
+        {sectionCard(<>
+          {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"), "about")}
+          {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"), "help")}
+          {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"), "privacy")}
+          {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"), "terms")}
+          {settingsRow("Debug Log", "For troubleshooting freezes", () => setSettingsSection("debug-log"), "debug", true)}
+        </>)}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
           <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
