@@ -21,7 +21,6 @@ const paths: Record<string, React.ReactNode> = {
   "help": <><circle cx="12" cy="12" r="9" /><path d="M9.5 9.3a2.5 2.5 0 1 1 3.6 2.3c-.9.5-1.1 1-1.1 1.9" /><circle cx="12" cy="16.6" r="0.15" fill="currentColor" stroke="currentColor" strokeWidth="2.4" /></>,
   "privacy": <><rect x="5" y="11" width="14" height="9.5" rx="2.2" /><path d="M8 11V7.5a4 4 0 0 1 8 0V11" /></>,
   "terms": <><path d="M7 3.5h7.5L19 8v12.5a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" strokeLinejoin="round" /><path d="M14 3.5V8h5M9 12.5h6M9 16h6" /></>,
-  "debug": <><rect x="4" y="4.5" width="16" height="12" rx="2" /><path d="m8 9 2.5 2.5L8 14M13 14h3" /><path d="M9 20h6" /></>,
   "verified": <><path d="M12 3.5 19.5 6.5V12c0 4.8-3 7.6-7.5 9-4.5-1.4-7.5-4.2-7.5-9V6.5L12 3.5Z" strokeLinejoin="round" /><path d="m9 12.2 2 2 4-4.4" /></>,
   "industry": <><path d="M4 20V9l6-4v15M20 20V13l-6-3v10" /><path d="M4 20h16" /></>,
   "campaign-prefs": <><path d="M4 6h9M17 6h3M4 12h3M9 12h11M4 18h13M19 18h1" /><circle cx="13" cy="6" r="1.8" fill="currentColor" stroke="#0a0a0a" /><circle cx="6" cy="12" r="1.8" fill="currentColor" stroke="#0a0a0a" /><circle cx="16" cy="18" r="1.8" fill="currentColor" stroke="#0a0a0a" /></>,
