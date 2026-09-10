@@ -7,10 +7,29 @@ import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { getSocialPosts, getPublicSocialInfo, SOCIAL_PLATFORM_LABEL, type SocialPost, type PublicSocialInfo } from "../lib/social";
 import StarRating from "../components/StarRating";
+import TikTokIcon from "../components/TikTokIcon";
+import InstagramIcon from "../components/InstagramIcon";
+import YouTubeIcon from "../components/YouTubeIcon";
 import {
   getCreatorTrackRecord, getCreatorReviews, getReviewableCreatorCampaigns, submitCreatorReview, formatTurnaroundTime,
   type CreatorTrackRecord, type CreatorReview, type ReviewableCreatorCampaign,
 } from "../lib/creatorStats";
+
+const PLATFORM_ICON: Record<string, (size: number) => React.ReactNode> = {
+  Instagram: (size) => <InstagramIcon size={size} />,
+  TikTok: (size) => <TikTokIcon size={size} />,
+  YouTube: (size) => <YouTubeIcon size={size} />,
+};
+const PlayGlyph = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="#fff" />
+  </svg>
+);
+const CheckGlyph = () => (
+  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M4 12.5l5.5 5.5L20 7" stroke="#0a0a0a" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 interface Props {
   navigate: (p: Page) => void;
@@ -502,27 +521,51 @@ const startDM = async () => {
             return displayPlatforms.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Platforms</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {displayPlatforms.map(p => {
                 const verified = socialInfo.find(s => SOCIAL_PLATFORM_LABEL[s.platform] === p);
                 const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
                 const platformPosts = socialPosts.filter(post => SOCIAL_PLATFORM_LABEL[post.platform] === p).slice(0, 5);
                 return (
-                <div key={p} style={{ marginBottom: "10px" }}>
-                  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
-                      {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{verified?.username || creator.social_links?.[p]}</p>}
+                <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
+                  <div style={{ padding: "14px 16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {PLATFORM_ICON[p]?.(20)}
+                        <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
+                      </div>
+                      {verified && (
+                        <div title="Verified via connected account" style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#34c759", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          <CheckGlyph />
+                        </div>
+                      )}
                     </div>
-                    <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
-                      {followers != null && <span>{followers.toLocaleString()} followers{verified && " ✓"}</span>}
-                      {creator.engagement_rates?.[p] && <span>{creator.engagement_rates[p]}% engagement</span>}
-                    </div>
+                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px", marginTop: "3px" }}>@{verified?.username || creator.social_links?.[p]}</p>}
+                    {(followers != null || creator.engagement_rates?.[p]) && (
+                      <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
+                        {followers != null && (
+                          <div>
+                            <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                            <p style={{ color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "4px" }}>Followers</p>
+                          </div>
+                        )}
+                        {creator.engagement_rates?.[p] && (
+                          <div>
+                            <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{creator.engagement_rates[p]}%</p>
+                            <p style={{ color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "4px" }}>Engagement</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   {platformPosts.length > 0 && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px", marginTop: "8px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid #1a1a1a" }}>
                       {platformPosts.map(post => (
-                        <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
+                        <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
                           <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <div style={{ position: "absolute", left: "5px", bottom: "5px", width: "16px", height: "16px", borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <PlayGlyph />
+                          </div>
                         </a>
                       ))}
                     </div>
@@ -530,6 +573,7 @@ const startDM = async () => {
                 </div>
                 );
               })}
+              </div>
             </div>
             );
           })()}
