@@ -27,6 +27,14 @@ const paths: Record<string, React.ReactNode> = {
   "campaign-prefs": <><path d="M4 6h9M17 6h3M4 12h3M9 12h11M4 18h13M19 18h1" /><circle cx="13" cy="6" r="1.8" fill="currentColor" stroke="#0a0a0a" /><circle cx="6" cy="12" r="1.8" fill="currentColor" stroke="#0a0a0a" /><circle cx="16" cy="18" r="1.8" fill="currentColor" stroke="#0a0a0a" /></>,
 };
 
+export function ChevronIcon({ size = 15, color = "#666" }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M9 5.5 15.5 12 9 18.5" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function SettingsIcon({ name, size = 17, color = "#999" }: { name: keyof typeof paths | string; size?: number; color?: string }) {
   const glyph = paths[name];
   if (!glyph) return null;

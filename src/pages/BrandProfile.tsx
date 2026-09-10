@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import LocationInput from "../components/LocationInput";
 import VerifiedBadge from "../components/VerifiedBadge";
-import SettingsIcon from "../components/SettingsIcon";
+import SettingsIcon, { ChevronIcon } from "../components/SettingsIcon";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
@@ -360,17 +360,13 @@ const loadFavourites = async () => {
     fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
   });
   const settingsRow = (label: string, sub: string, onClick: () => void, icon?: string, isLast = false): React.ReactNode => (
-    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
-      {icon && (
-        <div style={{ width: "30px", height: "30px", borderRadius: "8px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          <SettingsIcon name={icon} color="#ccc" size={16} />
-        </div>
-      )}
+    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
+      {icon && <SettingsIcon name={icon} color="#999" size={18} />}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
         {sub && <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
       </div>
-      <span style={{ color: "#777", fontSize: "16px", flexShrink: 0 }}>›</span>
+      <ChevronIcon />
     </div>
   );
   const sectionCard = (rows: React.ReactNode) => (
