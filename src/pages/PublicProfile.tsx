@@ -65,6 +65,7 @@ interface CreatorData {
 
 export default function PublicProfile({ profileId, goBack, navigateToMessages }: Props) {
   const [creator, setCreator] = useState<CreatorData | null>(null);
+  const [isBrand, setIsBrand] = useState(false);
   const [loading, setLoading] = useState(true);
   const [favourited, setFavourited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -129,6 +130,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
 
         if (creatorData) {
           setCreator(creatorData);
+          setIsBrand(false);
           setSocialPosts(await getSocialPosts(profileId));
           setSocialInfo(await getPublicSocialInfo(profileId));
 
@@ -155,7 +157,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
           .eq("id", profileId)
           .single();
 
-        if (brandData) setCreator(brandData);
+        if (brandData) { setCreator(brandData); setIsBrand(true); }
       }, 10000, "PublicProfile.loadProfile");
     } catch (err) {
       console.error("Failed to load profile:", err);
@@ -490,6 +492,7 @@ const startDM = async () => {
                   <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>
                 )}
               </div>
+              <p style={{ fontSize: "10px", color: "#666", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2px" }}>{isBrand ? "Brand" : "Creator"}</p>
               <p style={{ fontSize: "13px", color: "#999" }}>{creator.niche}{creator.location && (creator.location_visible !== false || isOwner) ? ` · ${creator.location}` : ""}</p>
             </div>
           </div>
@@ -502,12 +505,14 @@ const startDM = async () => {
             >
               Message
             </div>
+            {!isOwner && (
             <div
               onClick={toggleFavourite}
               style={{ flex: 1, padding: "12px", borderRadius: "8px", background: favourited ? "#1a1a1a" : "transparent", color: favourited ? "#555" : "#fff", border: favourited ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
             >
               {favourited ? "Favourited ✓" : "Favourite"}
             </div>
+            )}
           </div>
 
           {/* Bio */}

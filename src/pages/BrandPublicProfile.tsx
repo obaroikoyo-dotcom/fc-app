@@ -392,6 +392,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
               {brand.name || brand.company_name}
               {brand.verified && <VerifiedBadge />}
             </p>
+            <p style={{ fontSize: "10px", color: "#666", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2px" }}>Brand</p>
             <p style={{ fontSize: "13px", color: "#999" }}>{brand.niche || brand.industry}{brand.location ? ` · ${brand.location}` : ""}</p>
           </div>
         </div>
