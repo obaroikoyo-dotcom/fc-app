@@ -665,6 +665,26 @@ setTimeout(() => setSaved(false), 2000);
 
         <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
 
+        {/* Content types */}
+        {contentTypes.length > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={labelStyle}>Content I Create</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {contentTypes.map(c => <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{c}</span>)}
+            </div>
+          </div>
+        )}
+
+        {/* Languages */}
+        {languages.length > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <label style={labelStyle}>Languages</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {languages.map(l => <span key={l} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{l}</span>)}
+            </div>
+          </div>
+        )}
+
         {/* Platforms - anything you've connected shows here too, even if it
             wasn't separately picked in Edit Profile's platform list, so
             connecting an account is enough on its own. Each platform's own
@@ -728,26 +748,6 @@ setTimeout(() => setSaved(false), 2000);
           </div>
           );
         })()}
-
-        {/* Content types */}
-        {contentTypes.length > 0 && (
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={labelStyle}>Content I Create</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {contentTypes.map(c => <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{c}</span>)}
-            </div>
-          </div>
-        )}
-
-        {/* Languages */}
-        {languages.length > 0 && (
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={labelStyle}>Languages</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {languages.map(l => <span key={l} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{l}</span>)}
-            </div>
-          </div>
-        )}
 
         <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
 

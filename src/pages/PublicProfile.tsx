@@ -519,6 +519,26 @@ const startDM = async () => {
 
           <div style={dividerStyle} />
 
+          {/* Content Types */}
+          {creator.content_types && creator.content_types.length > 0 && (
+            <div style={sectionStyle}>
+              <label style={labelStyle}>Content I Create</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {creator.content_types.map(c => <div key={c} style={chipStyle}>{c}</div>)}
+              </div>
+            </div>
+          )}
+
+          {/* Languages */}
+          {creator.languages && creator.languages.length > 0 && (
+            <div style={sectionStyle}>
+              <label style={labelStyle}>Languages</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {creator.languages.map(l => <div key={l} style={chipStyle}>{l}</div>)}
+              </div>
+            </div>
+          )}
+
           {/* Platforms - includes anything verified via a connected account
               even if it isn't in the creator's own declared platform list,
               so a connected account is enough on its own to show up here.
@@ -584,26 +604,6 @@ const startDM = async () => {
             </div>
             );
           })()}
-
-          {/* Content Types */}
-          {creator.content_types && creator.content_types.length > 0 && (
-            <div style={sectionStyle}>
-              <label style={labelStyle}>Content I Create</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {creator.content_types.map(c => <div key={c} style={chipStyle}>{c}</div>)}
-              </div>
-            </div>
-          )}
-
-          {/* Languages */}
-          {creator.languages && creator.languages.length > 0 && (
-            <div style={sectionStyle}>
-              <label style={labelStyle}>Languages</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {creator.languages.map(l => <div key={l} style={chipStyle}>{l}</div>)}
-              </div>
-            </div>
-          )}
 
           <div style={dividerStyle} />
 
