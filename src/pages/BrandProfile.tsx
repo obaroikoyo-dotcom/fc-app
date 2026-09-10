@@ -989,12 +989,12 @@ const loadFavourites = async () => {
           </div>
         )}
         <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
-          Connect your own TikTok or YouTube so you can post creator-made content directly to your brand account once payment has released. Connecting TikTok also shows a verified TikTok badge on your public profile, so creators know it's really you.
+          Connect your own Instagram, TikTok, or YouTube so you can post creator-made content directly to your brand account once payment has released. Connecting TikTok also shows a verified TikTok badge on your public profile, so creators know it's really you.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {(["tiktok", "youtube"] as SocialPlatform[]).map(platform => {
+          {(["instagram", "tiktok", "youtube"] as SocialPlatform[]).map(platform => {
             const connection = findConnection(platform);
-            const label = platform === "youtube" ? "YouTube" : "TikTok";
+            const label = SOCIAL_LABEL[platform];
             return (
               <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
                 <div>
@@ -1011,7 +1011,7 @@ const loadFavourites = async () => {
               </div>
             );
           })}
-          {["Instagram", "Twitter/X", "Facebook"].map(platform => (
+          {["Twitter/X", "Facebook"].map(platform => (
             <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
               <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
               <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>

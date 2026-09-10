@@ -49,7 +49,7 @@ export type DeliveryPlatform = "tiktok" | "instagram" | "youtube";
 //   App Review approval.
 // - YouTube: works for accounts explicitly added as Google testers today;
 //   needs a Google-side security assessment (CASA) to open to everyone.
-const INSTAGRAM_GATING_ENABLED = false;
+const INSTAGRAM_GATING_ENABLED = true;
 const YOUTUBE_GATING_ENABLED = true;
 
 // A campaign's declared platform (e.g. "TikTok Video", "IG Reel", "IG Story",
