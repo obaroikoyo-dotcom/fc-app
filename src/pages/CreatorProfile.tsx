@@ -28,7 +28,7 @@ interface Props {
 
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 const PLATFORMS = ["Instagram", "TikTok", "YouTube", "Twitter/X", "Facebook", "Pinterest"];
-const LABEL_TO_SOCIAL_PLATFORM: Record<string, SocialPlatform> = { Instagram: "instagram", TikTok: "tiktok" };
+const LABEL_TO_SOCIAL_PLATFORM: Record<string, SocialPlatform> = { Instagram: "instagram", TikTok: "tiktok", YouTube: "youtube" };
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs", "Hauls", "GRWM", "Comparisons", "Skits", "Livestreams", "Carousels", "Podcasts", "Testimonials"];
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["9-15", "16-17", "18-24", "25-34", "35-44", "45+"];
@@ -639,11 +639,18 @@ setTimeout(() => setSaved(false), 2000);
 
         <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
 
-        {/* Platforms */}
-        {selectedPlatforms.length > 0 && (
+        {/* Platforms - anything you've connected shows here too, even if it
+            wasn't separately picked in Edit Profile's platform list, so
+            connecting an account is enough on its own. */}
+        {(() => {
+          const displayPlatforms = Array.from(new Set([
+            ...selectedPlatforms,
+            ...socialConnections.map(c => SOCIAL_PLATFORM_LABEL[c.platform]),
+          ]));
+          return displayPlatforms.length > 0 && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Platforms</label>
-            {selectedPlatforms.map(p => {
+            {displayPlatforms.map(p => {
               const connectedPlatform = LABEL_TO_SOCIAL_PLATFORM[p];
               const connection = connectedPlatform ? socialConnections.find(c => c.platform === connectedPlatform) : undefined;
               const followers = connection?.follower_count ?? (followerCounts[p] ? Number(followerCounts[p]) : null);
@@ -661,7 +668,8 @@ setTimeout(() => setSaved(false), 2000);
               );
             })}
           </div>
-        )}
+          );
+        })()}
 
         {/* Recent Posts */}
         {featuredPosts.length > 0 && (

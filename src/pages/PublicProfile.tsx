@@ -488,11 +488,18 @@ const startDM = async () => {
 
           <div style={dividerStyle} />
 
-          {/* Platforms */}
-          {creator.platforms && creator.platforms.length > 0 && (
+          {/* Platforms - includes anything verified via a connected account
+              even if it isn't in the creator's own declared platform list,
+              so a connected account is enough on its own to show up here. */}
+          {(() => {
+            const displayPlatforms = Array.from(new Set([
+              ...(creator.platforms || []),
+              ...socialInfo.map(s => SOCIAL_PLATFORM_LABEL[s.platform]),
+            ]));
+            return displayPlatforms.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Platforms</label>
-              {creator.platforms.map(p => {
+              {displayPlatforms.map(p => {
                 const verified = socialInfo.find(s => SOCIAL_PLATFORM_LABEL[s.platform] === p);
                 const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
                 return (
@@ -509,7 +516,8 @@ const startDM = async () => {
                 );
               })}
             </div>
-          )}
+            );
+          })()}
 
           {/* Recent Posts */}
           {socialPosts.length > 0 && (
