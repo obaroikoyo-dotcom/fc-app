@@ -641,7 +641,9 @@ setTimeout(() => setSaved(false), 2000);
 
         {/* Platforms - anything you've connected shows here too, even if it
             wasn't separately picked in Edit Profile's platform list, so
-            connecting an account is enough on its own. */}
+            connecting an account is enough on its own. Each platform's own
+            featured videos sit directly under its card, rather than one
+            combined grid where platforms compete for a shared slot count. */}
         {(() => {
           const displayPlatforms = Array.from(new Set([
             ...selectedPlatforms,
@@ -654,43 +656,34 @@ setTimeout(() => setSaved(false), 2000);
               const connectedPlatform = LABEL_TO_SOCIAL_PLATFORM[p];
               const connection = connectedPlatform ? socialConnections.find(c => c.platform === connectedPlatform) : undefined;
               const followers = connection?.follower_count ?? (followerCounts[p] ? Number(followerCounts[p]) : null);
+              const platformPosts = connectedPlatform ? featuredPosts.filter(post => post.platform === connectedPlatform).slice(0, 5) : [];
               return (
-              <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "8px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
-                  {(connection?.username || socialLinks[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{connection?.username || socialLinks[p]}</p>}
+              <div key={p} style={{ marginBottom: "8px" }}>
+                <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
+                    {(connection?.username || socialLinks[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{connection?.username || socialLinks[p]}</p>}
+                  </div>
+                  <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
+                    {followers != null && <span>{followers.toLocaleString()} followers{connection && " ✓"}</span>}
+                    {engagementRates[p] && <span>{engagementRates[p]}% engagement</span>}
+                  </div>
                 </div>
-                <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
-                  {followers != null && <span>{followers.toLocaleString()} followers{connection && " ✓"}</span>}
-                  {engagementRates[p] && <span>{engagementRates[p]}% engagement</span>}
-                </div>
+                {platformPosts.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px", marginTop: "8px" }}>
+                    {platformPosts.map(post => (
+                      <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
+                        <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
               );
             })}
           </div>
           );
         })()}
-
-        {/* Recent Posts */}
-        {featuredPosts.length > 0 && (
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label style={labelStyle}>Recent Posts</label>
-            {socialConnections.filter(c => c.username).length > 0 && (
-              <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
-                {socialConnections.filter(c => c.username).map((c, i) => (
-                  <span key={c.platform}>{i > 0 ? "  ·  " : ""}{SOCIAL_PLATFORM_LABEL[c.platform]} @{c.username}</span>
-                ))}
-              </p>
-            )}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
-              {featuredPosts.slice(0, 5).map(post => (
-                <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
-                  <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </a>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Content types */}
         {contentTypes.length > 0 && (

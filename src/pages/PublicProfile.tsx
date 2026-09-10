@@ -490,7 +490,10 @@ const startDM = async () => {
 
           {/* Platforms - includes anything verified via a connected account
               even if it isn't in the creator's own declared platform list,
-              so a connected account is enough on its own to show up here. */}
+              so a connected account is enough on its own to show up here.
+              Each platform's own featured videos sit directly under its
+              card, rather than one combined grid where platforms compete
+              for a shared slot count. */}
           {(() => {
             const displayPlatforms = Array.from(new Set([
               ...(creator.platforms || []),
@@ -502,43 +505,34 @@ const startDM = async () => {
               {displayPlatforms.map(p => {
                 const verified = socialInfo.find(s => SOCIAL_PLATFORM_LABEL[s.platform] === p);
                 const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
+                const platformPosts = socialPosts.filter(post => SOCIAL_PLATFORM_LABEL[post.platform] === p).slice(0, 5);
                 return (
-                <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
-                    {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{verified?.username || creator.social_links?.[p]}</p>}
+                <div key={p} style={{ marginBottom: "10px" }}>
+                  <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{p}</p>
+                      {(verified?.username || creator.social_links?.[p]) && <p style={{ color: "#999", fontSize: "12px" }}>@{verified?.username || creator.social_links?.[p]}</p>}
+                    </div>
+                    <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
+                      {followers != null && <span>{followers.toLocaleString()} followers{verified && " ✓"}</span>}
+                      {creator.engagement_rates?.[p] && <span>{creator.engagement_rates[p]}% engagement</span>}
+                    </div>
                   </div>
-                  <div style={{ display: "flex", gap: "1rem", fontSize: "12px", color: "#999" }}>
-                    {followers != null && <span>{followers.toLocaleString()} followers{verified && " ✓"}</span>}
-                    {creator.engagement_rates?.[p] && <span>{creator.engagement_rates[p]}% engagement</span>}
-                  </div>
+                  {platformPosts.length > 0 && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px", marginTop: "8px" }}>
+                      {platformPosts.map(post => (
+                        <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
+                          <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 );
               })}
             </div>
             );
           })()}
-
-          {/* Recent Posts */}
-          {socialPosts.length > 0 && (
-            <div style={sectionStyle}>
-              <label style={labelStyle}>Recent Posts</label>
-              {socialInfo.length > 0 && (
-                <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px" }}>
-                  {socialInfo.map((s, i) => (
-                    <span key={s.platform}>{i > 0 ? "  ·  " : ""}{SOCIAL_PLATFORM_LABEL[s.platform]} @{s.username}{s.follower_count != null ? ` (${s.follower_count.toLocaleString()})` : ""}</span>
-                  ))}
-                </p>
-              )}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px" }}>
-                {socialPosts.slice(0, 5).map(post => (
-                  <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
-                    <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Content Types */}
           {creator.content_types && creator.content_types.length > 0 && (

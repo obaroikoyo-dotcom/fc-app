@@ -65,14 +65,19 @@ export async function disconnectSocialPlatform(userId: string, platform: SocialP
   await supabase.from("social_posts_cache").delete().eq("user_id", userId).eq("platform", platform);
 }
 
+// No overall limit here - each platform is already capped to
+// MAX_FEATURED_POSTS independently (by setFeaturedPosts and the initial
+// auto-feature-first-5 on connect), so a global limit on top of that would
+// only ever crowd out one platform's featured posts with another's more
+// recent ones instead of actually bounding anything. Callers group these by
+// platform and slice per-platform as needed.
 export async function getSocialPosts(userId: string): Promise<SocialPost[]> {
   const { data } = await supabase
     .from("social_posts_cache")
     .select("platform, post_id, post_url, thumbnail_url, caption, posted_at, username")
     .eq("user_id", userId)
     .eq("featured", true)
-    .order("posted_at", { ascending: false })
-    .limit(MAX_FEATURED_POSTS);
+    .order("posted_at", { ascending: false });
   return data || [];
 }
 
