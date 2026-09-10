@@ -367,8 +367,11 @@ const loadFavourites = async () => {
       {!danger && <span style={{ color: "#777", fontSize: "16px" }}>›</span>}
     </div>
   );
-  const sectionHeader = (title: string) => (
-    <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: "20px 0 8px" }}>{title}</p>
+  const sectionHeader = (title: string, first = false) => (
+    <>
+      {!first && <div style={{ borderTop: "1px solid #1a1a1a", marginTop: "28px" }} />}
+      <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: first ? "4px 0 8px" : "20px 0 8px" }}>{title}</p>
+    </>
   );
 
   // ─── PUBLIC PROFILE VIEW ──────────────────────────────────────────────────
@@ -539,7 +542,7 @@ const loadFavourites = async () => {
               ))}
               {!anyConnected && (
                 <p style={{ fontSize: "11px", color: "#888", lineHeight: 1.6 }}>
-                  Connect TikTok or Instagram in Manage Accounts to show a verified badge here.
+                  Connect TikTok or Instagram in Connect Social Platforms to show a verified badge here.
                 </p>
               )}
             </div>
@@ -691,9 +694,9 @@ const loadFavourites = async () => {
       </div>
 
       <div style={{ padding: "0 1.25rem" }}>
-        {sectionHeader("Brand Account")}
+        {sectionHeader("Brand Account", true)}
         {settingsRow("Edit Profile", "Name, bio, industry, location, links", () => setSettingsSection("edit-profile"))}
-        {settingsRow("Manage Accounts", "Connect TikTok/Instagram to post creator content", () => setSettingsSection("manage-accounts"))}
+        {settingsRow("Connect Social Platforms", "Connect TikTok/Instagram to post creator content", () => setSettingsSection("manage-accounts"))}
         {settingsRow("Get Verified", isVerified ? "Verified ✓" : verificationRequest ? "Request pending review" : "Request a verified badge", () => setSettingsSection("get-verified"))}
         {settingsRow("Industry & Content Needs", "Sectors and media formats you need", () => setSettingsSection("industry-selection"))}
         {settingsRow("Campaign Preferences", "Creator tier and target audience", () => setSettingsSection("campaign-preferences"))}
@@ -980,7 +983,7 @@ const loadFavourites = async () => {
 
     return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
-      {renderSettingsHeader("Manage Accounts", () => setSettingsSection("main"))}
+      {renderSettingsHeader("Connect Social Platforms", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {socialNotice && (
           <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

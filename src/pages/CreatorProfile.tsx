@@ -553,8 +553,11 @@ setTimeout(() => setSaved(false), 2000);
       {!danger && <span style={{ color: "#777", fontSize: "16px" }}>›</span>}
     </div>
   );
-  const sectionHeader = (title: string) => (
-    <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: "20px 0 8px" }}>{title}</p>
+  const sectionHeader = (title: string, first = false) => (
+    <>
+      {!first && <div style={{ borderTop: "1px solid #1a1a1a", marginTop: "28px" }} />}
+      <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, padding: first ? "4px 0 8px" : "20px 0 8px" }}>{title}</p>
+    </>
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
@@ -868,10 +871,10 @@ setTimeout(() => setSaved(false), 2000);
       </div>
 
       <div style={{ padding: "0 1.25rem" }}>
-        {sectionHeader("Account Settings")}
+        {sectionHeader("Account Settings", true)}
         {settingsRow("Edit Profile", "Name, bio, niche, location, platforms", () => setSettingsSection("edit-profile"))}
         {settingsRow("Niche Selection", "Choose your content categories", () => setSettingsSection("niche-selection"))}
-        {settingsRow("Manage Accounts", "Link TikTok, Instagram and more", () => setSettingsSection("manage-accounts"))}
+        {settingsRow("Connect Social Platforms", "Link TikTok, Instagram and more", () => setSettingsSection("manage-accounts"))}
         {settingsRow("Payouts", `Balance: £${(walletBalance / 100).toFixed(2)}`, () => setSettingsSection("payouts"))}
         {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"))}
         {settingsRow("Visibility", "Control what others see", () => setSettingsSection("visibility"))}
@@ -997,7 +1000,7 @@ setTimeout(() => setSaved(false), 2000);
                   {connection ? (
                     <div>
                       <input style={{ ...inputStyle, color: "#bbb", cursor: "not-allowed" }} value={connection.username ? `@${connection.username}` : "Connected"} disabled />
-                      <p style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>Verified via connected account - disconnect it in Manage Accounts to change this.</p>
+                      <p style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>Verified via connected account - disconnect it in Connect Social Platforms to change this.</p>
                     </div>
                   ) : (
                     <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
@@ -1120,7 +1123,7 @@ setTimeout(() => setSaved(false), 2000);
 
     return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
-      {renderSettingsHeader("Manage Accounts", () => setSettingsSection("main"))}
+      {renderSettingsHeader("Connect Social Platforms", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {socialNotice && (
           <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

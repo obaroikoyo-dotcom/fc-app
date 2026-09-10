@@ -637,7 +637,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
                 : `${platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.`}
             </p>
           ) : !socialConnected ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Manage Accounts to post this and get paid.</p>
+            <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Connect Social Platforms to post this and get paid.</p>
           ) : !myPost ? (
             <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
               {posting ? "Posting..." : `Post to ${platform} & Get Paid`}
