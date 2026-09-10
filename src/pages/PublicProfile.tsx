@@ -57,10 +57,6 @@ interface CreatorData {
   rates?: { post: string; story: string; reel: string; video: string; ugc: string };
   collabs?: { brand: string; description: string }[];
   profile_visible?: boolean;
-  rate_visible?: boolean;
-  location_visible?: boolean;
-  followers_visible?: boolean;
-  collabs_visible?: boolean;
 }
 
 export default function PublicProfile({ profileId, goBack, navigateToMessages }: Props) {
@@ -124,7 +120,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
         // Try creator_profiles first
         const { data: creatorData } = await supabase
           .from("creator_profiles")
-          .select("name, bio, avatar_url, niche, location, age, gender, available, platforms, social_links, follower_counts, engagement_rates, content_types, languages, audience_age_range, audience_location, rates, collabs, profile_visible, rate_visible, location_visible, followers_visible, collabs_visible")
+          .select("name, bio, avatar_url, niche, location, age, gender, available, platforms, social_links, follower_counts, engagement_rates, content_types, languages, audience_age_range, audience_location, rates, collabs, profile_visible")
           .eq("id", profileId)
           .single();
 
@@ -493,7 +489,7 @@ const startDM = async () => {
                 )}
               </div>
               <p style={{ fontSize: "10px", color: "#666", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2px" }}>{isBrand ? "Brand" : "Creator"}</p>
-              <p style={{ fontSize: "13px", color: "#999" }}>{creator.niche}{creator.location && (creator.location_visible !== false || isOwner) ? ` · ${creator.location}` : ""}</p>
+              <p style={{ fontSize: "13px", color: "#999" }}>{creator.niche}{creator.location ? ` · ${creator.location}` : ""}</p>
             </div>
           </div>
 
@@ -561,9 +557,7 @@ const startDM = async () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {displayPlatforms.map(p => {
                 const verified = socialInfo.find(s => SOCIAL_PLATFORM_LABEL[s.platform] === p);
-                const followers = (creator.followers_visible !== false || isOwner)
-                  ? (verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null))
-                  : null;
+                const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
                 const platformPosts = socialPosts.filter(post => SOCIAL_PLATFORM_LABEL[post.platform] === p).slice(0, 5);
                 return (
                 <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
@@ -624,7 +618,7 @@ const startDM = async () => {
           )}
 
           {/* Rates */}
-          {creator.rates && Object.values(creator.rates).some(v => v) && (creator.rate_visible !== false || isOwner) && (
+          {creator.rates && Object.values(creator.rates).some(v => v) && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Rate Card</label>
               <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -640,7 +634,7 @@ const startDM = async () => {
           <div style={dividerStyle} />
 
           {/* Past Collabs */}
-          {creator.collabs && creator.collabs.filter(c => c.brand).length > 0 && (creator.collabs_visible !== false || isOwner) && (
+          {creator.collabs && creator.collabs.filter(c => c.brand).length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Past Collabs</label>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

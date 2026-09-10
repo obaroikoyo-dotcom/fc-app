@@ -158,10 +158,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   }, [walletTab]);
   const [notifError, setNotifError] = useState("");
   const [profileVisible, setProfileVisible] = useState(true);
-  const [rateVisible, setRateVisible] = useState(true);
-  const [locationVisible, setLocationVisible] = useState(true);
-  const [followersVisible, setFollowersVisible] = useState(true);
-  const [collabsVisible, setCollabsVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
@@ -385,10 +381,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       setGender(data.gender || "");
       setAvailable(data.available ?? true);
       setProfileVisible(data.profile_visible ?? true);
-      setRateVisible(data.rate_visible ?? true);
-      setLocationVisible(data.location_visible ?? true);
-      setFollowersVisible(data.followers_visible ?? true);
-      setCollabsVisible(data.collabs_visible ?? true);
       setSelectedPlatforms(data.platforms || []);
       setSocialLinks(data.social_links || {});
       setFollowerCounts(data.follower_counts || {});
@@ -1393,10 +1385,6 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {[
           { label: "Public Profile", sub: "Brands can find and view your profile", val: profileVisible, field: "profile_visible", setter: setProfileVisible },
-          { label: "Rate Card", sub: "Show your rates to brands", val: rateVisible, field: "rate_visible", setter: setRateVisible },
-          { label: "Location", sub: "Show your location on your profile", val: locationVisible, field: "location_visible", setter: setLocationVisible },
-          { label: "Follower Counts", sub: "Show your follower numbers per platform", val: followersVisible, field: "followers_visible", setter: setFollowersVisible },
-          { label: "Past Collaborations", sub: "Show brands you've worked with before", val: collabsVisible, field: "collabs_visible", setter: setCollabsVisible },
         ].map(({ label, sub, val, field, setter }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
             <div>
