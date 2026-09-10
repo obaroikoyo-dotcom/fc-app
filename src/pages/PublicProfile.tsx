@@ -557,7 +557,7 @@ const startDM = async () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {displayPlatforms.map(p => {
                 const verified = socialInfo.find(s => SOCIAL_PLATFORM_LABEL[s.platform] === p);
-                const followers = verified?.follower_count ?? (creator.follower_counts?.[p] ? Number(creator.follower_counts[p]) : null);
+                const followers = verified?.follower_count ?? null;
                 const platformPosts = socialPosts.filter(post => SOCIAL_PLATFORM_LABEL[post.platform] === p).slice(0, 5);
                 return (
                 <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
@@ -566,21 +566,13 @@ const startDM = async () => {
                       {PLATFORM_ICON[p]?.(18)}
                       <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                     </div>
-                    {(verified?.username || creator.social_links?.[p]) && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{verified?.username || creator.social_links?.[p]}</p>}
-                    {(followers != null || creator.engagement_rates?.[p]) && (
+                    {verified?.username && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{verified.username}</p>}
+                    {followers != null && (
                       <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
-                        {followers != null && (
-                          <div>
-                            <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                            <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
-                          </div>
-                        )}
-                        {creator.engagement_rates?.[p] && (
-                          <div>
-                            <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{creator.engagement_rates[p]}%</p>
-                            <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Engagement</p>
-                          </div>
-                        )}
+                        <div>
+                          <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                          <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
+                        </div>
                       </div>
                     )}
                   </div>

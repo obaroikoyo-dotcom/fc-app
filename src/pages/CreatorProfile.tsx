@@ -692,7 +692,7 @@ setTimeout(() => setSaved(false), 2000);
             {displayPlatforms.map(p => {
               const connectedPlatform = LABEL_TO_SOCIAL_PLATFORM[p];
               const connection = connectedPlatform ? socialConnections.find(c => c.platform === connectedPlatform) : undefined;
-              const followers = connection?.follower_count ?? (followerCounts[p] ? Number(followerCounts[p]) : null);
+              const followers = connection?.follower_count ?? null;
               const platformPosts = connectedPlatform ? featuredPosts.filter(post => post.platform === connectedPlatform).slice(0, 5) : [];
               return (
               <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
@@ -701,21 +701,13 @@ setTimeout(() => setSaved(false), 2000);
                     {PLATFORM_ICON[p]?.(18)}
                     <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                   </div>
-                  {(connection?.username || socialLinks[p]) && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection?.username || socialLinks[p]}</p>}
-                  {(followers != null || engagementRates[p]) && (
+                  {connection?.username && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection.username}</p>}
+                  {followers != null && (
                     <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
-                      {followers != null && (
-                        <div>
-                          <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                          <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
-                        </div>
-                      )}
-                      {engagementRates[p] && (
-                        <div>
-                          <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{engagementRates[p]}%</p>
-                          <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Engagement</p>
-                        </div>
-                      )}
+                      <div>
+                        <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                        <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
+                      </div>
                     </div>
                   )}
                 </div>
