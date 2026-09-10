@@ -47,6 +47,35 @@ const ClockIcon = () => (
   </svg>
 );
 
+const ShieldCheckIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M12 3.5 19.5 6.5V12c0 4.8-3 7.6-7.5 9-4.5-1.4-7.5-4.2-7.5-9V6.5L12 3.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+    <path d="m9 12.2 2 2 4-4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const ChatBubbleIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+  </svg>
+);
+
+// A payment/chat-opened event is a system notice, not something "from"
+// either party - rendered as a centered card instead of a left/right
+// speech bubble so it doesn't read as a message either side sent.
+function SystemEventCard({ icon, accent, title, body, time }: { icon: React.ReactNode; accent?: string; title: string; body: string; time: string }) {
+  return (
+    <div style={{ alignSelf: "center", maxWidth: "88%", display: "flex", gap: "10px", alignItems: "flex-start", background: accent ? `${accent}14` : "#111", border: `1px solid ${accent ? `${accent}40` : "#1a1a1a"}`, borderRadius: "12px", padding: "12px 14px", margin: "4px 0" }}>
+      <div style={{ color: accent || "#999", marginTop: "1px" }}>{icon}</div>
+      <div>
+        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>{title}</p>
+        <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.5 }}>{body}</p>
+        <p style={{ color: "#666", fontSize: "10px", marginTop: "6px" }}>{time}</p>
+      </div>
+    </div>
+  );
+}
+
 // Same card shape as the "Require a post" checkbox it sits alongside
 // (title + pill on one line, explainer beneath) so a platform without a
 // live gated-posting integration reads as an intentional state, not a
@@ -145,8 +174,8 @@ interface Campaign {
 }
 
 const REACTION_EMOJI = ["❤️", "😂", "😮", "😢", "👍"];
-const CHAT_OPENED_PREFIX = "👋 Chat Opened!";
-const PAYMENT_CONFIRMED_PREFIX = "💰 Payment secured!";
+const CHAT_OPENED_PREFIX = "Chat Opened!";
+const PAYMENT_CONFIRMED_PREFIX = "Payment secured!";
 
 const CARD_ELEMENT_OPTIONS = {
   hidePostalCode: true,
@@ -2165,6 +2194,9 @@ return (
               const myReaction = msgReactions.find(r => r.user_id === currentUserId)?.emoji;
               const isLastMessage = i === messages.length - 1;
               const showSeen = mine && isLastMessage && !!m.read_at;
+              const isPaymentEvent = m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX);
+              const isChatOpenedEvent = m.text?.startsWith(CHAT_OPENED_PREFIX);
+              const eventTime = parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               return (
                 <div key={m.id} style={{ display: "contents" }}>
                 {showPayCard && i === cardInsertAtIdx && (
@@ -2185,6 +2217,22 @@ return (
                     <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
                   </div>
                 )}
+                {isPaymentEvent ? (
+                  <SystemEventCard
+                    icon={<ShieldCheckIcon />}
+                    accent="#34c759"
+                    title="Payment Secured"
+                    body={m.text!.slice(PAYMENT_CONFIRMED_PREFIX.length).trim()}
+                    time={eventTime}
+                  />
+                ) : isChatOpenedEvent ? (
+                  <SystemEventCard
+                    icon={<ChatBubbleIcon />}
+                    title="Chat Opened"
+                    body={m.text!.slice(CHAT_OPENED_PREFIX.length).trim()}
+                    time={eventTime}
+                  />
+                ) : (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: mine ? "flex-end" : "flex-start" }}>
                   <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", flexDirection: mine ? "row-reverse" : "row" }}>
                     <div
@@ -2276,6 +2324,7 @@ return (
                     <p style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>Seen</p>
                   )}
                 </div>
+                )}
                 </div>
               );
               });
