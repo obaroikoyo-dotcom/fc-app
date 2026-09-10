@@ -159,6 +159,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [notifError, setNotifError] = useState("");
   const [profileVisible, setProfileVisible] = useState(true);
   const [rateVisible, setRateVisible] = useState(true);
+  const [locationVisible, setLocationVisible] = useState(true);
+  const [followersVisible, setFollowersVisible] = useState(true);
+  const [collabsVisible, setCollabsVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
@@ -381,6 +384,11 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       setAge(data.age?.toString() || "");
       setGender(data.gender || "");
       setAvailable(data.available ?? true);
+      setProfileVisible(data.profile_visible ?? true);
+      setRateVisible(data.rate_visible ?? true);
+      setLocationVisible(data.location_visible ?? true);
+      setFollowersVisible(data.followers_visible ?? true);
+      setCollabsVisible(data.collabs_visible ?? true);
       setSelectedPlatforms(data.platforms || []);
       setSocialLinks(data.social_links || {});
       setFollowerCounts(data.follower_counts || {});
@@ -1369,20 +1377,33 @@ setTimeout(() => setSaved(false), 2000);
   );
 
   // ─── VISIBILITY ───────────────────────────────────────────────────────────
+  // Each toggle saves immediately on flip (like a real device settings
+  // toggle should) - directly updates the one column rather than routing
+  // through saveProfile's full-bundle update, since that reads state via
+  // closure and could race with the setState above it not having committed
+  // yet.
+  const toggleVisibilityField = async (field: string, currentVal: boolean, setter: (v: boolean) => void) => {
+    const newVal = !currentVal;
+    setter(newVal);
+    if (userId) await supabase.from("creator_profiles").update({ [field]: newVal }).eq("id", userId);
+  };
   const renderVisibility = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Visibility", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {[
-          { label: "Public Profile", sub: "Brands can find and view your profile", val: profileVisible, set: setProfileVisible },
-          { label: "Rate Card", sub: "Show your rates to brands", val: rateVisible, set: setRateVisible },
-        ].map(({ label, sub, val, set }) => (
+          { label: "Public Profile", sub: "Brands can find and view your profile", val: profileVisible, field: "profile_visible", setter: setProfileVisible },
+          { label: "Rate Card", sub: "Show your rates to brands", val: rateVisible, field: "rate_visible", setter: setRateVisible },
+          { label: "Location", sub: "Show your location on your profile", val: locationVisible, field: "location_visible", setter: setLocationVisible },
+          { label: "Follower Counts", sub: "Show your follower numbers per platform", val: followersVisible, field: "followers_visible", setter: setFollowersVisible },
+          { label: "Past Collaborations", sub: "Show brands you've worked with before", val: collabsVisible, field: "collabs_visible", setter: setCollabsVisible },
+        ].map(({ label, sub, val, field, setter }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
             <div>
               <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>{label}</p>
               <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>{sub}</p>
             </div>
-            <div onClick={() => set((p: boolean) => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: val ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div onClick={() => toggleVisibilityField(field, val, setter)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: val ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
               <div style={{ position: "absolute", top: "3px", left: val ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: val ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
             </div>
           </div>

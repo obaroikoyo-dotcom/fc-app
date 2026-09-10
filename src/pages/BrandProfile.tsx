@@ -219,6 +219,7 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
     if (data) {
       setName(data.company_name || data.name || "");
       setIsVerified(!!data.verified);
+      setProfileVisible(data.profile_visible ?? true);
       setBio(data.bio || "");
       setWebsite(data.website || "");
       setInstagram(data.instagram || "");
@@ -931,7 +932,7 @@ const loadFavourites = async () => {
             <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Public Profile</p>
             <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>Creators can find and view your brand profile</p>
           </div>
-          <div onClick={() => setProfileVisible(p => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: profileVisible ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+          <div onClick={async () => { const v = !profileVisible; setProfileVisible(v); if (userId) await supabase.from("brand_profiles").update({ profile_visible: v }).eq("id", userId); }} style={{ width: "44px", height: "24px", borderRadius: "12px", background: profileVisible ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
             <div style={{ position: "absolute", top: "3px", left: profileVisible ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: profileVisible ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
           </div>
         </div>
