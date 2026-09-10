@@ -42,14 +42,6 @@ const PlayGlyph = () => (
     <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="#fff" />
   </svg>
 );
-// Self-contained (circle + tick in one glyph) so it reads on its own
-// against the dark card, no separate background wrapper needed.
-const CheckGlyph = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <circle cx="12" cy="12" r="10" fill="#34c759" />
-    <path d="M7.5 12.5l3 3L17 9.5" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs", "Hauls", "GRWM", "Comparisons", "Skits", "Livestreams", "Carousels", "Podcasts", "Testimonials"];
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["9-15", "16-17", "18-24", "25-34", "35-44", "45+"];
@@ -685,9 +677,6 @@ setTimeout(() => setSaved(false), 2000);
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     {PLATFORM_ICON[p]?.(18)}
                     <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
-                    {connection && (
-                      <span title="Verified via connected account" style={{ display: "inline-flex" }}><CheckGlyph /></span>
-                    )}
                   </div>
                   {(connection?.username || socialLinks[p]) && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection?.username || socialLinks[p]}</p>}
                   {(followers != null || engagementRates[p]) && (
