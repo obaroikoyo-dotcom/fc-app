@@ -16,6 +16,13 @@ import {
   type BrandTrackRecord, type BrandReview, type ReviewableCampaign,
 } from "../lib/brandStats";
 
+const CREATOR_TIERS = [
+  { label: "Nano-Tier Scale", value: "nano" },
+  { label: "Micro-Tier Authority", value: "micro" },
+  { label: "Mid-Tier Influence", value: "mid" },
+  { label: "Macro-Tier Reach", value: "macro" },
+  { label: "Elite/Mega Impact", value: "mega" },
+];
 const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
 const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {
   tiktok: (size) => <TikTokIcon size={size} />,
@@ -422,18 +429,6 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
               <p style={{ fontSize: "13px", color: "#ccc" }}>{brand.industry}</p>
             </div>
           )}
-          {brand.target_audience && (
-            <div>
-              <label style={labelStyle}>Target Audience</label>
-              <p style={{ fontSize: "13px", color: "#ccc" }}>{brand.target_audience}</p>
-            </div>
-          )}
-          {brand.budget_range && (
-            <div>
-              <label style={labelStyle}>Typical Budget</label>
-              <p style={{ fontSize: "13px", color: "#ccc" }}>{brand.budget_range}</p>
-            </div>
-          )}
           {brand.content_types && brand.content_types.length > 0 && (
             <div>
               <label style={labelStyle}>Content They Need</label>
@@ -442,6 +437,18 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
                   <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{c}</span>
                 ))}
               </div>
+            </div>
+          )}
+          {brand.target_audience && (
+            <div>
+              <label style={labelStyle}>Target Audience</label>
+              <p style={{ fontSize: "13px", color: "#ccc" }}>{brand.target_audience}</p>
+            </div>
+          )}
+          {brand.budget_range && (
+            <div>
+              <label style={labelStyle}>Preferred Creator Tier</label>
+              <p style={{ fontSize: "13px", color: "#ccc" }}>{CREATOR_TIERS.find(t => t.value === brand.budget_range)?.label || brand.budget_range}</p>
             </div>
           )}
         </div>
