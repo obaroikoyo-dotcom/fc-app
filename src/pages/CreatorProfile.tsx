@@ -996,39 +996,6 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         </div>
 
-        {selectedPlatforms.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <label style={labelStyle}>Social Media Details</label>
-            {selectedPlatforms.map(p => {
-              const connectedPlatform = LABEL_TO_SOCIAL_PLATFORM[p];
-              const connection = connectedPlatform ? socialConnections.find(c => c.platform === connectedPlatform) : undefined;
-              return (
-              <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "10px" }}>{p}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {connection ? (
-                    <div>
-                      <input style={{ ...inputStyle, color: "#bbb", cursor: "not-allowed" }} value={connection.username ? `@${connection.username}` : "Connected"} disabled />
-                      <p style={{ fontSize: "11px", color: "#999", marginTop: "6px" }}>Verified via connected account - disconnect it in Connect Social Platforms to change this.</p>
-                    </div>
-                  ) : (
-                    <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
-                  )}
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    {connection ? (
-                      <input style={{ ...inputStyle, flex: 1, color: "#bbb", cursor: "not-allowed" }} value={connection.follower_count != null ? `${connection.follower_count.toLocaleString()} followers` : "Syncing..."} disabled />
-                    ) : (
-                      <input style={{ ...inputStyle, flex: 1 }} placeholder="Followers" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
-                    )}
-                    <input style={{ ...inputStyle, flex: 1 }} placeholder="Engagement %" type="number" value={engagementRates[p] || ""} onChange={e => setEngagementRates(prev => ({ ...prev, [p]: e.target.value }))} />
-                  </div>
-                </div>
-              </div>
-              );
-            })}
-          </div>
-        )}
-
         <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "1rem" }}>
           <label style={labelStyle}>Content I Create</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
