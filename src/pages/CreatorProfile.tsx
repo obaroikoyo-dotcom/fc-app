@@ -675,16 +675,16 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
 
-        {/* Platforms - anything you've connected shows here too, even if it
-            wasn't separately picked in Edit Profile's platform list, so
-            connecting an account is enough on its own. Each platform's own
-            featured videos sit directly under its card, rather than one
-            combined grid where platforms compete for a shared slot count. */}
+        {/* Platforms - only actually connected accounts, not just picked in
+            Edit Profile's chip list, since there's nothing real to show
+            (no username/followers/videos) until it's connected. Each
+            platform's own featured videos sit directly under its card,
+            rather than one combined grid where platforms compete for a
+            shared slot count. */}
         {(() => {
-          const displayPlatforms = Array.from(new Set([
-            ...selectedPlatforms,
-            ...socialConnections.map(c => SOCIAL_PLATFORM_LABEL[c.platform]),
-          ]));
+          const displayPlatforms = Array.from(new Set(
+            socialConnections.map(c => SOCIAL_PLATFORM_LABEL[c.platform])
+          ));
           return displayPlatforms.length > 0 && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Platforms</label>

@@ -540,17 +540,16 @@ const startDM = async () => {
             </div>
           )}
 
-          {/* Platforms - includes anything verified via a connected account
-              even if it isn't in the creator's own declared platform list,
-              so a connected account is enough on its own to show up here.
-              Each platform's own featured videos sit directly under its
-              card, rather than one combined grid where platforms compete
-              for a shared slot count. */}
+          {/* Platforms - only actually connected accounts, not just picked
+              in the creator's own declared platform list, since there's
+              nothing real to show (no username/followers/videos) until
+              it's connected. Each platform's own featured videos sit
+              directly under its card, rather than one combined grid where
+              platforms compete for a shared slot count. */}
           {(() => {
-            const displayPlatforms = Array.from(new Set([
-              ...(creator.platforms || []),
-              ...socialInfo.map(s => SOCIAL_PLATFORM_LABEL[s.platform]),
-            ]));
+            const displayPlatforms = Array.from(new Set(
+              socialInfo.map(s => SOCIAL_PLATFORM_LABEL[s.platform])
+            ));
             return displayPlatforms.length > 0 && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Platforms</label>
