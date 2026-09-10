@@ -38,13 +38,16 @@ const PLATFORM_ICON: Record<string, (size: number) => React.ReactNode> = {
   YouTube: (size) => <YouTubeIcon size={size} />,
 };
 const PlayGlyph = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
     <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="#fff" />
   </svg>
 );
+// Self-contained (circle + tick in one glyph) so it reads on its own
+// against the dark card, no separate background wrapper needed.
 const CheckGlyph = () => (
-  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M4 12.5l5.5 5.5L20 7" stroke="#0a0a0a" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <circle cx="12" cy="12" r="10" fill="#34c759" />
+    <path d="M7.5 12.5l3 3L17 9.5" stroke="#0a0a0a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs", "Hauls", "GRWM", "Comparisons", "Skits", "Livestreams", "Carousels", "Podcasts", "Testimonials"];
@@ -679,30 +682,26 @@ setTimeout(() => setSaved(false), 2000);
               return (
               <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
                 <div style={{ padding: "14px 16px" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      {PLATFORM_ICON[p]?.(20)}
-                      <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
-                    </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    {PLATFORM_ICON[p]?.(18)}
+                    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                     {connection && (
-                      <div title="Verified via connected account" style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#34c759", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <CheckGlyph />
-                      </div>
+                      <span title="Verified via connected account" style={{ display: "inline-flex" }}><CheckGlyph /></span>
                     )}
                   </div>
-                  {(connection?.username || socialLinks[p]) && <p style={{ color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection?.username || socialLinks[p]}</p>}
+                  {(connection?.username || socialLinks[p]) && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection?.username || socialLinks[p]}</p>}
                   {(followers != null || engagementRates[p]) && (
                     <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
                       {followers != null && (
                         <div>
-                          <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                          <p style={{ color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "4px" }}>Followers</p>
+                          <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                          <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
                         </div>
                       )}
                       {engagementRates[p] && (
                         <div>
-                          <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{engagementRates[p]}%</p>
-                          <p style={{ color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "4px" }}>Engagement</p>
+                          <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{engagementRates[p]}%</p>
+                          <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Engagement</p>
                         </div>
                       )}
                     </div>
@@ -713,7 +712,7 @@ setTimeout(() => setSaved(false), 2000);
                     {platformPosts.map(post => (
                       <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
                         <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <div style={{ position: "absolute", left: "5px", bottom: "5px", width: "16px", height: "16px", borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" }}>
                           <PlayGlyph />
                         </div>
                       </a>
