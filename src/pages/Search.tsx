@@ -10,7 +10,7 @@ import VerifiedBadge from "../components/VerifiedBadge";
 import { usePersistedState } from "../lib/usePersistedState";
 import { useScrollRestoration } from "../lib/useScrollRestoration";
 
-interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
+interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToBrandProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
   id: string; role: string;
   creator_profiles?: { name: string; niche: string; location: string; available: boolean; hashtags: string[]; avatar_url?: string; follower_counts?: Record<string, string>; rates?: { post?: string; story?: string; reel?: string; video?: string; ugc?: string }; } | null;
@@ -75,7 +75,7 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
   );
 }
 
-export default function Search({ navigateToProfile, navigateToMessages }: Props) {
+export default function Search({ navigateToProfile, navigateToBrandProfile, navigateToMessages }: Props) {
   const [query, setQuery] = usePersistedState("fc_search_query", "");
   const [filter, setFilter] = usePersistedState<"all" | "creators" | "brands">("fc_search_filter", "all");
   const [allProfiles, setAllProfiles] = useState<Profile[]>([]);
@@ -229,7 +229,7 @@ export default function Search({ navigateToProfile, navigateToMessages }: Props)
           filtered.map((p, i) => {
             const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;
             return (
-              <div key={p.id} onClick={() => navigateToProfile(p.id)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+              <div key={p.id} onClick={() => isC ? navigateToProfile(p.id) : navigateToBrandProfile(p.id)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   {cp?.avatar_url || bp?.avatar_url ? <img src={cp?.avatar_url || bp?.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : isC ? "◉" : "◈"}
                 </div>

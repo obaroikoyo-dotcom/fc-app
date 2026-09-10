@@ -558,7 +558,7 @@ export default function App() {
       case "forgot-password": return <ForgotPassword navigate={navigate} />;
       case "reset-password": return <ResetPassword navigate={navigate} />;
       case "brand-dashboard": 
-        return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToProfile} />;
+        return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToBrandProfile} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": 
         return (
@@ -592,7 +592,7 @@ case "apply-campaign":
   return <ApplyCampaign navigate={navigate} campaignId={applyingCampaignId || ""} goBack={goBack} />;
       case "search-creator":
       case "search-brand": 
-        return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToMessages={navigateToMessages} />;
+        return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} navigateToMessages={navigateToMessages} />;
       case "public-profile": {
         return (
           <PublicProfile 
