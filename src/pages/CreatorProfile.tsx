@@ -549,8 +549,8 @@ setTimeout(() => setSaved(false), 2000);
     <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
       {icon && <SettingsIcon name={icon} color="#999" size={18} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
-        {sub && <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
+        <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
+        {sub && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
       </div>
       <ChevronIcon />
     </div>
@@ -559,7 +559,7 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
   );
   const sectionHeader = (title: string, first = false) => (
-    <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? 0 : "26px", padding: "0 2px 10px" }}>{title}</p>
+    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? 0 : "26px", padding: "0 2px 10px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
