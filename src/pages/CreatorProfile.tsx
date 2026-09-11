@@ -120,7 +120,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   // Settings-specific data
   const [walletBalance, setWalletBalance] = useState(0);
   const [pendingBalance, setPendingBalance] = useState(0);
-  const [releasedCampaignIds, setReleasedCampaignIds] = useState<Set<string>>(new Set());
   const [transactions, setTransactions] = useState<any[]>([]);
   const [walletTab, setWalletTab] = useState<"balance" | "method" | "history">("balance");
   const [favourites, setFavourites] = useState<any[]>([]);
@@ -459,7 +458,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   // released).
   const { data: apps } = await supabase.from("applications").select("campaign_id, status").eq("creator_id", user.id);
   const released = new Set((apps || []).filter(a => a.status === "paid").map(a => a.campaign_id));
-  setReleasedCampaignIds(released);
   if (data) {
     setTransactions(data);
     // Released amounts have already been sent to Stripe (real Transfers,
@@ -1177,9 +1175,8 @@ setTimeout(() => setSaved(false), 2000);
                 </p>
 
                 {pendingBalance > 0 && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "14px", padding: "5px 10px", borderRadius: "20px", background: "rgba(255,149,0,0.12)", border: "1px solid rgba(255,149,0,0.25)" }}>
-                    <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#ff9500", flexShrink: 0 }} />
-                    <p style={{ fontSize: "11px", color: "#ff9500", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", marginTop: "14px", padding: "5px 10px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}>
+                    <p style={{ fontSize: "11px", color: "#ccc", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
                       £{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pending
                     </p>
                   </div>
@@ -1190,23 +1187,6 @@ setTimeout(() => setSaved(false), 2000);
               <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
                 <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Pending funds release once deliverables are posted and confirmed.</p>
-              )}
-              {transactions.length > 0 && (
-                <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
-                  {transactions.map((t, i) => {
-                    const isReleased = t.status !== "failed" && releasedCampaignIds.has(t.campaign_id);
-                    const label = t.status === "failed" ? "failed" : isReleased ? "released" : "escrowed - awaiting delivery";
-                    return (
-                    <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
-                      <div>
-                        <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>{(t as any).campaigns?.name || "Campaign"}</p>
-                        <p style={{ fontSize: "10px", color: "#888", marginTop: "2px", textTransform: "uppercase" }}>{label}</p>
-                      </div>
-                      <p style={{ fontSize: "13px", color: isReleased ? "#34c759" : "#ff9500", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    </div>
-                    );
-                  })}
-                </div>
               )}
             </div>
           )}
@@ -1277,7 +1257,7 @@ setTimeout(() => setSaved(false), 2000);
                     <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>{(t as any).campaigns?.name || "Campaign"}</p>
                     <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>{new Date(t.payout_released_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
                   </div>
-                  <p style={{ fontSize: "13px", color: "#34c759", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p style={{ fontSize: "13px", color: "#ccc", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
               ))}
             </div>
