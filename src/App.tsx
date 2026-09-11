@@ -24,6 +24,7 @@ import Search from "./pages/Search";
 import Notifications from "./pages/Notifications"; 
 import EnterpriseSubscriptionPage from "./pages/EnterpriseSubscriptionPage";
 import ApplyCampaign from "./pages/ApplyCampaign";
+import BrandCampaignPreview from "./pages/BrandCampaignPreview";
 import VerifyEmail from "./pages/VerifyEmail";
 import { supabase, forceSignOut } from "./lib/supabase";
 import { withTimeout } from "./lib/withTimeout";
@@ -57,13 +58,14 @@ export type Page =
   | "notifications-brand"
   | "enterprise"
   | "apply-campaign"
+  | "brand-campaign-preview"
   | "verify-email"
   | "forgot-password"
   | "reset-password"
   | "admin-review";
 
 const CREATOR_PAGES: Page[] = ["creator-dashboard", "explore", "messages-creator", "search-creator", "creator-profile", "notifications-creator", "brand-public-profile", "public-profile", "apply-campaign"];
-const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand", "public-profile"];
+const BRAND_PAGES: Page[] = ["brand-dashboard", "search-brand", "messages-brand", "brand-profile", "notifications-brand", "public-profile", "brand-campaign-preview"];
 
 
 interface NavProps {
@@ -209,6 +211,7 @@ export default function App() {
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [openConvoId, setOpenConvoId] = useState<string | null>(null);
   const [applyingCampaignId, setApplyingCampaignId] = useState<string | null>(null);
+  const [previewingCampaignId, setPreviewingCampaignId] = useState<string | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string>("");
   // "public-profile" is shared between roles (either kind of user can view a
   // creator's profile), so CREATOR_PAGES/BRAND_PAGES membership alone can't
@@ -557,8 +560,8 @@ export default function App() {
       case "login": return <Login navigate={navigate} />;
       case "forgot-password": return <ForgotPassword navigate={navigate} />;
       case "reset-password": return <ResetPassword navigate={navigate} />;
-      case "brand-dashboard": 
-        return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToBrandProfile} />;
+      case "brand-dashboard":
+        return <BrandDashboard navigate={navigate} tab={brandTab} setTab={setBrandTab} navigateToProfile={navigateToBrandProfile} navigateToCampaignPreview={(id) => { setPreviewingCampaignId(id); navigate("brand-campaign-preview"); }} />;
       case "creator-dashboard": return <CreatorDashboard navigate={navigate} />;
       case "creator-profile": 
         return (
@@ -590,6 +593,8 @@ case "enterprise":
   return <EnterpriseSubscriptionPage navigate={navigate} />;
 case "apply-campaign":
   return <ApplyCampaign navigate={navigate} campaignId={applyingCampaignId || ""} goBack={goBack} />;
+case "brand-campaign-preview":
+  return <BrandCampaignPreview navigate={navigate} campaignId={previewingCampaignId || ""} goBack={goBack} />;
       case "search-creator":
       case "search-brand": 
         return <Search navigate={navigate} navigateToProfile={navigateToProfile} navigateToBrandProfile={navigateToBrandProfile} navigateToMessages={navigateToMessages} />;

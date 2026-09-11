@@ -15,6 +15,7 @@ interface Props {
   tab: "campaigns" | "post";
   setTab: (t: "campaigns" | "post") => void;
   navigateToProfile?: (id: string) => void;
+  navigateToCampaignPreview?: (id: string) => void;
 }
 
 interface Campaign {
@@ -65,7 +66,7 @@ const formatRelativeTime = (dateString: string, now: Date) => {
   return `${diffDays} days ago`;
 };
 
-export default function BrandDashboard({ navigate, tab, setTab, navigateToProfile }: Props) {
+export default function BrandDashboard({ navigate, tab, setTab, navigateToProfile, navigateToCampaignPreview }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -328,13 +329,20 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const creatorNetPayout = isEnterprise ? budgetVal : budgetVal * 0.90;
                 const appCount = c.applications?.length || 0;
 
+                const isPreviewable = isOwn && feedTab === "discover";
+
                 return (
-                  <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1rem" }}>
+                  <div
+                    key={c.id}
+                    className="item-enter"
+                    onClick={isPreviewable ? () => navigateToCampaignPreview && navigateToCampaignPreview(c.id) : undefined}
+                    style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1rem", cursor: isPreviewable ? "pointer" : "default" }}
+                  >
 
                     {/* Header Row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                       <div
-                        onClick={() => isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id)}
+                        onClick={(e) => { e.stopPropagation(); isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id); }}
                         style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
                       >
                         <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
@@ -350,8 +358,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        {isOwn && feedTab === "discover" && (
-                          <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "rgba(255,255,255,0.08)", border: "1px solid #333", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
+                        {isPreviewable && (
+                          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "9px", padding: "4px 9px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.06em" }}>
+                            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#34c759" }} />
                             Your Preview
                           </span>
                         )}
