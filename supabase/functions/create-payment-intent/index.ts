@@ -16,7 +16,7 @@ serve(async (req) => {
     const { brand_id, creator_id, campaign_id, billing_address, billing_name, gated_platform } = await req.json();
     const payoutReleaseMode = gated_platform === "tiktok" || gated_platform === "instagram" ? `${gated_platform}_gated` : "instant";
 
-    console.log("Received payment request:", { brand_id, creator_id, campaign_id, stripe_customer_id });
+    console.log("Received payment request:", { brand_id, creator_id, campaign_id });
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
 
