@@ -359,8 +359,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         {isPreviewable && (
-                          <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "9px", padding: "4px 9px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.06em" }}>
-                            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#34c759" }} />
+                          <span style={{ fontSize: "9px", padding: "4px 9px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.06em" }}>
                             Your Preview
                           </span>
                         )}
@@ -445,7 +444,21 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
 
                     {/* Bottom Row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
-                      {c.type === "paid" && budgetVal ? (
+                      {isPreviewable ? (
+                        // Matches Explore.tsx's creator-facing card exactly, since
+                        // this is what a creator would actually see for this campaign.
+                        c.type === "paid" && budgetVal ? (
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
+                            <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{creatorNetPayout.toLocaleString()}</span>
+                          </div>
+                        ) : (
+                          <div style={{ display: "flex", flexDirection: "column" }}>
+                            <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
+                            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", textTransform: "uppercase" }}>Gifted</span>
+                          </div>
+                        )
+                      ) : c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
                           <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
@@ -468,9 +481,15 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
                         </div>
                       )}
-                      <div style={{ fontSize: "11px", color: "#aaa", fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase" }}>
-                        {appCount} application{appCount !== 1 ? "s" : ""}
-                      </div>
+                      {isPreviewable ? (
+                        <div style={{ padding: "7px 16px", border: "1px solid #222", borderRadius: "6px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#aaa" }}>
+                          {appCount} application{appCount !== 1 ? "s" : ""}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: "11px", color: "#aaa", fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase" }}>
+                          {appCount} application{appCount !== 1 ? "s" : ""}
+                        </div>
+                      )}
                     </div>
 
                   </div>

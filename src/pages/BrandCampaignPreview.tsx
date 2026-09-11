@@ -110,8 +110,7 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
           <div onClick={goBack} style={{ cursor: "pointer", color: "#999", fontSize: "20px", lineHeight: 1 }}>←</div>
           <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Campaign Preview</span>
         </div>
-        <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "9px", padding: "4px 9px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.06em" }}>
-          <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "#34c759" }} />
+        <span style={{ fontSize: "9px", padding: "4px 9px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.06em" }}>
           What creators see
         </span>
       </div>
