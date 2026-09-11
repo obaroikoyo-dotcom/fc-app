@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { brand_id, creator_id, campaign_id, stripe_customer_id, billing_address, billing_name, gated_platform } = await req.json();
+    const { brand_id, creator_id, campaign_id, billing_address, billing_name, gated_platform } = await req.json();
     const payoutReleaseMode = gated_platform === "tiktok" || gated_platform === "instagram" ? `${gated_platform}_gated` : "instant";
 
     console.log("Received payment request:", { brand_id, creator_id, campaign_id, stripe_customer_id });
@@ -116,8 +116,26 @@ serve(async (req) => {
     // whether they actually have an active Enterprise subscription. Read the
     // real, server-authoritative flag instead (locked down against
     // self-editing by the brand_profiles trigger).
-    const { data: brandProfile } = await supabase.from("brand_profiles").select("is_enterprise").eq("id", brand_id).single();
+    const { data: brandProfile } = await supabase.from("brand_profiles").select("is_enterprise, stripe_customer_id").eq("id", brand_id).single();
     const is_enterprise = !!brandProfile?.is_enterprise;
+
+    // Every brand gets a Stripe Customer the first time they pay for a
+    // campaign (not just via the Enterprise subscription), so their card can
+    // be saved and reused on future payments instead of re-entering it every
+    // time. Reuse the existing one (e.g. from a subscription) if present.
+    let stripe_customer_id = brandProfile?.stripe_customer_id || null;
+    if (!stripe_customer_id) {
+      const customerRes = await fetch("https://api.stripe.com/v1/customers", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}`, "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ email: caller.email || "", "metadata[brand_id]": brand_id }),
+      });
+      const customer = await customerRes.json();
+      if (customer.id) {
+        stripe_customer_id = customer.id;
+        await supabase.from("brand_profiles").update({ stripe_customer_id }).eq("id", brand_id);
+      }
+    }
 
     // New card: persist the billing address on the brand so it can be reused
     // (and snapshotted) on future payments made with the saved card.
@@ -164,6 +182,9 @@ serve(async (req) => {
 
     if (stripe_customer_id) {
       params["customer"] = stripe_customer_id;
+      // Saves whatever card is used on this charge (new or already-saved) to
+      // the customer, so it's available to select again next time.
+      params["setup_future_usage"] = "off_session";
     }
 
     const stripeRes = await fetch("https://api.stripe.com/v1/payment_intents", {

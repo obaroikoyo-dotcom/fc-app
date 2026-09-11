@@ -10,6 +10,7 @@ import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
+import { REGIONS_BY_COUNTRY } from "../lib/regions";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { uploadDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
@@ -252,7 +253,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
     const gatedPlatform = deliveryPlatform && requireGatedPost ? deliveryPlatform : null;
     const res = await supabase.functions.invoke("create-payment-intent", {
-  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, gated_platform: gatedPlatform, stripe_customer_id: savedCard ? (await supabase.from("brand_profiles").select("stripe_customer_id").eq("id", currentUserId!).single()).data?.stripe_customer_id : null, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
+  body: { amount: campaignBudget, brand_id: currentUserId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id, gated_platform: gatedPlatform, billing_address: billingAddress, billing_name: useNewCard ? cardName : null }
 });
 
     if (res.error || !res.data?.clientSecret) {
@@ -423,11 +424,18 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
               )}
               <div style={{ display: "flex", gap: "6px" }}>
                 <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="City" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="County/State" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                {REGIONS_BY_COUNTRY[billingCountry] ? (
+                  <select value={billingState} onChange={e => setBillingState(e.target.value)} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: billingState ? "#fff" : "#999", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
+                    <option value="">County/State</option>
+                    {REGIONS_BY_COUNTRY[billingCountry].map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
+                  </select>
+                ) : (
+                  <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="County/State" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+                )}
               </div>
               <div style={{ display: "flex", gap: "6px" }}>
                 <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="Postal code" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
+                <select value={billingCountry} onChange={e => { setBillingCountry(e.target.value); setBillingState(""); }} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
                   {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
               </div>

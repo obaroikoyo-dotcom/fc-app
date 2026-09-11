@@ -57,6 +57,23 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 
+    // Only save the card as "reusable" once Stripe has actually confirmed the
+    // charge went through - doing this here (not client-side) means a
+    // declined/abandoned card never gets remembered as if it worked.
+    const brandId = paymentIntent.metadata?.brand_id;
+    if (brandId && paymentIntent.payment_method) {
+      try {
+        const pm = await stripe.paymentMethods.retrieve(paymentIntent.payment_method as string);
+        await supabase.from("brand_profiles").update({
+          stripe_payment_method_id: pm.id,
+          card_last4: pm.card?.last4 || null,
+          card_brand: pm.card?.brand || null,
+        }).eq("id", brandId);
+      } catch (err) {
+        console.error("Failed to save reusable card for brand", brandId, err);
+      }
+    }
+
     // Safety net: the client normally flips the matching application to
     // "funded" itself right after the charge confirms, but if that update
     // never lands (dropped connection, closed tab), the application would

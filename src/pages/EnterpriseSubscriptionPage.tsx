@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
+import { REGIONS_BY_COUNTRY } from "../lib/regions";
 
 const CARD_ELEMENT_OPTIONS = {
   hidePostalCode: true,
@@ -102,12 +103,18 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     const line1 = [a.house_number, a.road].filter(Boolean).join(" ");
     setBillingLine1(line1 || result.display_name.split(",")[0]);
     setBillingCity(a.city || a.town || a.village || "");
-    setBillingState(a.state || a.county || "");
-    setBillingPostalCode(a.postcode || "");
+    const rawState = a.state || a.county || "";
+    let countryCode = billingCountry;
     if (a.country_code) {
       const upper = a.country_code.toUpperCase();
-      if (COUNTRIES.some(c => c.code === upper)) setBillingCountry(upper);
+      if (COUNTRIES.some(c => c.code === upper)) { countryCode = upper; setBillingCountry(upper); }
     }
+    // Nominatim returns the full state/county name - match it to our dropdown's
+    // code (e.g. "California" -> "CA") when that country has one, so the
+    // picked address shows as actually selected instead of looking empty.
+    const regionMatch = REGIONS_BY_COUNTRY[countryCode]?.find(r => r.name.toLowerCase() === rawState.toLowerCase());
+    setBillingState(regionMatch?.code || rawState);
+    setBillingPostalCode(a.postcode || "");
     setAddressSuggestions([]);
     setShowSuggestions(false);
   };
@@ -260,7 +267,14 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
               </div>
               <div>
                 <label style={fieldLabel}>County / State</label>
-                <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="Greater London" style={fieldInput} />
+                {REGIONS_BY_COUNTRY[billingCountry] ? (
+                  <select value={billingState} onChange={e => setBillingState(e.target.value)} style={{ ...fieldInput, cursor: "pointer", color: billingState ? "#fff" : "#999" }}>
+                    <option value="">Select...</option>
+                    {REGIONS_BY_COUNTRY[billingCountry].map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
+                  </select>
+                ) : (
+                  <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="Greater London" style={fieldInput} />
+                )}
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
@@ -270,7 +284,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
               </div>
               <div>
                 <label style={fieldLabel}>Country</label>
-                <select value={billingCountry} onChange={e => setBillingCountry(e.target.value)} style={{ ...fieldInput, cursor: "pointer" }}>
+                <select value={billingCountry} onChange={e => { setBillingCountry(e.target.value); setBillingState(""); }} style={{ ...fieldInput, cursor: "pointer" }}>
                   {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                 </select>
               </div>
