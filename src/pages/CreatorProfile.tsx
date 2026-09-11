@@ -56,6 +56,7 @@ type SettingsSection =
   | "notifications"
   | "visibility"
   | "share-profile"
+  | "portfolio"
   | "favourites"
   | "applications"
   | "audience-data"
@@ -157,6 +158,12 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [profileVisible, setProfileVisible] = useState(true);
   const [shareLink, setShareLink] = useState("");
   const [linkCopied, setLinkCopied] = useState(false);
+  const [portfolioSlug, setPortfolioSlug] = useState<string | null>(null);
+  const [portfolioSlugInput, setPortfolioSlugInput] = useState("");
+  const [portfolioSections, setPortfolioSections] = useState<Record<string, boolean>>({ bio: true, platforms: true, rates: true, collabs: true, trackrecord: true, reviews: true });
+  const [portfolioSaving, setPortfolioSaving] = useState(false);
+  const [portfolioError, setPortfolioError] = useState("");
+  const [portfolioLinkCopied, setPortfolioLinkCopied] = useState(false);
   const [connectStatus, setConnectStatus] = useState<ConnectStatus | null>(null);
   const [connectCountry, setConnectCountry] = useState("GB");
   const [connectInstance, setConnectInstance] = useState<StripeConnectInstance | null>(null);
@@ -390,6 +397,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
       setCollabs(data.collabs?.length ? data.collabs : [{ brand: "", description: "" }]);
       setProfilePic(data.avatar_url || null);
       setAvatarUrl(data.avatar_url || null);
+      setPortfolioSlug(data.portfolio_slug || null);
+      setPortfolioSlugInput(data.portfolio_slug || "");
+      setPortfolioSections(data.portfolio_sections || { bio: true, platforms: true, rates: true, collabs: true, trackrecord: true, reviews: true });
     }
 
     const { data: apps } = await supabase
@@ -869,7 +879,8 @@ setTimeout(() => setSaved(false), 2000);
           {settingsRow("Payouts", `Balance: £${(walletBalance / 100).toFixed(2)}`, () => setSettingsSection("payouts"), "payouts")}
           {settingsRow("Notifications", notificationsEnabled ? "Push notifications on" : "Push notifications off", () => setSettingsSection("notifications"), "notifications")}
           {settingsRow("Visibility", "Control what others see", () => setSettingsSection("visibility"), "visibility")}
-          {settingsRow("Share Profile", "Get your shareable link", () => setSettingsSection("share-profile"), "share", true)}
+          {settingsRow("Share Profile", "Get your shareable link", () => setSettingsSection("share-profile"), "share")}
+          {settingsRow("Portfolio", portfolioSlug ? `flipcollab.com/p/${portfolioSlug}` : "Build a standalone page for your bio", () => setSettingsSection("portfolio"), "portfolio", true)}
         </>)}
 
         {sectionHeader("FlipCollab Activity")}
@@ -1352,6 +1363,95 @@ setTimeout(() => setSaved(false), 2000);
     </div>
   );
 
+  // ─── PORTFOLIO ────────────────────────────────────────────────────────────
+  const PORTFOLIO_URL = portfolioSlug ? `flipcollab.com/p/${portfolioSlug}` : "";
+
+  const savePortfolioSlug = async () => {
+    if (!userId) return;
+    const slug = portfolioSlugInput.trim().toLowerCase();
+    if (!/^[a-z0-9][a-z0-9_-]{2,29}$/.test(slug)) {
+      setPortfolioError("3-30 characters: letters, numbers, - or _ only.");
+      return;
+    }
+    setPortfolioSaving(true);
+    setPortfolioError("");
+    const { data: existing } = await supabase.from("creator_profiles").select("id").ilike("portfolio_slug", slug).neq("id", userId).maybeSingle();
+    if (existing) {
+      setPortfolioError("That link is already taken - try another.");
+      setPortfolioSaving(false);
+      return;
+    }
+    const { error } = await supabase.from("creator_profiles").update({ portfolio_slug: slug }).eq("id", userId);
+    setPortfolioSaving(false);
+    if (error) { setPortfolioError("Failed to save. Try again."); return; }
+    setPortfolioSlug(slug);
+  };
+
+  const togglePortfolioSection = async (key: string) => {
+    const updated = { ...portfolioSections, [key]: !portfolioSections[key] };
+    setPortfolioSections(updated);
+    if (userId) await supabase.from("creator_profiles").update({ portfolio_sections: updated }).eq("id", userId);
+  };
+
+  const renderPortfolio = () => (
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+      {renderSettingsHeader("Portfolio", () => setSettingsSection("main"))}
+      <div style={{ padding: "1.25rem" }}>
+        <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>
+          A standalone page built from your profile - share it in your Instagram/TikTok bio. Anyone can open it, no FlipCollab account needed.
+        </p>
+
+        <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Your link</label>
+        <div style={{ display: "flex", gap: "8px", marginBottom: "6px" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "0 0 0 13px" }}>
+            <span style={{ fontSize: "13px", color: "#666" }}>flipcollab.com/p/</span>
+            <input
+              value={portfolioSlugInput}
+              onChange={e => setPortfolioSlugInput(e.target.value.toLowerCase())}
+              placeholder="yourname"
+              style={{ flex: 1, background: "transparent", border: "none", padding: "11px 13px 11px 2px", color: "#fff", fontSize: "13px", outline: "none", fontFamily: "inherit", minWidth: 0 }}
+            />
+          </div>
+          <div onClick={!portfolioSaving ? savePortfolioSlug : undefined} style={{ padding: "0 16px", display: "flex", alignItems: "center", background: portfolioSaving ? "#1a1a1a" : "#fff", color: portfolioSaving ? "#555" : "#0a0a0a", borderRadius: "8px", fontSize: "12px", fontWeight: 600, cursor: portfolioSaving ? "default" : "pointer", flexShrink: 0 }}>
+            {portfolioSaving ? "Saving..." : "Save"}
+          </div>
+        </div>
+        {portfolioError && <p style={{ fontSize: "11px", color: "#ff4444", marginBottom: "10px" }}>{portfolioError}</p>}
+
+        {portfolioSlug && (
+          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", margin: "1rem 0 1.5rem" }}>
+            <a href={`https://${PORTFOLIO_URL}`} target="_blank" rel="noreferrer" style={{ fontSize: "12px", color: "#ccc", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{PORTFOLIO_URL}</a>
+            <div onClick={() => { navigator.clipboard.writeText(`https://${PORTFOLIO_URL}`); setPortfolioLinkCopied(true); setTimeout(() => setPortfolioLinkCopied(false), 2000); }} style={{ padding: "7px 14px", background: portfolioLinkCopied ? "#1a1a1a" : "#fff", color: portfolioLinkCopied ? "#555" : "#0a0a0a", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}>
+              {portfolioLinkCopied ? "Copied ✓" : "Copy"}
+            </div>
+          </div>
+        )}
+
+        <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "10px" }}>What shows on it</label>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {[
+            { key: "bio", label: "Bio", sub: "Your intro and content types" },
+            { key: "platforms", label: "Platforms", sub: "Connected accounts, followers, featured posts" },
+            { key: "rates", label: "Rate Card", sub: "Your pricing per deliverable" },
+            { key: "collabs", label: "Past Collabs", sub: "Brands you've worked with" },
+            { key: "trackrecord", label: "Track Record", sub: "Completed deals, rating, turnaround" },
+            { key: "reviews", label: "Reviews", sub: "What brands have said about you" },
+          ].map(({ key, label, sub }) => (
+            <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+              <div>
+                <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>{label}</p>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>{sub}</p>
+              </div>
+              <div onClick={() => togglePortfolioSection(key)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: portfolioSections[key] !== false ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                <div style={{ position: "absolute", top: "3px", left: portfolioSections[key] !== false ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: portfolioSections[key] !== false ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   // ─── FAVOURITES ───────────────────────────────────────────────────────────
   const renderFavourites = () => (
   <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
@@ -1667,6 +1767,7 @@ const renderTerms = () => (
       {settingsSection === "notifications" && renderNotifications()}
       {settingsSection === "visibility" && renderVisibility()}
       {settingsSection === "share-profile" && renderShareProfile()}
+      {settingsSection === "portfolio" && renderPortfolio()}
       {settingsSection === "favourites" && renderFavourites()}
       {settingsSection === "applications" && renderApplications()}
       {settingsSection === "audience-data" && renderAudienceData()}

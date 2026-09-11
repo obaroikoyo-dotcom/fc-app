@@ -57,6 +57,7 @@ interface CreatorData {
   rates?: { post: string; story: string; reel: string; video: string; ugc: string };
   collabs?: { brand: string; description: string }[];
   profile_visible?: boolean;
+  portfolio_slug?: string;
 }
 
 export default function PublicProfile({ profileId, goBack, navigateToMessages }: Props) {
@@ -120,7 +121,7 @@ export default function PublicProfile({ profileId, goBack, navigateToMessages }:
         // Try creator_profiles first
         const { data: creatorData } = await supabase
           .from("creator_profiles")
-          .select("name, bio, avatar_url, niche, location, age, gender, available, platforms, social_links, follower_counts, engagement_rates, content_types, languages, audience_age_range, audience_location, rates, collabs, profile_visible")
+          .select("name, bio, avatar_url, niche, location, age, gender, available, platforms, social_links, follower_counts, engagement_rates, content_types, languages, audience_age_range, audience_location, rates, collabs, profile_visible, portfolio_slug")
           .eq("id", profileId)
           .single();
 
@@ -490,6 +491,11 @@ const startDM = async () => {
               </div>
               <p style={{ fontSize: "10px", color: "#666", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2px" }}>{isBrand ? "Brand" : "Creator"}</p>
               <p style={{ fontSize: "13px", color: "#999" }}>{creator.niche}{creator.location ? ` · ${creator.location}` : ""}</p>
+              {creator.portfolio_slug && (
+                <a href={`https://flipcollab.com/p/${creator.portfolio_slug}`} target="_blank" rel="noreferrer" style={{ display: "inline-block", fontSize: "12px", color: "#ccc", marginTop: "6px", textDecoration: "none", borderBottom: "1px solid #333" }}>
+                  View portfolio →
+                </a>
+              )}
             </div>
           </div>
 

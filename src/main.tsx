@@ -1,8 +1,17 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import PortfolioPage from "./pages/PortfolioPage";
 import "./index.css";
 import { logEvent } from "./lib/debugLog";
+
+// The rest of the app has no URL routing at all - it's one page, navigated
+// entirely through in-memory state - because until now nothing needed a
+// real, sharable, logged-out-accessible link. A creator's portfolio does:
+// it has to work for a stranger clicking it from an Instagram bio with no
+// FlipCollab session. This is the one fork in the road before the normal
+// app even mounts.
+const portfolioMatch = window.location.pathname.match(/^\/p\/([A-Za-z0-9_-]+)\/?$/);
 
 logEvent("app boot");
 
@@ -52,6 +61,6 @@ document.addEventListener("visibilitychange", () => {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    {portfolioMatch ? <PortfolioPage slug={portfolioMatch[1]} /> : <App />}
   </React.StrictMode>
 );

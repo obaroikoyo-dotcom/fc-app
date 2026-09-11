@@ -11,6 +11,7 @@ const paths: Record<string, React.ReactNode> = {
   "notifications": <><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10Z" strokeLinejoin="round" /><path d="M10 19a2 2 0 0 0 4 0" /></>,
   "visibility": <><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z" strokeLinejoin="round" /><circle cx="12" cy="12" r="2.6" /></>,
   "share": <><circle cx="18" cy="5" r="2.2" /><circle cx="6" cy="12" r="2.2" /><circle cx="18" cy="19" r="2.2" /><path d="M8 10.8 16 6.2M8 13.2l8 4.6" /></>,
+  "portfolio": <><rect x="3" y="4.5" width="18" height="15" rx="2.2" /><path d="M3 9h18" /><circle cx="6.3" cy="6.7" r="0.5" fill="currentColor" stroke="none" /></>,
   "favourites": <path d="M12 20s-7.5-4.6-9.8-9.1C.7 7.4 2.4 4 6 4c2.1 0 3.6 1.2 4.4 2.4C11.2 5.2 12.7 4 14.8 4c3.6 0 5.3 3.4 3.8 6.9C19.5 15.4 12 20 12 20Z" strokeLinejoin="round" />,
   "applications": <><rect x="5" y="4" width="14" height="17" rx="2.2" /><path d="M9 3.5h6v2.2H9zM8.5 11.5l2 2 4-4.4M8.5 16h7" /></>,
   "reported-blocked": <><path d="M12 3.5 19.5 6.5V12c0 4.8-3 7.6-7.5 9-4.5-1.4-7.5-4.2-7.5-9V6.5L12 3.5Z" strokeLinejoin="round" /><path d="M9.3 9.3l5.4 5.4" /></>,
