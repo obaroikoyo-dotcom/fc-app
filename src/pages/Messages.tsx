@@ -55,6 +55,20 @@ const ShieldCheckIcon = () => (
   </svg>
 );
 
+const CheckIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M4 12.5 9.5 18 20 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const InfoIcon = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px" }}>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M12 11v5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <circle cx="12" cy="7.8" r="0.15" fill="currentColor" stroke="currentColor" strokeWidth="2.2" />
+  </svg>
+);
+
 const ChatBubbleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
     <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
@@ -639,9 +653,12 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
 
       {mediaDeleteAt && new Date(mediaDeleteAt).getTime() > Date.now() && (
-        <p style={{ fontSize: "10px", color: "#ff9500", background: "rgba(255,149,0,0.08)", border: "1px solid rgba(255,149,0,0.2)", borderRadius: "6px", padding: "8px 10px", marginBottom: "10px", lineHeight: 1.5 }}>
-          ⓘ Videos/photos in this conversation will be removed on {new Date(mediaDeleteAt).toLocaleDateString([], { month: "short", day: "numeric" })} to save storage - the conversation itself stays.
-        </p>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "7px", color: "#888", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "8px 10px", marginBottom: "10px" }}>
+          <InfoIcon />
+          <p style={{ fontSize: "10px", lineHeight: 1.5, margin: 0 }}>
+            Videos/photos in this conversation will be removed on {new Date(mediaDeleteAt).toLocaleDateString([], { month: "short", day: "numeric" })} to save storage - the conversation itself stays.
+          </p>
+        </div>
       )}
 
       {role === "creator" && !deliverableUrl && (
@@ -666,7 +683,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // release, or instant) - always show the confirmation rather
             // than re-deriving it from myPost, which can be null for
             // deals released a way that never touched TikTok at all.
-            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
+            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
             <p style={{ fontSize: "11px", color: "#999" }}>
               {socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
@@ -2082,15 +2099,15 @@ return (
                 // just a status readout once a decision's been made.
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                   {activeConvo.application_status === "paid" ? (
-                    <span style={{ fontSize: "11px", color: "#34c759", background: "#0a1f0a", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a3a1a" }}>
-                      Deal Locked — Paid
+                    <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#ccc", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
+                      <CheckIcon /> Deal Locked — Paid
                     </span>
                   ) : activeConvo.application_status === "funded" ? (
-                    <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a" }}>
+                    <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
                       Funded — Awaiting Post
                     </span>
                   ) : activeConvo.application_status === "disputed" ? (
-                    <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a" }}>
+                    <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
                       Dispute Under Review
                     </span>
                   ) : activeConvo.application_status === "refunded" ? (
@@ -2108,7 +2125,7 @@ return (
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", flexShrink: 0 }}>
                   {activeConvo.application_status === "rejected" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#ff3b30", background: "#221111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a1a1a", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
                         Application Screened Out
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
@@ -2117,7 +2134,7 @@ return (
                     </>
                   ) : activeConvo.application_status === "funded" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
                         Funded — Post to Get Paid
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
@@ -2126,8 +2143,8 @@ return (
                     </>
                   ) : activeConvo.application_status === "paid" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#34c759", background: "#0f1f14", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a3a24", fontWeight: 500 }}>
-                        ✓ Payout Released
+                      <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#ccc", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
+                        <CheckIcon /> Payout Released
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         This deal is complete - your payout has been sent to your connected account.
@@ -2135,7 +2152,7 @@ return (
                     </>
                   ) : activeConvo.application_status === "disputed" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#ff9500", background: "#1f1608", padding: "4px 10px", borderRadius: "12px", border: "1px solid #3a2a1a", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
                         Dispute Under Review
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
@@ -2154,7 +2171,7 @@ return (
                   ) : (
                     <>
                       <span style={{ fontSize: "11px", color: "#aaa", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
-                        ⚠️ Pending Terms Review
+                        Pending Terms Review
                       </span>
                       <p style={{ fontSize: "10px", color: "#888", margin: 0, textAlign: "right", maxWidth: "240px", lineHeight: "1.4" }}>
                         Brands can screen you out whenever they choose. Always sound professional even if you aren't their exact target.
@@ -2228,7 +2245,6 @@ return (
                 {isPaymentEvent ? (
                   <SystemEventCard
                     icon={<ShieldCheckIcon />}
-                    accent="#34c759"
                     title="Payment Secured"
                     body={m.text!.slice(PAYMENT_CONFIRMED_PREFIX.length).trim()}
                     time={eventTime}
