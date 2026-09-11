@@ -100,14 +100,14 @@ function SystemEventCard({ icon, title, body, time }: { icon: React.ReactNode; t
 // live gated-posting integration reads as an intentional state, not a
 // leftover placeholder - used both for "not supported at all" (YouTube,
 // UGC packages) and "Instagram, pending Meta's App Review approval."
-function ComingSoonNotice({ title, pillLabel, pillColor, body }: { title: string; pillLabel: string; pillColor: string; body: string }) {
+function ComingSoonNotice({ title, pillLabel, body }: { title: string; pillLabel: string; body: string }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", color: "#777" }}>
       <ClockIcon />
       <div>
         <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
           {title}
-          <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: `${pillColor}26`, color: pillColor, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{pillLabel}</span>
+          <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{pillLabel}</span>
         </p>
         <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>{body}</p>
       </div>
@@ -478,7 +478,6 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         <ComingSoonNotice
           title={`${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post verification`}
           pillLabel="Coming Soon"
-          pillColor="#ff9500"
           body={`Automatic release once your ${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post is confirmed live isn't available yet - funds are held in escrow and you'll release payment manually once delivery is confirmed.`}
         />
       )}
@@ -486,13 +485,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         <ComingSoonNotice
           title={`${paymentApp.platforms?.[0] || "This platform"} post verification`}
           pillLabel="Not Available"
-          pillColor="#888"
           body="This platform doesn't support automatic post verification - funds are held in escrow and you'll release payment manually once delivery is confirmed."
         />
       )}
 
       {payoutsEnabled === false && (
-        <p style={{ fontSize: "11px", color: "#ff9500", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
+        <p style={{ fontSize: "11px", color: "#999", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
       )}
 
       {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
@@ -701,9 +699,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               {posting ? "Posting..." : `Post to ${platform} & Get Paid`}
             </div>
           ) : myPost.status === "processing" ? (
-            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to {platform}... this can take a minute.</p>
+            <p style={{ fontSize: "11px", color: "#999" }}>Posting to {platform}... this can take a minute.</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#ff9500" }}>✓ Posted — payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
+            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted — payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -719,9 +717,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               {posting ? "Posting..." : `Post to Your ${platform}`}
             </div>
           ) : myPost.status === "processing" ? (
-            <p style={{ fontSize: "11px", color: "#ff9500" }}>Posting to {platform}...</p>
+            <p style={{ fontSize: "11px", color: "#999" }}>Posting to {platform}...</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#34c759" }}>✓ Posted to your {platform}.</p>
+            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted to your {platform}.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -754,15 +752,15 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             </div>
           </div>
         ) : (
-          <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#ff9500", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+          <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
             Dispute This Delivery
           </div>
         )
       )}
 
       {applicationStatus === "disputed" && (
-        <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,149,0,0.25)", background: "rgba(255,149,0,0.06)" }}>
-          <p style={{ fontSize: "12px", color: "#ff9500", fontWeight: 600 }}>Dispute under review</p>
+        <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid #262626", background: "#111" }}>
+          <p style={{ fontSize: "12px", color: "#ccc", fontWeight: 600 }}>Dispute under review</p>
           <p style={{ fontSize: "11px", color: "#999", marginTop: "4px", lineHeight: 1.5 }}>
             {role === "brand"
               ? "You've raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it."

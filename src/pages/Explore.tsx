@@ -223,9 +223,9 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const getStatusStyle = (status?: string): React.CSSProperties => {
     switch (status) {
       case "approved":
-      case "paid": return { color: "#34c759", background: "rgba(52,199,89,0.1)" };
-      case "declined": return { color: "#ff3b30", background: "rgba(255,59,48,0.1)" };
-      default: return { color: "#ff9500", background: "rgba(255,149,0,0.1)" };
+      case "paid": return { color: "#34c759" };
+      case "declined": return { color: "#ff3b30" };
+      default: return { color: "#ff9500" };
     }
   };
 
@@ -377,7 +377,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                   </div>
 
                   {c.my_application ? (
-                    <div style={{ padding: "5px 12px", borderRadius: "6px", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", ...getStatusStyle(c.my_application.status) }}>
+                    <div style={{ padding: "5px 12px", borderRadius: "6px", background: "#111", border: "1px solid #262626", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", ...getStatusStyle(c.my_application.status) }}>
                       {c.my_application.status}
                     </div>
                   ) : (
