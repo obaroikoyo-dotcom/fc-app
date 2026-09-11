@@ -78,14 +78,18 @@ const ChatBubbleIcon = () => (
 // A payment/chat-opened event is a system notice, not something "from"
 // either party - rendered as a centered card instead of a left/right
 // speech bubble so it doesn't read as a message either side sent.
-function SystemEventCard({ icon, accent, title, body, time }: { icon: React.ReactNode; accent?: string; title: string; body: string; time: string }) {
+function SystemEventCard({ icon, title, body, time }: { icon: React.ReactNode; title: string; body: string; time: string }) {
   return (
-    <div style={{ alignSelf: "center", maxWidth: "88%", display: "flex", gap: "10px", alignItems: "flex-start", background: accent ? `${accent}14` : "#111", border: `1px solid ${accent ? `${accent}40` : "#1a1a1a"}`, borderRadius: "12px", padding: "12px 14px", margin: "4px 0" }}>
-      <div style={{ color: accent || "#999", marginTop: "1px" }}>{icon}</div>
-      <div>
-        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>{title}</p>
-        <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.5 }}>{body}</p>
-        <p style={{ color: "#666", fontSize: "10px", marginTop: "6px" }}>{time}</p>
+    <div style={{ alignSelf: "center", maxWidth: "88%", display: "flex", gap: "11px", alignItems: "flex-start", background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "13px 15px", margin: "4px 0" }}>
+      <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", flexShrink: 0 }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "10px" }}>
+          <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{title}</p>
+          <p style={{ color: "#666", fontSize: "10px", flexShrink: 0 }}>{time}</p>
+        </div>
+        <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{body}</p>
       </div>
     </div>
   );
