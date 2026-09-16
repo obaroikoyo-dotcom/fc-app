@@ -8,6 +8,11 @@ html, body {
   background: #0a0a0a;
   overflow: hidden;
   overscroll-behavior: none;
+  /* App-wide default - every page already sets this on its own top-level
+     wrapper too, but anything outside that (like the bottom nav bar's
+     labels, which never set their own) previously had nothing to inherit
+     and fell back to the browser's serif default. */
+  font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* Only a couple of onboarding screens had this - everywhere else, every
