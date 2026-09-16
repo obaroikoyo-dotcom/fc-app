@@ -1149,22 +1149,17 @@ setTimeout(() => setSaved(false), 2000);
 ))}
           </div>
           {walletTab === "balance" && (
-            <div style={{ padding: "1.5rem", position: "relative" }}>
-              {/* TRIAL ONLY - decorative glow so the glass blur has something
-                  to actually blur; remove if the glass direction isn't kept. */}
-              <div style={{ position: "absolute", top: "-40px", left: "-30px", width: "160px", height: "160px", borderRadius: "50%", background: "#5b8cff", filter: "blur(60px)", opacity: 0.35, zIndex: 0 }} />
-              <div style={{ position: "absolute", top: "10px", right: "-20px", width: "140px", height: "140px", borderRadius: "50%", background: "#ff5ba8", filter: "blur(60px)", opacity: 0.28, zIndex: 0 }} />
+            <div style={{ padding: "1.5rem" }}>
               <div style={{
                 position: "relative",
-                zIndex: 1,
                 overflow: "hidden",
                 borderRadius: "20px",
                 padding: "1.5rem 1.75rem 1.75rem",
-                background: "rgba(255,255,255,0.05)",
-                backdropFilter: "blur(20px) saturate(160%)",
-                WebkitBackdropFilter: "blur(20px) saturate(160%)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                boxShadow: "0 16px 32px -16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.045)",
+                backdropFilter: "blur(28px)",
+                WebkitBackdropFilter: "blur(28px)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 16px 32px -16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.09)",
               }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                   <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
