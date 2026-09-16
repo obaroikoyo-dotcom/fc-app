@@ -78,12 +78,12 @@ interface NavProps {
 function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#a3a3a3" : "#444";
-  const bgColor = isInverted ? "rgba(255,255,255,0.65)" : "rgba(10,10,10,0.6)";
-  const borderColor = isInverted ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)";
+  const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
+  const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -134,8 +134,8 @@ interface BrandNavProps extends NavProps {
 function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted, unreadCount = 0 }: BrandNavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#a3a3a3" : "#444";
-  const bgColor = isInverted ? "rgba(255,255,255,0.65)" : "rgba(10,10,10,0.6)";
-  const borderColor = isInverted ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.08)";
+  const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
+  const borderColor = isInverted ? "#e5e5e5" : "#111";
 
   const campaignsActive = page === "brand-dashboard" && tab === "campaigns";
   const postActive = page === "brand-dashboard" && tab === "post";
@@ -145,7 +145,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
