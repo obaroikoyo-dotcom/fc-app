@@ -12,7 +12,12 @@ const MARKETING_SUBDOMAINS = ["about", "privacy", "terms"];
 
 export default function Root() {
   const subdomain = window.location.hostname.split(".")[0];
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+  // iOS Safari's home-screen apps also set navigator.standalone. On a phone
+  // the landing page has no "continue in browser" way past it, so missing
+  // this signal would strand an installed app on the landing page.
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
   const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone;
   const [showApp, setShowApp] = useState(skipLanding);
 

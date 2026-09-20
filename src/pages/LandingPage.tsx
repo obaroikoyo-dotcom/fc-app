@@ -1,15 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import logo from "../assets/logo.png";
 import heroPhoto from "../assets/landing/phone-goldenhour.jpg";
 import { hasDeferredInstallPrompt, onInstallPromptAvailable, triggerInstallPrompt } from "../lib/pwaInstall";
 
-const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
-const isAndroid = typeof navigator !== "undefined" && /Android/.test(navigator.userAgent);
+const hasNavigator = typeof navigator !== "undefined";
+const ua = hasNavigator ? navigator.userAgent : "";
+// iPadOS 13+ reports itself as a Mac, so the only tell is the touch screen.
+const isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && hasNavigator && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/.test(ua);
 const isMobile = isIOS || isAndroid;
+// The iOS steps below describe Safari; other iOS browsers get told to switch.
+const isIOSOtherBrowser = isIOS && /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
 
-const ShareIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+const ShareIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
     <path d="M12 3v13M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const HomeIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M4 11l8-7 8 7M6 10v10h12V10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const AddIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="2" />
+    <path d="M12 8.5v7M8.5 12h7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+  </svg>
+);
+
+const DotsIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+    <circle cx="12" cy="5" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="12" cy="19" r="2" />
   </svg>
 );
 
@@ -69,6 +93,100 @@ function Steps({ heading, steps }: { heading: string; steps: { title: string; bo
           </li>
         ))}
       </ol>
+    </div>
+  );
+}
+
+type GuideStep = { title: string; body: string; icon?: ReactNode };
+
+const IOS_STEPS: GuideStep[] = [
+  { title: "Tap the Share button", body: "The square with an arrow pointing up. On iPhone it is in the bar at the bottom of Safari, on iPad it is at the top right.", icon: <ShareIcon size={18} /> },
+  { title: "Tap Add to Home Screen", body: "Scroll down the menu until you see it.", icon: <AddIcon /> },
+  { title: "Tap Add", body: "It is in the top right corner. FlipCollab now has its own icon on your home screen." },
+  { title: "Open FlipCollab from your home screen", body: "Use that icon from now on instead of Safari. It opens full screen with no browser bar." },
+];
+
+const ANDROID_STEPS: GuideStep[] = [
+  { title: "Open the browser menu", body: "Tap the three dots at the top right of Chrome. Some browsers put the menu button at the bottom.", icon: <DotsIcon /> },
+  { title: "Tap Add to Home screen", body: "Some phones call it Install app - pick that if it is what you see." },
+  { title: "Tap Add or Install", body: "Confirm it and FlipCollab shows up on your home screen." },
+  { title: "Open FlipCollab from your home screen", body: "Use that icon from now on instead of the browser. It opens full screen with no browser bar." },
+];
+
+// Phone-only. On a phone the app is meant to run from the home screen, so
+// Launch opens this instead of the app, and there is no way past it except
+// adding FlipCollab and opening it from there.
+function SetupGuide({ onClose, canInstall, installing, added, onInstall }: {
+  onClose: () => void;
+  canInstall: boolean;
+  installing: boolean;
+  added: boolean;
+  onInstall: () => void;
+}) {
+  const backRef = useRef<HTMLButtonElement>(null);
+  const steps = isIOS ? IOS_STEPS : ANDROID_STEPS;
+
+  useEffect(() => {
+    backRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <div className="lp-guide lp-light" role="dialog" aria-modal="true" aria-labelledby="lp-guide-title">
+      <div className="lp-wrap">
+        <button ref={backRef} type="button" className="lp-btn lp-btn-ghost lp-btn-small lp-guide-back" onClick={onClose}>Back</button>
+
+        {added ? (
+          <>
+            <h2 id="lp-guide-title" className="lp-display lp-guide-title">FlipCollab is on your home screen</h2>
+            <p className="lp-guide-sub">Close this tab and open FlipCollab from the new icon on your home screen.</p>
+          </>
+        ) : (
+          <>
+            <h2 id="lp-guide-title" className="lp-display lp-guide-title">Add FlipCollab to your home screen</h2>
+            <p className="lp-guide-sub">One-time setup, under a minute. After that FlipCollab opens full screen like a normal app.</p>
+
+            {isIOSOtherBrowser && (
+              <p className="lp-guide-warn">
+                You are not in Safari. Open <strong>{window.location.host}</strong> in Safari first, then follow these steps.
+              </p>
+            )}
+
+            {isAndroid && canInstall && (
+              <>
+                <button type="button" className="lp-btn lp-btn-primary lp-guide-install" onClick={onInstall} disabled={installing}>
+                  {installing ? "Adding..." : "Add to Home Screen"}
+                </button>
+                <p className="lp-guide-or">Or do it by hand:</p>
+              </>
+            )}
+
+            <ol className="lp-steps">
+              {steps.map((step, i) => (
+                <li key={step.title}>
+                  <span className="lp-step-num">{i + 1}</span>
+                  <div>
+                    <p className="lp-step-title">
+                      {step.title}
+                      {step.icon && <span className="lp-inline-icon">{step.icon}</span>}
+                    </p>
+                    <p className="lp-step-body">{step.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <p className="lp-guide-foot">Already added it? Open FlipCollab from your home screen.</p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -267,6 +385,18 @@ const STYLES = `
   .lp-footer-links a:hover { color: var(--fg); }
   .lp-legal { font-size: 13px; opacity: 0.7; }
 
+  /* Phone-only setup guide, opened by Launch. Sits over the whole page. */
+  .lp-guide { position: fixed; inset: 0; z-index: 50; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .lp-guide .lp-wrap { max-width: 640px; padding-block: 1.25rem 4rem; }
+  .lp-guide-back { margin-bottom: 2rem; }
+  .lp-guide-title { font-size: clamp(1.9rem, 8vw, 3rem); line-height: 1.12; margin-bottom: 0.9rem; }
+  .lp-guide-sub { font-size: 16px; line-height: 1.65; margin-bottom: 1.75rem; }
+  .lp-guide-warn { border: 2px solid var(--fg); border-radius: 22px; padding: 14px 18px; font-size: 14px; line-height: 1.6; color: var(--fg); margin-bottom: 1.5rem; }
+  .lp-guide-install { margin-bottom: 1.5rem; }
+  .lp-guide-or { font-size: 14px; font-weight: 600; color: var(--fg); }
+  .lp-guide-foot { font-size: 14px; line-height: 1.6; padding-top: 0.5rem; }
+  .lp-inline-icon { display: inline-flex; vertical-align: middle; margin-left: 10px; padding: 4px 8px; border: 2px solid var(--fg); border-radius: 10px; color: var(--fg); }
+
   @media (min-width: 880px) {
     .lp-nav a { display: inline; }
     .lp-header .lp-wrap { height: 72px; }
@@ -286,6 +416,8 @@ const STYLES = `
 export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   const [canInstall, setCanInstall] = useState(hasDeferredInstallPrompt());
   const [installing, setInstalling] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     document.title = "FlipCollab";
@@ -296,35 +428,25 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
     setInstalling(true);
     const accepted = await triggerInstallPrompt();
     setInstalling(false);
-    if (accepted) onLaunch();
+    // The browser only lets the prompt be used once, so the button goes away
+    // either way and the by-hand steps stay.
+    setCanInstall(hasDeferredInstallPrompt());
+    if (accepted) setAdded(true);
   };
 
-  // Device-aware: iOS has no install prompt API so it gets Share-sheet
-  // instructions, Android gets a real button once beforeinstallprompt has
-  // fired, everything else just launches.
+  // Desktop has no home screen, so it launches straight in. On a phone the
+  // app runs from the home screen, so Launch opens the setup guide instead.
+  const launch = () => (isMobile ? setShowGuide(true) : onLaunch());
+  const closeGuide = useCallback(() => setShowGuide(false), []);
+
   const cta = (
     <div className="lp-cta">
-      {isIOS ? (
-        <>
-          <div className="lp-hint">
-            <ShareIcon />
-            <p>
-              Tap the <strong>Share</strong> icon in Safari, then <strong>Add to Home Screen</strong> - opens like an app, full screen, no browser bar.
-            </p>
-          </div>
-          <button type="button" className="lp-btn lp-btn-ghost" onClick={onLaunch}>Continue in Browser</button>
-        </>
-      ) : isAndroid && canInstall ? (
-        <>
-          <button type="button" className="lp-btn lp-btn-primary" onClick={handleInstall} disabled={installing}>
-            {installing ? "Adding..." : "Add to Home Screen"}
-          </button>
-          <button type="button" className="lp-btn lp-btn-ghost" onClick={onLaunch}>Continue in Browser</button>
-        </>
-      ) : (
-        <button type="button" className="lp-btn lp-btn-primary" onClick={onLaunch}>
-          {isMobile ? "Continue in Browser" : "Launch FlipCollab"}
-        </button>
+      <button type="button" className="lp-btn lp-btn-primary" onClick={launch}>Launch FlipCollab</button>
+      {isMobile && (
+        <div className="lp-hint">
+          <HomeIcon />
+          <p>FlipCollab runs from your <strong>home screen</strong>. Tap Launch and we will show you exactly how to add it.</p>
+        </div>
       )}
     </div>
   );
@@ -350,7 +472,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
               How it works
             </a>
             <a href="https://about.flipcollab.com">About</a>
-            <button type="button" className="lp-btn lp-btn-ghost lp-btn-small" onClick={onLaunch}>Launch app</button>
+            <button type="button" className="lp-btn lp-btn-ghost lp-btn-small" onClick={launch}>Launch app</button>
           </nav>
         </div>
       </header>
@@ -423,6 +545,10 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </div>
       </footer>
+
+      {showGuide && (
+        <SetupGuide onClose={closeGuide} canInstall={canInstall} installing={installing} added={added} onInstall={handleInstall} />
+      )}
     </div>
   );
 }
