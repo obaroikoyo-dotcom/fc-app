@@ -82,43 +82,101 @@ const svgMask = (viewBox: string, body: string) =>
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>${body}</svg>`
   )}")`;
 
-// A smooth curve through [x, y] extremes with a flat tangent at each one -
-// unevenly spaced points at different heights give lumps of different sizes.
-const curve = (pts: [number, number][]) =>
-  pts.reduce((d, [x, y], i) => {
-    if (i === 0) return `M${x} ${y}`;
-    const [px, py] = pts[i - 1];
-    const k = (x - px) * 0.45;
-    return `${d} C${px + k} ${py} ${x - k} ${y} ${x} ${y}`;
-  }, "");
+// One lump of a freehand wave. Lumps run valley to valley, and are laid end
+// to end across the width in proportion to `w`.
+//   h    - height (in viewBox units; negative bulges downward)
+//   skew - where the crest sits: above 1 leans one way (long lazy rise, then
+//          a steep drop), below 1 leans the other way
+//   base - y of the valley the lump starts from, so the whole line also
+//          drifts up and down between lumps instead of sitting level
+type Lump = { w: number; h: number; skew: number; base: number };
 
-// Solid shape under (or, with edge 0, above) the curve, for section edges.
-const fillShape = (viewBox: string, pts: [number, number][], edgeY: number) =>
-  svgMask(viewBox, `<path d='${curve(pts)} V${edgeY} H${pts[0][0]} Z'/>`);
+// Every lump starts and ends with a flat tangent, so joins are smooth, but
+// the crest is pushed off-center by `skew`, which is what makes it lean.
+function freehand(lumps: Lump[], endBase: number, width: number, steps = 28) {
+  const total = lumps.reduce((sum, l) => sum + l.w, 0);
+  const pts: string[] = [];
+  let x = 0;
+  lumps.forEach((l, i) => {
+    const nextBase = i + 1 < lumps.length ? lumps[i + 1].base : endBase;
+    const lw = (l.w / total) * width;
+    for (let s = i === 0 ? 0 : 1; s <= steps; s++) {
+      const t = s / steps;
+      const bump = (1 - Math.cos(2 * Math.PI * Math.pow(t, l.skew))) / 2;
+      const drift = t * t * (3 - 2 * t);
+      const y = l.base + (nextBase - l.base) * drift - l.h * bump;
+      pts.push(`${(x + t * lw).toFixed(1)} ${y.toFixed(1)}`);
+    }
+    x += lw;
+  });
+  return `M${pts.join(" L")}`;
+}
+
+// Solid shape under (or, with edgeY 0, above) the curve, for section edges.
+const fillShape = (viewBox: string, d: string, edgeY: number) =>
+  svgMask(viewBox, `<path d='${d} V${edgeY} H0 Z'/>`);
 
 // Just the stroke, for dividers and the headline underline.
-const strokeShape = (viewBox: string, pts: [number, number][], width: number) =>
-  svgMask(viewBox, `<path d='${curve(pts)}' fill='none' stroke='black' stroke-width='${width}'/>`);
+const strokeShape = (viewBox: string, d: string, width: number) =>
+  svgMask(viewBox, `<path d='${d}' fill='none' stroke='black' stroke-width='${width}'/>`);
 
 // Section edges: filled below the curve, hanging over the section above.
 // Small y = the lump rises into the section above. Four different shapes so
 // no two boundaries look copy-pasted.
 const EDGES = [
-  fillShape("0 0 1440 80", [[0, 50], [150, 8], [430, 60], [640, 34], [860, 58], [1160, 12], [1440, 56]], 80),
-  fillShape("0 0 1440 80", [[0, 20], [260, 60], [560, 10], [820, 48], [980, 30], [1200, 66], [1440, 16]], 80),
-  fillShape("0 0 1440 80", [[0, 58], [120, 26], [330, 64], [680, 6], [1050, 60], [1250, 22], [1440, 50]], 80),
-  fillShape("0 0 1440 80", [[0, 12], [300, 58], [500, 38], [640, 60], [1000, 4], [1440, 62]], 80),
+  fillShape("0 0 1440 80", freehand([
+    { w: 2.4, h: 52, skew: 1.9, base: 66 },
+    { w: 1.0, h: 22, skew: 0.5, base: 62 },
+    { w: 2.0, h: 44, skew: 1.7, base: 68 },
+  ], 60, 1440), 80),
+  fillShape("0 0 1440 80", freehand([
+    { w: 1.5, h: 34, skew: 0.5, base: 60 },
+    { w: 1.1, h: 20, skew: 1.8, base: 70 },
+    { w: 2.8, h: 60, skew: 0.55, base: 66 },
+  ], 56, 1440), 80),
+  fillShape("0 0 1440 80", freehand([
+    { w: 1.0, h: 26, skew: 1.8, base: 64 },
+    { w: 3.0, h: 58, skew: 1.6, base: 66 },
+    { w: 1.2, h: 30, skew: 0.5, base: 70 },
+  ], 54, 1440), 80),
+  fillShape("0 0 1440 80", freehand([
+    { w: 2.2, h: 50, skew: 0.5, base: 62 },
+    { w: 0.9, h: 18, skew: 1.7, base: 68 },
+    { w: 1.8, h: 44, skew: 1.9, base: 64 },
+  ], 70, 1440), 80),
 ];
 // Header edge: filled above the curve, hanging down from the sticky header.
-const HEADER_EDGE = fillShape("0 0 1440 40", [[0, 10], [200, 34], [560, 8], [900, 30], [1180, 14], [1440, 36]], 0);
-// Step dividers: three different gentle lines, only a few lumps each.
+const HEADER_EDGE = fillShape("0 0 1440 40", freehand([
+  { w: 1.6, h: -26, skew: 1.8, base: 8 },
+  { w: 1.0, h: -14, skew: 0.5, base: 10 },
+  { w: 2.0, h: -24, skew: 1.7, base: 6 },
+], 12, 1440), 0);
+// Step dividers: three different gentle lines, only a few lumps each. On the
+// thin strokes a lump that ends in a steep drop must not be followed by one
+// that starts with a steep rise (skew above 1, then below 1) - that reads as
+// a little hook, so the leaning-left lumps always come first.
 const LINES = [
-  strokeShape("0 0 600 14", [[0, 7], [70, 2], [190, 12], [300, 5], [400, 10], [540, 2], [600, 7]], 2),
-  strokeShape("0 0 600 14", [[0, 4], [110, 12], [250, 3], [330, 9], [480, 2], [600, 10]], 2),
-  strokeShape("0 0 600 14", [[0, 10], [90, 3], [210, 10], [400, 2], [500, 8], [600, 4]], 2),
+  strokeShape("0 0 600 14", freehand([
+    { w: 1.2, h: 8, skew: 0.55, base: 11 },
+    { w: 0.8, h: 5, skew: 0.5, base: 10 },
+    { w: 1.4, h: 8, skew: 1.7, base: 11 },
+  ], 10, 600, 20), 2),
+  strokeShape("0 0 600 14", freehand([
+    { w: 0.9, h: 6, skew: 0.5, base: 10 },
+    { w: 1.6, h: 9, skew: 1.8, base: 11 },
+    { w: 0.8, h: 5, skew: 1.7, base: 9 },
+  ], 11, 600, 20), 2),
+  strokeShape("0 0 600 14", freehand([
+    { w: 1.5, h: 9, skew: 1.7, base: 11 },
+    { w: 0.9, h: 5, skew: 1.8, base: 10 },
+    { w: 1.2, h: 8, skew: 1.6, base: 11 },
+  ], 9, 600, 20), 2),
 ];
-// Headline underline: three lumps, stretched to the width of the word.
-const UNDERLINE = strokeShape("0 0 200 10", [[0, 5], [35, 1.5], [90, 8.5], [130, 2], [170, 7.5], [200, 4]], 2.6);
+// Headline underline: two lumps, one leaning each way, stretched to the word.
+const UNDERLINE = strokeShape("0 0 200 10", freehand([
+  { w: 1.0, h: 4, skew: 0.5, base: 8 },
+  { w: 1.3, h: 6, skew: 1.7, base: 8 },
+], 7, 200, 20), 2.6);
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
