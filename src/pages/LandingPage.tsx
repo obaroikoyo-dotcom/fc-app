@@ -73,28 +73,67 @@ function Steps({ heading, steps }: { heading: string; steps: { title: string; bo
   );
 }
 
-// The wavy shapes are SVG masks over a flat currentColor/var fill, so each
-// section can recolor them with CSS instead of needing a separate image per
-// color. All three tile horizontally, so they span any screen width.
+// The wavy shapes are SVG masks over a flat var() fill, so each section can
+// recolor them with CSS instead of needing a separate image per color. Each
+// one is a single curve stretched across the element (not a tiled pattern),
+// so the lumps can differ in size and there are only a few of them.
 const svgMask = (viewBox: string, body: string) =>
   `url("data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>${body}</svg>`
   )}")`;
 
-// Filled below the wave - hangs over the bottom of the section above.
-const WAVE_ABOVE = svgMask("0 0 160 32", "<path d='M0 16 Q40 0 80 16 T160 16 V32 H0 Z'/>");
-// Filled above the wave - hangs down from the bottom of the sticky header.
-const WAVE_BELOW = svgMask("0 0 160 24", "<path d='M0 0 H160 V12 Q120 24 80 12 T0 12 Z'/>");
-// A wavy stroke, used for dividers and the headline underlines.
-const SQUIGGLE = svgMask("0 0 24 8", "<path d='M0 4 Q6 0.5 12 4 T24 4' fill='none' stroke='black' stroke-width='2'/>");
+// A smooth curve through [x, y] extremes with a flat tangent at each one -
+// unevenly spaced points at different heights give lumps of different sizes.
+const curve = (pts: [number, number][]) =>
+  pts.reduce((d, [x, y], i) => {
+    if (i === 0) return `M${x} ${y}`;
+    const [px, py] = pts[i - 1];
+    const k = (x - px) * 0.45;
+    return `${d} C${px + k} ${py} ${x - k} ${y} ${x} ${y}`;
+  }, "");
+
+// Solid shape under (or, with edge 0, above) the curve, for section edges.
+const fillShape = (viewBox: string, pts: [number, number][], edgeY: number) =>
+  svgMask(viewBox, `<path d='${curve(pts)} V${edgeY} H${pts[0][0]} Z'/>`);
+
+// Just the stroke, for dividers and the headline underline.
+const strokeShape = (viewBox: string, pts: [number, number][], width: number) =>
+  svgMask(viewBox, `<path d='${curve(pts)}' fill='none' stroke='black' stroke-width='${width}'/>`);
+
+// Section edges: filled below the curve, hanging over the section above.
+// Small y = the lump rises into the section above. Four different shapes so
+// no two boundaries look copy-pasted.
+const EDGES = [
+  fillShape("0 0 1440 80", [[0, 50], [150, 8], [430, 60], [640, 34], [860, 58], [1160, 12], [1440, 56]], 80),
+  fillShape("0 0 1440 80", [[0, 20], [260, 60], [560, 10], [820, 48], [980, 30], [1200, 66], [1440, 16]], 80),
+  fillShape("0 0 1440 80", [[0, 58], [120, 26], [330, 64], [680, 6], [1050, 60], [1250, 22], [1440, 50]], 80),
+  fillShape("0 0 1440 80", [[0, 12], [300, 58], [500, 38], [640, 60], [1000, 4], [1440, 62]], 80),
+];
+// Header edge: filled above the curve, hanging down from the sticky header.
+const HEADER_EDGE = fillShape("0 0 1440 40", [[0, 10], [200, 34], [560, 8], [900, 30], [1180, 14], [1440, 36]], 0);
+// Step dividers: three different gentle lines, only a few lumps each.
+const LINES = [
+  strokeShape("0 0 600 14", [[0, 7], [70, 2], [190, 12], [300, 5], [400, 10], [540, 2], [600, 7]], 2),
+  strokeShape("0 0 600 14", [[0, 4], [110, 12], [250, 3], [330, 9], [480, 2], [600, 10]], 2),
+  strokeShape("0 0 600 14", [[0, 10], [90, 3], [210, 10], [400, 2], [500, 8], [600, 4]], 2),
+];
+// Headline underline: three lumps, stretched to the width of the word.
+const UNDERLINE = strokeShape("0 0 200 10", [[0, 5], [35, 1.5], [90, 8.5], [130, 2], [170, 7.5], [200, 4]], 2.6);
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
 
   .lp {
-    --m-wave-above: ${WAVE_ABOVE};
-    --m-wave-below: ${WAVE_BELOW};
-    --m-squiggle: ${SQUIGGLE};
+    --m-edge-a: ${EDGES[0]};
+    --m-edge-b: ${EDGES[1]};
+    --m-edge-c: ${EDGES[2]};
+    --m-edge-d: ${EDGES[3]};
+    --m-header: ${HEADER_EDGE};
+    --m-line-1: ${LINES[0]};
+    --m-line-2: ${LINES[1]};
+    --m-line-3: ${LINES[2]};
+    --m-underline: ${UNDERLINE};
+    --wave-h: clamp(34px, 4.6vw, 68px);
     height: 100vh;
     height: 100dvh;
     overflow-y: auto;
@@ -118,14 +157,19 @@ const STYLES = `
 
   /* Wavy edge along the top of a section, hanging over the one above it. */
   .lp-edge::before {
-    content: ""; position: absolute; left: 0; right: 0; bottom: calc(100% - 1px); height: 33px;
+    content: ""; position: absolute; left: 0; right: 0; bottom: calc(100% - 1px); height: calc(var(--wave-h) + 1px);
     background: var(--bg);
-    -webkit-mask-image: var(--m-wave-above); mask-image: var(--m-wave-above);
-    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-    -webkit-mask-size: 160px 100%; mask-size: 160px 100%;
-    -webkit-mask-position: left bottom; mask-position: left bottom;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    /* Never narrower than 1000px, so on a phone it crops the curve instead
+       of squashing the lumps into a zigzag. */
+    -webkit-mask-size: max(100%, 1000px) 100%; mask-size: max(100%, 1000px) 100%;
+    -webkit-mask-position: center bottom; mask-position: center bottom;
     pointer-events: none;
   }
+  .lp-edge-a::before { -webkit-mask-image: var(--m-edge-a); mask-image: var(--m-edge-a); }
+  .lp-edge-b::before { -webkit-mask-image: var(--m-edge-b); mask-image: var(--m-edge-b); }
+  .lp-edge-c::before { -webkit-mask-image: var(--m-edge-c); mask-image: var(--m-edge-c); }
+  .lp-edge-d::before { -webkit-mask-image: var(--m-edge-d); mask-image: var(--m-edge-d); }
 
   .lp-wrap { width: 100%; max-width: 1600px; margin: 0 auto; padding-inline: clamp(1.25rem, 4vw, 4.5rem); }
   .lp-display { font-family: 'Syne', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
@@ -133,11 +177,12 @@ const STYLES = `
   /* Header */
   .lp-header { position: sticky; top: 0; z-index: 10; }
   .lp-header::after {
-    content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 1px); height: 15px;
+    content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 1px); height: 26px;
     background: var(--bg);
-    -webkit-mask-image: var(--m-wave-below); mask-image: var(--m-wave-below);
-    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-    -webkit-mask-size: 80px 100%; mask-size: 80px 100%;
+    -webkit-mask-image: var(--m-header); mask-image: var(--m-header);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: max(100%, 900px) 100%; mask-size: max(100%, 900px) 100%;
+    -webkit-mask-position: center top; mask-position: center top;
     pointer-events: none;
   }
   .lp-header .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
@@ -181,9 +226,9 @@ const STYLES = `
   .lp-underline::after {
     content: ""; position: absolute; left: 0; right: 0; bottom: -0.12em; height: 0.2em;
     background: currentColor;
-    -webkit-mask-image: var(--m-squiggle); mask-image: var(--m-squiggle);
-    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-    -webkit-mask-size: 0.75em 100%; mask-size: 0.75em 100%;
+    -webkit-mask-image: var(--m-underline); mask-image: var(--m-underline);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
   }
 
   /* Sections */
@@ -195,12 +240,14 @@ const STYLES = `
   .lp-steps { margin-top: 0.75rem; }
   .lp-steps li { position: relative; display: flex; gap: 1.25rem; padding-block: 1.5rem 2rem; }
   .lp-steps li::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14px;
     background: var(--fg); opacity: 0.4;
-    -webkit-mask-image: var(--m-squiggle); mask-image: var(--m-squiggle);
-    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-    -webkit-mask-size: 24px 8px; mask-size: 24px 8px;
+    -webkit-mask-image: var(--m-line-1); mask-image: var(--m-line-1);
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
   }
+  .lp-steps li:nth-child(2)::after { -webkit-mask-image: var(--m-line-2); mask-image: var(--m-line-2); }
+  .lp-steps li:nth-child(3)::after { -webkit-mask-image: var(--m-line-3); mask-image: var(--m-line-3); }
   .lp-step-num { flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--fg); color: var(--bg); display: grid; place-items: center; font-weight: 700; font-size: 17px; }
   .lp-step-title { font-size: clamp(18px, 1.6vw, 24px); font-weight: 600; color: var(--fg); margin-bottom: 6px; padding-top: 0.35rem; }
   .lp-step-body { font-size: clamp(15px, 1.2vw, 18px); line-height: 1.65; max-width: 30em; }
@@ -324,7 +371,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </section>
 
-        <section id="how-it-works" className="lp-section lp-light lp-edge">
+        <section id="how-it-works" className="lp-section lp-light lp-edge lp-edge-a">
           <div className="lp-wrap">
             <p className="lp-kicker">How it works</p>
             <h2 className="lp-h2 lp-display">One place for the whole collaboration</h2>
@@ -335,7 +382,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </section>
 
-        <section className="lp-section lp-dark lp-edge">
+        <section className="lp-section lp-dark lp-edge lp-edge-b">
           <div className="lp-wrap lp-escrow">
             <div>
               <p className="lp-kicker">Payments</p>
@@ -349,7 +396,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </section>
 
-        <section className="lp-section lp-light lp-edge">
+        <section className="lp-section lp-light lp-edge lp-edge-c">
           <div className="lp-wrap lp-final">
             <h2 className="lp-h2 lp-display">Post your first campaign, or find your next one.</h2>
             {cta}
@@ -357,7 +404,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
         </section>
       </main>
 
-      <footer className="lp-footer lp-dark lp-edge">
+      <footer className="lp-footer lp-dark lp-edge lp-edge-d">
         <div className="lp-wrap">
           <div>
             <div className="lp-brand">
