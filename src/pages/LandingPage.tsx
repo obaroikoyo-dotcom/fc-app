@@ -76,41 +76,32 @@ function Steps({ heading, steps }: { heading: string; steps: { title: string; bo
 // The wavy shapes are SVG masks over a flat var() fill, so each section can
 // recolor them with CSS instead of needing a separate image per color. Each
 // one is a single curve stretched across the element (not a tiled pattern),
-// so the lumps can differ in size and there are only a few of them.
+// so the shapes can be uneven and there are only a few features per line.
 const svgMask = (viewBox: string, body: string) =>
   `url("data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>${body}</svg>`
   )}")`;
 
-// One lump of a freehand wave. Lumps run valley to valley, and are laid end
-// to end across the width in proportion to `w`.
-//   h    - height (in viewBox units; negative bulges downward)
-//   skew - where the crest sits: above 1 leans one way (long lazy rise, then
-//          a steep drop), below 1 leans the other way
-//   base - y of the valley the lump starts from, so the whole line also
-//          drifts up and down between lumps instead of sitting level
-type Lump = { w: number; h: number; skew: number; base: number };
+// A hand-drawn line is a list of anchors: [x, y, kl, kr]. The curve is flat
+// (horizontal tangent) at every anchor, so tops and valleys are round, and
+// the run between two anchors is a slanted ramp. kl / kr (0 to 0.5) say how
+// far the handle reaches back / forward, as a fraction of the gap to the
+// neighbouring anchor: near 0.5 is wide and soft, small keeps the ramp
+// straight right up to a tight corner, and 0 on both sides is a sharp point.
+type Anchor = [x: number, y: number, kl: number, kr: number];
 
-// Every lump starts and ends with a flat tangent, so joins are smooth, but
-// the crest is pushed off-center by `skew`, which is what makes it lean.
-function freehand(lumps: Lump[], endBase: number, width: number, steps = 28) {
-  const total = lumps.reduce((sum, l) => sum + l.w, 0);
-  const pts: string[] = [];
-  let x = 0;
-  lumps.forEach((l, i) => {
-    const nextBase = i + 1 < lumps.length ? lumps[i + 1].base : endBase;
-    const lw = (l.w / total) * width;
-    for (let s = i === 0 ? 0 : 1; s <= steps; s++) {
-      const t = s / steps;
-      const bump = (1 - Math.cos(2 * Math.PI * Math.pow(t, l.skew))) / 2;
-      const drift = t * t * (3 - 2 * t);
-      const y = l.base + (nextBase - l.base) * drift - l.h * bump;
-      pts.push(`${(x + t * lw).toFixed(1)} ${y.toFixed(1)}`);
-    }
-    x += lw;
-  });
-  return `M${pts.join(" L")}`;
+function drawn(anchors: Anchor[]) {
+  return anchors.reduce((d, [x, y, kl], i) => {
+    if (i === 0) return `M${x} ${y}`;
+    const [px, py, , kr] = anchors[i - 1];
+    const run = x - px;
+    return `${d} C${(px + kr * run).toFixed(1)} ${py} ${(x - kl * run).toFixed(1)} ${y} ${x} ${y}`;
+  }, "");
 }
+
+// Same line, drawn from the other side, so one sketch gives two shapes.
+const flipX = (anchors: Anchor[], width: number): Anchor[] =>
+  anchors.map(([x, y, kl, kr]): Anchor => [width - x, y, kr, kl]).reverse();
 
 // Solid shape under (or, with edgeY 0, above) the curve, for section edges.
 const fillShape = (viewBox: string, d: string, edgeY: number) =>
@@ -118,65 +109,56 @@ const fillShape = (viewBox: string, d: string, edgeY: number) =>
 
 // Just the stroke, for dividers and the headline underline.
 const strokeShape = (viewBox: string, d: string, width: number) =>
-  svgMask(viewBox, `<path d='${d}' fill='none' stroke='black' stroke-width='${width}'/>`);
+  svgMask(viewBox, `<path d='${d}' fill='none' stroke='black' stroke-width='${width}' stroke-linecap='round' stroke-linejoin='round'/>`);
 
-// Section edges: filled below the curve, hanging over the section above.
-// Small y = the lump rises into the section above. Four different shapes so
-// no two boundaries look copy-pasted.
-const EDGES = [
-  fillShape("0 0 1440 80", freehand([
-    { w: 2.4, h: 52, skew: 1.9, base: 66 },
-    { w: 1.0, h: 22, skew: 0.5, base: 62 },
-    { w: 2.0, h: 44, skew: 1.7, base: 68 },
-  ], 60, 1440), 80),
-  fillShape("0 0 1440 80", freehand([
-    { w: 1.5, h: 34, skew: 0.5, base: 60 },
-    { w: 1.1, h: 20, skew: 1.8, base: 70 },
-    { w: 2.8, h: 60, skew: 0.55, base: 66 },
-  ], 56, 1440), 80),
-  fillShape("0 0 1440 80", freehand([
-    { w: 1.0, h: 26, skew: 1.8, base: 64 },
-    { w: 3.0, h: 58, skew: 1.6, base: 66 },
-    { w: 1.2, h: 30, skew: 0.5, base: 70 },
-  ], 54, 1440), 80),
-  fillShape("0 0 1440 80", freehand([
-    { w: 2.2, h: 50, skew: 0.5, base: 62 },
-    { w: 0.9, h: 18, skew: 1.7, base: 68 },
-    { w: 1.8, h: 44, skew: 1.9, base: 64 },
-  ], 70, 1440), 80),
+// Section edges are drawn in a 1440 x 100 box and filled below the curve, so
+// a small y is a high point that rises into the section above. Only two
+// sketches; the other two edges are those same sketches drawn backwards.
+// Long straight-ish ramps, broad flat tops and valleys, few features.
+const HUMP: Anchor[] = [
+  [0, 46, 0, 0.3], [60, 66, 0.3, 0.3], [170, 74, 0.4, 0.4], [400, 42, 0.3, 0.3], [540, 52, 0.3, 0.3],
+  [930, 6, 0.45, 0.35], [1180, 36, 0.3, 0.3], [1290, 56, 0.3, 0.4], [1440, 46, 0.4, 0],
 ];
-// Header edge: filled above the curve, hanging down from the sticky header.
-const HEADER_EDGE = fillShape("0 0 1440 40", freehand([
-  { w: 1.6, h: -26, skew: 1.8, base: 8 },
-  { w: 1.0, h: -14, skew: 0.5, base: 10 },
-  { w: 2.0, h: -24, skew: 1.7, base: 6 },
-], 12, 1440), 0);
-// Step dividers: three different gentle lines, only a few lumps each. On the
-// thin strokes a lump that ends in a steep drop must not be followed by one
-// that starts with a steep rise (skew above 1, then below 1) - that reads as
-// a little hook, so the leaning-left lumps always come first.
+const RIDGE: Anchor[] = [
+  [0, 79, 0, 0.3], [210, 55, 0.45, 0.45], [525, 78, 0.45, 0.22], [975, 8, 0.2, 0.35],
+  [1125, 9, 0.4, 0.35], [1240, 24, 0.3, 0.35], [1335, 25, 0.35, 0.35], [1440, 5, 0.35, 0],
+];
+const EDGES = [HUMP, RIDGE, flipX(HUMP, 1440), flipX(RIDGE, 1440)].map((a) =>
+  fillShape("0 0 1440 100", drawn(a), 100)
+);
+// Header edge: a wide shallow dip, filled above the curve so it hangs down
+// from the sticky header.
+const HEADER_EDGE = fillShape("0 0 1440 40", drawn([
+  [0, 3, 0, 0.3], [130, 29, 0.35, 0.3], [360, 30, 0.3, 0.35], [470, 4, 0.35, 0.3], [700, 3, 0.3, 0.3],
+  [940, 22, 0.4, 0.3], [1150, 24, 0.3, 0.4], [1290, 4, 0.35, 0.3], [1440, 3, 0.3, 0],
+]), 0);
+// Small scribbles: pointed tops, rounded valleys, uneven sizes and gaps.
+// Three different ones for the step dividers. They were laid out in a box 14
+// high, then drawn TALL times taller, so the pointed tops stand up steeply
+// instead of reading as a flat line with tiny kinks.
+const TALL = 3.3;
+// Tight, rounded valleys - anything softer than this reads as a rolling hill.
+const SNAP = 0.25;
 const LINES = [
-  strokeShape("0 0 600 14", freehand([
-    { w: 1.2, h: 8, skew: 0.55, base: 11 },
-    { w: 0.8, h: 5, skew: 0.5, base: 10 },
-    { w: 1.4, h: 8, skew: 1.7, base: 11 },
-  ], 10, 600, 20), 2),
-  strokeShape("0 0 600 14", freehand([
-    { w: 0.9, h: 6, skew: 0.5, base: 10 },
-    { w: 1.6, h: 9, skew: 1.8, base: 11 },
-    { w: 0.8, h: 5, skew: 1.7, base: 9 },
-  ], 11, 600, 20), 2),
-  strokeShape("0 0 600 14", freehand([
-    { w: 1.5, h: 9, skew: 1.7, base: 11 },
-    { w: 0.9, h: 5, skew: 1.8, base: 10 },
-    { w: 1.2, h: 8, skew: 1.6, base: 11 },
-  ], 9, 600, 20), 2),
-];
-// Headline underline: two lumps, one leaning each way, stretched to the word.
-const UNDERLINE = strokeShape("0 0 200 10", freehand([
-  { w: 1.0, h: 4, skew: 0.5, base: 8 },
-  { w: 1.3, h: 6, skew: 1.7, base: 8 },
-], 7, 200, 20), 2.6);
+  [
+    [0, 10, 0, 0], [150, 2, 0, 0], [262, 12, 0.4, 0.4], [371, 7, 0, 0],
+    [408, 11.5, 0.35, 0.35], [473, 5.2, 0, 0], [540, 8.5, 0.35, 0.35], [600, 2.5, 0, 0],
+  ],
+  [
+    [0, 9.2, 0, 0.3], [108, 6, 0, 0], [170, 11.7, 0.3, 0.3], [258, 6, 0, 0], [313, 12, 0.35, 0.35],
+    [393, 4.2, 0, 0], [455, 8.7, 0.3, 0.3], [522, 2, 0, 0], [564, 8.1, 0.35, 0.35], [600, 4.4, 0, 0],
+  ],
+  [
+    [0, 7.6, 0, 0], [27, 11.75, 0.3, 0.3], [254, 2.4, 0, 0], [269, 6.6, 0.2, 0.2], [403, 2, 0, 0],
+    [444, 9.5, 0.3, 0.3], [573, 4.1, 0, 0], [600, 7.4, 0, 0],
+  ],
+].map((a) =>
+  strokeShape("0 0 600 44", drawn((a as Anchor[]).map(([x, y, kl, kr]): Anchor => [x, y * TALL, Math.min(kl, SNAP), Math.min(kr, SNAP)])), 2.6)
+);
+// Headline underline: the same kind of scribble, stretched to the word.
+const UNDERLINE = strokeShape("0 0 200 10", drawn([
+  [0, 8, 0, 0.3], [55, 2, 0, 0], [95, 8.5, 0.25, 0.25], [140, 3.5, 0, 0], [175, 7.5, 0.25, 0.25], [200, 4, 0, 0],
+]), 1.9);
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
@@ -191,7 +173,7 @@ const STYLES = `
     --m-line-2: ${LINES[1]};
     --m-line-3: ${LINES[2]};
     --m-underline: ${UNDERLINE};
-    --wave-h: clamp(34px, 4.6vw, 68px);
+    --wave-h: clamp(48px, 8.5vw, 128px);
     height: 100vh;
     height: 100dvh;
     overflow-y: auto;
@@ -218,9 +200,9 @@ const STYLES = `
     content: ""; position: absolute; left: 0; right: 0; bottom: calc(100% - 1px); height: calc(var(--wave-h) + 1px);
     background: var(--bg);
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    /* Never narrower than 1000px, so on a phone it crops the curve instead
-       of squashing the lumps into a zigzag. */
-    -webkit-mask-size: max(100%, 1000px) 100%; mask-size: max(100%, 1000px) 100%;
+    /* Never narrower than 800px, so on a phone it crops the curve instead
+       of squashing the ramps into cliffs. */
+    -webkit-mask-size: max(100%, 800px) 100%; mask-size: max(100%, 800px) 100%;
     -webkit-mask-position: center bottom; mask-position: center bottom;
     pointer-events: none;
   }
@@ -235,11 +217,11 @@ const STYLES = `
   /* Header */
   .lp-header { position: sticky; top: 0; z-index: 10; }
   .lp-header::after {
-    content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 1px); height: 26px;
+    content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 1px); height: 30px;
     background: var(--bg);
     -webkit-mask-image: var(--m-header); mask-image: var(--m-header);
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
-    -webkit-mask-size: max(100%, 900px) 100%; mask-size: max(100%, 900px) 100%;
+    -webkit-mask-size: max(100%, 800px) 100%; mask-size: max(100%, 800px) 100%;
     -webkit-mask-position: center top; mask-position: center top;
     pointer-events: none;
   }
@@ -266,7 +248,7 @@ const STYLES = `
   .lp-hint svg { margin-top: 2px; color: var(--fg); }
 
   /* Hero */
-  .lp-hero .lp-wrap { display: grid; gap: 3rem; padding-block: 3.5rem 5rem; }
+  .lp-hero .lp-wrap { display: grid; gap: 3rem; padding-block: 3.5rem calc(2rem + var(--wave-h)); }
   .lp-hero h1 { font-size: clamp(2.25rem, 4.8vw, 5.75rem); line-height: 1.08; margin-bottom: 1.25rem; }
   .lp-hero-sub { font-size: clamp(16px, 1.5vw, 21px); line-height: 1.65; max-width: 30em; margin-bottom: 2.25rem; }
   .lp-photo { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 28px; transform: rotate(-2deg); }
@@ -282,7 +264,7 @@ const STYLES = `
   /* Wavy underline under a single word of a headline */
   .lp-underline { position: relative; display: inline-block; }
   .lp-underline::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: -0.12em; height: 0.2em;
+    content: ""; position: absolute; left: 0; right: 0; bottom: -0.22em; height: 0.34em;
     background: currentColor;
     -webkit-mask-image: var(--m-underline); mask-image: var(--m-underline);
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
@@ -290,15 +272,15 @@ const STYLES = `
   }
 
   /* Sections */
-  .lp-section { padding-block: clamp(4rem, 9vw, 8rem); scroll-margin-top: 64px; }
+  .lp-section { padding-block: clamp(4rem, 9vw, 8rem) calc(clamp(4rem, 9vw, 8rem) + var(--wave-h) * 0.4); scroll-margin-top: 64px; }
   .lp-kicker { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
   .lp-h2 { font-size: clamp(2rem, 4.4vw, 4.75rem); line-height: 1.12; }
   .lp-split { display: grid; gap: 3.5rem; margin-top: clamp(2.5rem, 5vw, 4.5rem); }
   .lp-chip { display: inline-block; font-size: 15px; font-weight: 600; background: var(--fg); color: var(--bg); padding: 8px 20px; border-radius: 999px; }
   .lp-steps { margin-top: 0.75rem; }
-  .lp-steps li { position: relative; display: flex; gap: 1.25rem; padding-block: 1.5rem 2rem; }
+  .lp-steps li { position: relative; display: flex; gap: 1.25rem; padding-block: 1.5rem 4rem; }
   .lp-steps li::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14px;
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 44px;
     background: var(--fg); opacity: 0.4;
     -webkit-mask-image: var(--m-line-1); mask-image: var(--m-line-1);
     -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
@@ -328,7 +310,7 @@ const STYLES = `
   @media (min-width: 880px) {
     .lp-nav a { display: inline; }
     .lp-header .lp-wrap { height: 72px; }
-    .lp-hero .lp-wrap { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4vw; align-items: center; min-height: calc(100dvh - 72px); padding-block: 3rem 6rem; }
+    .lp-hero .lp-wrap { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4vw; align-items: center; min-height: calc(100dvh - 72px); padding-block: 3rem calc(2rem + var(--wave-h)); }
     .lp-split { grid-template-columns: 1fr 1fr; gap: 6vw; }
     .lp-escrow { grid-template-columns: 1fr 1fr; gap: 6vw; align-items: center; }
     .lp-final { grid-template-columns: 1fr auto; align-items: center; gap: 6vw; }
