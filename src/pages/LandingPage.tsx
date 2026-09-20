@@ -71,7 +71,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   };
 
   const ctaButtons = (
-    <div style={{ width: "100%", maxWidth: "360px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "10px" }}>
+    <div style={{ width: "100%", maxWidth: "360px", display: "flex", flexDirection: "column", gap: "10px" }}>
       {isIOS ? (
         <>
           <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px", textAlign: "left" }}>
@@ -117,44 +117,67 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
         @media (prefers-reduced-motion: reduce) {
           .float-like, .scroll-cue { animation: none !important; }
         }
+
+        /* Below this, unchanged - the same centered mobile layout as
+           before. Above it, a real desktop site: wide two-column hero
+           instead of a narrow stacked mobile-width column. The app itself
+           (post-launch) stays intentionally mobile-width regardless of
+           screen size - this split only applies to this landing page. */
+        .landing-hero { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .landing-hero-text { display: flex; flex-direction: column; align-items: center; }
+        .landing-features { display: flex; flex-direction: column; gap: 1.25rem; max-width: 420px; margin: 0 auto; }
+        @media (min-width: 880px) {
+          .landing-hero { flex-direction: row; align-items: center; gap: 4rem; text-align: left; max-width: 1080px; margin: 0 auto; }
+          .landing-hero-text { align-items: flex-start; flex: 1; }
+          .landing-hero-visual { flex: 1.1; }
+          .landing-hero h1 { font-size: 48px !important; max-width: 460px !important; }
+          .landing-hero p.subhead { max-width: 420px !important; text-align: left; }
+          .landing-cta { justify-content: flex-start !important; }
+          .landing-features { flex-direction: row; max-width: 1080px; }
+        }
       `}</style>
 
       {/* Hero */}
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 1.5rem 2rem", textAlign: "center" }}>
-        <img src={logo} alt="FlipCollab" style={{ width: "52px", marginBottom: "1.25rem" }} />
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", padding: "3rem 1.5rem 2rem" }}>
+        <div className="landing-hero" style={{ width: "100%" }}>
+          <div className="landing-hero-text">
+            <img src={logo} alt="FlipCollab" style={{ width: "52px", marginBottom: "1.25rem" }} />
 
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "34px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "380px", marginBottom: "12px" }}>
-          Where brands and creators actually connect
-        </h1>
-        <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "320px" }}>
-          Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered.
-        </p>
+            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "34px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "380px", marginBottom: "12px" }}>
+              Where brands and creators actually connect
+            </h1>
+            <p className="subhead" style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem", maxWidth: "320px" }}>
+              Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered.
+            </p>
 
-        <div style={{ width: "100%", maxWidth: "420px" }}>
-          <HeroPortrait />
-        </div>
+            <div className="landing-cta" style={{ width: "100%", display: "flex", justifyContent: "center" }}>{ctaButtons}</div>
 
-        <div style={{ marginTop: "2.25rem", width: "100%" }}>{ctaButtons}</div>
+            <div
+              className="scroll-cue"
+              onClick={() => scrollRef.current?.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" })}
+              style={{ marginTop: "2.5rem", color: "#555", cursor: "pointer" }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </div>
+          </div>
 
-        <div
-          className="scroll-cue"
-          onClick={() => scrollRef.current?.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" })}
-          style={{ marginTop: "2.5rem", color: "#555", cursor: "pointer" }}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <div className="landing-hero-visual" style={{ width: "100%", maxWidth: "420px" }}>
+            <HeroPortrait />
+          </div>
         </div>
       </div>
 
       {/* Features */}
-      <div style={{ padding: "1rem 1.5rem 4rem", display: "flex", flexDirection: "column", gap: "1.25rem", maxWidth: "420px", margin: "0 auto" }}>
-        {FEATURES.map((f, i) => (
-          <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>{f.title}</p>
-            <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.6 }}>{f.body}</p>
-          </div>
-        ))}
-
-        <div style={{ marginTop: "1rem" }}>{ctaButtons}</div>
+      <div style={{ padding: "1rem 1.5rem 4rem" }}>
+        <div className="landing-features" style={{ margin: "0 auto" }}>
+          {FEATURES.map((f, i) => (
+            <div key={i} style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>{f.title}</p>
+              <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.6 }}>{f.body}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ maxWidth: "420px", margin: "1.25rem auto 0" }}>{ctaButtons}</div>
       </div>
 
       <p style={{ textAlign: "center", padding: "0 0 2rem", fontSize: "11px", color: "#555" }}>
