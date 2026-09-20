@@ -20,13 +20,13 @@ const HeartIcon = ({ size = 20 }: { size?: number }) => (
 );
 
 // Likes cluster right around where her hand/phone actually sits in the
-// photo (roughly x 68-84%, y 34-46% of the boxed/cropped portion below),
+// photo (roughly x 64-80%, y 60-88% of the wider boxed/cropped band below),
 // not randomized across the whole card.
 const FLOATS = [
-  { top: "30%", left: "62%", size: 16, delay: "0s", duration: "3.2s" },
-  { top: "48%", left: "78%", size: 22, delay: "1s", duration: "3.6s" },
-  { top: "14%", left: "84%", size: 14, delay: "1.9s", duration: "3s" },
-  { top: "60%", left: "66%", size: 18, delay: "0.5s", duration: "3.4s" },
+  { top: "58%", left: "64%", size: 16, delay: "0s", duration: "3.2s" },
+  { top: "74%", left: "80%", size: 24, delay: "1s", duration: "3.6s" },
+  { top: "44%", left: "78%", size: 14, delay: "1.9s", duration: "3s" },
+  { top: "88%", left: "68%", size: 20, delay: "0.5s", duration: "3.4s" },
 ];
 
 // The image "breaks its frame": the top ~30% (her head/hair) renders
@@ -63,26 +63,27 @@ function HeroPortrait({ scrollContainerRef }: { scrollContainerRef: React.RefObj
           sharp portrait card itself stays portrait-cropped. */}
       <div data-backdrop style={{ position: "absolute", top: "-6%", left: "50%", width: "100vw", height: "112%", transform: "translateX(-50%) scale(1.15)", backgroundImage: `url(${heroPhoto})`, backgroundSize: "cover", backgroundPosition: "center 20%", filter: "blur(50px) brightness(0.35) saturate(1.2)", zIndex: 0 }} />
 
-      <div data-portrait style={{ position: "relative", width: "min(78vw, 300px)", margin: "0 auto", zIndex: 1 }}>
-        {/* Unclipped top layer - her head, fading into the boxed card below */}
+      <div data-portrait style={{ position: "relative", width: "min(92vw, 760px)", margin: "0 auto", zIndex: 1 }}>
+        {/* Unclipped top layer - her head, fading into the boxed band below */}
         <img
           src={heroPhoto}
           alt="A creator checking her phone"
           style={{
             width: "100%", display: "block", position: "relative", zIndex: 2,
-            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 30%, transparent 46%)",
-            maskImage: "linear-gradient(to bottom, black 0%, black 30%, transparent 46%)",
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 17%, transparent 30%)",
+            maskImage: "linear-gradient(to bottom, black 0%, black 17%, transparent 30%)",
           }}
         />
-        {/* Boxed card - same photo, cropped to start where the fade ends.
-            marginTop is relative to the parent's WIDTH (a CSS quirk for
-            vertical margins), not the top layer's height, so this pulls
-            the box up from directly-after-the-top-layer to overlap it
-            starting exactly at the 30%-down mark. aspectRatio matches the
-            30%-100% crop (945/900 of the original 1350-tall photo) so
-            overflow:hidden actually has a fixed box to clip against. */}
-        <div style={{ position: "relative", marginTop: "-105%", zIndex: 1, aspectRatio: "900 / 945", borderRadius: "26px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 30px 70px -18px rgba(0,0,0,0.85)" }}>
-          <img src={heroPhoto} alt="" style={{ width: "100%", display: "block", transform: "translateY(-30%)" }} />
+        {/* Boxed band - same photo, cropped to a wide horizontal slice
+            (17%-70% down the original 1350px-tall photo) starting exactly
+            where the fade ends. marginTop is relative to the parent's WIDTH
+            (a CSS quirk for vertical margins), not the top layer's height,
+            so this pulls the band up to overlap the top layer starting at
+            the 17%-down mark. aspectRatio matches that crop window so
+            overflow:hidden has a fixed box to clip against - much wider
+            than tall now, instead of the old near-square card. */}
+        <div style={{ position: "relative", marginTop: "-124.5%", zIndex: 1, aspectRatio: "900 / 715.5", borderRadius: "26px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 30px 70px -18px rgba(0,0,0,0.85)" }}>
+          <img src={heroPhoto} alt="" style={{ width: "100%", display: "block", transform: "translateY(-17%)" }} />
 
           {FLOATS.map((f, i) => (
             <div key={i} className="float-like" style={{ position: "absolute", top: f.top, left: f.left, animationDelay: f.delay, animationDuration: f.duration, zIndex: 3 }}>
