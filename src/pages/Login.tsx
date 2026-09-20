@@ -132,8 +132,8 @@ export default function Login({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Welcome back</p>
-        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem" }}>Log in to your FlipCollab account.</p>
+        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Welcome back</p>
+        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Log in to your FlipCollab account.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input label="Email" type="email" placeholder="you@email.com" value={form.email} onChange={set("email")} />

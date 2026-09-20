@@ -1,8 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import Root from "./Root";
 import "./index.css";
 import { logEvent } from "./lib/debugLog";
+// beforeinstallprompt can fire long before LandingPage mounts - this import
+// alone registers the capture listener as early as the page allows.
+import "./lib/pwaInstall";
 
 logEvent("app boot");
 
@@ -52,6 +55,6 @@ document.addEventListener("visibilitychange", () => {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <Root />
   </React.StrictMode>
 );

@@ -46,8 +46,8 @@ export default function BrandSignup({ navigate }: Props) {
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
         <p onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer", marginBottom: "1.5rem" }}>← Back</p>
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Brand sign up</p>
-        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem" }}>Post campaigns and connect with creators.</p>
+        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Brand sign up</p>
+        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Post campaigns and connect with creators.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input label="Company Name" type="text" placeholder="Your company name" value={form.company} onChange={set("company")} />
