@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import logo from "../assets/logo.png";
-import phoneInstagram from "../assets/landing/phone-instagram.jpg";
-import phoneYoutube from "../assets/landing/phone-youtube.jpg";
-import phoneFeed from "../assets/landing/phone-feed.jpg";
+import heroPhoto from "../assets/landing/phone-goldenhour.jpg";
 import { hasDeferredInstallPrompt, onInstallPromptAvailable, triggerInstallPrompt } from "../lib/pwaInstall";
 
 const isIOS = typeof navigator !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
@@ -21,18 +19,22 @@ const HeartIcon = ({ size = 20 }: { size?: number }) => (
   </svg>
 );
 
-// Positioned/timed by hand (not randomized) so the layout is stable and
-// deliberately staggered instead of jittering on every reload.
+// Likes cluster right around where her hand/phone actually sits in the
+// photo (roughly x 68-84%, y 34-46% of the boxed/cropped portion below),
+// not randomized across the whole card.
 const FLOATS = [
-  { top: "8%", left: "6%", size: 18, delay: "0s", duration: "3.4s" },
-  { top: "62%", left: "-4%", size: 24, delay: "1.1s", duration: "4s" },
-  { top: "20%", right: "0%", size: 16, delay: "2s", duration: "3.6s" },
-  { top: "78%", right: "10%", size: 22, delay: "0.6s", duration: "3.8s" },
-  { top: "42%", left: "38%", size: 14, delay: "1.7s", duration: "3.2s" },
+  { top: "30%", left: "62%", size: 16, delay: "0s", duration: "3.2s" },
+  { top: "48%", left: "78%", size: 22, delay: "1s", duration: "3.6s" },
+  { top: "14%", left: "84%", size: 14, delay: "1.9s", duration: "3s" },
+  { top: "60%", left: "66%", size: 18, delay: "0.5s", duration: "3.4s" },
 ];
 
-function PhoneCollage({ scrollContainerRef }: { scrollContainerRef: React.RefObject<HTMLDivElement | null> }) {
-  const collageRef = useRef<HTMLDivElement>(null);
+// The image "breaks its frame": the top ~30% (her head/hair) renders
+// unclipped and fades into the boxed card beneath it, which is the same
+// photo cropped to start where the fade ends - same pixels, same scale, so
+// the seam is invisible and it reads as one figure stepping out of the card.
+function HeroPortrait({ scrollContainerRef }: { scrollContainerRef: React.RefObject<HTMLDivElement | null> }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const scrollEl = scrollContainerRef.current;
@@ -41,13 +43,13 @@ function PhoneCollage({ scrollContainerRef }: { scrollContainerRef: React.RefObj
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const el = collageRef.current;
+        const el = wrapRef.current;
         if (!el) return;
         const y = scrollEl.scrollTop;
-        el.querySelectorAll<HTMLElement>("[data-depth]").forEach(card => {
-          const depth = parseFloat(card.dataset.depth || "0");
-          card.style.transform = `${card.dataset.baseTransform} translateY(${y * depth}px)`;
-        });
+        const portrait = el.querySelector<HTMLElement>("[data-portrait]");
+        const backdrop = el.querySelector<HTMLElement>("[data-backdrop]");
+        if (portrait) portrait.style.transform = `translateY(${y * 0.08}px)`;
+        if (backdrop) backdrop.style.transform = `translateY(${y * 0.25}px) scale(1.15)`;
       });
     };
     scrollEl.addEventListener("scroll", onScroll, { passive: true });
@@ -55,34 +57,40 @@ function PhoneCollage({ scrollContainerRef }: { scrollContainerRef: React.RefObj
   }, [scrollContainerRef]);
 
   return (
-    <div ref={collageRef} style={{ position: "relative", width: "100%", maxWidth: "380px", height: "340px", margin: "0 auto", perspective: "1400px" }}>
-      {[
-        { src: phoneFeed, base: "rotateY(20deg) rotateX(4deg) rotateZ(-6deg)", top: "6%", left: "2%", w: "150px", z: 1, depth: 0.06, opacity: 0.55 },
-        { src: phoneInstagram, base: "rotateY(-8deg) rotateX(2deg) rotateZ(3deg)", top: "0%", left: "30%", w: "190px", z: 3, depth: 0.12, opacity: 1 },
-        { src: phoneYoutube, base: "rotateY(-24deg) rotateX(3deg) rotateZ(8deg)", top: "18%", left: "58%", w: "160px", z: 2, depth: 0.03, opacity: 0.8 },
-      ].map((p, i) => (
-        <div
-          key={i}
-          data-depth={p.depth}
-          data-base-transform={p.base}
-          style={{
-            position: "absolute", top: p.top, left: p.left, width: p.w, zIndex: p.z,
-            borderRadius: "22px", overflow: "hidden", transformStyle: "preserve-3d",
-            transform: p.base, opacity: p.opacity,
-            border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "0 30px 60px -20px rgba(0,0,0,0.8)",
-            transition: "opacity 0.4s ease",
-          }}
-        >
-          <img src={p.src} alt="" style={{ width: "100%", display: "block" }} />
-        </div>
-      ))}
+    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
+      {/* Blurred full-bleed backdrop - breaks out to the full viewport width
+          so the section reads as a wide landscape scene even though the
+          sharp portrait card itself stays portrait-cropped. */}
+      <div data-backdrop style={{ position: "absolute", top: "-6%", left: "50%", width: "100vw", height: "112%", transform: "translateX(-50%) scale(1.15)", backgroundImage: `url(${heroPhoto})`, backgroundSize: "cover", backgroundPosition: "center 20%", filter: "blur(50px) brightness(0.35) saturate(1.2)", zIndex: 0 }} />
 
-      {FLOATS.map((f, i) => (
-        <div key={i} className="float-like" style={{ position: "absolute", top: f.top, left: f.left, right: f.right, animationDelay: f.delay, animationDuration: f.duration, zIndex: 4 }}>
-          <HeartIcon size={f.size} />
+      <div data-portrait style={{ position: "relative", width: "min(78vw, 300px)", margin: "0 auto", zIndex: 1 }}>
+        {/* Unclipped top layer - her head, fading into the boxed card below */}
+        <img
+          src={heroPhoto}
+          alt="A creator checking her phone"
+          style={{
+            width: "100%", display: "block", position: "relative", zIndex: 2,
+            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 30%, transparent 46%)",
+            maskImage: "linear-gradient(to bottom, black 0%, black 30%, transparent 46%)",
+          }}
+        />
+        {/* Boxed card - same photo, cropped to start where the fade ends.
+            marginTop is relative to the parent's WIDTH (a CSS quirk for
+            vertical margins), not the top layer's height, so this pulls
+            the box up from directly-after-the-top-layer to overlap it
+            starting exactly at the 30%-down mark. aspectRatio matches the
+            30%-100% crop (945/900 of the original 1350-tall photo) so
+            overflow:hidden actually has a fixed box to clip against. */}
+        <div style={{ position: "relative", marginTop: "-105%", zIndex: 1, aspectRatio: "900 / 945", borderRadius: "26px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 30px 70px -18px rgba(0,0,0,0.85)" }}>
+          <img src={heroPhoto} alt="" style={{ width: "100%", display: "block", transform: "translateY(-30%)" }} />
+
+          {FLOATS.map((f, i) => (
+            <div key={i} className="float-like" style={{ position: "absolute", top: f.top, left: f.left, animationDelay: f.delay, animationDuration: f.duration, zIndex: 3 }}>
+              <HeartIcon size={f.size} />
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 }
@@ -170,7 +178,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered.
         </p>
 
-        <PhoneCollage scrollContainerRef={scrollRef} />
+        <HeroPortrait scrollContainerRef={scrollRef} />
 
         <div style={{ marginTop: "2.25rem", width: "100%" }}>{ctaButtons}</div>
 
