@@ -8,8 +8,8 @@ const isAndroid = typeof navigator !== "undefined" && /Android/.test(navigator.u
 const isMobile = isIOS || isAndroid;
 
 const ShareIcon = () => (
-  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M12 3v13M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+    <path d="M12 3v13M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -19,16 +19,16 @@ const HeartIcon = ({ size = 14 }: { size?: number }) => (
   </svg>
 );
 
-// Likes sit right at her hand/phone in the crop below (roughly x 58-72%,
-// y 60-85% of the frame) - small and plain, not glowing clipart hearts.
+// Likes sit right at her hand/phone in the crop below - small and plain,
+// not glowing clipart hearts.
 const FLOATS = [
   { top: "60%", left: "58%", size: 12, delay: "0s", duration: "3.2s" },
   { top: "74%", left: "70%", size: 15, delay: "1s", duration: "3.6s" },
   { top: "50%", left: "68%", size: 10, delay: "1.9s", duration: "3s" },
 ];
 
-// A plain, honestly-wide (3:2) crop of the photo - no floating card, no
-// drop shadow, no blurred glow behind it.
+// A plain landscape crop of the photo - no floating card, no drop shadow,
+// no blurred glow behind it. Just a big rounded photo with a slight tilt.
 function HeroPhoto() {
   return (
     <div className="lp-photo">
@@ -57,11 +57,11 @@ const CREATOR_STEPS = [
 function Steps({ heading, steps }: { heading: string; steps: { title: string; body: string }[] }) {
   return (
     <div>
-      <h3 className="lp-steps-heading">{heading}</h3>
+      <h3 className="lp-chip">{heading}</h3>
       <ol className="lp-steps">
         {steps.map((s, i) => (
           <li key={s.title}>
-            <span className="lp-step-num">{String(i + 1).padStart(2, "0")}</span>
+            <span className="lp-step-num">{i + 1}</span>
             <div>
               <p className="lp-step-title">{s.title}</p>
               <p className="lp-step-body">{s.body}</p>
@@ -73,17 +73,34 @@ function Steps({ heading, steps }: { heading: string; steps: { title: string; bo
   );
 }
 
+// The wavy shapes are SVG masks over a flat currentColor/var fill, so each
+// section can recolor them with CSS instead of needing a separate image per
+// color. All three tile horizontally, so they span any screen width.
+const svgMask = (viewBox: string, body: string) =>
+  `url("data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' viewBox='${viewBox}' preserveAspectRatio='none'>${body}</svg>`
+  )}")`;
+
+// Filled below the wave - hangs over the bottom of the section above.
+const WAVE_ABOVE = svgMask("0 0 160 32", "<path d='M0 16 Q40 0 80 16 T160 16 V32 H0 Z'/>");
+// Filled above the wave - hangs down from the bottom of the sticky header.
+const WAVE_BELOW = svgMask("0 0 160 24", "<path d='M0 0 H160 V12 Q120 24 80 12 T0 12 Z'/>");
+// A wavy stroke, used for dividers and the headline underlines.
+const SQUIGGLE = svgMask("0 0 24 8", "<path d='M0 4 Q6 0.5 12 4 T24 4' fill='none' stroke='black' stroke-width='2'/>");
+
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
 
   .lp {
+    --m-wave-above: ${WAVE_ABOVE};
+    --m-wave-below: ${WAVE_BELOW};
+    --m-squiggle: ${SQUIGGLE};
     height: 100vh;
     height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     background: #0a0a0a;
-    color: #999;
     font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
   }
   .lp *, .lp *::before, .lp *::after { box-sizing: border-box; }
@@ -91,41 +108,66 @@ const STYLES = `
   .lp :where(ol) { list-style: none; }
   .lp a { color: inherit; text-decoration: none; }
   .lp button { font-family: inherit; }
-  .lp :focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .lp :focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
 
-  .lp-wrap { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; }
-  .lp-display { font-family: 'Syne', sans-serif; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+  /* Every section picks a side: black or white, with text flipped to match. */
+  .lp-dark { --bg: #0a0a0a; --fg: #fff; --muted: #b3b3b3; }
+  .lp-light { --bg: #fff; --fg: #0a0a0a; --muted: #444; }
+  .lp-dark, .lp-light { background: var(--bg); color: var(--muted); position: relative; }
+  .lp :where(h1, h2, h3), .lp-display { color: var(--fg); }
+
+  /* Wavy edge along the top of a section, hanging over the one above it. */
+  .lp-edge::before {
+    content: ""; position: absolute; left: 0; right: 0; bottom: calc(100% - 1px); height: 33px;
+    background: var(--bg);
+    -webkit-mask-image: var(--m-wave-above); mask-image: var(--m-wave-above);
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 160px 100%; mask-size: 160px 100%;
+    -webkit-mask-position: left bottom; mask-position: left bottom;
+    pointer-events: none;
+  }
+
+  .lp-wrap { width: 100%; max-width: 1600px; margin: 0 auto; padding-inline: clamp(1.25rem, 4vw, 4.5rem); }
+  .lp-display { font-family: 'Syne', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
 
   /* Header */
-  .lp-header { position: sticky; top: 0; z-index: 10; background: #0a0a0a; border-bottom: 1px solid #1a1a1a; }
-  .lp-header .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+  .lp-header { position: sticky; top: 0; z-index: 10; }
+  .lp-header::after {
+    content: ""; position: absolute; left: 0; right: 0; top: calc(100% - 1px); height: 15px;
+    background: var(--bg);
+    -webkit-mask-image: var(--m-wave-below); mask-image: var(--m-wave-below);
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 80px 100%; mask-size: 80px 100%;
+    pointer-events: none;
+  }
+  .lp-header .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
   .lp-brand { display: flex; align-items: center; gap: 10px; }
-  .lp-brand img { width: 30px; height: 30px; object-fit: contain; }
-  .lp-brand span { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; color: #fff; letter-spacing: -0.01em; }
-  .lp-nav { display: flex; align-items: center; gap: 1.5rem; }
-  .lp-nav a { display: none; font-size: 13px; color: #999; }
-  .lp-nav a:hover { color: #fff; }
+  .lp-brand img { width: 32px; height: 32px; object-fit: contain; }
+  .lp-brand span { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; color: var(--fg); letter-spacing: -0.01em; }
+  .lp-nav { display: flex; align-items: center; gap: 1.75rem; }
+  .lp-nav a { display: none; font-size: 14px; font-weight: 500; color: var(--muted); }
+  .lp-nav a:hover { color: var(--fg); }
 
-  /* Buttons */
-  .lp-btn { display: block; width: 100%; padding: 14px; border-radius: 8px; font-size: 13px; font-weight: 600; text-align: center; cursor: pointer; letter-spacing: 0.05em; border: 1px solid transparent; transition: background 0.15s, border-color 0.15s, color 0.15s; }
-  .lp-btn-primary { background: #fff; color: #0a0a0a; text-transform: uppercase; }
-  .lp-btn-primary:hover { background: #e6e6e6; }
-  .lp-btn-primary:disabled { background: #1a1a1a; color: #555; cursor: default; }
-  .lp-btn-ghost { background: transparent; border-color: #333; color: #ccc; letter-spacing: 0.04em; }
-  .lp-btn-ghost:hover { border-color: #666; color: #fff; }
-  .lp-btn-small { width: auto; padding: 8px 14px; font-size: 12px; text-transform: none; letter-spacing: 0.02em; }
-  .lp-cta { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
-  .lp-hint { display: flex; align-items: flex-start; gap: 10px; background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 14px 16px; }
-  .lp-hint p { font-size: 12px; color: #aaa; line-height: 1.6; }
-  .lp-hint strong { color: #fff; font-weight: 600; }
-  .lp-hint svg { margin-top: 2px; color: #999; }
+  /* Buttons - fat pills */
+  .lp-btn { display: block; width: 100%; padding: 16px 20px; border-radius: 999px; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; letter-spacing: 0.05em; border: 2px solid var(--fg); transition: background 0.15s, color 0.15s, opacity 0.15s; }
+  .lp-btn-primary { background: var(--fg); color: var(--bg); text-transform: uppercase; }
+  .lp-btn-primary:hover { opacity: 0.85; }
+  .lp-btn-primary:disabled { opacity: 0.5; cursor: default; }
+  .lp-btn-ghost { background: transparent; color: var(--fg); letter-spacing: 0.03em; }
+  .lp-btn-ghost:hover { background: var(--fg); color: var(--bg); }
+  .lp-btn-small { width: auto; padding: 9px 18px; font-size: 13px; letter-spacing: 0.02em; }
+  .lp-cta { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 12px; }
+  .lp-hint { display: flex; align-items: flex-start; gap: 12px; border: 2px solid var(--fg); border-radius: 22px; padding: 14px 18px; }
+  .lp-hint p { font-size: 13px; line-height: 1.6; color: var(--muted); }
+  .lp-hint strong { color: var(--fg); font-weight: 600; }
+  .lp-hint svg { margin-top: 2px; color: var(--fg); }
 
   /* Hero */
-  .lp-hero { padding-block: 3rem 4rem; display: grid; gap: 2.5rem; }
-  .lp-hero h1 { font-size: 36px; line-height: 1.12; max-width: 520px; margin-bottom: 14px; }
-  .lp-hero-sub { font-size: 15px; line-height: 1.7; max-width: 440px; margin-bottom: 2rem; }
-  .lp-photo { position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden; border-radius: 10px; }
-  .lp-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 38%; display: block; }
+  .lp-hero .lp-wrap { display: grid; gap: 3rem; padding-block: 3.5rem 5rem; }
+  .lp-hero h1 { font-size: clamp(2.25rem, 4.8vw, 5.75rem); line-height: 1.08; margin-bottom: 1.25rem; }
+  .lp-hero-sub { font-size: clamp(16px, 1.5vw, 21px); line-height: 1.65; max-width: 30em; margin-bottom: 2.25rem; }
+  .lp-photo { position: relative; width: 100%; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 28px; transform: rotate(-2deg); }
+  .lp-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; display: block; }
   .lp-float { position: absolute; animation: lpFloat 3.2s ease-out infinite; }
   @keyframes lpFloat {
     0% { opacity: 0; transform: translateY(0) scale(0.7); }
@@ -134,44 +176,59 @@ const STYLES = `
     100% { opacity: 0; transform: translateY(-90px) scale(0.85); }
   }
 
+  /* Wavy underline under a single word of a headline */
+  .lp-underline { position: relative; display: inline-block; }
+  .lp-underline::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -0.12em; height: 0.2em;
+    background: currentColor;
+    -webkit-mask-image: var(--m-squiggle); mask-image: var(--m-squiggle);
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 0.75em 100%; mask-size: 0.75em 100%;
+  }
+
   /* Sections */
-  .lp-section { border-top: 1px solid #1a1a1a; padding-block: 4rem; scroll-margin-top: 60px; }
-  .lp-kicker { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #666; margin-bottom: 12px; }
-  .lp-h2 { font-size: 28px; line-height: 1.2; max-width: 560px; }
-  .lp-split { display: grid; gap: 3rem; margin-top: 2.5rem; }
-  .lp-steps-heading { font-size: 15px; font-weight: 600; color: #fff; padding-bottom: 14px; border-bottom: 1px solid #333; }
-  .lp-steps li { display: flex; gap: 1.25rem; padding: 1.25rem 0; border-bottom: 1px solid #1a1a1a; }
-  .lp-step-num { flex-shrink: 0; width: 1.5rem; font-size: 12px; color: #666; padding-top: 3px; font-variant-numeric: tabular-nums; }
-  .lp-step-title { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 4px; }
-  .lp-step-body { font-size: 14px; line-height: 1.65; }
+  .lp-section { padding-block: clamp(4rem, 9vw, 8rem); scroll-margin-top: 64px; }
+  .lp-kicker { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .lp-h2 { font-size: clamp(2rem, 4.4vw, 4.75rem); line-height: 1.12; }
+  .lp-split { display: grid; gap: 3.5rem; margin-top: clamp(2.5rem, 5vw, 4.5rem); }
+  .lp-chip { display: inline-block; font-size: 15px; font-weight: 600; background: var(--fg); color: var(--bg); padding: 8px 20px; border-radius: 999px; }
+  .lp-steps { margin-top: 0.75rem; }
+  .lp-steps li { position: relative; display: flex; gap: 1.25rem; padding-block: 1.5rem 2rem; }
+  .lp-steps li::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+    background: var(--fg); opacity: 0.4;
+    -webkit-mask-image: var(--m-squiggle); mask-image: var(--m-squiggle);
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: 24px 8px; mask-size: 24px 8px;
+  }
+  .lp-step-num { flex-shrink: 0; width: 2.5rem; height: 2.5rem; border-radius: 50%; background: var(--fg); color: var(--bg); display: grid; place-items: center; font-weight: 700; font-size: 17px; }
+  .lp-step-title { font-size: clamp(18px, 1.6vw, 24px); font-weight: 600; color: var(--fg); margin-bottom: 6px; padding-top: 0.35rem; }
+  .lp-step-body { font-size: clamp(15px, 1.2vw, 18px); line-height: 1.65; max-width: 30em; }
 
-  .lp-escrow { display: grid; gap: 1.25rem; }
-  .lp-escrow p.lp-body { font-size: 15px; line-height: 1.75; max-width: 520px; }
+  .lp-escrow { display: grid; gap: 1.75rem; }
+  .lp-escrow p.lp-body { font-size: clamp(16px, 1.6vw, 23px); line-height: 1.7; max-width: 30em; }
 
-  .lp-final { display: grid; gap: 1.75rem; }
-  .lp-final .lp-cta { max-width: 300px; }
+  .lp-final { display: grid; gap: 2rem; }
+  .lp-final .lp-cta { max-width: 340px; }
 
   /* Footer */
-  .lp-footer { border-top: 1px solid #1a1a1a; padding-block: 2.5rem 3rem; }
-  .lp-footer .lp-wrap { display: flex; flex-direction: column; gap: 1.5rem; }
-  .lp-footer-tag { font-size: 13px; margin-top: 10px; }
-  .lp-footer-links { display: flex; gap: 1.5rem; font-size: 13px; }
-  .lp-footer-links a:hover { color: #fff; }
-  .lp-legal { font-size: 12px; color: #555; }
+  .lp-footer { padding-block: 3.5rem 3rem; }
+  .lp-footer .lp-wrap { display: flex; flex-direction: column; gap: 2rem; }
+  .lp-footer-tag { font-size: 14px; margin-top: 12px; }
+  .lp-footer-right { display: flex; flex-direction: column; gap: 1.25rem; }
+  .lp-footer-links { display: flex; gap: 1.75rem; font-size: 14px; font-weight: 500; }
+  .lp-footer-links a:hover { color: var(--fg); }
+  .lp-legal { font-size: 13px; opacity: 0.7; }
 
   @media (min-width: 880px) {
     .lp-nav a { display: inline; }
-    .lp-header .lp-wrap { height: 68px; }
-    .lp-hero { grid-template-columns: 1fr 1.1fr; gap: 4rem; align-items: center; padding-block: 5rem 6rem; }
-    .lp-hero h1 { font-size: 46px; }
-    .lp-hero-sub { font-size: 16px; }
-    .lp-section { padding-block: 6rem; }
-    .lp-h2 { font-size: 36px; }
-    .lp-split { grid-template-columns: 1fr 1fr; gap: 4rem; margin-top: 3.5rem; }
-    .lp-escrow { grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
-    .lp-final { grid-template-columns: 1fr auto; align-items: center; gap: 4rem; }
+    .lp-header .lp-wrap { height: 72px; }
+    .lp-hero .lp-wrap { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 4vw; align-items: center; min-height: calc(100dvh - 72px); padding-block: 3rem 6rem; }
+    .lp-split { grid-template-columns: 1fr 1fr; gap: 6vw; }
+    .lp-escrow { grid-template-columns: 1fr 1fr; gap: 6vw; align-items: center; }
+    .lp-final { grid-template-columns: 1fr auto; align-items: center; gap: 6vw; }
     .lp-footer .lp-wrap { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-    .lp-footer-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1.25rem; }
+    .lp-footer-right { align-items: flex-end; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -229,7 +286,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
     <div className="lp">
       <style>{STYLES}</style>
 
-      <header className="lp-header">
+      <header className="lp-header lp-dark">
         <div className="lp-wrap">
           <div className="lp-brand">
             <img src={logo} alt="" />
@@ -252,18 +309,22 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
       </header>
 
       <main>
-        <section className="lp-wrap lp-hero">
-          <div>
-            <h1 className="lp-display">Where brands and creators actually connect</h1>
-            <p className="lp-hero-sub">
-              Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered.
-            </p>
-            {cta}
+        <section className="lp-hero lp-dark">
+          <div className="lp-wrap">
+            <div>
+              <h1 className="lp-display">
+                Where brands and creators <span className="lp-underline">actually</span> connect
+              </h1>
+              <p className="lp-hero-sub">
+                Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered.
+              </p>
+              {cta}
+            </div>
+            <HeroPhoto />
           </div>
-          <HeroPhoto />
         </section>
 
-        <section id="how-it-works" className="lp-section">
+        <section id="how-it-works" className="lp-section lp-light lp-edge">
           <div className="lp-wrap">
             <p className="lp-kicker">How it works</p>
             <h2 className="lp-h2 lp-display">One place for the whole collaboration</h2>
@@ -274,11 +335,13 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </section>
 
-        <section className="lp-section">
+        <section className="lp-section lp-dark lp-edge">
           <div className="lp-wrap lp-escrow">
             <div>
               <p className="lp-kicker">Payments</p>
-              <h2 className="lp-h2 lp-display">Held in escrow until the work is delivered</h2>
+              <h2 className="lp-h2 lp-display">
+                Held in <span className="lp-underline">escrow</span> until the work is delivered
+              </h2>
             </div>
             <p className="lp-body">
               For paid campaigns, the brand's payment is secured through Stripe the moment a deal locks in. It's only released to the creator once the agreed content is delivered.
@@ -286,7 +349,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </section>
 
-        <section className="lp-section">
+        <section className="lp-section lp-light lp-edge">
           <div className="lp-wrap lp-final">
             <h2 className="lp-h2 lp-display">Post your first campaign, or find your next one.</h2>
             {cta}
@@ -294,7 +357,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
         </section>
       </main>
 
-      <footer className="lp-footer">
+      <footer className="lp-footer lp-dark lp-edge">
         <div className="lp-wrap">
           <div>
             <div className="lp-brand">
