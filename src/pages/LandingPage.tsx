@@ -13,85 +13,36 @@ const ShareIcon = () => (
   </svg>
 );
 
-const HeartIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="#ff3b5c" style={{ flexShrink: 0, filter: "drop-shadow(0 2px 6px rgba(255,59,92,0.5))" }}>
+const HeartIcon = ({ size = 14 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="#fff" style={{ flexShrink: 0, opacity: 0.9 }}>
     <path d="M12 20.5s-7.5-4.6-9.8-9.1C.7 7.4 2.4 4 6 4c2.1 0 3.6 1.2 4.4 2.4C11.2 5.2 12.7 4 14.8 4c3.6 0 5.3 3.4 3.8 6.9C19.5 15.9 12 20.5 12 20.5Z" />
   </svg>
 );
 
-// Likes cluster right around where her hand/phone actually sits in the
-// photo (roughly x 64-80%, y 60-88% of the wider boxed/cropped band below),
-// not randomized across the whole card.
+// Likes sit right at her hand/phone in the crop below (roughly x 58-72%,
+// y 60-85% of the frame) - small and plain, not glowing clipart hearts.
 const FLOATS = [
-  { top: "58%", left: "64%", size: 16, delay: "0s", duration: "3.2s" },
-  { top: "74%", left: "80%", size: 24, delay: "1s", duration: "3.6s" },
-  { top: "44%", left: "78%", size: 14, delay: "1.9s", duration: "3s" },
-  { top: "88%", left: "68%", size: 20, delay: "0.5s", duration: "3.4s" },
+  { top: "60%", left: "58%", size: 12, delay: "0s", duration: "3.2s" },
+  { top: "74%", left: "70%", size: 15, delay: "1s", duration: "3.6s" },
+  { top: "50%", left: "68%", size: 10, delay: "1.9s", duration: "3s" },
 ];
 
-// The image "breaks its frame": the top ~30% (her head/hair) renders
-// unclipped and fades into the boxed card beneath it, which is the same
-// photo cropped to start where the fade ends - same pixels, same scale, so
-// the seam is invisible and it reads as one figure stepping out of the card.
-function HeroPortrait({ scrollContainerRef }: { scrollContainerRef: React.RefObject<HTMLDivElement | null> }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const scrollEl = scrollContainerRef.current;
-    if (!scrollEl) return;
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const el = wrapRef.current;
-        if (!el) return;
-        const y = scrollEl.scrollTop;
-        const portrait = el.querySelector<HTMLElement>("[data-portrait]");
-        const backdrop = el.querySelector<HTMLElement>("[data-backdrop]");
-        if (portrait) portrait.style.transform = `translateY(${y * 0.08}px)`;
-        if (backdrop) backdrop.style.transform = `translateY(${y * 0.25}px) scale(1.15)`;
-      });
-    };
-    scrollEl.addEventListener("scroll", onScroll, { passive: true });
-    return () => { scrollEl.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
-  }, [scrollContainerRef]);
-
+// A plain, honestly-wide (3:2) crop of the photo - no floating card, no
+// drop shadow, no blurred glow behind it. Just a real landscape photo the
+// same width as the text above it.
+function HeroPortrait() {
   return (
-    <div ref={wrapRef} style={{ position: "relative", width: "100%" }}>
-      {/* Blurred full-bleed backdrop - breaks out to the full viewport width
-          so the section reads as a wide landscape scene even though the
-          sharp portrait card itself stays portrait-cropped. */}
-      <div data-backdrop style={{ position: "absolute", top: "-6%", left: "50%", width: "100vw", height: "112%", transform: "translateX(-50%) scale(1.15)", backgroundImage: `url(${heroPhoto})`, backgroundSize: "cover", backgroundPosition: "center 20%", filter: "blur(50px) brightness(0.35) saturate(1.2)", zIndex: 0 }} />
-
-      <div data-portrait style={{ position: "relative", width: "min(92vw, 760px)", margin: "0 auto", zIndex: 1 }}>
-        {/* Unclipped top layer - her head, fading into the boxed band below */}
-        <img
-          src={heroPhoto}
-          alt="A creator checking her phone"
-          style={{
-            width: "100%", display: "block", position: "relative", zIndex: 2,
-            WebkitMaskImage: "linear-gradient(to bottom, black 0%, black 17%, transparent 30%)",
-            maskImage: "linear-gradient(to bottom, black 0%, black 17%, transparent 30%)",
-          }}
-        />
-        {/* Boxed band - same photo, cropped to a wide horizontal slice
-            (17%-70% down the original 1350px-tall photo) starting exactly
-            where the fade ends. marginTop is relative to the parent's WIDTH
-            (a CSS quirk for vertical margins), not the top layer's height,
-            so this pulls the band up to overlap the top layer starting at
-            the 17%-down mark. aspectRatio matches that crop window so
-            overflow:hidden has a fixed box to clip against - much wider
-            than tall now, instead of the old near-square card. */}
-        <div style={{ position: "relative", marginTop: "-124.5%", zIndex: 1, aspectRatio: "900 / 715.5", borderRadius: "26px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 30px 70px -18px rgba(0,0,0,0.85)" }}>
-          <img src={heroPhoto} alt="" style={{ width: "100%", display: "block", transform: "translateY(-17%)" }} />
-
-          {FLOATS.map((f, i) => (
-            <div key={i} className="float-like" style={{ position: "absolute", top: f.top, left: f.left, animationDelay: f.delay, animationDuration: f.duration, zIndex: 3 }}>
-              <HeartIcon size={f.size} />
-            </div>
-          ))}
+    <div style={{ position: "relative", width: "100%", aspectRatio: "3 / 2", overflow: "hidden", borderRadius: "10px" }}>
+      <img
+        src={heroPhoto}
+        alt="A creator checking her phone"
+        style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 38%", display: "block" }}
+      />
+      {FLOATS.map((f, i) => (
+        <div key={i} className="float-like" style={{ position: "absolute", top: f.top, left: f.left, animationDelay: f.delay, animationDuration: f.duration }}>
+          <HeartIcon size={f.size} />
         </div>
-      </div>
+      ))}
     </div>
   );
 }
@@ -179,7 +130,9 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
           Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered.
         </p>
 
-        <HeroPortrait scrollContainerRef={scrollRef} />
+        <div style={{ width: "100%", maxWidth: "420px" }}>
+          <HeroPortrait />
+        </div>
 
         <div style={{ marginTop: "2.25rem", width: "100%" }}>{ctaButtons}</div>
 
