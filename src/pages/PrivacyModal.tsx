@@ -126,6 +126,8 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li><strong style={{ color: "#fff" }}>Supabase</strong> — our database and account sign-in</li>
               <li><strong style={{ color: "#fff" }}>Stripe</strong> — payments and creator payouts, a global leader in payment security</li>
               <li><strong style={{ color: "#fff" }}>Vercel</strong> — hosting the app</li>
+              <li><strong style={{ color: "#fff" }}>Cloudflare</strong> — storing the photos and videos you upload</li>
+              <li><strong style={{ color: "#fff" }}>OneSignal</strong> — push notifications</li>
               <li><strong style={{ color: "#fff" }}>Sentry</strong> — error monitoring, so we can find and fix crashes</li>
             </ul>
             <span style={{ display: "block", marginTop: "8px" }}>We don't sell your data to anyone, for any reason.</span>
