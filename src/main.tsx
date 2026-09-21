@@ -6,6 +6,12 @@ import { logEvent } from "./lib/debugLog";
 // beforeinstallprompt can fire long before LandingPage mounts - this import
 // alone registers the capture listener as early as the page allows.
 import "./lib/pwaInstall";
+import { initErrorTracking, reactRootErrorHandlers, AppErrorBoundary } from "./lib/errorTracking";
+import ErrorFallback from "./components/ErrorFallback";
+
+// Start error reporting before anything else runs, so even a crash while the
+// app boots is caught. Does nothing until a Sentry key is set in errorTracking.ts.
+initErrorTracking();
 
 logEvent("app boot");
 
@@ -53,8 +59,10 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.getElementById("root")!, reactRootErrorHandlers).render(
   <React.StrictMode>
-    <Root />
+    <AppErrorBoundary fallback={<ErrorFallback />}>
+      <Root />
+    </AppErrorBoundary>
   </React.StrictMode>
 );
