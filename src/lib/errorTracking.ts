@@ -5,7 +5,9 @@ import { getLog } from "./debugLog";
 // DSN). It only lets this app SEND error reports to your project - it can't
 // read anything back - so it is fine to keep in the code, like the Supabase
 // anon key. While this is empty, error tracking is simply switched off.
-const SENTRY_DSN = "";
+// (This project is in Sentry's EU region - "ingest.de.sentry.io".)
+const SENTRY_DSN =
+  "https://cac0b81693ab69f0d1d7a084e9e3b870@o4512121613975552.ingest.de.sentry.io/4512121631014992";
 
 // Only report from the real site, so local development, preview builds and
 // test runs never add noise or use up the free monthly quota.
@@ -19,6 +21,9 @@ export function sentryOptions(dsn: string): Sentry.BrowserOptions {
     dsn,
     environment: "production",
     // No IP address, cookies or user details attached to reports.
+    // NOTE: Sentry v11 replaces this option with `dataCollection` (Sentry's
+    // setup snippet already shows it). If the SDK is ever upgraded past v10,
+    // set `dataCollection: { userInfo: false, httpBodies: [] }` instead.
     sendDefaultPii: false,
     // Errors only: no performance tracing, no session replay.
     tracesSampleRate: 0,
