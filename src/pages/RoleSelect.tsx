@@ -33,11 +33,12 @@ export default function RoleSelect({ navigate }: Props) {
         onMouseLeave={() => setHovered(null)}
         style={{
           border: `1px solid ${isHovered ? "#fff" : "#222"}`,
-          borderRadius: "12px",
+          borderRadius: "20px",
           padding: "2rem 1.5rem",
           cursor: "pointer",
           transition: "all 0.2s",
           background: isHovered ? "#111" : "transparent",
+          ...(isHovered ? { transform: "rotate(-0.6deg)" } : {}),
           flex: 1,
           minWidth: "200px",
         }}
@@ -63,7 +64,7 @@ export default function RoleSelect({ navigate }: Props) {
         <p style={{ textAlign: "center", fontSize: "13px", color: "#999", lineHeight: 1.6, marginBottom: "1.5rem" }}>
           FlipCollab is a marketplace connecting brands with content creators for paid and gifted collaborations.
         </p>
-        <p style={{
+        <p className="fc-underline-c" style={{
           textAlign: "center",
           fontSize: "13px",
           color: "#888",

@@ -616,7 +616,7 @@ setTimeout(() => setSaved(false), 2000);
     return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div ref={profileHeaderRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
+        <span className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
         <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
@@ -824,7 +824,7 @@ setTimeout(() => setSaved(false), 2000);
         {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+            <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
             <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
           </div>
         )}
@@ -837,7 +837,7 @@ setTimeout(() => setSaved(false), 2000);
   const renderSettingsHeader = (title: string, onBack: () => void) => (
     <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
       <span onClick={onBack} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
+      <span className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
     </div>
   );
 
@@ -846,7 +846,7 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
         <span onClick={() => setView("profile")} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
+        <span className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
       </div>
 
       {/* Theme toggle at top */}
@@ -1360,7 +1360,7 @@ setTimeout(() => setSaved(false), 2000);
     {renderSettingsHeader("Favourites", () => setSettingsSection("main"))}
     <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
       {(["campaigns", "creators"] as const).map(t => (
-        <div key={t} onClick={() => setFavTab(t)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: favTab === t ? "#fff" : "#444", borderBottom: favTab === t ? "2px solid #fff" : "2px solid transparent" }}>{t}</div>
+        <div className={favTab === t ? "fc-tab-on" : undefined} key={t} onClick={() => setFavTab(t)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: favTab === t ? "#fff" : "#444", borderBottom: favTab === t ? "2px solid #fff" : "2px solid transparent" }}>{t}</div>
       ))}
     </div>
     <div style={{ padding: "1.25rem" }}>
@@ -1420,7 +1420,7 @@ setTimeout(() => setSaved(false), 2000);
         {renderSettingsHeader("Applications", () => setSettingsSection("main"))}
         <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
           {(["all", "pending", "accepted", "rejected"] as const).map(f => (
-            <div key={f} onClick={() => setAppFilter(f)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: appFilter === f ? "#fff" : "#444", borderBottom: appFilter === f ? "2px solid #fff" : "2px solid transparent" }}>{f}</div>
+            <div className={appFilter === f ? "fc-tab-on" : undefined} key={f} onClick={() => setAppFilter(f)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: appFilter === f ? "#fff" : "#444", borderBottom: appFilter === f ? "2px solid #fff" : "2px solid transparent" }}>{f}</div>
           ))}
         </div>
         <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>

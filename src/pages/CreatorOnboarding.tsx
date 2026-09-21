@@ -906,7 +906,7 @@ const buttonLabel = () => {
             </div>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
+              style={{ padding: "14px", borderRadius: "999px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
             >
               Skip for now
             </div>

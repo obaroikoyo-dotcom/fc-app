@@ -182,7 +182,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       <div ref={headerRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Discovery Hub</span>
+        <span className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Discovery Hub</span>
         <div style={{ marginTop: "1rem" }}>
           <input style={UI.input} placeholder={filter === "creators" ? "Search creators..." : "Search brands..."} value={query} onChange={e => setQuery(e.target.value)} />
         </div>
@@ -247,7 +247,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
           })
         )}
         {filtered.length > 0 && filteredAll.length > filtered.length && (
-          <div onClick={() => setVisibleCount(c => c + 10)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #222", textAlign: "center", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer", marginTop: "4px" }}>
+          <div onClick={() => setVisibleCount(c => c + 10)} style={{ padding: "12px", borderRadius: "999px", border: "1px solid #222", textAlign: "center", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer", marginTop: "4px" }}>
             Load More ({filteredAll.length - filtered.length} more)
           </div>
         )}

@@ -46,7 +46,7 @@ export default function CreatorSignup({ navigate }: Props) {
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
         <p onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer", marginBottom: "1.5rem" }}>← Back</p>
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Creator sign up</p>
+        <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px", textAlign: "center" }}>Creator sign up</p>
         <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Apply to brand campaigns and build your portfolio.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

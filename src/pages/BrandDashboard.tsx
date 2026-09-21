@@ -204,7 +204,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             {tab === "post" && (
               <span onClick={() => { setEditingCampaign(null); setTab("campaigns"); }} style={{ fontSize: "20px", color: "#fff", cursor: "pointer", marginRight: "4px" }}>←</span>
             )}
-            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+            <span className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
               {tab === "campaigns" ? "Campaigns" : editingCampaign ? "Edit Campaign" : "Post Campaign"}
             </span>
             {isEnterprise && (
@@ -219,10 +219,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {/* Feed Tabs */}
         {tab === "campaigns" && (
           <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
-            <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+            <button className={feedTab === "yours" ? "fc-tab-on" : undefined} onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
               Your Campaigns
             </button>
-            <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+            <button className={feedTab === "discover" ? "fc-tab-on" : undefined} onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
               Market
             </button>
           </div>
@@ -287,7 +287,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               </div>
             ) : !hasLoadedOnce && loading ? null : campaigns.length === 0 ? (
               <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
+                <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
                 <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>Post your first campaign and start finding creators.</p>
                 <div onClick={() => setTab("post")} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Post a Campaign
@@ -306,7 +306,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               });
               if (filtered.length === 0) return (
                 <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+                  <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
                     {feedTab === "yours" ? "No campaigns yet" : "No campaigns found"}
                   </p>
                   <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>

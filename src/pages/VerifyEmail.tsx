@@ -146,7 +146,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
 
           <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
 
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
+          <h1 className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
 
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
             We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
@@ -187,7 +187,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
 
           {loading && <p style={{ fontSize: "12px", color: "#999", marginBottom: "1rem" }}>Verifying...</p>}
 
-          <div style={{ height: "1px", background: "#1a1a1a", marginBottom: "1.5rem" }} />
+          <div className="fc-rule" style={{ marginBottom: "1.5rem" }} />
 
           <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
             Didn't get it? Check your spam folder, or
