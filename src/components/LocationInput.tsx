@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { LOCATIONIQ_API_KEY } from "../lib/locationiq";
 
 interface Props {
   value: string;
@@ -19,14 +20,18 @@ export default function LocationInput({ value, onChange, placeholder, inputStyle
   const containerRef = useRef<HTMLDivElement>(null);
 
   const search = async (query: string) => {
-    if (query.length < 2) { setSuggestions([]); return; }
+    // No key set yet -> no suggestions, but the field still works as a plain
+    // text input (see LOCATIONIQ_API_KEY's comment).
+    if (query.length < 2 || !LOCATIONIQ_API_KEY) { setSuggestions([]); return; }
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=5&featuretype=city`,
+        `https://api.locationiq.com/v1/autocomplete?key=${LOCATIONIQ_API_KEY}&q=${encodeURIComponent(query)}&format=json&limit=5`,
         { headers: { "Accept-Language": "en" } }
       );
       const data = await res.json();
-      setSuggestions(data);
+      // On an invalid/rate-limited key LocationIQ returns an error object,
+      // not an array - fail quietly rather than crash the .map() below.
+      setSuggestions(Array.isArray(data) ? data : []);
       setShowDropdown(true);
     } catch {
       setSuggestions([]);

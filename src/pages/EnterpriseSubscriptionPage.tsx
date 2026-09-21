@@ -6,6 +6,7 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { stripePromise } from "../lib/stripe";
 import { COUNTRIES } from "../lib/countries";
 import { REGIONS_BY_COUNTRY } from "../lib/regions";
+import { LOCATIONIQ_API_KEY } from "../lib/locationiq";
 
 const CARD_ELEMENT_OPTIONS = {
   hidePostalCode: true,
@@ -73,7 +74,9 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     if (searchAbortRef.current) searchAbortRef.current.abort();
 
-    if (value.trim().length < 3) {
+    // No key set yet -> no suggestions, but every field here can still be
+    // typed by hand (see LOCATIONIQ_API_KEY's comment).
+    if (value.trim().length < 3 || !LOCATIONIQ_API_KEY) {
       setAddressSuggestions([]);
       setAddressSearching(false);
       return;
@@ -85,11 +88,13 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
       setAddressSearching(true);
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(value)}`,
+          `https://api.locationiq.com/v1/search?key=${LOCATIONIQ_API_KEY}&format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(value)}`,
           { signal: controller.signal }
         );
-        const data: NominatimResult[] = await res.json();
-        setAddressSuggestions(data);
+        const data = await res.json();
+        // On an invalid/rate-limited key LocationIQ returns an error object,
+        // not an array - fail quietly rather than crash the .map() below.
+        setAddressSuggestions(Array.isArray(data) ? data : []);
       } catch {
         // Ignore aborted/failed lookups — user can still type the address manually.
       } finally {
