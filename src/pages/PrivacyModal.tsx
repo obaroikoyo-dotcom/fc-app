@@ -78,7 +78,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: August 2026</p>
+          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: September 2026</p>
 
           <p>This Privacy Policy explains how FlipCollab ("we", "us", "our") collects, uses, and protects your personal data when you use our platform. FlipCollab is operated from the United Kingdom and complies with the UK GDPR and the Data Protection Act 2018.</p>
 
@@ -95,6 +95,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li>Profile details you choose to share (photo, bio, location, niche, social links)</li>
               <li>Messages and campaign content you create on the platform</li>
               <li>Basic device and usage data, like your browser type and IP address</li>
+              <li>Technical error reports if the app hits a problem - your device and browser type, the screen involved and a short log of recent app activity, but not your name, email or messages</li>
               <li>Payment details, handled directly by Stripe - we never see or store your card number</li>
             </ul>
           </div>
@@ -108,13 +109,14 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li>Process payments and manage escrow</li>
               <li>Send you account and payment-related emails</li>
               <li>Resolve disputes and enforce our Terms & Conditions</li>
+              <li>Find and fix bugs and keep the app running reliably</li>
               <li>Meet our legal obligations</li>
             </ul>
           </div>
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Our Legal Basis</span>
-            <span>We only process your data when we have a proper legal reason to - most commonly because it's necessary to provide the service you've signed up for, because it's in our legitimate interest to keep the platform safe and fraud-free, or because we're required to by law.</span>
+            <span>We only process your data when we have a proper legal reason to - most commonly because it's necessary to provide the service you've signed up for, because it's in our legitimate interest to keep the platform safe, reliable and fraud-free, or because we're required to by law.</span>
           </div>
 
           <div>
@@ -124,6 +126,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li><strong style={{ color: "#fff" }}>Supabase</strong> — our database and account sign-in</li>
               <li><strong style={{ color: "#fff" }}>Stripe</strong> — payments and creator payouts, a global leader in payment security</li>
               <li><strong style={{ color: "#fff" }}>Vercel</strong> — hosting the app</li>
+              <li><strong style={{ color: "#fff" }}>Sentry</strong> — error monitoring, so we can find and fix crashes</li>
             </ul>
             <span style={{ display: "block", marginTop: "8px" }}>We don't sell your data to anyone, for any reason.</span>
           </div>

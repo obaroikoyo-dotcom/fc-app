@@ -2,10 +2,10 @@ import { useEffect } from "react";
 
 const SECTIONS = [
   { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
-  { t: "2. Information We Collect", b: "Your name, email, profile details, messages, campaign content, and basic device/usage data. Payment details - and, for creators, the bank details needed for payouts - are collected and verified directly by Stripe. We never see or store them ourselves." },
-  { t: "3. How We Use It", b: "To run your account, match brands with creators, process payments and payouts, send you account and payment-related emails, resolve disputes, and meet our legal obligations." },
-  { t: "4. Our Legal Basis", b: "We only process your data where it's necessary to provide the service, in our legitimate interest to keep the platform safe, or where the law requires it." },
-  { t: "5. Trusted Partners We Work With", b: "We run on a small number of established providers who only get the data they need to do their job: Supabase (our database and sign-in), Stripe (payments and creator payouts), and Vercel (hosting) - plus optional sign-in via Google, Apple, TikTok, or Instagram. We don't sell your data to anyone." },
+  { t: "2. Information We Collect", b: "Your name, email, profile details, messages, campaign content, and basic device/usage data. If the app hits an error, a technical error report - your device and browser type, the screen involved and a short log of recent app activity, but not your name, email or messages - is sent to our error-monitoring provider so we can find and fix bugs. Payment details - and, for creators, the bank details needed for payouts - are collected and verified directly by Stripe. We never see or store them ourselves." },
+  { t: "3. How We Use It", b: "To run your account, match brands with creators, process payments and payouts, send you account and payment-related emails, resolve disputes, find and fix bugs, and meet our legal obligations." },
+  { t: "4. Our Legal Basis", b: "We only process your data where it's necessary to provide the service, in our legitimate interest to keep the platform safe and reliable, or where the law requires it." },
+  { t: "5. Trusted Partners We Work With", b: "We run on a small number of established providers who only get the data they need to do their job: Supabase (our database and sign-in), Stripe (payments and creator payouts), Vercel (hosting), and Sentry (error monitoring) - plus optional sign-in via Google, Apple, TikTok, or Instagram. We don't sell your data to anyone." },
   { t: "6. Social Sign-In & Linked Accounts", b: "If you sign in or verify your account with Google, Apple, TikTok, or Instagram, we only receive what that provider shares (typically your name and email, or a private relay email if you use Apple's Hide My Email). We use it solely to create and authenticate your account, never for advertising, and we do not attempt to identify you if you choose to keep your email private." },
   { t: "7. How Long We Keep Your Data", b: "For as long as your account is active. Deleted within 30 days of account deletion, except payment records, which UK law requires us to keep for 6 years. Photos and videos shared during a deal are cleared automatically once that deal wraps up or after a period of inactivity - your conversations themselves always stay, so both sides keep a record of what was agreed. Deleting your account or being restricted removes everything, including media, right away." },
   { t: "8. Your Rights", b: "Access, correction, deletion, objection, portability, and the right to complain to the ICO (ico.org.uk). Email us to exercise these." },
@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
           Privacy Policy
         </h1>
-        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: August 2026</p>
+        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: September 2026</p>
         <p style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6, marginBottom: "2rem" }}>
           This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.
         </p>
