@@ -60,10 +60,7 @@ export default function RoleSelect({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <img src={logo} className="no-reinvert" style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
-<p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "0.75rem" }}>FlipCollab</p>
-        <p style={{ textAlign: "center", fontSize: "13px", color: "#999", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-          FlipCollab is a marketplace connecting brands with content creators for paid and gifted collaborations.
-        </p>
+<p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "1.5rem" }}>FlipCollab</p>
         <p className="fc-underline-c" style={{
           textAlign: "center",
           fontSize: "13px",
