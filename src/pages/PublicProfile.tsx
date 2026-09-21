@@ -410,7 +410,7 @@ const startDM = async () => {
 
       {(blockedByMe || blockedMe) ? (
         <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
             {blockedByMe ? "You've blocked this profile" : "User unavailable"}
           </p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>
@@ -465,7 +465,7 @@ const startDM = async () => {
 
       {!blockedByMe && !blockedMe && isPrivate && (
         <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>This profile is private</p>
+          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>This profile is private</p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>{creator.name || "This creator"} has turned off public visibility for their profile.</p>
         </div>
       )}
@@ -672,7 +672,7 @@ const startDM = async () => {
                 {reviewableCampaigns.length > 0 && (
                   <div style={{ marginBottom: "1.25rem" }}>
                     {!showReviewForm ? (
-                      <div onClick={() => setShowReviewForm(true)} style={{ padding: "12px", borderRadius: "999px", border: "1px solid #fff", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}>
+                      <div onClick={() => setShowReviewForm(true)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #fff", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}>
                         Leave a review
                       </div>
                     ) : (
@@ -699,11 +699,11 @@ const startDM = async () => {
                         <div style={{ display: "flex", gap: "8px" }}>
                           <div
                             onClick={submittingReview ? undefined : handleSubmitReview}
-                            style={{ flex: 1, padding: "11px", borderRadius: "999px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: submittingReview ? "default" : "pointer", opacity: submittingReview ? 0.6 : 1 }}
+                            style={{ flex: 1, padding: "11px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: submittingReview ? "default" : "pointer", opacity: submittingReview ? 0.6 : 1 }}
                           >
                             {submittingReview ? "Submitting..." : "Submit Review"}
                           </div>
-                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "999px", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
                             Cancel
                           </div>
                         </div>
@@ -740,7 +740,7 @@ const startDM = async () => {
             !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
-              <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
               <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
             </div>
           )}

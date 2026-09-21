@@ -24,7 +24,7 @@ export default function Input({ label, type, ...props }: InputProps) {
         style={{
           background: "#111",
           border: `1px solid ${focused ? "#fff" : "#222"}`,
-          borderRadius: "12px",
+          borderRadius: "8px",
           padding: "12px 14px",
           color: "#fff",
           fontSize: "14px",

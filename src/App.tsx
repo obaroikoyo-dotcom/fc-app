@@ -84,14 +84,14 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
     <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
-      <div className={page === "explore" ? "fc-nav-on" : undefined} onClick={() => navigate("explore")} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
           <polygon points="10,14 14,10 13,15 9,13" fill={page === "explore" ? activeColor : inactiveColor}/>
         </svg>
         <span style={{ fontSize: "10px", color: page === "explore" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
       </div>
-      <div className={page === "search-creator" ? "fc-nav-on" : undefined} onClick={() => navigate("search-creator")} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => navigate("search-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="11" cy="11" r="7" stroke={page === "search-creator" ? activeColor : inactiveColor} strokeWidth="2"/>
           <line x1="16.65" y1="16.65" x2="21" y2="21" stroke={page === "search-creator" ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
@@ -99,7 +99,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
         <span style={{ fontSize: "10px", color: page === "search-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
 
-      <div className={(page === "messages-creator" || page === "notifications-creator") ? "fc-nav-on" : undefined} onClick={() => navigate("messages-creator")} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
+      <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
         <div style={{ position: "relative" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
@@ -112,7 +112,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
         <span style={{ fontSize: "10px", color: page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
       </div>
 
-      <div className={page === "creator-profile" ? "fc-nav-on" : undefined} onClick={() => navigate("creator-profile")} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="8" r="4" stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8"/>
           <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
@@ -146,7 +146,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
     <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
-      <div className={campaignsActive ? "fc-nav-on" : undefined} onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
           <rect x="14" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -155,7 +155,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
         </svg>
         <span style={{ fontSize: "9px", color: campaignsActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Campaigns</span>
       </div>
-      <div className={searchActive ? "fc-nav-on" : undefined} onClick={() => { setViewingProfileId(null); navigate("search-brand"); }} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("search-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="11" cy="11" r="7" stroke={searchActive ? activeColor : inactiveColor} strokeWidth="2"/>
           <line x1="16.65" y1="16.65" x2="21" y2="21" stroke={searchActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
@@ -163,7 +163,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
         <span style={{ fontSize: "10px", color: searchActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Search</span>
       </div>
 
-      <div className={messagesActive ? "fc-nav-on" : undefined} onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
         <div style={{ position: "relative" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
@@ -176,14 +176,14 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
         <span style={{ fontSize: "10px", color: messagesActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Messages</span>
       </div>
 
-      <div className={postActive ? "fc-nav-on" : undefined} onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("post"); }} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("post"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <line x1="12" y1="5" x2="12" y2="19" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
           <line x1="5" y1="12" x2="19" y2="12" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
         </svg>
         <span style={{ fontSize: "10px", color: postActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Post</span>
       </div>
-      <div className={profileActive ? "fc-nav-on" : undefined} onClick={() => { setViewingProfileId(null); navigate("brand-profile"); }} style={{ color: activeColor, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
+      <div onClick={() => { setViewingProfileId(null); navigate("brand-profile"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="8" r="4" stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
           <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
@@ -623,7 +623,7 @@ case "brand-campaign-preview":
   to { opacity: 1; transform: translateX(0); }
 }
   .page-enter {
-    animation: pageEnter 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: pageEnter 0.18s ease-out;
   }
   @keyframes itemEnter {
     from { opacity: 0; transform: translateY(10px); }

@@ -33,12 +33,11 @@ export default function RoleSelect({ navigate }: Props) {
         onMouseLeave={() => setHovered(null)}
         style={{
           border: `1px solid ${isHovered ? "#fff" : "#222"}`,
-          borderRadius: "20px",
+          borderRadius: "12px",
           padding: "2rem 1.5rem",
           cursor: "pointer",
           transition: "all 0.2s",
           background: isHovered ? "#111" : "transparent",
-          ...(isHovered ? { transform: "rotate(-0.6deg)" } : {}),
           flex: 1,
           minWidth: "200px",
         }}
@@ -61,7 +60,7 @@ export default function RoleSelect({ navigate }: Props) {
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <img src={logo} className="no-reinvert" style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "1.5rem" }}>FlipCollab</p>
-        <p className="fc-underline-c" style={{
+        <p style={{
           textAlign: "center",
           fontSize: "13px",
           color: "#888",

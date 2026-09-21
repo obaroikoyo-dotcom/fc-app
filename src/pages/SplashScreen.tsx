@@ -188,17 +188,8 @@ export default function SplashScreen() {
 
       {/* Accent line */}
       <div className={`accent-line${phase === "out" ? " out" : ""}`} style={{
-        height: "6px",
-        color: "rgba(255,255,255,0.7)",
-        background: "currentColor",
-        WebkitMaskImage: "var(--fc-tab-mark)",
-        maskImage: "var(--fc-tab-mark)",
-        WebkitMaskRepeat: "no-repeat",
-        maskRepeat: "no-repeat",
-        WebkitMaskSize: "50px 100%",
-        maskSize: "50px 100%",
-        WebkitMaskPosition: "center",
-        maskPosition: "center",
+        height: "1px",
+        background: "linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)",
         marginBottom: "18px",
       }} />
 

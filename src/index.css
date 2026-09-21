@@ -34,15 +34,10 @@ html, body {
    anything that already sets its own transform inline, since inline
    styles always win over this and there's nothing to override there. */
 [style*="cursor: pointer"] {
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.1s ease;
 }
 [style*="cursor: pointer"]:active {
-  transform: scale(0.965);
-}
-@media (prefers-reduced-motion: reduce) {
-  [style*="cursor: pointer"] {
-    transition: none;
-  }
+  transform: scale(0.98);
 }
 
 #root {
@@ -90,133 +85,4 @@ html, body {
 .inverted-theme svg:not([stroke]),
 .inverted-theme [style*="background-image"] {
   filter: invert(1) hue-rotate(180deg);
-}
-
-/* ------------------------------------------------------------------
-   FlipCollab hand-drawn accents
-
-   The landing page's playful side, carried into the app in a few small
-   places instead of everywhere: a wavy underline on titles, a wavy mark
-   on the active tab, wavy dividers on the sign-in screens, pill-shaped
-   buttons, and a springier press. Everything is plain black/white so it
-   follows the light/dark theme like the rest of the app.
-
-   To go back to the old look, delete this whole block (and the fc-*
-   class names in the pages are then harmless).
-   ------------------------------------------------------------------ */
-:root {
-  --fc-underline: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20200%2010'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M0%205%20C15.8%205%2019.3%201.5%2035%201.5%20C59.8%201.5%2065.3%208.5%2090%208.5%20C108.0%208.5%20112.0%202%20130%202%20C148.0%202%20152.0%207.5%20170%207.5%20C183.5%207.5%20186.5%204%20200%204'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%2F%3E%3C%2Fsvg%3E");
-  --fc-tab-mark: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2060%208'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M0%204%20C5.4%204%206.6%201.2%2012%201.2%20C18.3%201.2%2019.7%206.8%2026%206.8%20C32.3%206.8%2033.7%201.6%2040%201.6%20C45.4%201.6%2046.6%206.4%2052%206.4%20C55.6%206.4%2056.4%204%2060%204'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'2.2'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%2F%3E%3C%2Fsvg%3E");
-  --fc-rule: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20600%208'%20preserveAspectRatio%3D'none'%3E%3Cpath%20d%3D'M0%204%20C31.5%204%2038.5%201%2070%201%20C124.0%201%20136.0%207%20190%207%20C239.5%207%20250.5%202.5%20300%202.5%20C345.0%202.5%20355.0%206.5%20400%206.5%20C463.0%206.5%20477.0%201.5%20540%201.5%20C567.0%201.5%20573.0%204%20600%204'%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'1.6'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%2F%3E%3C%2Fsvg%3E");
-}
-
-::selection {
-  background: #fff;
-  color: #0a0a0a;
-}
-
-/* Wavy underline under a title. .fc-underline is for titles that sit in a
-   row (page headers); -c is for centered empty-state titles, which shrink to
-   their text so the line is only as wide as the words. */
-.fc-underline,
-.fc-underline-c {
-  position: relative;
-}
-.fc-underline {
-  display: inline-block;
-  vertical-align: top;
-}
-.fc-underline-c {
-  display: table;
-  margin-left: auto;
-  margin-right: auto;
-}
-.fc-underline::after,
-.fc-underline-c::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -4px;
-  height: 5px;
-  background: currentColor;
-  -webkit-mask-image: var(--fc-underline);
-  mask-image: var(--fc-underline);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  pointer-events: none;
-}
-
-/* Wavy divider that stretches to fill the space it is given. */
-.fc-rule {
-  flex: 1;
-  height: 8px;
-  color: #2a2a2a;
-  background: currentColor;
-  -webkit-mask-image: var(--fc-rule);
-  mask-image: var(--fc-rule);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-}
-
-/* Active tab: pages give the active tab the class fc-tab-on. The straight
-   2px white underline they draw becomes a short wavy mark under the label. */
-.fc-tab-on {
-  position: relative;
-  border-bottom-color: transparent !important;
-}
-.fc-tab-on::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -1px;
-  width: 44px;
-  height: 6px;
-  transform: translateX(-50%);
-  background: currentColor;
-  -webkit-mask-image: var(--fc-tab-mark);
-  mask-image: var(--fc-tab-mark);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  pointer-events: none;
-}
-
-/* Bottom nav: the active tab gets the same wavy mark, sitting on the nav's top
-   edge above its icon. It lives in the nav's existing top padding, so the bar
-   is exactly as tall as before (other fixed bars are positioned against it). */
-.fc-nav-on {
-  position: relative;
-}
-.fc-nav-on::before {
-  content: "";
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  width: 26px;
-  height: 5px;
-  transform: translateX(-50%);
-  background: currentColor;
-  -webkit-mask-image: var(--fc-tab-mark);
-  mask-image: var(--fc-tab-mark);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  pointer-events: none;
-}
-
-/* Buttons are pills. A button in this app is rounded, uppercase and sets a
-   cursor - "pointer" when it can be pressed, "default" while it is disabled
-   (so it does not change shape when it switches on). Status tags and info
-   boxes are uppercase and rounded too but set no cursor, so they are left
-   alone. This reaches the shared Button and the many inline ones without
-   editing each page. */
-[style*="text-transform: uppercase"][style*="cursor: "][style*="border-radius"] {
-  border-radius: 999px !important;
 }

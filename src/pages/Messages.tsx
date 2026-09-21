@@ -752,7 +752,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             </div>
           </div>
         ) : (
-          <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "999px", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+          <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
             Dispute This Delivery
           </div>
         )
@@ -1726,7 +1726,7 @@ return (
       </h1>
     </div>
   ) : (
-    <h1 className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+    <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
       {getHeader()}
     </h1>
   )}
@@ -1811,10 +1811,10 @@ return (
         {/* Brand Tabs Toggle */}
         {role === "brand" && view === "list" && (
           <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
-            <div className={brandTab === "applications" ? "fc-tab-on" : undefined} onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "#fff" : "#444", borderBottom: brandTab === "applications" ? "2px solid #fff" : "2px solid transparent" }}>
+            <div onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "#fff" : "#444", borderBottom: brandTab === "applications" ? "2px solid #fff" : "2px solid transparent" }}>
               applications
             </div>
-            <div className={brandTab === "messages" ? "fc-tab-on" : undefined} onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "#fff" : "#444", borderBottom: brandTab === "messages" ? "2px solid #fff" : "2px solid transparent", position: "relative" }}>
+            <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "#fff" : "#444", borderBottom: brandTab === "messages" ? "2px solid #fff" : "2px solid transparent", position: "relative" }}>
               messages
               {unreadConvoIds.length > 0 && (
                 <span style={{ display: "inline-block", width: "6px", height: "6px", background: "#ff3b30", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
@@ -1829,7 +1829,7 @@ return (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-              <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
               <p style={{ fontSize: "13px", color: "#888" }}>Post a campaign to start receiving applications.</p>
             </div>
           ) : (
@@ -1867,7 +1867,7 @@ return (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {activeCampaign.applications.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-              <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
               <p style={{ fontSize: "13px", color: "#888" }}>Share your campaign to get more creators applying.</p>
             </div>
           ) : (
@@ -2037,12 +2037,12 @@ return (
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
                 <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="#333" strokeWidth="2" strokeLinejoin="round"/>
               </svg>
-              <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No messages yet</p>
+              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No messages yet</p>
               <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.6 }}>
                 {role === "creator" ? "Search for brands or creators to start a conversation." : "Accept applications to start conversations with creators."}
               </p>
               {role === "creator" && (
-                <div onClick={() => navigate("search-creator" as Page)} style={{ marginTop: "1.5rem", padding: "10px 20px", background: "#fff", color: "#0a0a0a", borderRadius: "999px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
+                <div onClick={() => navigate("search-creator" as Page)} style={{ marginTop: "1.5rem", padding: "10px 20px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
                   Find People
                 </div>
               )}

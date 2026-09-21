@@ -132,7 +132,7 @@ export default function Login({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px", textAlign: "center" }}>Welcome back</p>
+        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Welcome back</p>
         <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Log in to your FlipCollab account.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -151,9 +151,9 @@ export default function Login({ navigate }: Props) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "1.5rem 0" }}>
-          <div className="fc-rule" />
+          <div style={{ flex: 1, height: "1px", background: "#222" }} />
           <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
-          <div className="fc-rule" />
+          <div style={{ flex: 1, height: "1px", background: "#222" }} />
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

@@ -119,7 +119,7 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
 
       {/* Fixed Layout Typography: justifyValue -> justifyContent */}
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span className="fc-underline" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Notifications</span>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Notifications</span>
       </div>
 
       {/* Feed List */}
@@ -128,7 +128,7 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
           <p style={{ color: "#888", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
         ) : loading && notifications.length === 0 ? null : notifications.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
-            <p className="fc-underline-c" style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>All caught up</p>
+            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>All caught up</p>
             <p style={{ fontSize: "13px", color: "#888" }}>When updates occur, they'll land right here.</p>
           </div>
         ) : (
