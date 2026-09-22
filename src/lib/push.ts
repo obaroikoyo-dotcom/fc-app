@@ -7,7 +7,11 @@ export function isPushSupported() {
   return "serviceWorker" in navigator && "PushManager" in window;
 }
 
-function isIOS() {
+// iOS Safari only shows the native permission dialog when requestPermission()
+// is called from directly within a user gesture (a tap) - a timer-triggered
+// call is silently ignored, no dialog and no error. Exported so callers can
+// route iOS through a tap-triggered soft prompt instead of the auto-timer.
+export function isIOSDevice() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
@@ -16,7 +20,7 @@ function isStandalone() {
 }
 
 export async function subscribeToPush(userId: string) {
-  if (isIOS() && !isStandalone()) {
+  if (isIOSDevice() && !isStandalone()) {
     throw new Error("On iPhone/iPad, add FlipCollab to your Home Screen first (Share button → Add to Home Screen), then open it from there to enable notifications.");
   }
 

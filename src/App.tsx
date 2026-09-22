@@ -32,7 +32,7 @@ import { logEvent } from "./lib/debugLog";
 import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
 import { peekGoogleLoginIntent, clearGoogleLoginIntent, peekAppleLoginIntent, clearAppleLoginIntent } from "./lib/authIntent";
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
-import { autoRequestPush } from "./lib/push";
+import { autoRequestPush, subscribeToPush, isPushEnabled, isIOSDevice } from "./lib/push";
 
 
 export type Page = 
@@ -196,6 +196,40 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
   );
 }
 
+function NotificationPermissionPrompt({ onEnable, onDismiss }: { onEnable: () => void; onDismiss: () => void }) {
+  return (
+    <div style={{
+      position: "fixed",
+      left: "1rem",
+      right: "1rem",
+      bottom: "5.5rem",
+      zIndex: 9998,
+      background: "#111",
+      border: "1px solid #1a1a1a",
+      borderRadius: "12px",
+      padding: "1rem",
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.75rem",
+      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+    }}>
+      <div>
+        <div style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Turn on notifications?</div>
+        <div style={{ color: "#999", fontSize: "12px", lineHeight: 1.5 }}>Get notified about new messages, applications, and deals as they happen.</div>
+      </div>
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div onClick={onDismiss} style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#1a1a1a", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Not Now
+        </div>
+        <div onClick={onEnable} style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Enable
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const subdomain = window.location.hostname.split(".")[0];
   if (subdomain === "about") return <AboutPage />;
@@ -219,6 +253,32 @@ export default function App() {
   // signed-in user actually is.
   const [userRole, setUserRole] = useState<"creator" | "brand" | null>(null);
   const [accountBlocked, setAccountBlocked] = useState<{ status: "suspended" | "banned"; reason: string | null } | null>(null);
+  // iOS Safari only shows the native notification dialog when
+  // requestPermission() runs inside a real tap - a timer alone can't
+  // trigger it there, so iOS gets this tap-through banner instead of the
+  // silent auto-request other platforms use.
+  const [notifPromptUserId, setNotifPromptUserId] = useState<string | null>(null);
+
+  const maybePromptForPush = async (userId: string) => {
+    const already = await isPushEnabled();
+    if (already) return;
+    if (isIOSDevice()) {
+      setNotifPromptUserId(userId);
+    } else {
+      autoRequestPush(userId);
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    const uid = notifPromptUserId;
+    setNotifPromptUserId(null);
+    if (!uid) return;
+    try {
+      await subscribeToPush(uid);
+    } catch {
+      // Declined at the native prompt, or blocked - nothing more to do here.
+    }
+  };
 
   const [isInverted, setIsInverted] = useState<boolean>(() => {  
     return localStorage.getItem("theme") === "inverted";
@@ -428,7 +488,7 @@ export default function App() {
             setPage("verify-email");
           } else {
             oneSignalLogin(session.user.id);
-            setTimeout(() => autoRequestPush(session.user.id), 3000);
+            setTimeout(() => maybePromptForPush(session.user.id), 3000);
             await syncUserRoute(session.user.id);
             fetchGlobalUnreadCount();
           }
@@ -503,7 +563,7 @@ export default function App() {
           return;
         }
         oneSignalLogin(session.user.id);
-        setTimeout(() => autoRequestPush(session.user.id), 3000);
+        setTimeout(() => maybePromptForPush(session.user.id), 3000);
         await syncUserRoute(session.user.id);
         fetchGlobalUnreadCount();
       } else if (event === "USER_UPDATED" && session?.user) {
@@ -641,6 +701,9 @@ case "brand-campaign-preview":
       )}
       {BRAND_PAGES.includes(page) && (page !== "public-profile" || userRole === "brand") && (
         <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} unreadCount={unreadCount} />
+      )}
+      {notifPromptUserId && (
+        <NotificationPermissionPrompt onEnable={handleEnableNotifications} onDismiss={() => setNotifPromptUserId(null)} />
       )}
     </div>
   );
