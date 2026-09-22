@@ -7,4 +7,4 @@
 // While this is empty, both location-search fields below fall back to plain
 // manual entry - typing still works everywhere, suggestions just don't
 // appear until a key is set.
-export const LOCATIONIQ_API_KEY = "";
+export const LOCATIONIQ_API_KEY = "pk.d3fe28faa6a84000150ff66ea0f1ad59";
