@@ -713,7 +713,10 @@ setTimeout(() => setSaved(false), 2000);
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid #1a1a1a" }}>
                     {platformPosts.map(post => (
                       <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
-                        <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        {/* Some platforms (TikTok in particular) hand back a short-lived
+                            signed thumbnail URL that can expire before this cached copy
+                            is ever shown - hide the broken-image glyph rather than show it. */}
+                        <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" }}>
                           <PlayGlyph />
                         </div>
@@ -1060,7 +1063,7 @@ setTimeout(() => setSaved(false), 2000);
                   onClick={() => togglePostSelection(post.post_id)}
                   style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid #fff" : "1px solid #1a1a1a", cursor: "pointer" }}
                 >
-                  <img src={post.thumbnail_url} alt={post.caption || ""} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   {selected && (
                     <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
                   )}
