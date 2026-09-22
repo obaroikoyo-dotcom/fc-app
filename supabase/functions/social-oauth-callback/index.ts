@@ -1,9 +1,40 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.600.0";
 import { checkRateLimit, clientIdentifier } from "../_shared/rateLimit.ts";
 
 const APP_URL = "https://flipcollab.com";
 const CALLBACK_URL = "https://otbcvpgtxxidgtbxgzpo.supabase.co/functions/v1/social-oauth-callback";
+
+const R2_BUCKET = Deno.env.get("R2_BUCKET_NAME") ?? "";
+const R2_PUBLIC_URL = (Deno.env.get("R2_PUBLIC_URL") ?? "").replace(/\/$/, "");
+const r2 = new S3Client({
+  region: "auto",
+  endpoint: `https://${Deno.env.get("R2_ACCOUNT_ID") ?? ""}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: Deno.env.get("R2_ACCESS_KEY_ID") ?? "",
+    secretAccessKey: Deno.env.get("R2_SECRET_ACCESS_KEY") ?? "",
+  },
+});
+
+// TikTok's video-list cover_image_url is a short-lived signed CDN link, not
+// a stable one - it can expire within hours, well before social_posts_cache
+// is next refreshed (only on reconnect). Mirror it into our own R2 bucket
+// once at fetch time so what's actually stored keeps working. Falls back to
+// the original (temporarily-working) URL if the mirror copy fails, rather
+// than losing the thumbnail outright.
+async function mirrorThumbnail(sourceUrl: string, key: string): Promise<string> {
+  const res = await fetch(sourceUrl);
+  if (!res.ok) throw new Error(`thumbnail fetch failed: ${res.status}`);
+  const body = new Uint8Array(await res.arrayBuffer());
+  await r2.send(new PutObjectCommand({
+    Bucket: R2_BUCKET,
+    Key: key,
+    Body: body,
+    ContentType: res.headers.get("content-type") || "image/jpeg",
+  }));
+  return `${R2_PUBLIC_URL}/${key}`;
+}
 
 async function verifyState(state: string, secret: string): Promise<{ userId: string; platform: string } | null> {
   const lastDot = state.lastIndexOf(".");
@@ -74,20 +105,31 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=20&access_token=${accessToken}`
   );
   const media = await mediaRes.json();
-  const posts = (media.data || []).map((m: any, i: number) => ({
-    user_id: userId,
-    platform: "instagram",
-    post_id: m.id,
-    post_url: m.permalink,
-    thumbnail_url: m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url,
-    caption: m.caption || null,
-    posted_at: m.timestamp || null,
-    cached_at: new Date().toISOString(),
-    username: profile.username || null,
-    follower_count: profile.followers_count ?? null,
-    // Default to featuring the most recent 5 so something shows up right
-    // away; the creator can change the selection anytime from settings.
-    featured: i < 5,
+  const posts = await Promise.all((media.data || []).map(async (m: any, i: number) => {
+    const rawThumb = m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url;
+    return {
+      user_id: userId,
+      platform: "instagram",
+      post_id: m.id,
+      post_url: m.permalink,
+      // Instagram's Graph API media_url/thumbnail_url are also short-lived
+      // signed CDN links (same issue as TikTok below) - mirror into R2 so
+      // what's cached still works days later.
+      thumbnail_url: rawThumb
+        ? await mirrorThumbnail(rawThumb, `instagram-thumbnails/${userId}/${m.id}.jpg`).catch((err) => {
+            console.error("Instagram thumbnail mirror failed, falling back to Instagram's own URL:", err);
+            return rawThumb;
+          })
+        : null,
+      caption: m.caption || null,
+      posted_at: m.timestamp || null,
+      cached_at: new Date().toISOString(),
+      username: profile.username || null,
+      follower_count: profile.followers_count ?? null,
+      // Default to featuring the most recent 5 so something shows up right
+      // away; the creator can change the selection anytime from settings.
+      featured: i < 5,
+    };
   }));
   if (posts.length) {
     await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
@@ -142,12 +184,17 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     body: JSON.stringify({ max_count: 20 }),
   });
   const videosData = await videosRes.json();
-  const posts = (videosData?.data?.videos || []).map((v: any, i: number) => ({
+  const posts = await Promise.all((videosData?.data?.videos || []).map(async (v: any, i: number) => ({
     user_id: userId,
     platform: "tiktok",
     post_id: v.id,
     post_url: v.share_url,
-    thumbnail_url: v.cover_image_url,
+    thumbnail_url: v.cover_image_url
+      ? await mirrorThumbnail(v.cover_image_url, `tiktok-thumbnails/${userId}/${v.id}.jpg`).catch((err) => {
+          console.error("TikTok thumbnail mirror failed, falling back to TikTok's own URL:", err);
+          return v.cover_image_url;
+        })
+      : null,
     caption: v.video_description || null,
     posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
     cached_at: new Date().toISOString(),
@@ -156,7 +203,7 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     // Default to featuring the most recent 5 so something shows up right
     // away; the creator can change the selection anytime from settings.
     featured: i < 5,
-  }));
+  })));
   if (posts.length) {
     await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
   }
