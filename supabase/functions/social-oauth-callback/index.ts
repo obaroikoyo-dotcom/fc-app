@@ -105,20 +105,31 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=20&access_token=${accessToken}`
   );
   const media = await mediaRes.json();
-  const posts = (media.data || []).map((m: any, i: number) => ({
-    user_id: userId,
-    platform: "instagram",
-    post_id: m.id,
-    post_url: m.permalink,
-    thumbnail_url: m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url,
-    caption: m.caption || null,
-    posted_at: m.timestamp || null,
-    cached_at: new Date().toISOString(),
-    username: profile.username || null,
-    follower_count: profile.followers_count ?? null,
-    // Default to featuring the most recent 5 so something shows up right
-    // away; the creator can change the selection anytime from settings.
-    featured: i < 5,
+  const posts = await Promise.all((media.data || []).map(async (m: any, i: number) => {
+    const rawThumb = m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url;
+    return {
+      user_id: userId,
+      platform: "instagram",
+      post_id: m.id,
+      post_url: m.permalink,
+      // Instagram's Graph API media_url/thumbnail_url are also short-lived
+      // signed CDN links (same issue as TikTok below) - mirror into R2 so
+      // what's cached still works days later.
+      thumbnail_url: rawThumb
+        ? await mirrorThumbnail(rawThumb, `instagram-thumbnails/${userId}/${m.id}.jpg`).catch((err) => {
+            console.error("Instagram thumbnail mirror failed, falling back to Instagram's own URL:", err);
+            return rawThumb;
+          })
+        : null,
+      caption: m.caption || null,
+      posted_at: m.timestamp || null,
+      cached_at: new Date().toISOString(),
+      username: profile.username || null,
+      follower_count: profile.followers_count ?? null,
+      // Default to featuring the most recent 5 so something shows up right
+      // away; the creator can change the selection anytime from settings.
+      featured: i < 5,
+    };
   }));
   if (posts.length) {
     await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
