@@ -91,6 +91,10 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
   });
   const tokenData = await tokenRes.json();
   if (!tokenData.access_token) throw new Error("Instagram token exchange failed: " + JSON.stringify(tokenData));
+  // TEMPORARY diagnostic - permissions is the list of scopes Instagram
+  // actually granted, which can be narrower than what was requested if the
+  // account isn't eligible for one of them. Remove once understood.
+  console.log("Instagram token exchange permissions granted:", JSON.stringify(tokenData.permissions));
 
   // Trade the short-lived token for a long-lived one (~60 days) so we're
   // not re-authenticating the user constantly.
@@ -99,16 +103,25 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
   );
   const longLivedData = await longLivedRes.json();
   if (longLivedData.error) console.error("Instagram long-lived token exchange failed, falling back to the short-lived token:", JSON.stringify(longLivedData.error));
+  // TEMPORARY diagnostic - expires_at was landing on exactly the 1hr
+  // fallback default on recent connects, meaning this exchange is silently
+  // not returning access_token even without an error field. Remove once
+  // understood. (Token itself intentionally left out of the log.)
+  console.log("Instagram long-lived exchange got access_token:", !!longLivedData.access_token, "expires_in:", longLivedData.expires_in, "http status:", longLivedRes.status);
   const accessToken = longLivedData.access_token || tokenData.access_token;
   const expiresInSec = longLivedData.expires_in || 3600;
 
-  const profileRes = await fetch(`https://graph.instagram.com/me?fields=id,username,followers_count&access_token=${accessToken}`);
+  const profileRes = await fetch(`https://graph.instagram.com/me?fields=id,username,followers_count,account_type&access_token=${accessToken}`);
   const profile = await profileRes.json();
   // A failed profile fetch (bad/expired token, missing permission, etc.)
   // comes back as {error: {...}}, not a thrown exception - previously this
   // fell through to `profile.username || null` and silently "succeeded"
   // with a blank profile, hiding the real cause. Surface it instead.
   if (profile.error) throw new Error("Instagram profile fetch failed: " + JSON.stringify(profile.error));
+  // TEMPORARY diagnostic - username/followers_count came back empty with no
+  // error object at all on the last attempt, so the raw response itself is
+  // needed to see why. Remove once this is understood.
+  console.log("Instagram profile raw response:", JSON.stringify(profile), "http status:", profileRes.status);
 
   await supabase.from("social_connections").upsert({
     user_id: userId,
@@ -330,6 +343,9 @@ async function handleYoutube(code: string, supabase: ReturnType<typeof createCli
   // than a thrown exception - surface it instead of guessing "no channel"
   // for both cases, which made the real cause unfindable.
   if (channelData.error) throw new Error("YouTube channel lookup failed: " + JSON.stringify(channelData.error));
+  // TEMPORARY diagnostic - see the raw shape if items[] is unexpectedly
+  // empty with no error field either. Remove once understood.
+  console.log("YouTube channels.list raw response:", JSON.stringify(channelData), "http status:", channelRes.status);
   const channel = channelData?.items?.[0];
   if (!channel) throw new Error("Couldn't find a YouTube channel on this Google account.");
 
