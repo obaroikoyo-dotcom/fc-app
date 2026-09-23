@@ -18,7 +18,15 @@ export default function Root() {
   const isStandalone =
     window.matchMedia("(display-mode: standalone)").matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true;
-  const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone;
+  // A social-oauth-callback redirect (?social_connected=... or
+  // ?social_error=...) only ever happens mid-flow for someone already using
+  // the app - landing them on the marketing page first (as a fresh browser
+  // visit normally does) meant a successful TikTok/Instagram/YouTube
+  // connect looked like it dropped them somewhere random until they
+  // clicked "Launch app" to get back to the profile that actually changed.
+  const params = new URLSearchParams(window.location.search);
+  const isSocialCallback = params.has("social_connected") || params.has("social_error");
+  const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone || isSocialCallback;
   const [showApp, setShowApp] = useState(skipLanding);
 
   // Launching pushes a real history entry, so the browser's own back
