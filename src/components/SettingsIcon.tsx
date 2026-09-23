@@ -24,6 +24,7 @@ const paths: Record<string, React.ReactNode> = {
   "verified": <><path d="M12 3.5 19.5 6.5V12c0 4.8-3 7.6-7.5 9-4.5-1.4-7.5-4.2-7.5-9V6.5L12 3.5Z" strokeLinejoin="round" /><path d="m9 12.2 2 2 4-4.4" /></>,
   "industry": <><path d="M4 20V9l6-4v15M20 20V13l-6-3v10" /><path d="M4 20h16" /></>,
   "campaign-prefs": <><path d="M4 6h9M17 6h3M4 12h3M9 12h11M4 18h13M19 18h1" /><circle cx="13" cy="6" r="1.8" fill="currentColor" stroke="#0a0a0a" /><circle cx="6" cy="12" r="1.8" fill="currentColor" stroke="#0a0a0a" /><circle cx="16" cy="18" r="1.8" fill="currentColor" stroke="#0a0a0a" /></>,
+  "debug-log": <><rect x="4" y="4" width="16" height="16" rx="2.2" /><path d="M8 9h8M8 12.5h8M8 16h5" /></>,
 };
 
 export function ChevronIcon({ size = 15, color = "#666" }: { size?: number; color?: string }) {
