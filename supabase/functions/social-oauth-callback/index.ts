@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { S3Client, PutObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.600.0";
+import { getSignedUrl } from "https://esm.sh/@aws-sdk/s3-request-presigner@3.600.0?deps=@aws-sdk/client-s3@3.600.0";
 import { checkRateLimit, clientIdentifier } from "../_shared/rateLimit.ts";
 
 const APP_URL = "https://flipcollab.com";
@@ -23,16 +24,33 @@ const r2 = new S3Client({
 // once at fetch time so what's actually stored keeps working. Falls back to
 // the original (temporarily-working) URL if the mirror copy fails, rather
 // than losing the thumbnail outright.
+//
+// The actual upload goes through a presigned URL + a plain fetch() PUT,
+// NOT r2.send(PutObjectCommand) directly - confirmed live that calling
+// .send() on a command with a body (i.e. one that has to transfer bytes,
+// not just metadata) hangs indefinitely in this edge runtime and burns the
+// full compute budget without ever completing. r2-presigned-url elsewhere
+// in this app never hits this, because it only ever calls getSignedUrl()
+// (pure local signing, no network I/O) and lets the browser do the real
+// PUT. Do the same thing here: sign locally, upload with Deno's own
+// fetch(), which is already used successfully everywhere else in this
+// file. (.send() itself is fine for bodyless commands - Delete/List, used
+// elsewhere in this app - it's specifically a body-carrying .send() that's
+// broken.)
 async function mirrorThumbnail(sourceUrl: string, key: string): Promise<string> {
   const res = await fetch(sourceUrl);
   if (!res.ok) throw new Error(`thumbnail fetch failed: ${res.status}`);
   const body = new Uint8Array(await res.arrayBuffer());
-  await r2.send(new PutObjectCommand({
-    Bucket: R2_BUCKET,
-    Key: key,
-    Body: body,
-    ContentType: res.headers.get("content-type") || "image/jpeg",
-  }));
+  const contentType = res.headers.get("content-type") || "image/jpeg";
+
+  const uploadUrl = await getSignedUrl(
+    r2,
+    new PutObjectCommand({ Bucket: R2_BUCKET, Key: key, ContentType: contentType }),
+    { expiresIn: 60 }
+  );
+  const putRes = await fetch(uploadUrl, { method: "PUT", body, headers: { "Content-Type": contentType } });
+  if (!putRes.ok) throw new Error(`R2 upload failed: ${putRes.status}`);
+
   return `${R2_PUBLIC_URL}/${key}`;
 }
 
@@ -80,11 +98,17 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${clientSecret}&access_token=${tokenData.access_token}`
   );
   const longLivedData = await longLivedRes.json();
+  if (longLivedData.error) console.error("Instagram long-lived token exchange failed, falling back to the short-lived token:", JSON.stringify(longLivedData.error));
   const accessToken = longLivedData.access_token || tokenData.access_token;
   const expiresInSec = longLivedData.expires_in || 3600;
 
   const profileRes = await fetch(`https://graph.instagram.com/me?fields=id,username,followers_count&access_token=${accessToken}`);
   const profile = await profileRes.json();
+  // A failed profile fetch (bad/expired token, missing permission, etc.)
+  // comes back as {error: {...}}, not a thrown exception - previously this
+  // fell through to `profile.username || null` and silently "succeeded"
+  // with a blank profile, hiding the real cause. Surface it instead.
+  if (profile.error) throw new Error("Instagram profile fetch failed: " + JSON.stringify(profile.error));
 
   await supabase.from("social_connections").upsert({
     user_id: userId,
@@ -124,22 +148,29 @@ async function cacheInstagramPosts(
       `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=20&access_token=${accessToken}`
     );
     const media = await mediaRes.json();
+    // Mirroring is one fetch + one R2 upload per thumbnail - even backgrounded
+    // via EdgeRuntime.waitUntil, that has to finish inside its 150s wall-clock
+    // budget (confirmed live: a 20-thumbnail batch got killed by the runtime
+    // at ~149s, mid-run, before the upsert below ever got to execute - so
+    // NOTHING was saved, not even the ones that had already finished
+    // mirroring). Only the featured 5 are ever shown on the profile, so only
+    // those are worth mirroring; the rest keep Instagram's own (short-lived)
+    // URL, which is fine for the "choose videos" picker - if one has expired
+    // by the time someone opens it, it just renders blank there.
     const posts = await Promise.all((media.data || []).map(async (m: any, i: number) => {
       const rawThumb = m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url;
+      const featured = i < 5;
       return {
         user_id: userId,
         platform: "instagram",
         post_id: m.id,
         post_url: m.permalink,
-        // Instagram's Graph API media_url/thumbnail_url are also short-lived
-        // signed CDN links (same issue as TikTok below) - mirror into R2 so
-        // what's cached still works days later.
-        thumbnail_url: rawThumb
+        thumbnail_url: rawThumb && featured
           ? await mirrorThumbnail(rawThumb, `instagram-thumbnails/${userId}/${m.id}.jpg`).catch((err) => {
               console.error("Instagram thumbnail mirror failed, falling back to Instagram's own URL:", err);
               return rawThumb;
             })
-          : null,
+          : rawThumb || null,
         caption: m.caption || null,
         posted_at: m.timestamp || null,
         cached_at: new Date().toISOString(),
@@ -147,7 +178,7 @@ async function cacheInstagramPosts(
         follower_count: followerCount,
         // Default to featuring the most recent 5 so something shows up right
         // away; the creator can change the selection anytime from settings.
-        featured: i < 5,
+        featured,
       };
     }));
     if (posts.length) {
@@ -226,26 +257,38 @@ async function cacheTiktokPosts(
       body: JSON.stringify({ max_count: 20 }),
     });
     const videosData = await videosRes.json();
-    const posts = await Promise.all((videosData?.data?.videos || []).map(async (v: any, i: number) => ({
-      user_id: userId,
-      platform: "tiktok",
-      post_id: v.id,
-      post_url: v.share_url,
-      thumbnail_url: v.cover_image_url
-        ? await mirrorThumbnail(v.cover_image_url, `tiktok-thumbnails/${userId}/${v.id}.jpg`).catch((err) => {
-            console.error("TikTok thumbnail mirror failed, falling back to TikTok's own URL:", err);
-            return v.cover_image_url;
-          })
-        : null,
-      caption: v.video_description || null,
-      posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
-      cached_at: new Date().toISOString(),
-      username: displayName,
-      follower_count: followerCount,
-      // Default to featuring the most recent 5 so something shows up right
-      // away; the creator can change the selection anytime from settings.
-      featured: i < 5,
-    })));
+    // Mirroring is one fetch + one R2 upload per thumbnail - even backgrounded
+    // via EdgeRuntime.waitUntil, that has to finish inside its 150s wall-clock
+    // budget (confirmed live: a 20-thumbnail batch got killed by the runtime
+    // at ~149s, mid-run, before the upsert below ever got to execute - so
+    // NOTHING was saved, not even the ones that had already finished
+    // mirroring). Only the featured 5 are ever shown on the profile, so only
+    // those are worth mirroring; the rest keep TikTok's own (short-lived)
+    // URL, which is fine for the "choose videos" picker - if one has expired
+    // by the time someone opens it, it just renders blank there.
+    const posts = await Promise.all((videosData?.data?.videos || []).map(async (v: any, i: number) => {
+      const featured = i < 5;
+      return {
+        user_id: userId,
+        platform: "tiktok",
+        post_id: v.id,
+        post_url: v.share_url,
+        thumbnail_url: v.cover_image_url && featured
+          ? await mirrorThumbnail(v.cover_image_url, `tiktok-thumbnails/${userId}/${v.id}.jpg`).catch((err) => {
+              console.error("TikTok thumbnail mirror failed, falling back to TikTok's own URL:", err);
+              return v.cover_image_url;
+            })
+          : v.cover_image_url || null,
+        caption: v.video_description || null,
+        posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
+        cached_at: new Date().toISOString(),
+        username: displayName,
+        follower_count: followerCount,
+        // Default to featuring the most recent 5 so something shows up right
+        // away; the creator can change the selection anytime from settings.
+        featured,
+      };
+    }));
     if (posts.length) {
       await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
     }
@@ -280,6 +323,13 @@ async function handleYoutube(code: string, supabase: ReturnType<typeof createCli
     { headers: { Authorization: `Bearer ${tokenData.access_token}` } }
   );
   const channelData = await channelRes.json();
+  // An empty items[] has two very different causes - a Google account that
+  // genuinely has no YouTube channel, or the API call itself failing (bad
+  // scope, YouTube Data API v3 not enabled on the OAuth client's Google
+  // Cloud project, etc). The latter comes back as {error: {...}} rather
+  // than a thrown exception - surface it instead of guessing "no channel"
+  // for both cases, which made the real cause unfindable.
+  if (channelData.error) throw new Error("YouTube channel lookup failed: " + JSON.stringify(channelData.error));
   const channel = channelData?.items?.[0];
   if (!channel) throw new Error("Couldn't find a YouTube channel on this Google account.");
 
@@ -341,6 +391,25 @@ async function handleYoutube(code: string, supabase: ReturnType<typeof createCli
 
 serve(async (req) => {
   const url = new URL(req.url);
+
+  // TEMPORARY diagnostic path - not part of the OAuth flow. Calls the real
+  // mirrorThumbnail() directly, so this tests the exact same code path the
+  // OAuth flow uses, without needing a full OAuth round trip. Gated on a
+  // dedicated secret so it's not just an open trigger. Remove this block
+  // once mirroring is confirmed working.
+  if (url.searchParams.get("diag") === Deno.env.get("DIAG_SECRET")) {
+    const t0 = Date.now();
+    try {
+      const publicUrl = await mirrorThumbnail(
+        "https://flipcollab.com/logo.png",
+        `diagnostic/test-${Date.now()}.jpg`
+      );
+      return new Response(JSON.stringify({ ok: true, ms: Date.now() - t0, publicUrl }, null, 2), { headers: { "Content-Type": "application/json" } });
+    } catch (err) {
+      return new Response(JSON.stringify({ ok: false, ms: Date.now() - t0, error: String(err) }, null, 2), { headers: { "Content-Type": "application/json" } });
+    }
+  }
+
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
   const oauthError = url.searchParams.get("error");
