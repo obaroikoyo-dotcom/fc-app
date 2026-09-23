@@ -98,41 +98,66 @@ async function handleInstagram(code: string, supabase: ReturnType<typeof createC
     connected_at: new Date().toISOString(),
   }, { onConflict: "user_id,platform" });
 
-  // Fetch a larger pool than what actually gets shown - the creator picks
-  // up to 5 of these to feature on their public profile, rather than the
-  // most recent 5 being auto-selected for them.
-  const mediaRes = await fetch(
-    `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=20&access_token=${accessToken}`
+  // Fetching the post list and mirroring up to 20 thumbnails into R2 (below)
+  // is the slow part - doing it here, before redirecting, left the user
+  // staring at a blank page for however long all 20 mirror copies took. The
+  // connection itself is already saved above, so hand the rest to
+  // EdgeRuntime.waitUntil and let the redirect happen immediately; the
+  // frontend polls for the posts landing a few seconds later.
+  EdgeRuntime.waitUntil(
+    cacheInstagramPosts(supabase, accessToken, userId, profile.username || null, profile.followers_count ?? null)
   );
-  const media = await mediaRes.json();
-  const posts = await Promise.all((media.data || []).map(async (m: any, i: number) => {
-    const rawThumb = m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url;
-    return {
-      user_id: userId,
-      platform: "instagram",
-      post_id: m.id,
-      post_url: m.permalink,
-      // Instagram's Graph API media_url/thumbnail_url are also short-lived
-      // signed CDN links (same issue as TikTok below) - mirror into R2 so
-      // what's cached still works days later.
-      thumbnail_url: rawThumb
-        ? await mirrorThumbnail(rawThumb, `instagram-thumbnails/${userId}/${m.id}.jpg`).catch((err) => {
-            console.error("Instagram thumbnail mirror failed, falling back to Instagram's own URL:", err);
-            return rawThumb;
-          })
-        : null,
-      caption: m.caption || null,
-      posted_at: m.timestamp || null,
-      cached_at: new Date().toISOString(),
-      username: profile.username || null,
-      follower_count: profile.followers_count ?? null,
-      // Default to featuring the most recent 5 so something shows up right
-      // away; the creator can change the selection anytime from settings.
-      featured: i < 5,
-    };
-  }));
-  if (posts.length) {
-    await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
+}
+
+async function cacheInstagramPosts(
+  supabase: ReturnType<typeof createClient>,
+  accessToken: string,
+  userId: string,
+  username: string | null,
+  followerCount: number | null
+) {
+  try {
+    // Fetch a larger pool than what actually gets shown - the creator picks
+    // up to 5 of these to feature on their public profile, rather than the
+    // most recent 5 being auto-selected for them.
+    const mediaRes = await fetch(
+      `https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=20&access_token=${accessToken}`
+    );
+    const media = await mediaRes.json();
+    const posts = await Promise.all((media.data || []).map(async (m: any, i: number) => {
+      const rawThumb = m.media_type === "VIDEO" ? (m.thumbnail_url || m.media_url) : m.media_url;
+      return {
+        user_id: userId,
+        platform: "instagram",
+        post_id: m.id,
+        post_url: m.permalink,
+        // Instagram's Graph API media_url/thumbnail_url are also short-lived
+        // signed CDN links (same issue as TikTok below) - mirror into R2 so
+        // what's cached still works days later.
+        thumbnail_url: rawThumb
+          ? await mirrorThumbnail(rawThumb, `instagram-thumbnails/${userId}/${m.id}.jpg`).catch((err) => {
+              console.error("Instagram thumbnail mirror failed, falling back to Instagram's own URL:", err);
+              return rawThumb;
+            })
+          : null,
+        caption: m.caption || null,
+        posted_at: m.timestamp || null,
+        cached_at: new Date().toISOString(),
+        username,
+        follower_count: followerCount,
+        // Default to featuring the most recent 5 so something shows up right
+        // away; the creator can change the selection anytime from settings.
+        featured: i < 5,
+      };
+    }));
+    if (posts.length) {
+      await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
+    }
+  } catch (err) {
+    // The connection itself already succeeded and redirected by the time
+    // this runs - a failure here shouldn't (and now can't) turn into an
+    // error page for a user who's actually connected. Log and move on.
+    console.error("cacheInstagramPosts background task failed:", err);
   }
 }
 
@@ -176,36 +201,59 @@ async function handleTiktok(code: string, supabase: ReturnType<typeof createClie
     connected_at: new Date().toISOString(),
   }, { onConflict: "user_id,platform" });
 
-  // Fetch a larger pool than what actually gets shown - the creator picks
-  // up to 5 of these to feature on their public profile.
-  const videosRes = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,cover_image_url,share_url,video_description,create_time", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ max_count: 20 }),
-  });
-  const videosData = await videosRes.json();
-  const posts = await Promise.all((videosData?.data?.videos || []).map(async (v: any, i: number) => ({
-    user_id: userId,
-    platform: "tiktok",
-    post_id: v.id,
-    post_url: v.share_url,
-    thumbnail_url: v.cover_image_url
-      ? await mirrorThumbnail(v.cover_image_url, `tiktok-thumbnails/${userId}/${v.id}.jpg`).catch((err) => {
-          console.error("TikTok thumbnail mirror failed, falling back to TikTok's own URL:", err);
-          return v.cover_image_url;
-        })
-      : null,
-    caption: v.video_description || null,
-    posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
-    cached_at: new Date().toISOString(),
-    username: displayName,
-    follower_count: followerCount,
-    // Default to featuring the most recent 5 so something shows up right
-    // away; the creator can change the selection anytime from settings.
-    featured: i < 5,
-  })));
-  if (posts.length) {
-    await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
+  // Fetching the video list and mirroring up to 20 thumbnails into R2
+  // (below) is the slow part - doing it here, before redirecting, left the
+  // user staring at a blank page for however long all 20 mirror copies
+  // took. The connection itself is already saved above, so hand the rest to
+  // EdgeRuntime.waitUntil and let the redirect happen immediately; the
+  // frontend polls for the videos landing a few seconds later.
+  EdgeRuntime.waitUntil(cacheTiktokPosts(supabase, tokenData.access_token, userId, displayName, followerCount));
+}
+
+async function cacheTiktokPosts(
+  supabase: ReturnType<typeof createClient>,
+  accessToken: string,
+  userId: string,
+  displayName: string | null,
+  followerCount: number | null
+) {
+  try {
+    // Fetch a larger pool than what actually gets shown - the creator picks
+    // up to 5 of these to feature on their public profile.
+    const videosRes = await fetch("https://open.tiktokapis.com/v2/video/list/?fields=id,cover_image_url,share_url,video_description,create_time", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ max_count: 20 }),
+    });
+    const videosData = await videosRes.json();
+    const posts = await Promise.all((videosData?.data?.videos || []).map(async (v: any, i: number) => ({
+      user_id: userId,
+      platform: "tiktok",
+      post_id: v.id,
+      post_url: v.share_url,
+      thumbnail_url: v.cover_image_url
+        ? await mirrorThumbnail(v.cover_image_url, `tiktok-thumbnails/${userId}/${v.id}.jpg`).catch((err) => {
+            console.error("TikTok thumbnail mirror failed, falling back to TikTok's own URL:", err);
+            return v.cover_image_url;
+          })
+        : null,
+      caption: v.video_description || null,
+      posted_at: v.create_time ? new Date(v.create_time * 1000).toISOString() : null,
+      cached_at: new Date().toISOString(),
+      username: displayName,
+      follower_count: followerCount,
+      // Default to featuring the most recent 5 so something shows up right
+      // away; the creator can change the selection anytime from settings.
+      featured: i < 5,
+    })));
+    if (posts.length) {
+      await supabase.from("social_posts_cache").upsert(posts, { onConflict: "user_id,platform,post_id" });
+    }
+  } catch (err) {
+    // The connection itself already succeeded and redirected by the time
+    // this runs - a failure here shouldn't (and now can't) turn into an
+    // error page for a user who's actually connected. Log and move on.
+    console.error("cacheTiktokPosts background task failed:", err);
   }
 }
 

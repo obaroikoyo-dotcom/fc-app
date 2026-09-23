@@ -171,6 +171,13 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
   const [featuredPosts, setFeaturedPostsState] = useState<SocialPost[]>([]);
   const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
+  // Set right after landing back from connecting a platform. The callback
+  // now redirects immediately and fetches/mirrors that platform's videos in
+  // the background (see social-oauth-callback), so they land a few seconds
+  // after "connected" rather than being ready the instant this page loads -
+  // this drives a short poll so they appear on their own instead of needing
+  // a manual refresh.
+  const [syncingPlatform, setSyncingPlatform] = useState<SocialPlatform | null>(null);
   const [socialNotice, setSocialNotice] = useState("");
   const [pickerPlatform, setPickerPlatform] = useState<SocialPlatform | null>(null);
   const [postOptions, setPostOptions] = useState<SocialPostOption[]>([]);
@@ -194,6 +201,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (connected) {
       setSettingsSection("manage-accounts");
       setView("settings");
+      if (connected === "instagram" || connected === "tiktok" || connected === "youtube") {
+        pollForSyncedPosts(connected as SocialPlatform);
+      }
     } else if (socialError) {
       setSocialNotice(`Couldn't connect: ${socialError}`);
       setSettingsSection("manage-accounts");
@@ -258,6 +268,31 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (!user) return;
     setSocialConnections(await getSocialConnections(user.id));
     setFeaturedPostsState(await getSocialPosts(user.id));
+  };
+
+  // After connecting a platform, its videos land in the background a few
+  // seconds later (see the comment on syncingPlatform above) rather than
+  // being ready the instant this page loads. Poll for them rather than
+  // making the user refresh manually to see they've arrived.
+  const pollForSyncedPosts = async (platform: SocialPlatform) => {
+    setSyncingPlatform(platform);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setSyncingPlatform(null); return; }
+
+    const deadline = Date.now() + 20000;
+    while (Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      const posts = await getSocialPosts(user.id);
+      setFeaturedPostsState(posts);
+      if (posts.some(p => p.platform === platform)) {
+        setSyncingPlatform(null);
+        return;
+      }
+    }
+    // Gave up after 20s - not necessarily a failure (an account with no
+    // videos/posts at all genuinely has nothing to sync), just stop showing
+    // "syncing" so it doesn't spin forever.
+    setSyncingPlatform(null);
   };
 
   const handleConnectSocial = async (platform: SocialPlatform) => {
@@ -708,6 +743,16 @@ setTimeout(() => setSaved(false), 2000);
                       </div>
                     </div>
                   )}
+                  {/* Shown right after connecting, while this platform's videos are
+                      still being fetched and mirrored in the background - so the
+                      screen visibly does something rather than just sitting there
+                      until the poll above finds them and this quietly disappears. */}
+                  {syncingPlatform === connectedPlatform && platformPosts.length === 0 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px" }}>
+                      <span className="spin" style={{ width: "12px", height: "12px", border: "2px solid #333", borderTopColor: "#999", borderRadius: "50%", display: "inline-block" }} />
+                      <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px" }}>Syncing your videos…</p>
+                    </div>
+                  )}
                 </div>
                 {platformPosts.length > 0 && (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid #1a1a1a" }}>
@@ -716,7 +761,14 @@ setTimeout(() => setSaved(false), 2000);
                         {/* Some platforms (TikTok in particular) hand back a short-lived
                             signed thumbnail URL that can expire before this cached copy
                             is ever shown - hide the broken-image glyph rather than show it. */}
-                        <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        {/* A missing thumbnail_url renders as a bare <img> with no
+                            source, which most browsers show as their own broken-image
+                            glyph WITHOUT ever firing onError (there's no failed request
+                            to fail) - onError alone only catches a URL that loads and
+                            then fails, not one that was never there to begin with. */}
+                        {post.thumbnail_url && (
+                          <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        )}
                         <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" }}>
                           <PlayGlyph />
                         </div>
@@ -1063,7 +1115,9 @@ setTimeout(() => setSaved(false), 2000);
                   onClick={() => togglePostSelection(post.post_id)}
                   style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid #fff" : "1px solid #1a1a1a", cursor: "pointer" }}
                 >
-                  <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  {post.thumbnail_url && (
+                    <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  )}
                   {selected && (
                     <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
                   )}
@@ -1663,7 +1717,11 @@ const renderTerms = () => (
 
   return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.7s linear infinite; }
+      `}</style>
       {settingsSection === "main" && renderSettingsMain()}
       {settingsSection === "edit-profile" && renderEditProfile()}
       {settingsSection === "niche-selection" && renderNicheSelection()}

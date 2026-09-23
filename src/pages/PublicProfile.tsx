@@ -582,7 +582,14 @@ const startDM = async () => {
                           {/* Some platforms (TikTok in particular) hand back a short-lived
                               signed thumbnail URL that can expire before this cached copy
                               is ever shown - hide the broken-image glyph rather than show it. */}
-                          <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          {/* A missing thumbnail_url renders as a bare <img> with no
+                              source, which most browsers show as their own broken-image
+                              glyph WITHOUT ever firing onError (there's no failed request
+                              to fail) - onError alone only catches a URL that loads and
+                              then fails, not one that was never there to begin with. */}
+                          {post.thumbnail_url && (
+                            <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          )}
                           <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" }}>
                             <PlayGlyph />
                           </div>
