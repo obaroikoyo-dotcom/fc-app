@@ -654,6 +654,22 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
   return (
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
+      {/* This card only ever renders once application_status is "funded" or
+          "paid" (see the parent's gate), so payment being secured is always
+          true here - shown as a header rather than a separate chat bubble so
+          "is my payment safe" and "what do I do next" live in one place.
+          The original Payment Secured system-event message still stays in
+          the chat history below as a timestamped record. */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px", paddingBottom: "10px", borderBottom: "1px solid #1a1a1a" }}>
+        <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", flexShrink: 0 }}>
+          <ShieldCheckIcon />
+        </div>
+        <div>
+          <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>Payment Secured</p>
+          <p style={{ color: "#999", fontSize: "10px", marginTop: "1px" }}>Held in escrow until delivery is confirmed</p>
+        </div>
+      </div>
+
       <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
 
       {mediaDeleteAt && new Date(mediaDeleteAt).getTime() > Date.now() && (
