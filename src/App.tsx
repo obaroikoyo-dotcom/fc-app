@@ -340,11 +340,11 @@ export default function App() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { count, error } = await supabase
-      .from("notifications")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", user.id)
-      .eq("read", false);
+    // Goes through a DB function rather than a raw count so a message/chat
+    // notification whose conversation has since been deleted can't hold the
+    // badge on forever - the only way to clear one of those otherwise is
+    // opening that exact conversation, which no longer exists to open.
+    const { data: count, error } = await supabase.rpc("get_unread_notification_count", { p_user_id: user.id });
 
     if (!error && count !== null) {
       setUnreadCount(count);
