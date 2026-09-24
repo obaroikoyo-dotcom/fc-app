@@ -513,6 +513,7 @@ interface EscrowDeliveryCardProps {
   currentUserId: string;
   applicationStatus: string;
   onReleased: () => void;
+  paymentMessage?: { text: string; created_at: string } | null;
 }
 
 // Shown in the chat once a deal is "funded" (card charged, payout held).
@@ -521,7 +522,7 @@ interface EscrowDeliveryCardProps {
 // deliverable to their own TikTok once that release has already
 // happened, and can always manually release for deals that never touch
 // TikTok at all (in-person handoffs, etc).
-function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased }: EscrowDeliveryCardProps) {
+function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, paymentMessage }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
   const [mediaDeleteAt, setMediaDeleteAt] = useState<string | null>(null);
   const [platform, setPlatform] = useState("TikTok");
@@ -655,20 +656,26 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   return (
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
       {/* This card only ever renders once application_status is "funded" or
-          "paid" (see the parent's gate), so payment being secured is always
-          true here - shown as a header rather than a separate chat bubble so
-          "is my payment safe" and "what do I do next" live in one place.
-          The original Payment Secured system-event message still stays in
-          the chat history below as a timestamped record. */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px", paddingBottom: "10px", borderBottom: "1px solid #1a1a1a" }}>
-        <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", flexShrink: 0 }}>
-          <ShieldCheckIcon />
+          "paid" (see the parent's gate), so the deal's payment is always
+          secured by the time it's showing - the actual "Payment Secured"
+          event (same icon/title/timestamp/body as it used to show as its
+          own chat bubble) now lives at the top of this same box instead, so
+          "is my payment safe" and "what do I do next" are one card, not two.
+          The parent no longer renders that message as a separate bubble. */}
+      {paymentMessage && (
+        <div style={{ display: "flex", gap: "11px", alignItems: "flex-start", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #1a1a1a" }}>
+          <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", flexShrink: 0 }}>
+            <ShieldCheckIcon />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "10px" }}>
+              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Payment Secured</p>
+              <p style={{ color: "#666", fontSize: "10px", flexShrink: 0 }}>{parseUtc(paymentMessage.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+            </div>
+            <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{paymentMessage.text.slice(PAYMENT_CONFIRMED_PREFIX.length).trim()}</p>
+          </div>
         </div>
-        <div>
-          <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>Payment Secured</p>
-          <p style={{ color: "#999", fontSize: "10px", marginTop: "1px" }}>Held in escrow until delivery is confirmed</p>
-        </div>
-      </div>
+      )}
 
       <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
 
@@ -2222,6 +2229,7 @@ return (
                 role={role === "brand" ? "brand" : "creator"}
                 currentUserId={currentUserId}
                 applicationStatus={activeConvo.application_status}
+                paymentMessage={[...messages].reverse().find(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)) || null}
                 onReleased={async () => {
                   if (!activeConvo?.application_id) return;
                   const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();
@@ -2240,6 +2248,12 @@ return (
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
               const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
               const dividerAtIdx = paymentIdx + 1;
+              // The Deliverable card (rendered above, once funded/paid) shows
+              // its own Payment Secured header now - don't also show it as a
+              // separate bubble here in that case. Still shown standalone for
+              // edge states the card doesn't cover (e.g. refunded after the
+              // fact), so the record isn't lost.
+              const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid";
 
               return messages.map((m, i) => {
               const mine = m.sender_id === currentUserId;
@@ -2271,7 +2285,7 @@ return (
                     <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
                   </div>
                 )}
-                {isPaymentEvent ? (
+                {isPaymentEvent && deliveryCardShowsPayment ? null : isPaymentEvent ? (
                   <SystemEventCard
                     icon={<ShieldCheckIcon />}
                     title="Payment Secured"
