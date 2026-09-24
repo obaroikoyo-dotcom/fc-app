@@ -119,6 +119,10 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       setFormError("This campaign requires a video pitch.");
       return;
     }
+    if (campaign.platforms?.length > 0 && selectedPlatforms.length === 0) {
+      setFormError("Select which platform you're applying with.");
+      return;
+    }
 
     setFormError(null);
     setSubmitting(true);

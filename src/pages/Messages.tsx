@@ -131,6 +131,7 @@ interface LinkedApplication {
   campaign_id: string;
   campaign_name: string;
   campaign_budget: number;
+  platforms: string[];
 }
 
 interface Conversation {
@@ -149,6 +150,7 @@ interface Conversation {
   campaign_id?: string;
   campaign_budget?: number;
   campaign_name?: string;
+  campaign_platforms?: string[];
 }
 
 interface Message {
@@ -1059,7 +1061,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             // action rather than only ever surfacing the newest one.
             const { data: linkedApps } = await supabase
               .from("applications")
-              .select("id, status, campaign_id, campaigns(name, budget, brand_id)")
+              .select("id, status, campaign_id, platforms, campaigns(name, budget, brand_id)")
               .eq("creator_id", creatorSearchId)
               .eq("campaigns.brand_id", brandSearchId)
               .order("created_at", { ascending: false });
@@ -1070,6 +1072,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
               campaign_id: a.campaign_id,
               campaign_name: (a.campaigns as any)?.name || "Campaign",
               campaign_budget: parseInt((a.campaigns as any)?.budget, 10) || 0,
+              platforms: a.platforms || [],
             }));
             const latestApp = linkedApplications[0];
 
@@ -1084,7 +1087,8 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
               application_status: latestApp?.status,
               campaign_id: latestApp?.campaign_id,
               campaign_name: latestApp?.campaign_name,
-              campaign_budget: latestApp?.campaign_budget || 0
+              campaign_budget: latestApp?.campaign_budget || 0,
+              campaign_platforms: latestApp?.platforms || []
             };
           }));
           const sorted = enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
@@ -1314,7 +1318,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       campaign_id: app.campaign_id,
       creator_id: activeConvo.participant_1 === currentUserId ? activeConvo.participant_2 : activeConvo.participant_1,
       status: app.status,
-      message: "", platforms: [], created_at: "",
+      message: "", platforms: app.platforms || [], created_at: "",
       creator_name: activeConvo.other_name,
       campaign_name: app.campaign_name
     });
@@ -1333,6 +1337,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       campaign_id: activeConvo.campaign_id || "",
       campaign_name: activeConvo.campaign_name || "",
       campaign_budget: activeConvo.campaign_budget || 0,
+      platforms: activeConvo.campaign_platforms || [],
     });
   };
 

@@ -1,9 +1,10 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+﻿import React, { useState, useRef, useEffect, useMemo } from "react";
 import { supabase } from "../lib/supabase";
 import { NICHES } from "../lib/niches";
 import { usePersistedState } from "../lib/usePersistedState";
 import { useMemoryPersistedState, clearMemoryPersistedState } from "../lib/useMemoryPersistedState";
 import { uploadToR2 } from "../lib/r2Upload";
+import { socialPlatformFor } from "../lib/campaignDelivery";
 
 export interface EditableCampaign {
   id: string;
@@ -103,7 +104,15 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const [niche, setNiche] = usePersistedState("fc_create_campaign_niche", "");
   const [deliverables, setDeliverables] = usePersistedState<string[]>("fc_create_campaign_deliverables", []);
   const [videoRequired, setVideoRequired] = usePersistedState("fc_create_campaign_videoRequired", false);
-  const [platforms] = useState<string[]>([]);
+  // Derived, not its own picker - a campaign's "platforms" are whichever of
+  // its chosen deliverables actually map to a social platform (TikTok
+  // Video/LIVE, IG Reel/Story/Carousel, YouTube Short/Video). Deliverables
+  // like "Blog Post" or "UGC Content Package" have no platform to verify
+  // against, so they're deliverables without being platforms. This feeds
+  // ApplyCampaign's platform picker and, downstream, the escrow gated-
+  // release flow - keep it in sync with socialPlatformFor rather than
+  // re-deriving the mapping here.
+  const platforms = useMemo(() => deliverables.filter(d => socialPlatformFor(d) !== null), [deliverables]);
   const [vibe, setVibe] = usePersistedState("fc_create_campaign_vibe", "");
   const [dos, setDos] = usePersistedState<string[]>("fc_create_campaign_dos", [""]);
   const [donts, setDonts] = usePersistedState<string[]>("fc_create_campaign_donts", [""]);
