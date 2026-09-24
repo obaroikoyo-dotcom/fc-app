@@ -465,12 +465,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       )}
 
       {deliveryPlatform && (
-      <div onClick={() => setRequireGatedPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireGatedPost ? "rgba(52,199,89,0.06)" : "#111", border: `1px solid ${requireGatedPost ? "rgba(52,199,89,0.35)" : "#1a1a1a"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
-        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireGatedPost ? "#34c759" : "#333"}`, background: requireGatedPost ? "#34c759" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireGatedPost ? "✓" : ""}</div>
+      <div onClick={() => setRequireGatedPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireGatedPost ? "#1a1a1a" : "#111", border: `1px solid ${requireGatedPost ? "#fff" : "#1a1a1a"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
+        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireGatedPost ? "#fff" : "#333"}`, background: requireGatedPost ? "#fff" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireGatedPost ? "✓" : ""}</div>
         <div>
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
             Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
-            <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(52,199,89,0.15)", color: "#34c759", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
+            <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "#ccc", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
           </p>
           <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and use "Release Payment Manually" once you have the file — funds release the same way.</p>
         </div>
