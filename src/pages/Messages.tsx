@@ -2220,23 +2220,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: activeConvo?.application_id ? "1rem" : (stickyHeight ? `${stickyHeight}px` : "6rem"), paddingBottom: inputBarHeight ? `${inputBarHeight + 65}px` : "8rem" }}>
-            {activeConvo?.application_id && currentUserId
-              && (activeConvo.application_status === "funded" || activeConvo.application_status === "paid")
-              && (
-              <EscrowDeliveryCard
-                applicationId={activeConvo.application_id}
-                role={role === "brand" ? "brand" : "creator"}
-                currentUserId={currentUserId}
-                applicationStatus={activeConvo.application_status}
-                paymentMessage={[...messages].reverse().find(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)) || null}
-                onReleased={async () => {
-                  if (!activeConvo?.application_id) return;
-                  const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();
-                  if (data) setActiveConvo(prev => prev ? { ...prev, application_status: data.status } : prev);
-                }}
-              />
-            )}
+          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `${inputBarHeight + 65}px` : "8rem" }}>
             {messages.length === 0 && (
               <p style={{ color: "#777", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -2248,11 +2232,14 @@ return (
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
               const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
               const dividerAtIdx = paymentIdx + 1;
-              // The Deliverable card (rendered above, once funded/paid) shows
-              // its own Payment Secured header now - don't also show it as a
-              // separate bubble here in that case. Still shown standalone for
-              // edge states the card doesn't cover (e.g. refunded after the
-              // fact), so the record isn't lost.
+              // The Deliverable card now renders inline in place of the
+              // current application's own Payment Secured message (right
+              // where it naturally falls in the timeline, same as it always
+              // did), rather than pinned separately above the chat. Any
+              // *other* Payment Secured message - an older, already-settled
+              // application from a prior campaign with this same pair, or
+              // this one after a refund - just shows as a plain event card,
+              // since there's no longer a live delivery card for those.
               const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid";
 
               return messages.map((m, i) => {
@@ -2285,7 +2272,20 @@ return (
                     <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
                   </div>
                 )}
-                {isPaymentEvent && deliveryCardShowsPayment ? null : isPaymentEvent ? (
+                {isPaymentEvent && i === paymentIdx && deliveryCardShowsPayment && activeConvo?.application_id && currentUserId ? (
+                  <EscrowDeliveryCard
+                    applicationId={activeConvo.application_id}
+                    role={role === "brand" ? "brand" : "creator"}
+                    currentUserId={currentUserId}
+                    applicationStatus={activeConvo.application_status!}
+                    paymentMessage={{ text: m.text, created_at: m.created_at }}
+                    onReleased={async () => {
+                      if (!activeConvo?.application_id) return;
+                      const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();
+                      if (data) setActiveConvo(prev => prev ? { ...prev, application_status: data.status } : prev);
+                    }}
+                  />
+                ) : isPaymentEvent ? (
                   <SystemEventCard
                     icon={<ShieldCheckIcon />}
                     title="Payment Secured"
