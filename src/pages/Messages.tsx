@@ -672,6 +672,12 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         </>
       )}
 
+      {deliverableUrl && role === "brand" && applicationStatus === "funded" && (
+        <p style={{ fontSize: "10px", color: "#888", marginBottom: "8px", lineHeight: 1.5 }}>
+          Review the video below before releasing — {deliveryPlatform ? `release now, or wait for it to be confirmed live on ${platform} and it'll release automatically.` : "release manually whenever you're happy with it."}
+        </p>
+      )}
+
       {deliverableUrl && (
         <video src={deliverableUrl} controls style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight: "220px", background: "#000" }} />
       )}

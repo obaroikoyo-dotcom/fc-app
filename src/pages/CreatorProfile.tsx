@@ -1584,6 +1584,8 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.25rem" }}>
         {[
           { q: "How do I get paid?", a: "Once a brand approves your content, funds are released from escrow and transferred directly to your connected Stripe account - set this up once in Payouts, and every future release goes straight to your bank on Stripe's own payout schedule." },
+          { q: "When does the brand actually see my deliverable?", a: "As soon as you upload your video in the chat, the brand can watch it right there — before it's posted anywhere and before any money moves. That preview is what they're reviewing when deciding to release payment." },
+          { q: "Do I have to wait for the brand to release payment?", a: "Not always. If your deal is for TikTok, Instagram, or YouTube, posting it live and having it confirmed releases your payout automatically — no need to wait on the brand. Either way, if the brand hasn't released or disputed within 7 days of your upload, it releases automatically." },
           { q: "What is the platform fee?", a: "FlipCollab deducts a 10% platform fee from your earnings on each completed collaboration. Brands are charged an additional 5% on their end." },
           { q: "How do I apply to campaigns?", a: "Browse campaigns in the Explore tab. Tap Apply, write a pitch message, select your platforms, and submit." },
           { q: "Can I message brands directly?", a: "Yes — use the Search tab to find brands and tap DM to start a conversation." },

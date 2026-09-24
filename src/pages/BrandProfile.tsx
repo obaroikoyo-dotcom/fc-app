@@ -1085,6 +1085,9 @@ const loadFavourites = async () => {
           { q: "How do I post a campaign?", a: "Go to the Post tab in the bottom nav. Fill in your campaign details, set a budget, and publish. Creators will be able to see and apply to it immediately." },
           { q: "What is the platform fee?", a: "FlipCollab adds a 5% fee on top of what you pay creators. Upgrade to Enterprise for 0% fees on both sides." },
           { q: "How do I pay creators?", a: "When you accept a creator's application, a payment is triggered via Stripe. Funds are held in escrow and released upon content delivery." },
+          { q: "How do I know what I'm paying for before releasing funds?", a: "The creator uploads their deliverable video directly in your chat with them — you can watch it there before anything is released, no need to wait for it to go live anywhere." },
+          { q: "What's the difference between automatic and manual release?", a: "For TikTok, Instagram, and YouTube deals, you can require the creator's post to go live and be confirmed before payout releases automatically — extra proof beyond just the chat preview. Otherwise, you release manually once you've reviewed the deliverable in chat, whenever you're ready." },
+          { q: "What if I don't release payment myself?", a: "If you haven't released or disputed within 7 days of the creator uploading their deliverable, it releases automatically — so a creator who's done the work is never left waiting indefinitely." },
           { q: "Can I message creators directly?", a: "Yes — use the Search tab to find creators and tap Message to start a conversation." },
           { q: "How do I delete my account?", a: "Go to Settings and scroll to the bottom. Tap Delete Account. This is permanent and cannot be undone." },
         ].map(({ q, a }, i) => (
