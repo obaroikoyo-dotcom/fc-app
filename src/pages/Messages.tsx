@@ -1243,7 +1243,21 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     // channels above: removeChannel() is async, so reopening the same
     // conversation quickly could otherwise resolve to the previous open's
     // not-yet-closed channel and throw on .on() after it's already subscribed.
-    const channel = supabase.channel(`convo-${convo.id}-${Math.random().toString(36).slice(2)}`)
+    let channel = supabase.channel(`convo-${convo.id}-${Math.random().toString(36).slice(2)}`);
+    if (convo.application_id) {
+      // The "Payment Secured" message itself arrives live via the messages
+      // INSERT subscription below, but the Deliverable upload card is gated
+      // on applications.status ("funded"/"paid"/etc), which had no realtime
+      // subscription at all - only a full reload re-fetched it, so a brand
+      // funding a deal left the creator staring at the old state until they
+      // refreshed. Mirror the status change into activeConvo as soon as the
+      // row updates (e.g. the moment the Stripe webhook marks it funded).
+      channel = channel.on("postgres_changes", { event: "UPDATE", schema: "public", table: "applications", filter: `id=eq.${convo.application_id}` }, payload => {
+        const updated = payload.new as { status: string };
+        setActiveConvo(prev => prev && prev.id === convo.id ? { ...prev, application_status: updated.status } : prev);
+      });
+    }
+    channel = channel
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${convo.id}` }, payload => {
         const incoming = payload.new as Message;
         appendMessage(incoming);
