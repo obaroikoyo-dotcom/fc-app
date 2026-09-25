@@ -45,7 +45,7 @@ export default function ForgotPassword({ navigate }: Props) {
         {sent ? (
           <>
             <p style={{ fontSize: "13px", color: "#bbb", marginBottom: "2rem", lineHeight: 1.6 }}>
-              If an account exists for <strong style={{ color: "#fff" }}>{email}</strong>, we've sent a link to reset your password. Check your inbox.
+              If an account exists for <strong style={{ color: "#fff" }}>{email}</strong>, we've sent a link to reset your password. Check your inbox — and your spam folder, since it can land there.
             </p>
             <Button variant="outline" onClick={() => navigate("login")}>Back to Log In</Button>
           </>
