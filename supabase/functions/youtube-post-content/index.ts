@@ -121,7 +121,13 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           snippet: {
-            title: `${campaign?.name || "FlipCollab campaign"}`,
+            // #Shorts in the title/description is the standard signal YouTube
+            // documents for reliably classifying an API upload as a Short -
+            // it only takes effect when the file itself is also vertical/
+            // square and under YouTube's Shorts duration limit; it can't force
+            // a landscape or longer video into Shorts.
+            title: `${campaign?.name || "FlipCollab campaign"} #Shorts`,
+            description: "#Shorts",
             categoryId: "22",
           },
           status: {
