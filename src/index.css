@@ -1,3 +1,13 @@
+/* No page sets this itself except a handful of onboarding/auth screens -
+   everywhere else builds boxes as width:100% plus its own padding, which
+   under the browser default (content-box) adds the padding on top of that
+   100% instead of absorbing it, pushing the element past its container's
+   edge. That's what "stretches out of the page" - one global reset fixes
+   it everywhere instead of patching every inline style that does this. */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html, body {
   position: fixed;
   inset: 0;
