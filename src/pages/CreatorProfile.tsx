@@ -954,8 +954,8 @@ setTimeout(() => setSaved(false), 2000);
           {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"), "about")}
           {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"), "help")}
           {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"), "privacy")}
-          {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"), "terms")}
-          {settingsRow("Debug Log", "What happened right before a freeze", () => { setDebugLogEntries(getLog()); setSettingsSection("debug-log"); }, "debug-log", true)}
+          {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"), "terms", !isAdmin)}
+          {isAdmin && settingsRow("Debug Log", "What happened right before a freeze", () => { setDebugLogEntries(getLog()); setSettingsSection("debug-log"); }, "debug-log", true)}
         </>)}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
