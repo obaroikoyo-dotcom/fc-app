@@ -714,6 +714,8 @@ const [showOtp, setShowOtp] = useState(false);
                     <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: "pointer" }}>Choose videos</span>
                     <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#34c759" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
                   </div>
+                ) : platform === "youtube" ? (
+                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#444" }}>Coming Soon</span>
                 ) : (
                   <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                     {connectingPlatform === platform ? "Connecting..." : "Connect"}
