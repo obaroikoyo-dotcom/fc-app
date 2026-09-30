@@ -313,19 +313,23 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
   const deliverableChip = (label: string) => {
     const active = deliverables.includes(label);
+    // YouTube posting isn't open to everyone yet (Google verification still
+    // pending) - block new campaigns from targeting it rather than letting
+    // brands request a deliverable that can't actually be auto-verified.
+    const comingSoon = label.startsWith("YouTube");
     return (
       <div
         key={label}
-        onClick={() => toggleDeliverable(label)}
+        onClick={comingSoon ? undefined : () => toggleDeliverable(label)}
         style={{
-          padding: "6px 11px", borderRadius: "4px", cursor: "pointer",
+          padding: "6px 11px", borderRadius: "4px", cursor: comingSoon ? "default" : "pointer",
           fontSize: "11px", fontWeight: 500, transition: "all 0.15s",
           border: `1px solid ${active ? "#333" : "#1a1a1a"}`,
           background: active ? "#1a1a1a" : "transparent",
-          color: active ? "#fff" : "#444",
+          color: comingSoon ? "#333" : active ? "#fff" : "#444",
         }}
       >
-        {label}
+        {label}{comingSoon ? " · Coming Soon" : ""}
       </div>
     );
   };
