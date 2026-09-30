@@ -20,7 +20,6 @@ import { COUNTRIES } from "../lib/countries";
 import { loadConnectAndInitialize, type StripeConnectInstance } from "@stripe/connect-js";
 import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectPayouts } from "@stripe/react-connect-js";
 import { uploadToR2 } from "../lib/r2Upload";
-import { getLog, clearLog } from "../lib/debugLog";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -65,8 +64,7 @@ type SettingsSection =
   | "help"
   | "privacy-policy"
   | "terms"
-  | "reports-blocked"
-  | "debug-log";
+  | "reports-blocked";
 
 export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted, onRead }: Props) {
   const [view, setView] = useState<"profile" | "settings">("profile");
@@ -169,9 +167,6 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [blockedUsers, setBlockedUsers] = useState<{ id: string; blockRowId: string; name: string; avatar: string | null; role: string }[]>([]);
   const [myReports, setMyReports] = useState<{ id: string; reason: string; created_at: string; name: string }[]>([]);
   const [unblockLoading, setUnblockLoading] = useState<string | null>(null);
-  const [debugLogEntries, setDebugLogEntries] = useState<string[]>([]);
-  const [debugLogCopied, setDebugLogCopied] = useState(false);
-
   const [socialConnections, setSocialConnections] = useState<SocialConnection[]>([]);
   const [featuredPosts, setFeaturedPostsState] = useState<SocialPost[]>([]);
   const [connectingPlatform, setConnectingPlatform] = useState<SocialPlatform | null>(null);
@@ -954,8 +949,7 @@ setTimeout(() => setSaved(false), 2000);
           {settingsRow("About FlipCollab", "Learn about us", () => window.open("https://about.flipcollab.com", "_blank"), "about")}
           {settingsRow("Help Centre", "FAQs and support", () => setSettingsSection("help"), "help")}
           {settingsRow("Privacy Policy", "How we use your data", () => window.open("https://privacy.flipcollab.com", "_blank"), "privacy")}
-          {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"), "terms", !isAdmin)}
-          {isAdmin && settingsRow("Debug Log", "What happened right before a freeze", () => { setDebugLogEntries(getLog()); setSettingsSection("debug-log"); }, "debug-log", true)}
+          {settingsRow("Terms of Service", "Platform rules", () => window.open("https://terms.flipcollab.com", "_blank"), "terms", true)}
         </>)}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
@@ -1665,45 +1659,6 @@ const renderTerms = () => (
   </div>
 );
 
-  // ─── DEBUG LOG ──────────────────────────────────────────────────────────
-  const renderDebugLog = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
-      {renderSettingsHeader("Debug Log", () => setSettingsSection("main"))}
-      <div style={{ padding: "1.25rem" }}>
-        <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.6, marginBottom: "1rem" }}>
-          A timestamped record of what this app did on this device, most recent last. Useful for reporting a freeze or a slow load - copy it and send it along.
-        </p>
-        <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
-          <div
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(debugLogEntries.join("\n"));
-                setDebugLogCopied(true);
-                setTimeout(() => setDebugLogCopied(false), 2000);
-              } catch { /* clipboard unavailable - nothing to do */ }
-            }}
-            style={{ flex: 1, textAlign: "center", fontSize: "12px", fontWeight: 600, color: "#0a0a0a", background: "#fff", padding: "10px", borderRadius: "8px", cursor: "pointer" }}
-          >
-            {debugLogCopied ? "Copied" : "Copy log"}
-          </div>
-          <div
-            onClick={() => { clearLog(); setDebugLogEntries([]); }}
-            style={{ flex: 1, textAlign: "center", fontSize: "12px", fontWeight: 600, color: "#ccc", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", padding: "10px", borderRadius: "8px", cursor: "pointer" }}
-          >
-            Clear
-          </div>
-        </div>
-        {debugLogEntries.length === 0 ? (
-          <p style={{ color: "#888", fontSize: "12px" }}>Nothing logged yet.</p>
-        ) : (
-          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px", fontFamily: "monospace", fontSize: "10.5px", color: "#aaa", lineHeight: 1.7, whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-            {debugLogEntries.join("\n")}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
   // ─── REPORTED & BLOCKED ───────────────────────────────────────────────────
   const renderReportsBlocked = () => (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
@@ -1783,7 +1738,6 @@ const renderTerms = () => (
 {settingsSection === "privacy-policy" && renderPrivacyPolicy()}
 {settingsSection === "terms" && renderTerms()}
       {settingsSection === "reports-blocked" && renderReportsBlocked()}
-      {settingsSection === "debug-log" && renderDebugLog()}
     </>
   );
 }
