@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
 import PrivacyModal from "./PrivacyModal";
 import LocationInput from "../components/LocationInput";
 import TermsModal from "./TermsModal";
@@ -59,66 +58,26 @@ function calculateAge(day: string, month: string, year: string): number | null {
   return age;
 }
 
-function DateDropdown({ value, onChange, options, placeholder }: {
+// A native <select> instead of a custom dropdown - no portal/z-index
+// juggling needed, so it can never visually collide with the fixed
+// Continue button, and the OS renders the open list itself.
+function DateSelect({ value, onChange, options, placeholder }: {
   value: string;
   onChange: (v: string) => void;
   options: string[];
   placeholder: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
-
-  const updateRect = () => {
-    const el = triggerRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    setRect({ top: r.bottom + 6, left: r.left, width: r.width });
-  };
-
-  const toggleOpen = () => {
-    if (!open) updateRect();
-    setOpen(p => !p);
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    updateRect();
-    window.addEventListener("scroll", updateRect, true);
-    window.addEventListener("resize", updateRect);
-    return () => {
-      window.removeEventListener("scroll", updateRect, true);
-      window.removeEventListener("resize", updateRect);
-    };
-  }, [open]);
-
   return (
     <div style={{ position: "relative", flex: 1 }}>
-      <div
-        ref={triggerRef}
-        onClick={toggleOpen}
-        style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "13px 14px", color: value ? "#fff" : "#555", fontSize: "14px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{ width: "100%", appearance: "none", WebkitAppearance: "none", background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "13px 30px 13px 14px", color: value ? "#fff" : "#555", fontSize: "14px", fontFamily: "inherit", cursor: "pointer" }}
       >
-        <span>{value || placeholder}</span>
-        <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
-      </div>
-      {open && rect && createPortal(
-        <>
-          <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9998 }} />
-          <div style={{ position: "fixed", top: rect.top, left: rect.left, width: rect.width, background: "#111", border: "1px solid #222", borderRadius: "10px", zIndex: 9999, maxHeight: "220px", overflowY: "auto" }}>
-            {options.map(o => (
-              <div
-                key={o}
-                onClick={() => { onChange(o); setOpen(false); }}
-                style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#777", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
-              >
-                {o}
-              </div>
-            ))}
-          </div>
-        </>,
-        document.body
-      )}
+        <option value="" disabled>{placeholder}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <span style={{ position: "absolute", top: "50%", right: "14px", transform: "translateY(-50%)", color: "#888", fontSize: "10px", pointerEvents: "none" }}>▼</span>
     </div>
   );
 }
@@ -539,7 +498,7 @@ const [showOtp, setShowOtp] = useState(false);
     <div key={0}>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's build your creator profile</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Takes about 2 minutes. Your profile helps brands find and connect with you for paid and gifted collabs.</p>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile helps brands find and connect with you for paid and gifted collabs.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
         <input style={inputStyle} placeholder="e.g. Sofia Martinez" value={name} onChange={e => setName(e.target.value)} autoFocus />
@@ -547,9 +506,9 @@ const [showOtp, setShowOtp] = useState(false);
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.5rem" }}>
         <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
         <div style={{ display: "flex", gap: "8px" }}>
-          <DateDropdown value={birthDay} onChange={updateBirthDay} options={DAY_OPTIONS} placeholder="Day" />
-          <div style={{ flex: 1.6 }}><DateDropdown value={birthMonth} onChange={updateBirthMonth} options={MONTHS} placeholder="Month" /></div>
-          <DateDropdown value={birthYear} onChange={updateBirthYear} options={YEAR_OPTIONS} placeholder="Year" />
+          <DateSelect value={birthDay} onChange={updateBirthDay} options={DAY_OPTIONS} placeholder="Day" />
+          <div style={{ flex: 1.6 }}><DateSelect value={birthMonth} onChange={updateBirthMonth} options={MONTHS} placeholder="Month" /></div>
+          <DateSelect value={birthYear} onChange={updateBirthYear} options={YEAR_OPTIONS} placeholder="Year" />
         </div>
         {showAgeWarning && (
           <p style={{ fontSize: "12px", color: "#ff9500", lineHeight: 1.5 }}>
