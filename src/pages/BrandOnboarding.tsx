@@ -718,7 +718,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       <div
         key={screen}
         className={animating ? "" : direction === "forward" ? "slide-forward" : "slide-back"}
-        style={{ flex: 1, padding: "2rem 1.5rem", overflowY: "auto", paddingBottom: "calc(13rem + env(safe-area-inset-bottom, 0px))" }}
+        style={{ flex: 1, padding: "2rem 1.5rem", overflowY: "auto", paddingBottom: "calc(16rem + env(safe-area-inset-bottom, 0px))" }}
       >
         {screens[screen]}
       </div>
