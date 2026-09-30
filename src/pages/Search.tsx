@@ -238,7 +238,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
                     {cp?.name || bp?.name || "FlipCollab User"}
                     {!isC && bp?.verified && <VerifiedBadge size={13} />}
                   </p>
-                  <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}{isC && maxFollowers(cp) > 0 ? ` · ${maxFollowers(cp).toLocaleString()} fans` : ""}</p>
+                  <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}</p>
                   {isC && startingRate(cp) != null && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>From £{startingRate(cp)}</p>}
                 </div>
                 <div onClick={e => { e.stopPropagation(); startDM(p.id); }} style={{ padding: "7px 14px", border: "1px solid #333", borderRadius: "6px", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer" }}>DM</div>
