@@ -555,14 +555,6 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             <div style={{ flex: 1, height: "1px", background: "#222" }} />
           </div>
 
-          <GoogleSignInButton onCredential={handleGoogleCredential}>
-            <div
-              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
-            >
-              {GoogleIcon} Continue with Google
-            </div>
-          </GoogleSignInButton>
-
           <AppleSignInButton onCredential={handleAppleCredential}>
             <div
               style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
@@ -570,6 +562,14 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
               {AppleIcon} Continue with Apple
             </div>
           </AppleSignInButton>
+
+          <GoogleSignInButton onCredential={handleGoogleCredential}>
+            <div
+              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+            >
+              {GoogleIcon} Continue with Google
+            </div>
+          </GoogleSignInButton>
         </div>
       )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
@@ -702,12 +702,12 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       `}</style>
 
       {/* Progress Bar */}
-      <div style={{ height: "2px", background: "#262626", position: "fixed", top: 0, left: 0, right: 0, zIndex: 10 }}>
-        <div style={{ height: "100%", background: "#fff", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
+      <div style={{ height: "4px", background: "#262626", borderRadius: "2px", position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 10px)", left: "1.25rem", right: "1.25rem", zIndex: 10, overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: "2px", background: "#fff", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
       </div>
 
       {/* Top Nav */}
-      <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(8px + env(safe-area-inset-top, 0px))" }}>
+      <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(22px + env(safe-area-inset-top, 0px))" }}>
         {screen > 0
           ? <span onClick={back} style={{ fontSize: "18px", color: "#999", cursor: "pointer", padding: "4px" }}>←</span>
           : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer" }}>← Back</span>}
