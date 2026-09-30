@@ -820,7 +820,7 @@ const buttonLabel = () => {
       `}</style>
 
       {/* Progress Bar */}
-      <div style={{ height: "2px", background: "#111", position: "fixed", top: "env(safe-area-inset-top, 0px)", left: 0, right: 0, zIndex: 10 }}>
+      <div style={{ height: "2px", background: "#262626", position: "fixed", top: 0, left: 0, right: 0, zIndex: 10 }}>
         <div style={{ height: "100%", background: "#fff", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
       </div>
 
