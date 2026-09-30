@@ -1173,7 +1173,7 @@ setTimeout(() => setSaved(false), 2000);
                       <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
                     </>
                   ) : platform === "youtube" ? (
-                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#444" }}>Coming Soon</span>
+                    <span style={{ fontSize: "9px", padding: "6px 12px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Coming Soon</span>
                   ) : (
                     <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                       {connectingPlatform === platform ? "Connecting..." : "Connect"}
