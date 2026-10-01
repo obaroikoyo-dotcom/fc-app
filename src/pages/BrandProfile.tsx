@@ -372,7 +372,7 @@ const loadFavourites = async () => {
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
   );
   const sectionHeader = (title: string, first = false) => (
-    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? 0 : "26px", padding: "0 2px 10px" }}>{title}</p>
+    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ──────────────────────────────────────────────────
