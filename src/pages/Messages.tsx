@@ -775,6 +775,78 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   );
 }
 
+interface PreFundingDeliverableCardProps {
+  applicationId: string;
+  currentUserId: string;
+}
+
+// Shown to the creator right after "Chat Opened", before the brand has
+// paid at all - nothing about uploading a deliverable actually requires
+// the deal to be funded first (uploadDeliverable has no status check of
+// its own), so there's no reason to make a creator sit on a finished video
+// just because the brand hasn't paid yet. Whatever gets uploaded here is
+// the same applications.deliverable_url the funded EscrowDeliveryCard
+// reads later, so once the brand does pay it just shows up already done -
+// nothing needs to be re-uploaded.
+function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingDeliverableCardProps) {
+  const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
+  const [platform, setPlatform] = useState("TikTok");
+  const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>("tiktok");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: app } = await supabase.from("applications").select("deliverable_url, platforms").eq("id", applicationId).single();
+      if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+      const resolvedPlatform = app?.platforms?.[0] || "TikTok";
+      setPlatform(resolvedPlatform);
+      setDeliveryPlatform(deliveryPlatformFor(resolvedPlatform));
+    })();
+  }, [applicationId]);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    const validationError = await validateVideoFile(file);
+    if (validationError) { setError(validationError); return; }
+    setUploading(true);
+    try {
+      const url = await uploadDeliverable(applicationId, currentUserId, file);
+      setDeliverableUrl(url);
+    } catch (err) {
+      setError((err as Error).message || "Upload failed");
+    }
+    setUploading(false);
+  };
+
+  return (
+    <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div>
+        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Get a head start</p>
+        <p style={{ color: "#aaa", fontSize: "12px", lineHeight: 1.5 }}>
+          {deliveryPlatform
+            ? `You can upload your deliverable now, before the brand even pays. Once they do, if they require a ${platform} post for release, your payout goes out automatically once it's confirmed live - if they don't require that, they'll release it manually whenever they're happy, so feel free to send this anytime.`
+            : `You can upload your deliverable now, before the brand even pays - ${platform} doesn't support automatic post verification, so once they pay they'll just release your payout manually whenever they're happy with it.`}
+        </p>
+      </div>
+      {deliverableUrl ? (
+        <video src={deliverableUrl} controls style={{ width: "100%", borderRadius: "8px", maxHeight: "200px", background: "#000" }} />
+      ) : (
+        <>
+          <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
+          <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed #333", textAlign: "center", fontSize: "12px", color: "#bbb", cursor: uploading ? "default" : "pointer" }}>
+            {uploading ? "Uploading..." : "Tap to upload your deliverable video"}
+          </div>
+        </>
+      )}
+      {error && <p style={{ fontSize: "11px", color: "#ff3b30" }}>{error}</p>}
+    </div>
+  );
+}
+
 export default function Messages({ navigate, role, openConvoId, onConvoOpened, navigateToProfile, navigateToBrandProfile, onRead }: Props) {
   const [view, setView] = useState<"list" | "chat" | "campaign-apps" | "app-detail">("list");
   const [brandTab, setBrandTab] = useState<"applications" | "messages">("applications");
@@ -2215,6 +2287,11 @@ return (
               const paymentIdx = messages.map(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)).lastIndexOf(true);
               const showPayCard = role === "brand" && !!activeConvo?.application_id
                 && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded";
+              // Mirrors showPayCard for the creator's side of the same
+              // pre-payment window - nothing to post or get paid for yet,
+              // but no reason to make them wait to upload.
+              const showPreFundingUploadCard = role === "creator" && !!activeConvo?.application_id && !!currentUserId
+                && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded";
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
               const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
               const dividerAtIdx = paymentIdx + 1;
@@ -2250,6 +2327,9 @@ return (
                       Lock Deal & Pay
                     </div>
                   </div>
+                )}
+                {showPreFundingUploadCard && i === cardInsertAtIdx && activeConvo?.application_id && currentUserId && (
+                  <PreFundingDeliverableCard applicationId={activeConvo.application_id} currentUserId={currentUserId} />
                 )}
                 {showDivider && i === dividerAtIdx && (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
