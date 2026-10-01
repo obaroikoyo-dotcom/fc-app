@@ -497,8 +497,8 @@ interface EscrowDeliveryCardProps {
 function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, paymentMessage }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
   const [mediaDeleteAt, setMediaDeleteAt] = useState<string | null>(null);
-  const [platform, setPlatform] = useState("TikTok");
-  const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>("tiktok");
+  const [platform, setPlatform] = useState("");
+  const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>(null);
   const [uploading, setUploading] = useState(false);
   const [socialConnected, setSocialConnected] = useState(false);
   const [myPost, setMyPost] = useState<CampaignPost | null>(null);
@@ -515,7 +515,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     (async () => {
       const { data: app } = await supabase.from("applications").select("deliverable_url, platforms, media_delete_at").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
-      const resolvedPlatform = app?.platforms?.[0] || "TikTok";
+      const resolvedPlatform = app?.platforms?.[0] || "";
       setPlatform(resolvedPlatform);
       const resolvedDeliveryPlatform = deliveryPlatformFor(resolvedPlatform);
       setDeliveryPlatform(resolvedDeliveryPlatform);
@@ -691,7 +691,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
             <p style={{ fontSize: "11px", color: "#999" }}>
-              {socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
+              {!platform
+                ? "This campaign doesn't require a specific platform - ask the brand to release your payment manually once they've confirmed delivery."
+                : socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
                 ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - ask the brand to release your payment manually once they've confirmed delivery.`
                 : `${platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.`}
             </p>
@@ -790,8 +792,8 @@ interface PreFundingDeliverableCardProps {
 // nothing needs to be re-uploaded.
 function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingDeliverableCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
-  const [platform, setPlatform] = useState("TikTok");
-  const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>("tiktok");
+  const [platform, setPlatform] = useState("");
+  const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -800,7 +802,7 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
     (async () => {
       const { data: app } = await supabase.from("applications").select("deliverable_url, platforms").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
-      const resolvedPlatform = app?.platforms?.[0] || "TikTok";
+      const resolvedPlatform = app?.platforms?.[0] || "";
       setPlatform(resolvedPlatform);
       setDeliveryPlatform(deliveryPlatformFor(resolvedPlatform));
     })();
@@ -829,6 +831,8 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
         <p style={{ color: "#aaa", fontSize: "12px", lineHeight: 1.5 }}>
           {deliveryPlatform
             ? `You can upload your deliverable now, before the brand even pays. Once they do, if they require a ${platform} post for release, your payout goes out automatically once it's confirmed live - if they don't require that, they'll release it manually whenever they're happy, so feel free to send this anytime.`
+            : !platform
+            ? "You can upload your deliverable now, before the brand even pays - this campaign doesn't require a specific platform, so once they pay they'll just release your payout manually whenever they're happy with it."
             : `You can upload your deliverable now, before the brand even pays - ${platform} doesn't support automatic post verification, so once they pay they'll just release your payout manually whenever they're happy with it.`}
         </p>
       </div>
