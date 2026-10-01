@@ -4,9 +4,8 @@ import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
-import { COUNTRIES } from "../lib/countries";
-import { REGIONS_BY_COUNTRY } from "../lib/regions";
-import { LOCATIONIQ_API_KEY } from "../lib/locationiq";
+import { useBillingAddress } from "../lib/useBillingAddress";
+import BillingAddressFields from "../components/BillingAddressFields";
 
 const CARD_ELEMENT_OPTIONS = {
   hidePostalCode: true,
@@ -15,7 +14,7 @@ const CARD_ELEMENT_OPTIONS = {
       fontSize: "14px",
       color: "#fff",
       fontFamily: "'DM Sans', sans-serif",
-      "::placeholder": { color: "#999" }, 
+      "::placeholder": { color: "#999" },
     },
     invalid: { color: "#ff3b30" },
   },
@@ -23,22 +22,6 @@ const CARD_ELEMENT_OPTIONS = {
 
 const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
 const fieldInput: React.CSSProperties = { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const };
-
-
-interface NominatimResult {
-  display_name: string;
-  address?: {
-    house_number?: string;
-    road?: string;
-    city?: string;
-    town?: string;
-    village?: string;
-    county?: string;
-    state?: string;
-    postcode?: string;
-    country_code?: string;
-  };
-}
 
 interface SubscriptionFormProps {
   selectedPlan: "monthly" | "annual";
@@ -54,75 +37,8 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
   const elements = useElements();
   const [cardName, setCardName] = useState("");
   const [billingOpen, setBillingOpen] = useState(false);
-  const [billingLine1, setBillingLine1] = useState("");
-  const [billingLine2, setBillingLine2] = useState("");
-  const [billingCity, setBillingCity] = useState("");
-  const [billingState, setBillingState] = useState("");
-  const [billingPostalCode, setBillingPostalCode] = useState("");
-  const [billingCountry, setBillingCountry] = useState("GB");
-  const [addressSuggestions, setAddressSuggestions] = useState<NominatimResult[]>([]);
-  const [addressSearching, setAddressSearching] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const addr = useBillingAddress("GB");
   const billingRef = useRef<HTMLDivElement>(null);
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchAbortRef = useRef<AbortController | null>(null);
-
-  const handleAddressLine1Change = (value: string) => {
-    setBillingLine1(value);
-    setShowSuggestions(true);
-
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    if (searchAbortRef.current) searchAbortRef.current.abort();
-
-    // No key set yet -> no suggestions, but every field here can still be
-    // typed by hand (see LOCATIONIQ_API_KEY's comment).
-    if (value.trim().length < 3 || !LOCATIONIQ_API_KEY) {
-      setAddressSuggestions([]);
-      setAddressSearching(false);
-      return;
-    }
-
-    searchDebounceRef.current = setTimeout(async () => {
-      const controller = new AbortController();
-      searchAbortRef.current = controller;
-      setAddressSearching(true);
-      try {
-        const res = await fetch(
-          `https://api.locationiq.com/v1/search?key=${LOCATIONIQ_API_KEY}&format=jsonv2&addressdetails=1&limit=5&q=${encodeURIComponent(value)}`,
-          { signal: controller.signal }
-        );
-        const data = await res.json();
-        // On an invalid/rate-limited key LocationIQ returns an error object,
-        // not an array - fail quietly rather than crash the .map() below.
-        setAddressSuggestions(Array.isArray(data) ? data : []);
-      } catch {
-        // Ignore aborted/failed lookups — user can still type the address manually.
-      } finally {
-        setAddressSearching(false);
-      }
-    }, 500);
-  };
-
-  const selectAddressSuggestion = (result: NominatimResult) => {
-    const a = result.address || {};
-    const line1 = [a.house_number, a.road].filter(Boolean).join(" ");
-    setBillingLine1(line1 || result.display_name.split(",")[0]);
-    setBillingCity(a.city || a.town || a.village || "");
-    const rawState = a.state || a.county || "";
-    let countryCode = billingCountry;
-    if (a.country_code) {
-      const upper = a.country_code.toUpperCase();
-      if (COUNTRIES.some(c => c.code === upper)) { countryCode = upper; setBillingCountry(upper); }
-    }
-    // Nominatim returns the full state/county name - match it to our dropdown's
-    // code (e.g. "California" -> "CA") when that country has one, so the
-    // picked address shows as actually selected instead of looking empty.
-    const regionMatch = REGIONS_BY_COUNTRY[countryCode]?.find(r => r.name.toLowerCase() === rawState.toLowerCase());
-    setBillingState(regionMatch?.code || rawState);
-    setBillingPostalCode(a.postcode || "");
-    setAddressSuggestions([]);
-    setShowSuggestions(false);
-  };
 
   const toggleBilling = () => {
     setBillingOpen(prev => {
@@ -139,7 +55,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
 
     if (!cardName.trim()) { onError("Please enter the cardholder name."); return; }
 
-    if (!billingLine1.trim() || !billingCity.trim() || !billingPostalCode.trim() || !billingCountry.trim()) {
+    if (!addr.isFilled()) {
       onError("Please fill in your billing address.");
       if (!billingOpen) setBillingOpen(true);
       setTimeout(() => billingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
@@ -149,18 +65,28 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     onError("");
     onLoadingChange(true);
 
+    const addressOk = await addr.verify();
+    if (!addressOk) {
+      onError(addr.verifyError);
+      if (!billingOpen) setBillingOpen(true);
+      setTimeout(() => billingRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+      onLoadingChange(false);
+      return;
+    }
+
+    const billingDetails = addr.asBillingDetails();
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: "card",
       card: cardElement,
       billing_details: {
         name: cardName,
         address: {
-          line1: billingLine1 || undefined,
-          line2: billingLine2 || undefined,
-          city: billingCity || undefined,
-          state: billingState || undefined,
-          postal_code: billingPostalCode || undefined,
-          country: billingCountry || undefined,
+          line1: billingDetails.line1 || undefined,
+          line2: billingDetails.line2 || undefined,
+          city: billingDetails.city || undefined,
+          state: billingDetails.state || undefined,
+          postal_code: billingDetails.postal_code || undefined,
+          country: billingDetails.country || undefined,
         },
       },
     });
@@ -181,14 +107,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
         email: user.email,
         plan: selectedPlan,
         payment_method_id: paymentMethod.id,
-        billing_address: {
-          line1: billingLine1,
-          line2: billingLine2,
-          city: billingCity,
-          state: billingState,
-          postal_code: billingPostalCode,
-          country: billingCountry,
-        },
+        billing_address: billingDetails,
       }
     });
 
@@ -230,70 +149,8 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
         </div>
 
         {billingOpen && (
-          <div ref={billingRef} className="billing-address-in" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            <div style={{ position: "relative" }}>
-              <label style={fieldLabel}>Address Line 1 <span style={{ color: "#777", textTransform: "none", letterSpacing: 0 }}>— start typing to search</span></label>
-              <input
-                value={billingLine1}
-                onChange={e => handleAddressLine1Change(e.target.value)}
-                onFocus={() => addressSuggestions.length > 0 && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                placeholder="123 High Street"
-                style={fieldInput}
-                autoComplete="off"
-              />
-              {addressSearching && (
-                <span style={{ position: "absolute", right: "14px", top: "36px", fontSize: "11px", color: "#999" }}>Searching…</span>
-              )}
-              {showSuggestions && addressSuggestions.length > 0 && (
-                <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", zIndex: 10, maxHeight: "220px", overflowY: "auto" }}>
-                  {addressSuggestions.map((s, i) => (
-                    <div
-                      key={i}
-                      onMouseDown={() => selectAddressSuggestion(s)}
-                      style={{ padding: "10px 14px", fontSize: "12px", color: "#ccc", cursor: "pointer", borderBottom: i < addressSuggestions.length - 1 ? "1px solid #1a1a1a" : "none" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                    >
-                      {s.display_name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div>
-              <label style={fieldLabel}>Address Line 2</label>
-              <input value={billingLine2} onChange={e => setBillingLine2(e.target.value)} placeholder="Apartment, suite, etc. (optional)" style={fieldInput} />
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-              <div>
-                <label style={fieldLabel}>City</label>
-                <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="London" style={fieldInput} />
-              </div>
-              <div>
-                <label style={fieldLabel}>County / State</label>
-                {REGIONS_BY_COUNTRY[billingCountry] ? (
-                  <select value={billingState} onChange={e => setBillingState(e.target.value)} style={{ ...fieldInput, cursor: "pointer", color: billingState ? "#fff" : "#999" }}>
-                    <option value="">Select...</option>
-                    {REGIONS_BY_COUNTRY[billingCountry].map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
-                  </select>
-                ) : (
-                  <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="Greater London" style={fieldInput} />
-                )}
-              </div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-              <div>
-                <label style={fieldLabel}>Postal Code</label>
-                <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="SE1 9GF" style={fieldInput} />
-              </div>
-              <div>
-                <label style={fieldLabel}>Country</label>
-                <select value={billingCountry} onChange={e => { setBillingCountry(e.target.value); setBillingState(""); }} style={{ ...fieldInput, cursor: "pointer" }}>
-                  {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                </select>
-              </div>
-            </div>
+          <div ref={billingRef} className="billing-address-in">
+            <BillingAddressFields addr={addr} />
           </div>
         )}
       </div>

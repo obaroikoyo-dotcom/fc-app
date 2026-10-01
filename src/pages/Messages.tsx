@@ -9,8 +9,8 @@ import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { censorProfanity } from "../lib/profanity";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
-import { COUNTRIES } from "../lib/countries";
-import { REGIONS_BY_COUNTRY } from "../lib/regions";
+import { useBillingAddress } from "../lib/useBillingAddress";
+import BillingAddressFields from "../components/BillingAddressFields";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { uploadDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
@@ -221,13 +221,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const elements = useElements();
   const [useNewCard, setUseNewCard] = useState(!savedCard);
   const [cardName, setCardName] = useState("");
-  const [billingLine1, setBillingLine1] = useState("");
-  const [billingLine2, setBillingLine2] = useState("");
-  const [showLine2, setShowLine2] = useState(false);
-  const [billingCity, setBillingCity] = useState("");
-  const [billingState, setBillingState] = useState("");
-  const [billingPostalCode, setBillingPostalCode] = useState("");
-  const [billingCountry, setBillingCountry] = useState("GB");
+  const addr = useBillingAddress("GB");
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
   // Only TikTok and Instagram have a real post-verification integration -
@@ -254,7 +248,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   const handlePay = async () => {
     if (!stripe || !currentUserId) return;
 
-    if (useNewCard && (!billingLine1.trim() || !billingCity.trim() || !billingPostalCode.trim() || !billingCountry.trim())) {
+    if (useNewCard && !addr.isFilled()) {
       setError("Please fill in your billing address.");
       return;
     }
@@ -262,14 +256,16 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     setProcessing(true);
     setError("");
 
-    const billingAddress = useNewCard ? {
-      line1: billingLine1,
-      line2: billingLine2,
-      city: billingCity,
-      state: billingState,
-      postal_code: billingPostalCode,
-      country: billingCountry,
-    } : undefined;
+    if (useNewCard) {
+      const addressOk = await addr.verify();
+      if (!addressOk) {
+        setError(addr.verifyError);
+        setProcessing(false);
+        return;
+      }
+    }
+
+    const billingAddress = useNewCard ? addr.asBillingDetails() : undefined;
 
     const gatedPlatform = deliveryPlatform && requireGatedPost ? deliveryPlatform : null;
     const res = await supabase.functions.invoke("create-payment-intent", {
@@ -304,12 +300,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
           billing_details: {
             name: cardName,
             address: {
-              line1: billingLine1 || undefined,
-              line2: billingLine2 || undefined,
-              city: billingCity || undefined,
-              state: billingState || undefined,
-              postal_code: billingPostalCode || undefined,
-              country: billingCountry || undefined,
+              line1: billingAddress?.line1 || undefined,
+              line2: billingAddress?.line2 || undefined,
+              city: billingAddress?.city || undefined,
+              state: billingAddress?.state || undefined,
+              postal_code: billingAddress?.postal_code || undefined,
+              country: billingAddress?.country || undefined,
             },
           },
         },
@@ -435,31 +431,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
           </div>
           <div>
             <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Billing Address</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              <input value={billingLine1} onChange={e => setBillingLine1(e.target.value)} placeholder="Address line 1" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-              {showLine2 ? (
-                <input value={billingLine2} onChange={e => setBillingLine2(e.target.value)} placeholder="Address line 2 (optional)" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-              ) : (
-                <span onClick={() => setShowLine2(true)} style={{ fontSize: "11px", color: "#888", cursor: "pointer", padding: "2px 0" }}>+ Add address line 2</span>
-              )}
-              <div style={{ display: "flex", gap: "6px" }}>
-                <input value={billingCity} onChange={e => setBillingCity(e.target.value)} placeholder="City" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                {REGIONS_BY_COUNTRY[billingCountry] ? (
-                  <select value={billingState} onChange={e => setBillingState(e.target.value)} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: billingState ? "#fff" : "#999", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
-                    <option value="">County/State</option>
-                    {REGIONS_BY_COUNTRY[billingCountry].map(r => <option key={r.code} value={r.code}>{r.name}</option>)}
-                  </select>
-                ) : (
-                  <input value={billingState} onChange={e => setBillingState(e.target.value)} placeholder="County/State" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                )}
-              </div>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <input value={billingPostalCode} onChange={e => setBillingPostalCode(e.target.value)} placeholder="Postal code" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
-                <select value={billingCountry} onChange={e => { setBillingCountry(e.target.value); setBillingState(""); }} style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }}>
-                  {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                </select>
-              </div>
-            </div>
+            <BillingAddressFields addr={addr} />
           </div>
         </div>
       )}
