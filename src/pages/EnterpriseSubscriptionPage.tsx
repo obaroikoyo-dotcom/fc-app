@@ -338,7 +338,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
   <div className="enterprise-modal-card" onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "750px", width: "95%", margin: "20px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem" }}>
             {paymentSuccess ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <div style={{ fontSize: "40px", marginBottom: "1rem" }}>🎉</div>
+                <div style={{ fontSize: "40px", marginBottom: "1rem" }}>✓</div>
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
                 <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
                 <div className="tap-btn" onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
