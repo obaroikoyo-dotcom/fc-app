@@ -23,6 +23,15 @@ const CARD_ELEMENT_OPTIONS = {
 const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
 const fieldInput: React.CSSProperties = { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const };
 
+const SuccessIcon = () => (
+  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9.25" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M8 12.3l2.6 2.6L16 9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  </div>
+);
+
 interface SubscriptionFormProps {
   selectedPlan: "monthly" | "annual";
   onSuccess: () => void;
@@ -198,7 +207,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
-          <div style={{ fontSize: "40px", marginBottom: "1rem" }}>✓</div>
+          <SuccessIcon />
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're already on Enterprise</p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
             {currentSubscription.cancelAtPeriodEnd
@@ -338,7 +347,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
   <div className="enterprise-modal-card" onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "750px", width: "95%", margin: "20px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem" }}>
             {paymentSuccess ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <div style={{ fontSize: "40px", marginBottom: "1rem" }}>✓</div>
+                <SuccessIcon />
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
                 <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
                 <div className="tap-btn" onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
