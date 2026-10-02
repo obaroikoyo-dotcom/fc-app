@@ -26,7 +26,12 @@ export default function Root() {
   // clicked "Launch app" to get back to the profile that actually changed.
   const params = new URLSearchParams(window.location.search);
   const isSocialCallback = params.has("social_connected") || params.has("social_error");
-  const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone || isSocialCallback;
+  // A Share Profile link (/profile/:id, /brand/:id) is someone clicking
+  // through to see a specific person, not a fresh "what is this app" visit -
+  // the marketing page would just be an extra tap in the way of the thing
+  // they actually clicked, same reasoning as the social-callback case above.
+  const isProfileLink = /^\/(profile|brand)\/[0-9a-fA-F-]{36}\/?$/.test(window.location.pathname);
+  const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone || isSocialCallback || isProfileLink;
   const [showApp, setShowApp] = useState(skipLanding);
 
   // Launching pushes a real history entry, so the browser's own back
