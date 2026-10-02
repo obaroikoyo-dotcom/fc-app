@@ -968,13 +968,23 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
       if (role === "brand") {
         try {
-          const { data: bp } = await withTimeout(
-            () => supabase.from("brand_profiles").select("is_enterprise, stripe_payment_method_id, card_last4, card_brand").eq("id", user.id).single(),
+          // card_last4/card_brand/stripe_payment_method_id are no longer
+          // directly selectable from brand_profiles (even for your own row)
+          // since those columns were readable for every brand's row, not
+          // just your own - this RPC is scoped to auth.uid() internally.
+          const [{ data: bp }, { data: card }] = await withTimeout(
+            () => Promise.all([
+              supabase.from("brand_profiles").select("is_enterprise").eq("id", user.id).single(),
+              // Not yet in the generated Database types (the function was
+              // just added) - safe to assert, the shape is fixed by the
+              // migration's own RETURNS TABLE definition.
+              supabase.rpc("get_own_saved_card").single() as unknown as Promise<{ data: { stripe_payment_method_id: string | null; card_last4: string | null; card_brand: string | null } | null }>,
+            ]),
             10000, "Messages.init.brandProfile"
           );
           if (bp?.is_enterprise) setIsEnterprise(true);
-          if (bp?.stripe_payment_method_id && bp?.card_last4) {
-            setSavedCard({ last4: bp.card_last4, brand: bp.card_brand || "card", pm_id: bp.stripe_payment_method_id });
+          if (card?.stripe_payment_method_id && card?.card_last4) {
+            setSavedCard({ last4: card.card_last4, brand: card.card_brand || "card", pm_id: card.stripe_payment_method_id });
           }
         } catch (err) {
           console.error("Failed to load brand payment info:", err);
