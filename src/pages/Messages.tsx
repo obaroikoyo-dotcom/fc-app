@@ -1083,7 +1083,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   // When opening a chat, automatically clear its unread status
   useEffect(() => {
     if (view === "chat" && activeConvo) {
-      clearUnreadForConvo(activeConvo.id);
+      clearUnreadForConvo(activeConvo.id, activeConvo.campaign_id, activeConvo.application_id);
     }
   }, [view, activeConvo?.id]);
 
@@ -1208,7 +1208,16 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     }
   };
 
-  const clearUnreadForConvo = async (convoId: string) => {
+  // Notification rows that aren't about a specific chat message at all -
+  // "payment received" (campaign_id), "new application" (campaign_id),
+  // "set up payouts" (application_id) - carry no conversation_id, so they'd
+  // otherwise sit unread forever: there's no dedicated notifications screen
+  // reachable from anywhere in the app to clear them, and the global badge
+  // (get_unread_notification_count) counts every type, not just messages.
+  // Whatever the brand/creator can already see by opening this conversation
+  // - the payment-secured system message, the application itself - counts
+  // as "seen", so clear all three kinds here.
+  const clearUnreadForConvo = async (convoId: string, campaignId?: string | null, applicationId?: string | null) => {
   // Clear the dot immediately rather than waiting on the round-trip below.
   setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
 
@@ -1217,13 +1226,16 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const currentUserId = user.id;
   const { data: notifs } = await supabase
     .from("notifications")
-    .select("id, data")
+    .select("id, data, type")
     .eq("user_id", currentUserId)
-    .in("type", ["new_message", "campaign_chatting"])
     .eq("read", false);
 
   if (notifs) {
-    const toMark = notifs.filter(n => n.data?.conversation_id === convoId).map(n => n.id);
+    const toMark = notifs.filter(n =>
+      ((n.type === "new_message" || n.type === "campaign_chatting") && n.data?.conversation_id === convoId)
+      || (!!campaignId && n.data?.campaign_id === campaignId)
+      || (!!applicationId && n.data?.application_id === applicationId)
+    ).map(n => n.id);
     if (toMark.length > 0) {
       await supabase.from("notifications").update({ read: true }).in("id", toMark); // fixed: was is_read
       if (onRead) onRead();
