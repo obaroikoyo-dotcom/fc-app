@@ -60,6 +60,10 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   const [socialInfo, setSocialInfo] = useState<PublicSocialInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Shown when someone who's never signed up (arrived via a shared profile
+  // link) taps Message - the profile itself works the same either way,
+  // this only gates the in-app action.
+  const [showReadOnlyNotice, setShowReadOnlyNotice] = useState(false);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
   const [blockedByMe, setBlockedByMe] = useState(false);
@@ -406,11 +410,20 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
         {/* DM Button */}
         <div
-          onClick={startDM}
-          style={{ padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2rem" }}
+          onClick={() => currentUserId ? startDM() : setShowReadOnlyNotice(true)}
+          style={{ padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: showReadOnlyNotice ? "10px" : "2rem" }}
         >
           Message
         </div>
+
+        {showReadOnlyNotice && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", marginBottom: "2rem" }}>
+            <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>This is a read-only view — sign up to message this brand.</p>
+            <div onClick={() => navigate("role-select")} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: "6px", background: "#fff", color: "#0a0a0a", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Sign Up
+            </div>
+          </div>
+        )}
 
         {/* Bio */}
         {brand.bio && (

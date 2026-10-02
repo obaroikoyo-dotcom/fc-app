@@ -59,12 +59,17 @@ interface CreatorData {
   profile_visible?: boolean;
 }
 
-export default function PublicProfile({ profileId, goBack, navigateToMessages }: Props) {
+export default function PublicProfile({ navigate, profileId, goBack, navigateToMessages }: Props) {
   const [creator, setCreator] = useState<CreatorData | null>(null);
   const [isBrand, setIsBrand] = useState(false);
   const [loading, setLoading] = useState(true);
   const [favourited, setFavourited] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Shown when someone who's never signed up (arrived via a shared profile
+  // link) taps something that needs an account - Message, Favourite. The
+  // profile itself, and any external link on it (YouTube etc.), works the
+  // same either way; this only gates in-app actions.
+  const [showReadOnlyNotice, setShowReadOnlyNotice] = useState(false);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
   const [blockedByMe, setBlockedByMe] = useState(false);
@@ -496,20 +501,29 @@ const startDM = async () => {
           {/* Action Buttons */}
           <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
             <div
-              onClick={startDM}
+              onClick={() => currentUserId ? startDM() : setShowReadOnlyNotice(true)}
               style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Message
             </div>
             {!isOwner && (
             <div
-              onClick={toggleFavourite}
+              onClick={() => currentUserId ? toggleFavourite() : setShowReadOnlyNotice(true)}
               style={{ flex: 1, padding: "12px", borderRadius: "8px", background: favourited ? "#1a1a1a" : "transparent", color: favourited ? "#555" : "#fff", border: favourited ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
             >
               {favourited ? "Favourited ✓" : "Favourite"}
             </div>
             )}
           </div>
+
+          {showReadOnlyNotice && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", marginBottom: "2rem" }}>
+              <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>This is a read-only view — sign up to message or favourite creators.</p>
+              <div onClick={() => navigate("role-select")} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: "6px", background: "#fff", color: "#0a0a0a", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Sign Up
+              </div>
+            </div>
+          )}
 
           {/* Bio */}
           {creator.bio && (
