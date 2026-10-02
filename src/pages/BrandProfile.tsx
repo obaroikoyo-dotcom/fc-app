@@ -213,7 +213,10 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
     setIsAdmin(user.email === ADMIN_EMAIL);
     setShareLink(`https://flipcollab.app/brand/${user.id}`);
 
-    const { data } = await supabase.from("brand_profiles").select("*").eq("id", user.id).single();
+    // Explicit column list, not select("*") - brand_profiles' sensitive
+    // columns (stripe/card/billing) are no longer grantable table-wide, and
+    // none of them are actually needed here.
+    const { data } = await supabase.from("brand_profiles").select("name, company_name, verified, profile_visible, bio, website, instagram, tiktok, industry, niche, location, target_audience, budget_range, content_types, logo_url, avatar_url, is_enterprise, subscription_cancel_at_period_end").eq("id", user.id).single();
     if (data) {
       setName(data.company_name || data.name || "");
       setIsVerified(!!data.verified);
