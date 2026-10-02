@@ -211,7 +211,7 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
     if (!user) return;
     setUserId(user.id);
     setIsAdmin(user.email === ADMIN_EMAIL);
-    setShareLink(`https://flipcollab.app/brand/${user.id}`);
+    setShareLink(`https://flipcollab.com/brand/${user.id}`);
 
     // Explicit column list, not select("*") - brand_profiles' sensitive
     // columns (stripe/card/billing) are no longer grantable table-wide, and

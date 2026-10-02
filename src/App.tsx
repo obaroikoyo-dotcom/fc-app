@@ -236,6 +236,13 @@ export default function App() {
   if (subdomain === "privacy") return <PrivacyPolicyPage />;
   if (subdomain === "terms") return <TermsPage />;
 
+  // Share Profile links (/profile/:id, /brand/:id) need to work for someone
+  // who's never signed up at all, not just an already-logged-in user - read
+  // once on initial load rather than wiring in a real router, matching how
+  // this app already only ever reads the URL once (the subdomain check
+  // above) and drives everything else from in-memory state afterward.
+  const deepLinkMatch = window.location.pathname.match(/^\/(profile|brand)\/([0-9a-fA-F-]{36})\/?$/);
+
   const [page, setPage] = useState<Page>("splash");
   const [, setHistory] = useState<Page[]>([]);
   const [loading, setLoading] = useState(true);
@@ -489,9 +496,22 @@ export default function App() {
           } else {
             oneSignalLogin(session.user.id);
             setTimeout(() => maybePromptForPush(session.user.id), 3000);
-            await syncUserRoute(session.user.id);
+            if (deepLinkMatch) {
+              // Still a real member - fetch their role so the right bottom
+              // nav shows, but send them to the shared profile instead of
+              // their own dashboard; that's what they actually clicked.
+              const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+              if (profile?.role === "creator" || profile?.role === "brand") setUserRole(profile.role);
+              if (deepLinkMatch[1] === "profile") { setViewingProfileId(deepLinkMatch[2]); setPage("public-profile"); }
+              else { setViewingBrandId(deepLinkMatch[2]); setPage("brand-public-profile"); }
+            } else {
+              await syncUserRoute(session.user.id);
+            }
             fetchGlobalUnreadCount();
           }
+        } else if (deepLinkMatch) {
+          if (deepLinkMatch[1] === "profile") { setViewingProfileId(deepLinkMatch[2]); setPage("public-profile"); }
+          else { setViewingBrandId(deepLinkMatch[2]); setPage("brand-public-profile"); }
         } else {
           setPage("role-select");
         }
@@ -610,6 +630,12 @@ export default function App() {
     );
   }
 
+  // Both profile-preview pages are reachable by anyone (shared links,
+  // browsing within the app), so the bottom nav only makes sense once the
+  // viewer is confirmed to actually be that kind of account - including a
+  // logged-out visitor (userRole stays null), who shouldn't see either nav.
+  const isPreviewPage = page === "public-profile" || page === "brand-public-profile";
+
   const renderPage = () => {
     switch (page) {
       case "splash": return <SplashScreen />;
@@ -696,10 +722,10 @@ case "brand-campaign-preview":
      <div key={page} className="page-enter" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" }}>
   {renderPage()}
 </div>
-      {CREATOR_PAGES.includes(page) && (page !== "public-profile" || userRole === "creator") && (
+      {CREATOR_PAGES.includes(page) && (!isPreviewPage || userRole === "creator") && (
         <CreatorNav page={page} navigate={navigate} isInverted={isInverted} unreadCount={unreadCount} />
       )}
-      {BRAND_PAGES.includes(page) && (page !== "public-profile" || userRole === "brand") && (
+      {BRAND_PAGES.includes(page) && (!isPreviewPage || userRole === "brand") && (
         <BrandNav page={page} navigate={navigate} tab={brandTab} setTab={setBrandTab} setViewingProfileId={setViewingProfileId} isInverted={isInverted} unreadCount={unreadCount} />
       )}
       {notifPromptUserId && (

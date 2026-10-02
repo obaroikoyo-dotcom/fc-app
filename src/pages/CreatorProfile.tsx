@@ -400,7 +400,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     if (!user) return;
     setUserId(user.id);
     setIsAdmin(user.email === ADMIN_EMAIL);
-    setShareLink(`https://flipcollab.app/profile/${user.id}`);
+    setShareLink(`https://flipcollab.com/profile/${user.id}`);
 
     const { data } = await supabase.from("creator_profiles").select("*").eq("id", user.id).single();
     if (data) {
