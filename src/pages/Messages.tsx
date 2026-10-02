@@ -690,12 +690,13 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // deals released a way that never touched TikTok at all.
             <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>
+            <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.5 }}>
               {!platform
-                ? "This campaign doesn't require a specific platform - ask the brand to release your payment manually once they've confirmed delivery."
+                ? "This campaign doesn't require a specific platform - the brand releases your payment once they've confirmed delivery."
                 : socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
-                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - ask the brand to release your payment manually once they've confirmed delivery.`
-                : `${platform} doesn't support automatic post verification - ask the brand to release your payment manually once they've confirmed delivery.`}
+                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - the brand releases your payment once they've confirmed delivery.`
+                : `${platform} doesn't support automatic post verification - the brand releases your payment once they've confirmed delivery.`}
+              {" "}If they don't get to it, it releases to you automatically after 7 days.
             </p>
           ) : !socialConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Connect Social Platforms to post this and get paid.</p>
@@ -732,9 +733,16 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {role === "brand" && applicationStatus === "funded" && (
-        <div onClick={!releasing ? handleManualRelease : undefined} style={{ marginTop: "10px", padding: "11px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: releasing ? "#555" : "#777", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
-          {releasing ? "Releasing..." : "Release Payment Manually (e.g. you're posting this yourself, or it was delivered off-platform)"}
-        </div>
+        <>
+          <div onClick={!releasing ? handleManualRelease : undefined} style={{ marginTop: "10px", padding: "11px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: releasing ? "#555" : "#777", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
+            {releasing ? "Releasing..." : "Release Payment Manually (e.g. you're posting this yourself, or it was delivered off-platform)"}
+          </div>
+          {deliverableUrl && (
+            <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "6px", lineHeight: 1.4 }}>
+              Left unreviewed, this releases to the creator automatically 7 days after delivery.
+            </p>
+          )}
+        </>
       )}
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && (
@@ -2195,15 +2203,20 @@ return (
               {role === "brand" ? (
                 // Pay/Screen Out actions live in the header now - this is
                 // just a status readout once a decision's been made.
-                <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", flexShrink: 0 }}>
                   {activeConvo.application_status === "paid" ? (
                     <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#ccc", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
                       <CheckIcon /> Deal Locked — Paid
                     </span>
                   ) : activeConvo.application_status === "funded" ? (
-                    <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
-                      Funded — Awaiting Post
-                    </span>
+                    <>
+                      <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
+                        Funded — Awaiting Delivery
+                      </span>
+                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                        Review the deliverable below once it's in - if you don't release or dispute it, it releases to the creator automatically after 7 days.
+                      </p>
+                    </>
                   ) : activeConvo.application_status === "disputed" ? (
                     <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
                       Dispute Under Review
@@ -2233,10 +2246,12 @@ return (
                   ) : activeConvo.application_status === "funded" ? (
                     <>
                       <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
-                        Funded — Post to Get Paid
+                        Funded — Deliver to Get Paid
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
-                        Upload your deliverable and post it below - your payout releases automatically once it's confirmed live.
+                        {deliveryPlatformFor(activeConvo.campaign_platforms?.[0])
+                          ? "Upload your deliverable and post it below - your payout releases automatically once it's confirmed live, or after 7 days either way."
+                          : "Upload your deliverable below - the brand releases your payout once they confirm it, or it releases automatically after 7 days either way."}
                       </p>
                     </>
                   ) : activeConvo.application_status === "paid" ? (
