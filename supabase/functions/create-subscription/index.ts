@@ -84,6 +84,15 @@ if (existingBrand?.stripe_customer_id) {
 }
 if (customer.error) throw new Error(`Stripe customer error: ${customer.error.message}`);
 
+    // Refuse a card that already belongs to some other customer - the caller
+    // only controls the id they sent, not the card behind it.
+    const ownerRes = await fetch(`https://api.stripe.com/v1/payment_methods/${payment_method_id}`, {
+      headers: { "Authorization": `Bearer ${secretKey}` },
+    });
+    const owner = await ownerRes.json();
+    if (owner.error) throw new Error(`Payment method error: ${owner.error.message}`);
+    if (owner.customer && owner.customer !== customer.id) throw new Error("This card can't be used for this account.");
+
     const attachRes = await fetch(`https://api.stripe.com/v1/payment_methods/${payment_method_id}/attach`, {
       method: "POST",
       headers: { "Authorization": `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },

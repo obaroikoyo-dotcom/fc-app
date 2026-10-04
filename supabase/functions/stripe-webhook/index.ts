@@ -87,7 +87,7 @@ serve(async (req) => {
         .update({ status: "funded", payout_release_mode: tx.payout_release_mode || "tiktok_gated" })
         .eq("campaign_id", tx.campaign_id)
         .eq("creator_id", tx.creator_id)
-        .not("status", "in", "(funded,paid,rejected)");
+        .not("status", "in", "(funded,paid,rejected,disputed)");
     }
   }
 
@@ -98,6 +98,53 @@ serve(async (req) => {
       .from("transactions")
       .update({ status: "failed" })
       .eq("stripe_payment_intent_id", paymentIntent.id);
+  }
+
+  // A card chargeback (the brand's bank reversing the payment) happens entirely
+  // outside the app. Record it so the deal stops looking healthy and an admin
+  // sees it. We can't claw back a Transfer automatically, so if the creator
+  // was already paid this is flagged for manual handling, not silently ignored.
+  if (event.type === "charge.dispute.created") {
+    const dispute = event.data.object as Stripe.Dispute;
+    const paymentIntentId = typeof dispute.payment_intent === "string" ? dispute.payment_intent : dispute.payment_intent?.id;
+    if (paymentIntentId) {
+      const { data: tx } = await supabase
+        .from("transactions")
+        .update({ status: "disputed" })
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .select("campaign_id, creator_id, stripe_transfer_id")
+        .maybeSingle();
+      if (tx?.stripe_transfer_id) {
+        console.error("CHARGEBACK ON A PAID-OUT DEAL - manual recovery needed", { paymentIntentId, disputeId: dispute.id });
+      }
+    }
+  }
+
+  // A refund issued from the Stripe dashboard (not from inside the app) would
+  // otherwise leave the transaction and deal looking paid. Mirror it here.
+  // Refunds issued by refundApplication already set these, so this is a no-op
+  // for them.
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId = typeof charge.payment_intent === "string" ? charge.payment_intent : charge.payment_intent?.id;
+    if (paymentIntentId && charge.amount_refunded >= charge.amount) {
+      const { data: tx } = await supabase
+        .from("transactions")
+        .update({ status: "refunded" })
+        .eq("stripe_payment_intent_id", paymentIntentId)
+        .select("campaign_id, creator_id, stripe_transfer_id")
+        .maybeSingle();
+      if (tx && tx.stripe_transfer_id) {
+        console.error("REFUND ISSUED AFTER PAYOUT - creator was already paid, manual recovery needed", { paymentIntentId });
+      } else if (tx) {
+        await supabase
+          .from("applications")
+          .update({ status: "refunded" })
+          .eq("campaign_id", tx.campaign_id)
+          .eq("creator_id", tx.creator_id)
+          .not("status", "in", "(paid)");
+      }
+    }
   }
 
   // Fires when a subscription actually ends - either the brand canceled

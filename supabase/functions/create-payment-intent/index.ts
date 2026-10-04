@@ -60,7 +60,7 @@ serve(async (req) => {
       .select("id")
       .eq("campaign_id", campaign_id)
       .eq("creator_id", creator_id)
-      .not("status", "in", "(paid,funded,rejected)")
+      .not("status", "in", "(paid,funded,rejected,disputed)")
       .maybeSingle();
     if (!eligibleApp) throw new Error("No eligible application for this creator on this campaign");
 
@@ -108,7 +108,13 @@ serve(async (req) => {
         });
       }
       // Otherwise (canceled, or Stripe couldn't be reached) fall through and
-      // create a fresh one below.
+      // create a fresh one below. Retire the old row first so only one open
+      // transaction per deal exists (see the unique index in the migration).
+      // Only when Stripe actually said canceled - an unreachable Stripe could
+      // still be holding a live charge, so that row stays as it is.
+      if (existingPI.status === "canceled") {
+        await supabase.from("transactions").update({ status: "canceled" }).eq("id", existingTx.id);
+      }
     }
 
     // is_enterprise was previously trusted straight from the request body -
@@ -227,6 +233,8 @@ serve(async (req) => {
       // so no real charge can happen from here - safe to cancel the
       // now-orphaned PaymentIntent rather than leave a charge that could
       // never be recorded, released, or reconciled by anything.
+      // A unique-index violation (23505) here means a second request for the
+      // same deal won the race - it's the same orphan case, so cancel it too.
       console.error("Failed to insert transaction, canceling orphaned PaymentIntent:", insertError);
       try {
         await fetch(`https://api.stripe.com/v1/payment_intents/${paymentIntent.id}/cancel`, {

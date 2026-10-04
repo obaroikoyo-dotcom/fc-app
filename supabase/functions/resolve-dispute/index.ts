@@ -22,7 +22,9 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user: caller }, error: callerError } = await callerClient.auth.getUser();
-    if (callerError || !caller || caller.email !== ADMIN_EMAIL) {
+    // Email alone isn't proof of ownership - someone can register with an
+    // address they don't control unless it's been confirmed.
+    if (callerError || !caller || caller.email !== ADMIN_EMAIL || !caller.email_confirmed_at) {
       return new Response(JSON.stringify({ error: "Not authorized" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

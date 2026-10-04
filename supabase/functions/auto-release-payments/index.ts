@@ -20,7 +20,10 @@ serve(async (req) => {
   }
 
   const providedSecret = req.headers.get("x-cleanup-secret");
-  if (!providedSecret || providedSecret !== realSecret) {
+  // Constant-time compare so the secret can't be recovered by timing responses.
+  const secretsMatch = !!providedSecret && !!realSecret && providedSecret.length === realSecret.length &&
+    [...providedSecret].reduce((diff, ch, i) => diff | (ch.charCodeAt(0) ^ realSecret.charCodeAt(i)), 0) === 0;
+  if (!secretsMatch) {
     return new Response(JSON.stringify({ error: "Not authorized" }), { status: 403, headers: { "Content-Type": "application/json" } });
   }
 

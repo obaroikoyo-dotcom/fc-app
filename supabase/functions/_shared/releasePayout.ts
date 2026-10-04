@@ -4,6 +4,16 @@ export type ReleaseResult =
   | { released: true; alreadyReleased?: boolean; transferId?: string }
   | { released: false; reason: "not_connected" | "transfer_failed" | "no_transaction"; error?: string };
 
+// stripe_transfer_id has three shapes:
+//   null                 - nothing sent yet
+//   "pending:<uuid>"     - a transfer is being attempted with that uuid as its
+//                          Stripe Idempotency-Key. Stripe returns the same
+//                          result for the same key, so re-running after a
+//                          crash or timeout can never create a second transfer,
+//                          and can't skip the transfer the way a bare marker did.
+//   "tr_..."             - a real Stripe transfer id; the money has moved.
+const PENDING_PREFIX = "pending:";
+
 // Centralizes what happens when funds held in escrow for an application get
 // released, regardless of which of the three triggers fired it (TikTok
 // auto-confirm, a brand's manual release, or an ungated instant payment).
@@ -41,12 +51,11 @@ export async function releasePayoutForApplication(
     return { released: false, reason: "no_transaction", error: "No matching transaction found" };
   }
 
-  if (transaction.stripe_transfer_id) {
-    // Idempotency guard against races (e.g. TikTok auto-release firing at
-    // the same moment as a manual click) - flip status defensively in case
-    // a prior attempt updated the transaction but not the application.
+  const existingTransfer = transaction.stripe_transfer_id as string | null;
+  if (existingTransfer && !existingTransfer.startsWith(PENDING_PREFIX)) {
+    // A real transfer already exists - just make sure the application agrees.
     await supabaseAdmin.from("applications").update({ status: "paid" }).eq("id", applicationId);
-    return { released: true, alreadyReleased: true, transferId: transaction.stripe_transfer_id };
+    return { released: true, alreadyReleased: true, transferId: existingTransfer };
   }
 
   if (transaction.creator_payout > 0) {
@@ -79,27 +88,29 @@ export async function releasePayoutForApplication(
       return { released: false, reason: "transfer_failed", error: "Payment hasn't finished settling yet - try again shortly." };
     }
 
-    // Atomically claim this transaction before creating the real Stripe
-    // Transfer - the earlier read-then-check above isn't itself atomic, so
-    // two triggers firing at nearly the same instant (e.g. a TikTok
-    // auto-release landing the same moment as a manual click) could both
-    // pass it and both create a real Transfer for the same money. A single
-    // UPDATE ... WHERE stripe_transfer_id IS NULL is row-locked by Postgres,
-    // so only one concurrent caller can ever win this claim; the other gets
-    // zero rows back and backs off instead of double-paying the creator.
-    const sentinel = "pending";
-    const { data: claimed } = await supabaseAdmin
-      .from("transactions")
-      .update({ stripe_transfer_id: sentinel })
-      .eq("id", transaction.id)
-      .is("stripe_transfer_id", null)
-      .select("id")
-      .maybeSingle();
+    // The idempotency key for this payout. A fresh claim mints a new one; a
+    // row already stuck in "pending:" reuses its key, so the retry is
+    // deduplicated by Stripe against whatever the earlier attempt did.
+    let attemptKey: string;
+    if (existingTransfer) {
+      attemptKey = existingTransfer;
+    } else {
+      // Atomically claim this transaction. Only one concurrent caller can win
+      // the null -> pending update; the loser backs off instead of racing.
+      attemptKey = `${PENDING_PREFIX}${crypto.randomUUID()}`;
+      const { data: claimed } = await supabaseAdmin
+        .from("transactions")
+        .update({ stripe_transfer_id: attemptKey })
+        .eq("id", transaction.id)
+        .is("stripe_transfer_id", null)
+        .select("id")
+        .maybeSingle();
 
-    if (!claimed) {
-      // Someone else claimed it first - by the time this branch is reached
-      // it's already released or about to be.
-      return { released: true, alreadyReleased: true };
+      if (!claimed) {
+        // Another trigger is mid-payout right now. Don't report success
+        // before its transfer has actually landed.
+        return { released: false, reason: "transfer_failed", error: "This payout is already being processed - try again shortly." };
+      }
     }
 
     const params = new URLSearchParams({
@@ -110,11 +121,15 @@ export async function releasePayoutForApplication(
       transfer_group: `application_${applicationId}`,
     });
 
+    // If this throws (network drop), the row stays "pending:<key>" on purpose:
+    // the next attempt reuses the key and Stripe returns the original result
+    // instead of sending the money twice.
     const transferRes = await fetch("https://api.stripe.com/v1/transfers", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}`,
         "Content-Type": "application/x-www-form-urlencoded",
+        "Idempotency-Key": attemptKey,
       },
       body: params,
     });
@@ -122,10 +137,12 @@ export async function releasePayoutForApplication(
 
     if (!transfer.id) {
       console.error("Stripe transfer failed for application", applicationId, transfer);
-      // Release the claim so a future retry (any of the three trigger
-      // paths) can actually attempt this again instead of being
-      // permanently blocked by the sentinel.
-      await supabaseAdmin.from("transactions").update({ stripe_transfer_id: null }).eq("id", transaction.id);
+      // Stripe answered with an error, so no money moved. Release the claim
+      // so the next attempt gets a fresh key rather than a replayed error.
+      await supabaseAdmin.from("transactions")
+        .update({ stripe_transfer_id: null })
+        .eq("id", transaction.id)
+        .eq("stripe_transfer_id", attemptKey);
       return { released: false, reason: "transfer_failed", error: transfer.error?.message || "Stripe transfer failed" };
     }
 
@@ -179,7 +196,9 @@ export async function refundApplication(
     return { refunded: false, reason: "no_transaction", error: "No matching transaction found" };
   }
   if (transaction.stripe_transfer_id) {
-    return { refunded: false, reason: "already_released", error: "Funds were already released to the creator - this needs manual handling, not a refund." };
+    // Includes an in-flight or unconfirmed "pending:" payout - refusing is
+    // the safe choice until Stripe has been checked.
+    return { refunded: false, reason: "already_released", error: "Funds were already released (or a payout is unconfirmed) - this needs manual handling, not a refund." };
   }
   if (!transaction.stripe_charge_id) {
     return { refunded: false, reason: "no_transaction", error: "Payment hasn't finished settling yet - try again shortly." };
@@ -190,6 +209,8 @@ export async function refundApplication(
     headers: {
       "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}`,
       "Content-Type": "application/x-www-form-urlencoded",
+      // Same key on a double-click or retry, so Stripe can't refund twice.
+      "Idempotency-Key": `refund_${transaction.id}`,
     },
     body: new URLSearchParams({ charge: transaction.stripe_charge_id }),
   });
