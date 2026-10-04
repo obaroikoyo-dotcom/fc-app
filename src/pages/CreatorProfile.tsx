@@ -104,18 +104,17 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const showProfileSkeleton = useDelayedLoading(profileLoading);
   const hasProfileLoadedOnce = useHasLoadedOnce(profileLoading);
   const [favTab, setFavTab] = useState<"creators" | "campaigns">("campaigns");
-  const profileHeaderRef = useRef<HTMLDivElement>(null);
+  const [profileHeaderEl, setProfileHeaderEl] = useState<HTMLDivElement | null>(null);
   const [profileHeaderHeight, setProfileHeaderHeight] = useState(56);
 
   useLayoutEffect(() => {
-    const el = profileHeaderRef.current;
-    if (!el) return;
-    const update = () => setProfileHeaderHeight(el.offsetHeight);
+    if (!profileHeaderEl) return;
+    const update = () => setProfileHeaderHeight(profileHeaderEl.offsetHeight);
     update();
     const observer = new ResizeObserver(update);
-    observer.observe(el);
+    observer.observe(profileHeaderEl);
     return () => observer.disconnect();
-  }, [view]);
+  }, [profileHeaderEl]);
 
   // Settings-specific data
   const [walletBalance, setWalletBalance] = useState(0);
@@ -649,7 +648,7 @@ setTimeout(() => setSaved(false), 2000);
 
     return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
-      <div ref={profileHeaderRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div ref={setProfileHeaderEl} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
         <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
