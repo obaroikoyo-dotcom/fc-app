@@ -13,6 +13,7 @@ export type ReleaseResult =
 //                          and can't skip the transfer the way a bare marker did.
 //   "tr_..."             - a real Stripe transfer id; the money has moved.
 const PENDING_PREFIX = "pending:";
+const LEGACY_PENDING = "pending";
 
 // Centralizes what happens when funds held in escrow for an application get
 // released, regardless of which of the three triggers fired it (TikTok
@@ -51,7 +52,38 @@ export async function releasePayoutForApplication(
     return { released: false, reason: "no_transaction", error: "No matching transaction found" };
   }
 
-  const existingTransfer = transaction.stripe_transfer_id as string | null;
+  let existingTransfer = transaction.stripe_transfer_id as string | null;
+
+  if (existingTransfer === LEGACY_PENDING) {
+    // Left behind by the old code, which had no idempotency key. A transfer
+    // may or may not have gone out before it stopped, so ask Stripe instead
+    // of guessing in either direction.
+    const listRes = await fetch(
+      `https://api.stripe.com/v1/transfers?transfer_group=${encodeURIComponent(`application_${applicationId}`)}&limit=10`,
+      { headers: { "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}` } }
+    );
+    const list = await listRes.json();
+    if (list.error) {
+      return { released: false, reason: "transfer_failed", error: "Couldn't check Stripe for an earlier payout - try again shortly." };
+    }
+    const found = (list.data || []).find((t: { amount: number; reversed?: boolean }) =>
+      t.amount === transaction.creator_payout && !t.reversed
+    );
+    if (found) {
+      await supabaseAdmin.from("transactions").update({
+        stripe_transfer_id: found.id,
+        payout_released_at: new Date().toISOString(),
+      }).eq("id", transaction.id);
+      await supabaseAdmin.from("applications").update({ status: "paid" }).eq("id", applicationId);
+      return { released: true, alreadyReleased: true, transferId: found.id };
+    }
+    // Stripe has no transfer for this deal, so nothing was paid. Clear the
+    // legacy marker and fall through to a normal claim.
+    await supabaseAdmin.from("transactions").update({ stripe_transfer_id: null })
+      .eq("id", transaction.id).eq("stripe_transfer_id", LEGACY_PENDING);
+    existingTransfer = null;
+  }
+
   if (existingTransfer && !existingTransfer.startsWith(PENDING_PREFIX)) {
     // A real transfer already exists - just make sure the application agrees.
     await supabaseAdmin.from("applications").update({ status: "paid" }).eq("id", applicationId);
