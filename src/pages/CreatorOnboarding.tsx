@@ -590,7 +590,10 @@ const [showOtp, setShowOtp] = useState(false);
         ].map(({ key, label }, i, all) => (
           <div key={key} style={i === all.length - 1 ? { gridColumn: "1 / -1" } : undefined}>
             <label style={{ fontSize: "12px", color: "#ccc", display: "block", marginBottom: "6px", lineHeight: 1.3 }}>{label}</label>
-            <input style={inputStyle} placeholder="£" type="number" value={rates[key as keyof typeof rates]} onChange={e => setRates(r => ({ ...r, [key]: e.target.value }))} />
+            <div style={{ position: "relative" }}>
+              <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#888", fontSize: "15px", pointerEvents: "none" }}>£</span>
+              <input style={{ ...inputStyle, width: "100%", paddingLeft: "32px" }} placeholder="0" type="number" min="0" inputMode="decimal" value={rates[key as keyof typeof rates]} onChange={e => setRates(r => ({ ...r, [key]: e.target.value }))} />
+            </div>
           </div>
         ))}
       </div>
