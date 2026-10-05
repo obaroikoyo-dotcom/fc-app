@@ -1245,7 +1245,10 @@ setTimeout(() => setSaved(false), 2000);
               <p style={{ fontSize: "11px", color: "#888", marginTop: "14px", textAlign: "center" }}>Platform matching fee automatically deducted.</p>
               <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
-                <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Pending funds release once deliverables are posted and confirmed.</p>
+                <>
+                  <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Pending funds release once deliverables are posted and confirmed.</p>
+                  <p onClick={() => setSettingsSection("help")} style={{ fontSize: "10px", color: "#888", marginTop: "6px", textAlign: "center", textDecoration: "underline", cursor: "pointer" }}>Why is my balance still pending?</p>
+                </>
               )}
             </div>
           )}
@@ -1578,6 +1581,7 @@ setTimeout(() => setSaved(false), 2000);
       {renderSettingsHeader("Help Centre", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {[
+          { q: "Why is my balance still pending?", a: "Pending means the brand has paid and the money is held safely in escrow, but it hasn't been released to you yet. It releases when the brand releases it after reviewing your upload, when your post is confirmed live (TikTok deals), or automatically 7 days after you upload your deliverable if the brand hasn't acted. The 7-day timer only starts once your video is uploaded. Also check Settings → Payouts shows \"Payouts active\" - if you finished setup after the brand paid, the brand may need to tap release again." },
           { q: "How do I get paid?", a: "Once a brand approves your content, funds are released from escrow and transferred directly to your connected Stripe account - set this up once in Payouts, and every future release goes straight to your bank on Stripe's own payout schedule." },
           { q: "When does the brand actually see my deliverable?", a: "As soon as you upload your video in the chat, the brand can watch it right there — before it's posted anywhere and before any money moves. That preview is what they're reviewing when deciding to release payment." },
           { q: "Do I have to wait for the brand to release payment?", a: "Not always. If your deal is for TikTok, posting it live and having it confirmed releases your payout automatically — no need to wait on the brand. Instagram and YouTube auto-release are coming soon; for now those (and anything else) release when the brand reviews your upload in chat. Either way, if they haven't released or disputed within 7 days of your upload, it releases automatically." },
