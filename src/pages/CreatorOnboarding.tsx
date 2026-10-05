@@ -579,17 +579,17 @@ const [showOtp, setShowOtp] = useState(false);
     <div key={4}>
       <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you charge?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Optional but helps brands know if you're in their budget. You can always update this later.</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "1.5rem" }}>Optional. What you'd charge a brand for each one. You can always update this later.</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem 0.75rem" }}>
         {[
-          { key: "post", label: "Feed Post" },
-          { key: "story", label: "Story" },
-          { key: "reel", label: "Reel" },
-          { key: "video", label: "Video" },
-          { key: "ugc", label: "UGC Only (no posting)" },
-        ].map(({ key, label }) => (
-          <div key={key}>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>{label}</label>
+          { key: "post", label: "Feed post for brand" },
+          { key: "story", label: "Story for brand" },
+          { key: "reel", label: "Reel for brand" },
+          { key: "video", label: "Video for brand" },
+          { key: "ugc", label: "UGC only (you film, brand posts)" },
+        ].map(({ key, label }, i, all) => (
+          <div key={key} style={i === all.length - 1 ? { gridColumn: "1 / -1" } : undefined}>
+            <label style={{ fontSize: "12px", color: "#ccc", display: "block", marginBottom: "6px", lineHeight: 1.3 }}>{label}</label>
             <input style={inputStyle} placeholder="£" type="number" value={rates[key as keyof typeof rates]} onChange={e => setRates(r => ({ ...r, [key]: e.target.value }))} />
           </div>
         ))}
