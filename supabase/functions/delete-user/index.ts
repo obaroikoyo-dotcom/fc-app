@@ -42,6 +42,22 @@ serve(async (req) => {
     });
     if (!withinLimit) return rateLimitResponse(corsHeaders);
 
+    // Deleting the account cascades to applications, so any deal with money
+    // still held would be orphaned - its escrow could never be released or
+    // refunded afterwards. Refuse until every open payment has been settled.
+    const { data: openDeals } = await supabaseAdmin
+      .from("transactions")
+      .select("id")
+      .or(`brand_id.eq.${user_id},creator_id.eq.${user_id}`)
+      .in("status", ["pending", "completed"])
+      .is("stripe_transfer_id", null)
+      .limit(1);
+    if (openDeals && openDeals.length > 0) {
+      return new Response(JSON.stringify({
+        error: "You have a deal with funds still held in escrow. Finish or resolve it before deleting your account.",
+      }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Deleting the DB rows (or the auth user, which cascades to them) never
     // touched storage - uploaded files were left behind forever, silently
     // eating quota. Best-effort cleanup before the account itself goes;

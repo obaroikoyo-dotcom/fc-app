@@ -65,8 +65,10 @@ async function verifyState(state: string, secret: string): Promise<{ userId: str
   const expectedHex = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
   if (expectedHex !== sigHex) return null;
 
-  const [userId, platform] = payload.split(":");
-  if (!userId || !platform) return null;
+  const [userId, platform, issuedAt] = payload.split(":");
+  if (!userId || !platform || !issuedAt) return null;
+  // Stale states are rejected so a captured link can't be replayed later.
+  if (Date.now() - Number(issuedAt) > 15 * 60 * 1000) return null;
   return { userId, platform };
 }
 

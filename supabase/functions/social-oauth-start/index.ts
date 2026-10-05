@@ -47,7 +47,7 @@ serve(async (req) => {
     if (!withinLimit) return rateLimitResponse(corsHeaders);
 
     const stateSecret = Deno.env.get("SOCIAL_OAUTH_STATE_SECRET") ?? "";
-    const payload = `${user.id}:${platform}:${crypto.randomUUID()}`;
+    const payload = `${user.id}:${platform}:${Date.now()}:${crypto.randomUUID()}`;
     const state = await signState(payload, stateSecret);
 
     let authorizeUrl: string;
