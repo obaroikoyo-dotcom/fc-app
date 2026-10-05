@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { uploadToR2 } from "./r2Upload";
+import { getConnectStatus } from "./stripeConnect";
 
 export interface CampaignPost {
   id: string;
@@ -36,6 +37,11 @@ export async function uploadDeliverable(applicationId: string, creatorId: string
     deliverable_url: publicUrl,
     deliverable_uploaded_at: new Date().toISOString(),
   }).eq("id", applicationId).eq("creator_id", creatorId);
+  // An instant-mode deal held only because payouts weren't set up yet
+  // releases once the creator has delivered AND payouts are active - the
+  // status check is what performs that release, so run it now rather than
+  // waiting for the creator to happen to open their Payouts screen.
+  getConnectStatus().catch(() => {});
   return publicUrl;
 }
 

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { releasePayoutForApplication } from "../_shared/releasePayout.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,7 +84,39 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }).eq("user_id", caller.id);
 
-    return new Response(JSON.stringify({ connected: true, ...flags }), {
+    // "Instant" deals try to release the moment the brand pays - but if the
+    // creator hadn't finished payout setup yet, that attempt couldn't go
+    // anywhere and the money stayed held as "funded". Once payouts are
+    // confirmed active, release the ones that were only waiting on that -
+    // but only where the creator has actually delivered something, so money
+    // is never released for work that hasn't been handed over. Post-gated
+    // deals, disputed deals and anything without a deliverable are left
+    // alone. releasePayoutForApplication re-verifies a real charge exists and
+    // claims the transaction atomically, so this can't double-pay.
+    let releasedCount = 0;
+    if (flags.payouts_enabled) {
+      try {
+        const { data: waiting } = await supabaseAdmin
+          .from("applications")
+          .select("id")
+          .eq("creator_id", caller.id)
+          .eq("status", "funded")
+          .eq("payout_release_mode", "instant")
+          .not("deliverable_url", "is", null);
+        for (const app of waiting ?? []) {
+          try {
+            const result = await releasePayoutForApplication(supabaseAdmin, app.id);
+            if (result.released && !result.alreadyReleased) releasedCount++;
+          } catch (releaseErr) {
+            console.error("Auto-release after payout setup failed for application", app.id, releaseErr);
+          }
+        }
+      } catch (lookupErr) {
+        console.error("Looking up deals waiting on payout setup failed:", lookupErr);
+      }
+    }
+
+    return new Response(JSON.stringify({ connected: true, ...flags, released_count: releasedCount }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

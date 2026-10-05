@@ -305,7 +305,9 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
 
   const loadConnectStatus = async () => {
     try {
-      setConnectStatus(await getConnectStatus());
+      const status = await getConnectStatus();
+      setConnectStatus(status);
+      if (status.released_count) loadWallet();
     } catch (err) {
       console.error("Failed to load Stripe Connect status:", err);
     }

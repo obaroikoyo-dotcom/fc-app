@@ -30,6 +30,7 @@ export interface ConnectStatus {
   charges_enabled?: boolean;
   payouts_enabled?: boolean;
   details_submitted?: boolean;
+  released_count?: number;
 }
 
 export async function getConnectStatus(): Promise<ConnectStatus> {
