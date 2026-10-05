@@ -9,6 +9,7 @@ import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import { censorProfanity } from "../lib/profanity";
 import { uploadToR2 } from "../lib/r2Upload";
 import { validateVideoFile } from "../lib/videoDuration";
+import { getConnectStatus } from "../lib/stripeConnect";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -58,6 +59,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPayoutPrompt, setShowPayoutPrompt] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [myCreatorName, setMyCreatorName] = useState("A creator");
   const [blocked, setBlocked] = useState(false);
@@ -126,6 +128,22 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
     setFormError(null);
     setSubmitting(true);
+
+    // A creator who applies without payouts set up can win a deal and then
+    // have nowhere for the money to go - get that sorted before they apply,
+    // not after a brand has already paid. If the check itself can't run
+    // (offline, Stripe hiccup) don't block the application on it.
+    try {
+      const payoutStatus = await getConnectStatus();
+      if (!payoutStatus.payouts_enabled) {
+        setSubmitting(false);
+        setShowPayoutPrompt(true);
+        return;
+      }
+    } catch (err) {
+      console.error("Couldn't check payout setup before applying:", err);
+    }
+
     setUploadProgress(0);
 
     let uploadedVideoUrl: string | null = null;
@@ -436,6 +454,31 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           {submitting ? "Processing..." : "Submit Application"}
         </div>
       </div>
+
+      {showPayoutPrompt && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "16px", width: "100%", maxWidth: "360px", padding: "2rem 1.75rem", textAlign: "center" }}>
+            <img src="/icon-512.png" width="64" height="64" alt="FlipCollab" style={{ display: "block", width: "64px", height: "64px", borderRadius: "14px", margin: "0 auto 1.25rem auto" }} />
+            <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
+            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Set up payouts first</h1>
+            <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
+              Before you apply, connect your payout details so you can get paid the moment a brand releases your payment. It only takes a couple of minutes.
+            </p>
+            <div
+              onClick={() => { try { sessionStorage.setItem("fc_open_payouts", "1"); } catch { /* storage unavailable - they'll land on the profile instead */ } navigate("creator-profile"); }}
+              style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px" }}
+            >
+              Set up payouts
+            </div>
+            <div
+              onClick={() => setShowPayoutPrompt(false)}
+              style={{ padding: "12px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+            >
+              Not now
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

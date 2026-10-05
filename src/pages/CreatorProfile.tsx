@@ -67,8 +67,16 @@ type SettingsSection =
   | "reports-blocked";
 
 export default function CreatorProfile({ navigate, navigateToProfile, toggleTheme, isInverted, onRead }: Props) {
-  const [view, setView] = useState<"profile" | "settings">("profile");
-  const [settingsSection, setSettingsSection] = useState<SettingsSection>("main");
+  // Sent here from the "set up payouts" prompt when applying to a campaign -
+  // open straight onto the Payouts screen instead of the profile.
+  const [wantsPayouts] = useState(() => {
+    try { return sessionStorage.getItem("fc_open_payouts") === "1"; } catch { return false; }
+  });
+  useEffect(() => {
+    try { sessionStorage.removeItem("fc_open_payouts"); } catch { /* nothing to clear */ }
+  }, []);
+  const [view, setView] = useState<"profile" | "settings">(wantsPayouts ? "settings" : "profile");
+  const [settingsSection, setSettingsSection] = useState<SettingsSection>(wantsPayouts ? "payouts" : "main");
 
   useEffect(() => {
     document.querySelector(".page-enter")?.scrollTo(0, 0);
