@@ -1234,10 +1234,25 @@ setTimeout(() => setSaved(false), 2000);
                 </p>
 
                 {pendingBalance > 0 && (
-                  <div style={{ display: "inline-flex", alignItems: "center", marginTop: "14px", padding: "5px 10px", borderRadius: "20px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)" }}>
-                    <p style={{ fontSize: "11px", color: "#ccc", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
-                      £{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pending
-                    </p>
+                  <div style={{ display: "flex", gap: "28px", marginTop: "18px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div>
+                      <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>Available</p>
+                      <p style={{ fontSize: "15px", color: "#fff", fontWeight: 600, marginTop: "3px", fontVariantNumeric: "tabular-nums" }}>
+                        £{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+                          <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Pending
+                      </p>
+                      <p style={{ fontSize: "15px", color: "#ccc", fontWeight: 600, marginTop: "3px", fontVariantNumeric: "tabular-nums" }}>
+                        £{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1245,10 +1260,16 @@ setTimeout(() => setSaved(false), 2000);
               <p style={{ fontSize: "11px", color: "#888", marginTop: "14px", textAlign: "center" }}>Platform matching fee automatically deducted.</p>
               <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
-                <>
-                  <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Pending funds release once deliverables are posted and confirmed.</p>
-                  <p onClick={() => setSettingsSection("help")} style={{ fontSize: "10px", color: "#888", marginTop: "6px", textAlign: "center", textDecoration: "underline", cursor: "pointer" }}>Why is my balance still pending?</p>
-                </>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "9px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "11px 13px", marginTop: "16px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px", color: "#888" }}>
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55 }}>
+                    Pending funds are held safely in escrow and release once the brand approves your work, or automatically 7 days after you upload.{" "}
+                    <span onClick={() => setSettingsSection("help")} style={{ color: "#bbb", textDecoration: "underline", cursor: "pointer" }}>Why is it still pending?</span>
+                  </p>
+                </div>
               )}
             </div>
           )}
