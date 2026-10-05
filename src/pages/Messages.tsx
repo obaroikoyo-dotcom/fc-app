@@ -327,14 +327,20 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       // Both paths land on "funded" first - actual release (the real Stripe
       // Transfer to the creator) always goes through releasePayout, either
       // right away below (ungated) or later via the gated/manual triggers.
-      const { error: updateError } = await supabase
-        .from("applications")
-        .update({ status: "funded", payout_release_mode: gatedPlatform ? `${gatedPlatform}_gated` : "instant" })
-        .eq("id", paymentApp.id);
+      // "funded" is written by the Stripe webhook the moment the charge is
+      // confirmed (and the database refuses it from the browser): if the
+      // client could claim it, a brand could mark a deal funded without ever
+      // paying and collect the creator's work for free. So wait for the
+      // server's record instead of writing it ourselves.
+      let recorded = false;
+      for (let attempt = 0; attempt < 30 && !recorded; attempt++) {
+        const { data: row } = await supabase.from("applications").select("status").eq("id", paymentApp.id).single();
+        if (row && (row.status === "funded" || row.status === "paid")) { recorded = true; break; }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
-      if (updateError) {
-        console.error("Failed to update application status:", updateError);
-        setError("Payment succeeded but we couldn't update your records. Contact support.");
+      if (!recorded) {
+        setError("Your payment went through and is safe, but confirming it is taking longer than usual. Close this and check again in a minute - it will update on its own.");
         setProcessing(false);
         return;
       }
