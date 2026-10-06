@@ -478,6 +478,38 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   );
 }
 
+// Brand-side view of a deliverable that hasn't been released yet: the video
+// plays with a large tiled watermark over it (fullscreen/PiP/download are
+// disabled so the overlay can't be shaken off by the player) and a note
+// saying the clean copy comes after release. Creators and released deals
+// see the plain video.
+function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: boolean; maxHeight: string }) {
+  if (!watermark) {
+    return <video src={src} controls style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight, background: "#000" }} />;
+  }
+  return (
+    <div style={{ marginBottom: "10px" }}>
+      <div style={{ position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000" }} onContextMenu={e => e.preventDefault()}>
+        <video src={src} controls controlsList="nodownload nofullscreen noremoteplayback" disablePictureInPicture playsInline style={{ width: "100%", maxHeight, display: "block", background: "#000" }} />
+        <div style={{ position: "absolute", inset: "0 0 44px 0", pointerEvents: "none", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ transform: "rotate(-24deg)", display: "flex", flexDirection: "column", gap: "26px", whiteSpace: "nowrap" }}>
+            {[0, 1, 2, 3].map(r => (
+              <div key={r} style={{ display: "flex", gap: "34px", marginLeft: r % 2 ? "-60px" : 0 }}>
+                {[0, 1, 2].map(c => (
+                  <span key={c} style={{ color: "rgba(255,255,255,0.4)", fontSize: "26px", fontWeight: 800, letterSpacing: "0.12em", textShadow: "0 0 2px rgba(0,0,0,0.6)" }}>PREVIEW</span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <p style={{ fontSize: "10px", color: "#888", marginTop: "6px", lineHeight: 1.5 }}>
+        This is a preview. The full-quality video without the watermark shows here once you release the payment.
+      </p>
+    </div>
+  );
+}
+
 interface EscrowDeliveryCardProps {
   applicationId: string;
   role: "creator" | "brand";
@@ -678,7 +710,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {deliverableUrl && (
-        <video src={deliverableUrl} controls style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight: "220px", background: "#000" }} />
+        <PreviewVideo src={deliverableUrl} watermark={role === "brand" && applicationStatus !== "paid"} maxHeight="220px" />
       )}
 
       {error && <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
