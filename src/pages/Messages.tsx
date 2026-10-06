@@ -484,14 +484,65 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 // saying the clean copy comes after release. Creators and released deals
 // see the plain video.
 function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: boolean; maxHeight: string }) {
+  const vref = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [time, setTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   if (!watermark) {
     return <video src={src} controls style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight, background: "#000" }} />;
   }
+  const toggle = () => {
+    const v = vref.current;
+    if (!v) return;
+    if (v.paused) v.play().catch(() => {}); else v.pause();
+  };
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   return (
     <div style={{ marginBottom: "10px" }}>
       <div style={{ position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000" }} onContextMenu={e => e.preventDefault()}>
-        <video src={src} controls controlsList="nodownload nofullscreen noremoteplayback" disablePictureInPicture playsInline style={{ width: "100%", maxHeight, display: "block", background: "#000" }} />
-        <div style={{ position: "absolute", inset: "0 0 44px 0", pointerEvents: "none", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {/* No native controls on purpose: every browser's built-in control
+            bar has a fullscreen button (iOS Safari/Firefox ignore
+            controlsList), and fullscreen would drop the watermark overlay. */}
+        <video
+          ref={vref}
+          src={src}
+          playsInline
+          disablePictureInPicture
+          disableRemotePlayback
+          controlsList="nodownload nofullscreen noremoteplayback"
+          onClick={toggle}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+          onLoadedMetadata={e => setDuration(e.currentTarget.duration || 0)}
+          onTimeUpdate={e => setTime(e.currentTarget.currentTime)}
+          style={{ width: "100%", maxHeight, display: "block", background: "#000", cursor: "pointer" }}
+        />
+        {!playing && (
+          <div onClick={toggle} style={{ position: "absolute", inset: "0 0 40px 0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+            <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+            </div>
+          </div>
+        )}
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "40px", display: "flex", alignItems: "center", gap: "10px", padding: "0 10px", background: "rgba(0,0,0,0.75)" }}>
+          <div onClick={toggle} style={{ width: "18px", display: "flex", justifyContent: "center", cursor: "pointer" }}>
+            {playing
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>}
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step="any"
+            value={time}
+            onChange={e => { const v = vref.current; if (v) v.currentTime = Number(e.target.value); }}
+            style={{ flex: 1, accentColor: "#fff", height: "3px" }}
+          />
+          <span style={{ color: "#aaa", fontSize: "10px", flexShrink: 0 }}>{fmt(time)} / {fmt(duration)}</span>
+        </div>
+        <div style={{ position: "absolute", inset: "0 0 40px 0", pointerEvents: "none", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ transform: "rotate(-24deg)", display: "flex", flexDirection: "column", gap: "26px", whiteSpace: "nowrap" }}>
             {[0, 1, 2, 3].map(r => (
               <div key={r} style={{ display: "flex", gap: "34px", marginLeft: r % 2 ? "-60px" : 0 }}>
