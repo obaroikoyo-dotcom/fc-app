@@ -12,7 +12,7 @@ import { stripePromise } from "../lib/stripe";
 import { useBillingAddress } from "../lib/useBillingAddress";
 import BillingAddressFields from "../components/BillingAddressFields";
 import VerifiedBadge from "../components/VerifiedBadge";
-import { uploadDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
+import { uploadDeliverable, notifyBrandOfDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
 import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
@@ -488,6 +488,7 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [expanded, setExpanded] = useState(false);
   if (!watermark) {
     return <video src={src} controls style={{ width: "100%", borderRadius: "8px", marginBottom: "10px", maxHeight, background: "#000" }} />;
   }
@@ -499,10 +500,17 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
   return (
     <div style={{ marginBottom: "10px" }}>
-      <div style={{ position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000" }} onContextMenu={e => e.preventDefault()}>
+      <div
+        style={expanded
+          ? { position: "fixed", inset: 0, zIndex: 9999, background: "#000", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }
+          : { position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000" }}
+        onContextMenu={e => e.preventDefault()}
+      >
         {/* No native controls on purpose: every browser's built-in control
-            bar has a fullscreen button (iOS Safari/Firefox ignore
-            controlsList), and fullscreen would drop the watermark overlay. */}
+            bar has its own fullscreen button (iOS Safari/Firefox ignore
+            controlsList), and native fullscreen drops the watermark overlay.
+            "Expand" here is an in-page full-viewport mode instead, so the
+            watermark is always part of what's shown. */}
         <video
           ref={vref}
           src={src}
@@ -516,7 +524,7 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
           onEnded={() => setPlaying(false)}
           onLoadedMetadata={e => setDuration(e.currentTarget.duration || 0)}
           onTimeUpdate={e => setTime(e.currentTarget.currentTime)}
-          style={{ width: "100%", maxHeight, display: "block", background: "#000", cursor: "pointer" }}
+          style={{ width: "100%", maxHeight: expanded ? "calc(100% - 40px)" : maxHeight, display: "block", background: "#000", cursor: "pointer" }}
         />
         {!playing && (
           <div onClick={toggle} style={{ position: "absolute", inset: "0 0 40px 0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -541,6 +549,11 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
             style={{ flex: 1, accentColor: "#fff", height: "3px" }}
           />
           <span style={{ color: "#aaa", fontSize: "10px", flexShrink: 0 }}>{fmt(time)} / {fmt(duration)}</span>
+          <div onClick={() => setExpanded(x => !x)} aria-label={expanded ? "Close expanded view" : "Expand"} style={{ width: "18px", display: "flex", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+            {expanded
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>}
+          </div>
         </div>
         <div style={{ position: "absolute", inset: "0 0 40px 0", pointerEvents: "none", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ transform: "rotate(-24deg)", display: "flex", flexDirection: "column", gap: "26px", whiteSpace: "nowrap" }}>
@@ -568,6 +581,9 @@ interface EscrowDeliveryCardProps {
   applicationStatus: string;
   onReleased: () => void;
   paymentMessage?: { text: string; created_at: string } | null;
+  // Bumped by the parent whenever the application row changes in realtime
+  // (e.g. the creator just uploaded), so the card re-reads the deliverable.
+  refreshKey?: number;
 }
 
 // Shown in the chat once a deal is "funded" (card charged, payout held).
@@ -576,7 +592,7 @@ interface EscrowDeliveryCardProps {
 // deliverable to their own TikTok once that release has already
 // happened, and can always manually release for deals that never touch
 // TikTok at all (in-person handoffs, etc).
-function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, paymentMessage }: EscrowDeliveryCardProps) {
+function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, paymentMessage, refreshKey }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
   const [mediaDeleteAt, setMediaDeleteAt] = useState<string | null>(null);
   const [platform, setPlatform] = useState("");
@@ -617,6 +633,14 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId]);
 
+  useEffect(() => {
+    if (!refreshKey) return;
+    (async () => {
+      const { data: app } = await supabase.from("applications").select("deliverable_url").eq("id", applicationId).single();
+      if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+    })();
+  }, [refreshKey, applicationId]);
+
   const startPolling = (campaignPostId: string, forPlatform: DeliveryPlatform) => {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
@@ -646,6 +670,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     try {
       const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
+      notifyBrandOfDeliverable(applicationId);
     } catch (err) {
       setError((err as Error).message || "Upload failed");
     }
@@ -826,7 +851,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               </div>
             )}
             <div onClick={!releasing ? handleManualRelease : undefined} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #333", background: "transparent", color: releasing ? "#555" : "#fff", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
-              {releasing ? "Releasing..." : "Release to Creator"}
+              {releasing ? "Releasing..." : "Release Funds to Creator"}
             </div>
           </div>
           <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "6px", lineHeight: 1.4 }}>
@@ -914,6 +939,7 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
     try {
       const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
+      notifyBrandOfDeliverable(applicationId);
     } catch (err) {
       setError((err as Error).message || "Upload failed");
     }
@@ -971,6 +997,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressFiredRef = useRef(false);
   const chatChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const [deliverableTick, setDeliverableTick] = useState(0);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
   const isNearBottomRef = useRef(true);
@@ -1421,6 +1448,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       channel = channel.on("postgres_changes", { event: "UPDATE", schema: "public", table: "applications", filter: `id=eq.${convo.application_id}` }, payload => {
         const updated = payload.new as { status: string };
         setActiveConvo(prev => prev && prev.id === convo.id ? { ...prev, application_status: updated.status } : prev);
+        // Also re-read the deliverable: a creator uploading doesn't change
+        // the status, so without this the brand only saw it after a refresh.
+        setDeliverableTick(t => t + 1);
       });
     }
     channel = channel
@@ -2474,6 +2504,7 @@ return (
                     currentUserId={currentUserId}
                     applicationStatus={activeConvo.application_status!}
                     paymentMessage={{ text: m.text, created_at: m.created_at }}
+                    refreshKey={deliverableTick}
                     onReleased={async () => {
                       if (!activeConvo?.application_id) return;
                       const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();

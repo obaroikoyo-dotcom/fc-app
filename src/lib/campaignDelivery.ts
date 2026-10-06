@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { uploadToR2 } from "./r2Upload";
+import { notifyAndPush } from "./push";
 
 export interface CampaignPost {
   id: string;
@@ -37,6 +38,30 @@ export async function uploadDeliverable(applicationId: string, creatorId: string
     deliverable_uploaded_at: new Date().toISOString(),
   }).eq("id", applicationId).eq("creator_id", creatorId);
   return publicUrl;
+}
+
+// Tells the brand (in-app notification + push) that the creator just sent
+// their deliverable. Best-effort: the upload itself already succeeded, so a
+// failed notification must never surface as an upload error.
+export async function notifyBrandOfDeliverable(applicationId: string): Promise<void> {
+  try {
+    const { data: app } = await supabase
+      .from("applications")
+      .select("id, campaign_id, campaigns(brand_id, name)")
+      .eq("id", applicationId)
+      .single();
+    const campaign = Array.isArray(app?.campaigns) ? app?.campaigns[0] : app?.campaigns;
+    if (!app || !campaign?.brand_id) return;
+    await notifyAndPush({
+      user_id: campaign.brand_id,
+      type: "deliverable_uploaded",
+      title: "Deliverable Received",
+      body: `Your creator sent their deliverable for "${campaign.name}". Review it in the chat, then release the payout or raise a dispute.`,
+      data: { campaign_id: app.campaign_id, application_id: app.id },
+    });
+  } catch (err) {
+    console.error("Failed to notify brand of deliverable:", err);
+  }
 }
 
 export type DeliveryPlatform = "tiktok" | "instagram" | "youtube";
