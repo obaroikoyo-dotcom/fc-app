@@ -260,6 +260,7 @@ const startDM = async () => {
       blocker_id: currentUserId,
       blocked_id: profileId,
     });
+    if (error?.message?.includes("funded deal")) window.alert(error.message);
     if (!error) setBlockedByMe(true);
     setBlockLoading(false);
   };

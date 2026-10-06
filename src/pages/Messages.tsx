@@ -1977,6 +1977,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       blocker_id: currentUserId,
       blocked_id: app.creator_id,
     });
+    if (error?.message?.includes("funded deal")) window.alert(error.message);
     if (!error) {
       setBlockedIds(prev => [...prev, app.creator_id]);
       if (app.status === "pending") await handleReject(app);
@@ -2013,6 +2014,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       blocker_id: currentUserId,
       blocked_id: otherId,
     });
+    if (error?.message?.includes("funded deal")) window.alert(error.message);
     if (!error) setBlockedIds(prev => [...prev, otherId]);
     setBlockLoading(false);
   };

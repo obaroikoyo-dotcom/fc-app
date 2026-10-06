@@ -191,6 +191,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       blocker_id: currentUserId,
       blocked_id: profileId,
     });
+    if (error?.message?.includes("funded deal")) window.alert(error.message);
     if (!error) setBlockedByMe(true);
     setBlockLoading(false);
   };

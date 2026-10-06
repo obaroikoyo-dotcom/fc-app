@@ -47,16 +47,21 @@ export async function notifyBrandOfDeliverable(applicationId: string): Promise<v
   try {
     const { data: app } = await supabase
       .from("applications")
-      .select("id, campaign_id, campaigns(brand_id, name)")
+      .select("id, campaign_id, status, campaigns(brand_id, name)")
       .eq("id", applicationId)
       .single();
     const campaign = Array.isArray(app?.campaigns) ? app?.campaigns[0] : app?.campaigns;
     if (!app || !campaign?.brand_id) return;
+    // Before payment there's nothing for the brand to release or dispute yet,
+    // so say what's actually true instead of telling them to review a payout.
+    const funded = app.status === "funded";
     await notifyAndPush({
       user_id: campaign.brand_id,
       type: "deliverable_uploaded",
       title: "Deliverable Received",
-      body: `Your creator sent their deliverable for "${campaign.name}". Review it in the chat, then release the payout or raise a dispute.`,
+      body: funded
+        ? `Your creator sent their deliverable for "${campaign.name}". Review it in the chat, then release the payout, ask for another video, or raise a dispute.`
+        : `Your creator has already sent their deliverable for "${campaign.name}". Once you've paid, you can review it in the chat before anything is released.`,
       data: { campaign_id: app.campaign_id, application_id: app.id },
     });
   } catch (err) {
