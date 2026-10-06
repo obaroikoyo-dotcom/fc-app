@@ -97,6 +97,8 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li>Basic device and usage data, like your browser type and IP address</li>
               <li>Technical error reports if the app hits a problem - your device and browser type, the screen involved and a short log of recent app activity, but not your name, email or messages</li>
               <li>Payment details, handled directly by Stripe - we never see or store your card number</li>
+              <li>Your billing address when you pay or subscribe, which is checked for accuracy against our location provider</li>
+              <li>Videos you upload, including deliverables, stored for the deal they belong to</li>
             </ul>
           </div>
 
@@ -108,7 +110,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li>Match brands with creators</li>
               <li>Process payments and manage escrow</li>
               <li>Send you account and payment-related emails</li>
-              <li>Resolve disputes and enforce our Terms & Conditions</li>
+              <li>Resolve disputes and enforce our Terms & Conditions, including by reviewing the deliverable and the messages exchanged on a deal that is in dispute</li>
               <li>Find and fix bugs and keep the app running reliably</li>
               <li>Meet our legal obligations</li>
             </ul>
@@ -128,7 +130,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li><strong style={{ color: "#fff" }}>Vercel</strong> — hosting the app</li>
               <li><strong style={{ color: "#fff" }}>Cloudflare</strong> — storing the photos and videos you upload</li>
               <li><strong style={{ color: "#fff" }}>OneSignal</strong> — push notifications</li>
-              <li><strong style={{ color: "#fff" }}>LocationIQ</strong> — location search</li>
+              <li><strong style={{ color: "#fff" }}>LocationIQ</strong> — location search and address checking</li>
               <li><strong style={{ color: "#fff" }}>Sentry</strong> — error monitoring, so we can find and fix crashes</li>
             </ul>
             <span style={{ display: "block", marginTop: "8px" }}>We don't sell your data to anyone, for any reason.</span>
@@ -136,12 +138,12 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Social Sign-In & Linked Accounts</span>
-            <span>You may sign in or verify your account using Google, Apple, TikTok, or Instagram. We only receive what the provider shares when you sign in — typically your name and email, or a private relay email if you use Apple's Hide My Email. We use this data solely to create and authenticate your account, never for advertising, and we do not attempt to identify you if you choose to keep your email private.</span>
+            <span>You may sign in or verify your account using Google, TikTok, or Instagram. We only receive what the provider shares when you sign in — typically your name and email. We use this data solely to create and authenticate your account, never for advertising.</span>
           </div>
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. How Long We Keep Your Data</span>
-            <span>We keep your information for as long as your account is active. If you delete your account, your personal data is removed within 30 days - except records we're legally required to hold onto for longer, such as payment records, which UK law requires us to keep for 6 years. Photos and videos exchanged during a deal aren't kept forever either: they're automatically cleared once a deal is complete or after a period of inactivity, though the conversation itself always stays so both sides have a record of what was agreed. If your account is deleted or restricted, everything - including media - is removed immediately.</span>
+            <span>We keep your information for as long as your account is active. If you delete your account, your personal data is removed within 30 days - except records we're legally required to hold onto for longer, such as payment records, which UK law requires us to keep for 6 years. Deliverable videos, and any earlier version replaced after a revision request, are kept for as long as needed to resolve a dispute on that deal. Photos and videos exchanged during a deal aren't kept forever either: they're automatically cleared once a deal is complete or after a period of inactivity, though the conversation itself always stays so both sides have a record of what was agreed. If your account is deleted or restricted, everything - including media - is removed immediately.</span>
           </div>
 
           <div>
@@ -165,7 +167,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Keeping Your Data Secure</span>
-            <span>Security is something we take seriously, not an afterthought. Every connection to FlipCollab is encrypted, and all payments are handled by Stripe, which meets the highest global standard for payment security - we never see or store your card or bank details ourselves. No system is completely immune to risk, so if you ever notice anything suspicious on your account, let us know straight away.</span>
+            <span>Security is something we take seriously, not an afterthought. Every connection to FlipCollab is encrypted, and all payments are handled by Stripe, which meets the highest global standard for payment security - we never see or store your card or bank details ourselves. No system is completely immune to risk, so if you ever notice anything suspicious on your account, let us know straight away. Only a FlipCollab administrator can read a conversation, and only when it is part of a dispute on a deal.</span>
           </div>
 
           <div>
