@@ -41,6 +41,18 @@ interface DisputeRow {
   previous_deliverable_url: string | null;
   revision_note: string | null;
   revision_count: number;
+  raised_by: "brand" | "creator";
+  creator_response: string | null;
+}
+
+interface DisputeChatMessage {
+  id: string;
+  sender_role: "brand" | "creator" | "other";
+  text: string | null;
+  created_at: string;
+  video_url: string | null;
+  image_url: string | null;
+  deleted: boolean;
 }
 
 export default function AdminReview({ goBack }: Props) {
@@ -49,6 +61,24 @@ export default function AdminReview({ goBack }: Props) {
   const [requests, setRequests] = useState<VerificationRequest[]>([]);
   const [reports, setReports] = useState<ReportRow[]>([]);
   const [disputes, setDisputes] = useState<DisputeRow[]>([]);
+  const [chatOpenFor, setChatOpenFor] = useState<string | null>(null);
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<DisputeChatMessage[]>([]);
+  const [chatError, setChatError] = useState("");
+
+  // Reads the brand/creator conversation for one dispute (admin-only
+  // database function, scoped to the two parties on that dispute).
+  const toggleDisputeChat = async (applicationId: string) => {
+    if (chatOpenFor === applicationId) { setChatOpenFor(null); return; }
+    setChatOpenFor(applicationId);
+    setChatMessages([]);
+    setChatError("");
+    setChatLoading(true);
+    const { data, error } = await supabase.rpc("admin_dispute_chat", { p_application_id: applicationId });
+    if (error) setChatError(error.message || "Couldn't load the chat.");
+    else setChatMessages((data || []) as DisputeChatMessage[]);
+    setChatLoading(false);
+  };
   const [resolvingId, setResolvingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
@@ -148,6 +178,8 @@ export default function AdminReview({ goBack }: Props) {
       previous_deliverable_url: d.previous_deliverable_url,
       revision_note: d.revision_note,
       revision_count: d.revision_count,
+      raised_by: d.raised_by === "creator" ? "creator" : "brand",
+      creator_response: d.creator_response ?? null,
     })));
 
     setLoading(false);
@@ -337,7 +369,16 @@ export default function AdminReview({ goBack }: Props) {
                       </span>
                     </div>
                     <p style={{ color: "#888", fontSize: "10px", marginBottom: "8px" }}>{d.campaign_name} · {new Date(d.created_at).toLocaleString()}</p>
+                    <p style={{ color: "#888", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
+                      {d.raised_by === "creator" ? "Raised by the creator (disputing a video request)" : "Raised by the brand"}
+                    </p>
                     <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{d.reason}</p>
+                    {d.creator_response && (
+                      <div style={{ borderLeft: "2px solid #333", paddingLeft: "10px", marginBottom: "10px" }}>
+                        <p style={{ color: "#888", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "3px" }}>Creator's response</p>
+                        <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{d.creator_response}</p>
+                      </div>
+                    )}
                     {d.revision_count > 0 && (
                       <p style={{ color: "#888", fontSize: "11px", lineHeight: 1.5, marginBottom: "10px" }}>
                         Revision requests used: {d.revision_count}/2{d.revision_note ? ` · last note: "${d.revision_note}"` : ""}
@@ -346,7 +387,34 @@ export default function AdminReview({ goBack }: Props) {
                     <div style={{ display: "flex", gap: "14px", marginBottom: "12px" }}>
                       {d.deliverable_url && <a href={d.deliverable_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", fontSize: "11px", textDecoration: "underline" }}>Watch delivery</a>}
                       {d.previous_deliverable_url && <a href={d.previous_deliverable_url} target="_blank" rel="noopener noreferrer" style={{ color: "#888", fontSize: "11px", textDecoration: "underline" }}>Watch earlier version</a>}
+                      <span onClick={() => toggleDisputeChat(d.application_id)} style={{ color: "#fff", fontSize: "11px", textDecoration: "underline", cursor: "pointer" }}>
+                        {chatOpenFor === d.application_id ? "Hide chat" : "Read chat"}
+                      </span>
                     </div>
+                    {chatOpenFor === d.application_id && (
+                      <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px", marginBottom: "12px", maxHeight: "260px", overflowY: "auto" }}>
+                        {chatLoading ? (
+                          <p style={{ color: "#777", fontSize: "11px", margin: 0 }}>Loading chat...</p>
+                        ) : chatError ? (
+                          <p style={{ color: "#ff4d4d", fontSize: "11px", margin: 0 }}>{chatError}</p>
+                        ) : chatMessages.length === 0 ? (
+                          <p style={{ color: "#777", fontSize: "11px", margin: 0 }}>No messages between these two.</p>
+                        ) : (
+                          chatMessages.map(m => (
+                            <div key={m.id} style={{ marginBottom: "8px" }}>
+                              <p style={{ color: m.sender_role === "brand" ? "#fff" : "#888", fontSize: "10px", fontWeight: 600, margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                                {m.sender_role === "brand" ? d.brand_name : m.sender_role === "creator" ? d.creator_name : "Unknown"} · {new Date(m.created_at).toLocaleString()}
+                              </p>
+                              <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.5, margin: 0, wordBreak: "break-word" }}>
+                                {m.deleted ? "[deleted message] " : ""}{m.text}
+                                {m.video_url && <> <a href={m.video_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[video]</a></>}
+                                {m.image_url && <> <a href={m.image_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[image]</a></>}
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
                     <div style={{ display: "flex", gap: "8px" }}>
                       <div
                         onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "refund")}

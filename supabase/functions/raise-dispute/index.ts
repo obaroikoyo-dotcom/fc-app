@@ -76,12 +76,14 @@ serve(async (req) => {
 
     const { data: application } = await supabaseAdmin
       .from("applications")
-      .select("id, creator_id, campaign_id, status, deliverable_uploaded_at, campaigns!inner(brand_id, name)")
+      .select("id, creator_id, campaign_id, status, deliverable_uploaded_at, revision_requested_at, campaigns!inner(brand_id, name)")
       .eq("id", application_id)
       .maybeSingle();
 
     const brandId = (application as any)?.campaigns?.brand_id;
-    if (!application || brandId !== caller.id) {
+    const isBrand = !!application && brandId === caller.id;
+    const isCreator = !!application && application.creator_id === caller.id;
+    if (!application || (!isBrand && !isCreator)) {
       return new Response(JSON.stringify({ error: "Not authorized for this application" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -91,23 +93,34 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    if (!application.deliverable_uploaded_at) {
-      return new Response(JSON.stringify({ error: "Nothing has been delivered yet for this deal." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const daysSinceDelivery = (Date.now() - new Date(application.deliverable_uploaded_at).getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceDelivery > 7) {
-      return new Response(JSON.stringify({ error: "The 7-day window to dispute this delivery has passed." }), {
+    const raisedBy = isBrand ? "brand" : "creator";
+    if (isBrand) {
+      if (!application.deliverable_uploaded_at) {
+        return new Response(JSON.stringify({ error: "Nothing has been delivered yet for this deal." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const daysSinceDelivery = (Date.now() - new Date(application.deliverable_uploaded_at).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceDelivery > 7) {
+        return new Response(JSON.stringify({ error: "The 7-day window to dispute this delivery has passed." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else if (!application.revision_requested_at || application.deliverable_uploaded_at) {
+      // A creator can only dispute while a brand's request for another video
+      // is outstanding. Otherwise there's nothing to dispute: their delivery
+      // is either still being reviewed (auto-release protects them) or paid.
+      return new Response(JSON.stringify({ error: "You can only dispute a request for another video while you're waiting to resend it." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { error: insertError } = await supabaseAdmin.from("disputes").insert({
       application_id,
-      brand_id: caller.id,
+      brand_id: brandId,
       creator_id: application.creator_id,
       reason: reason.trim(),
+      raised_by: raisedBy,
     });
     if (insertError) throw insertError;
 
@@ -121,13 +134,22 @@ serve(async (req) => {
     const shortReason = reason.trim().slice(0, 140);
     try {
       const { data: adminId } = await supabaseAdmin.rpc("get_admin_user_id");
-      if (adminId) {
-        await notify(supabaseAdmin, adminId as string, "dispute_raised", "New Dispute",
-          `A brand disputed the delivery for "${campaignName}": ${shortReason}`, { application_id });
+      const ids = { application_id, campaign_id: (application as any).campaign_id };
+      if (isBrand) {
+        if (adminId) {
+          await notify(supabaseAdmin, adminId as string, "dispute_raised", "New Dispute",
+            `A brand disputed the delivery for "${campaignName}": ${shortReason}`, ids);
+        }
+        await notify(supabaseAdmin, application.creator_id, "dispute_raised", "Delivery Disputed",
+          `The brand raised a dispute on "${campaignName}". The funds stay held while FlipCollab reviews it. You can add your side in the chat, and you'll be told once it's resolved.`, ids);
+      } else {
+        if (adminId) {
+          await notify(supabaseAdmin, adminId as string, "dispute_raised", "New Dispute (from creator)",
+            `A creator disputed a request for another video on "${campaignName}": ${shortReason}`, ids);
+        }
+        await notify(supabaseAdmin, brandId, "dispute_raised", "Video Request Disputed",
+          `The creator disputed your request for another video on "${campaignName}". The funds stay held while FlipCollab reviews it, and you'll be told once it's resolved.`, ids);
       }
-      await notify(supabaseAdmin, application.creator_id, "dispute_raised", "Delivery Disputed",
-        `The brand raised a dispute on "${campaignName}". The funds stay held while FlipCollab reviews it, and you'll be told once it's resolved.`,
-        { application_id, campaign_id: (application as any).campaign_id });
     } catch (err) {
       console.error("raise-dispute notifications failed:", err);
     }

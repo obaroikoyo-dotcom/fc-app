@@ -611,6 +611,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [showRevisionForm, setShowRevisionForm] = useState(false);
   const [revisionText, setRevisionText] = useState("");
   const [requestingRevision, setRequestingRevision] = useState(false);
+  const [disputeInfo, setDisputeInfo] = useState<{ id: string; raised_by: string; creator_response: string | null } | null>(null);
+  const [creatorResponse, setCreatorResponse] = useState("");
+  const [sendingResponse, setSendingResponse] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -662,6 +665,34 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const revisionRefundDate = revisionRequestedAt
     ? new Date(new Date(revisionRequestedAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString([], { month: "short", day: "numeric" })
     : null;
+
+  // Who raised the dispute and whether the creator has added their side yet.
+  useEffect(() => {
+    if (applicationStatus !== "disputed") { setDisputeInfo(null); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("disputes")
+        .select("id, raised_by, creator_response")
+        .eq("application_id", applicationId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setDisputeInfo(data ?? null);
+    })();
+  }, [applicationStatus, applicationId]);
+
+  const handleSendResponse = async () => {
+    if (!disputeInfo || sendingResponse || creatorResponse.trim().length < 3) return;
+    setSendingResponse(true);
+    setError("");
+    const { error: rpcError } = await supabase.rpc("respond_to_dispute", { p_dispute_id: disputeInfo.id, p_response: creatorResponse.trim() });
+    if (rpcError) setError(rpcError.message || "Couldn't send your response.");
+    else {
+      setDisputeInfo({ ...disputeInfo, creator_response: creatorResponse.trim() });
+      setCreatorResponse("");
+    }
+    setSendingResponse(false);
+  };
 
   const handleRequestRevision = async () => {
     if (requestingRevision || revisionText.trim().length < 3) return;
@@ -816,6 +847,35 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               Send the new video by {revisionRefundDate}. If it hasn't arrived by then, the deal is refunded to the brand.
             </p>
           )}
+          {applicationStatus === "funded" && (
+            showDisputeForm ? (
+              <div style={{ marginTop: "10px" }}>
+                <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>Why is this request unreasonable?</p>
+                <textarea
+                  value={disputeReason}
+                  onChange={e => setDisputeReason(e.target.value)}
+                  maxLength={1000}
+                  placeholder="Explain what you delivered and why it already meets the brief. A FlipCollab admin reviews this and the chat before deciding."
+                  style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+                />
+                <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", lineHeight: 1.5 }}>
+                  The money stays held while an admin reviews it, and the refund countdown pauses.
+                </p>
+                <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                  <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid #222", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+                    Cancel
+                  </div>
+                  <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing || !disputeReason.trim() ? "#1a1a1a" : "#fff", color: disputing || !disputeReason.trim() ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
+                    {disputing ? "Submitting..." : "Submit Dispute"}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", fontSize: "11px", color: "#999", textDecoration: "underline", cursor: "pointer" }}>
+                Dispute this request
+              </div>
+            )
+          )}
         </div>
       )}
 
@@ -827,7 +887,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         </p>
       )}
 
-      {role === "creator" && !deliverableUrl && (
+      {role === "creator" && !deliverableUrl && applicationStatus !== "disputed" && (
         <>
           <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.55, marginBottom: "10px" }}>
             Send your deliverable here to get your payout sent to your account. Until the brand approves it, your money stays pending.
@@ -984,10 +1044,33 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid #262626", background: "#111" }}>
           <p style={{ fontSize: "12px", color: "#ccc", fontWeight: 600 }}>Dispute under review</p>
           <p style={{ fontSize: "11px", color: "#999", marginTop: "4px", lineHeight: 1.5 }}>
-            {role === "brand"
-              ? "You've raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it."
-              : "The brand has raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it. You'll be notified once it's resolved."}
+            {disputeInfo?.raised_by === "creator"
+              ? (role === "creator"
+                ? "You've disputed the brand's request for another video - funds stay held while a FlipCollab admin reviews it. You'll be notified once it's resolved."
+                : "The creator disputed your request for another video - funds stay held while a FlipCollab admin reviews it. You'll be notified once it's resolved.")
+              : (role === "brand"
+                ? "You've raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it."
+                : "The brand has raised a dispute on this delivery - funds stay held while a FlipCollab admin reviews it. You'll be notified once it's resolved.")}
           </p>
+          {role === "creator" && disputeInfo && disputeInfo.raised_by === "brand" && (
+            disputeInfo.creator_response ? (
+              <p style={{ fontSize: "11px", color: "#888", marginTop: "8px", lineHeight: 1.5 }}>Your side has been sent to the admin.</p>
+            ) : (
+              <div style={{ marginTop: "10px" }}>
+                <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>Add your side</p>
+                <textarea
+                  value={creatorResponse}
+                  onChange={e => setCreatorResponse(e.target.value)}
+                  maxLength={1000}
+                  placeholder="Tell the admin what happened. You can send this once."
+                  style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+                />
+                <div onClick={handleSendResponse} style={{ marginTop: "8px", padding: "9px", borderRadius: "6px", background: sendingResponse || creatorResponse.trim().length < 3 ? "#1a1a1a" : "#fff", color: sendingResponse || creatorResponse.trim().length < 3 ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: sendingResponse ? "default" : "pointer", textTransform: "uppercase" }}>
+                  {sendingResponse ? "Sending..." : "Send to Admin"}
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
     </div>
@@ -2568,7 +2651,7 @@ return (
               // application from a prior campaign with this same pair, or
               // this one after a refund - just shows as a plain event card,
               // since there's no longer a live delivery card for those.
-              const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid";
+              const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid" || activeConvo?.application_status === "disputed";
 
               return messages.map((m, i) => {
               const mine = m.sender_id === currentUserId;
