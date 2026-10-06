@@ -736,19 +736,26 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {role === "brand" && applicationStatus === "funded" && (
         <>
-          <div onClick={!releasing ? handleManualRelease : undefined} style={{ marginTop: "10px", padding: "11px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: releasing ? "#555" : "#777", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
-            {releasing ? "Releasing..." : "Release Payment Manually (e.g. you're posting this yourself, or it was delivered off-platform)"}
+          <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+            {deliverableUrl && !showDisputeForm && (
+              <div onClick={() => setShowDisputeForm(true)} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+                Dispute Delivery
+              </div>
+            )}
+            <div onClick={!releasing ? handleManualRelease : undefined} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #333", background: "transparent", color: releasing ? "#555" : "#fff", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
+              {releasing ? "Releasing..." : "Release to Creator"}
+            </div>
           </div>
-          {deliverableUrl && (
-            <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "6px", lineHeight: 1.4 }}>
-              Left unreviewed, this releases to the creator automatically 7 days after delivery.
-            </p>
-          )}
+          <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "6px", lineHeight: 1.4 }}>
+            {deliverableUrl
+              ? "Left unreviewed, this releases to the creator automatically 7 days after delivery."
+              : "Use Release if you're posting this yourself or it was delivered off-platform."}
+          </p>
         </>
       )}
 
-      {role === "brand" && applicationStatus === "funded" && deliverableUrl && (
-        showDisputeForm ? (
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && showDisputeForm && (
+        (
           <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,59,48,0.2)", background: "rgba(255,59,48,0.05)" }}>
             <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>What's wrong with this delivery?</p>
             <textarea
@@ -765,10 +772,6 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
                 {disputing ? "Submitting..." : "Submit Dispute"}
               </div>
             </div>
-          </div>
-        ) : (
-          <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
-            Dispute This Delivery
           </div>
         )
       )}
