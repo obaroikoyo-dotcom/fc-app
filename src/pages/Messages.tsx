@@ -12,7 +12,7 @@ import { stripePromise } from "../lib/stripe";
 import { useBillingAddress } from "../lib/useBillingAddress";
 import BillingAddressFields from "../components/BillingAddressFields";
 import VerifiedBadge from "../components/VerifiedBadge";
-import { uploadDeliverable, notifyBrandOfDeliverable, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
+import { uploadDeliverable, notifyBrandOfDeliverable, requestDeliverableRevision, postDeliverable, pollPostStatus, deliveryPlatformFor, socialPlatformFor, getCampaignPosts, releasePayout, type CampaignPost, type DeliveryPlatform } from "../lib/campaignDelivery";
 import { uploadToR2 } from "../lib/r2Upload";
 import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
@@ -605,6 +605,11 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
   const [disputing, setDisputing] = useState(false);
+  const [revisionCount, setRevisionCount] = useState(0);
+  const [revisionNote, setRevisionNote] = useState<string | null>(null);
+  const [showRevisionForm, setShowRevisionForm] = useState(false);
+  const [revisionText, setRevisionText] = useState("");
+  const [requestingRevision, setRequestingRevision] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -613,6 +618,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     (async () => {
       const { data: app } = await supabase.from("applications").select("deliverable_url, platforms, media_delete_at").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+      // Separate query so the card still works before the revision columns exist.
+      const { data: rev } = await supabase.from("applications").select("revision_count, revision_note").eq("id", applicationId).single();
+      setRevisionCount(rev?.revision_count ?? 0);
+      setRevisionNote(rev?.revision_note ?? null);
       const resolvedPlatform = app?.platforms?.[0] || "";
       setPlatform(resolvedPlatform);
       const resolvedDeliveryPlatform = deliveryPlatformFor(resolvedPlatform);
@@ -637,9 +646,30 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     if (!refreshKey) return;
     (async () => {
       const { data: app } = await supabase.from("applications").select("deliverable_url").eq("id", applicationId).single();
-      if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+      // null is meaningful now: a revision request clears the video.
+      setDeliverableUrl(app?.deliverable_url ?? null);
+      const { data: rev } = await supabase.from("applications").select("revision_count, revision_note").eq("id", applicationId).single();
+      setRevisionCount(rev?.revision_count ?? 0);
+      setRevisionNote(rev?.revision_note ?? null);
     })();
   }, [refreshKey, applicationId]);
+
+  const handleRequestRevision = async () => {
+    if (requestingRevision || revisionText.trim().length < 3) return;
+    setRequestingRevision(true);
+    setError("");
+    try {
+      await requestDeliverableRevision(applicationId, revisionText.trim());
+      setDeliverableUrl(null);
+      setRevisionCount(c => c + 1);
+      setRevisionNote(revisionText.trim());
+      setShowRevisionForm(false);
+      setRevisionText("");
+    } catch (err) {
+      setError((err as Error).message || "Couldn't send the request");
+    }
+    setRequestingRevision(false);
+  };
 
   const startPolling = (campaignPostId: string, forPlatform: DeliveryPlatform) => {
     if (pollRef.current) clearInterval(pollRef.current);
@@ -767,6 +797,19 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         </div>
       )}
 
+      {role === "creator" && !deliverableUrl && revisionNote && (
+        <div style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #262626", background: "#111", marginBottom: "10px" }}>
+          <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "3px" }}>The brand asked for another video</p>
+          <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.5, margin: 0 }}>{revisionNote}</p>
+        </div>
+      )}
+
+      {role === "brand" && !deliverableUrl && applicationStatus === "funded" && (
+        <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
+          {revisionNote ? "Waiting for the creator to send a new video." : "Waiting for the creator to send their deliverable."}
+        </p>
+      )}
+
       {role === "creator" && !deliverableUrl && (
         <>
           <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.55, marginBottom: "10px" }}>
@@ -860,6 +903,42 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               : "Use Release if you're posting this yourself or it was delivered off-platform."}
           </p>
         </>
+      )}
+
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount < 2 && !showDisputeForm && (
+        showRevisionForm ? (
+          <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid #262626", background: "#111" }}>
+            <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>What should the creator change?</p>
+            <textarea
+              value={revisionText}
+              onChange={e => setRevisionText(e.target.value)}
+              maxLength={500}
+              placeholder="Be specific so they get it right the next time."
+              style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+            />
+            <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", lineHeight: 1.5 }}>
+              The current video is sent back and the creator uploads a new one. You can do this {2 - revisionCount === 1 ? "one more time" : "up to 2 times"} per deal.
+            </p>
+            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+              <div onClick={() => { setShowRevisionForm(false); setRevisionText(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid #222", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+                Cancel
+              </div>
+              <div onClick={handleRequestRevision} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: requestingRevision || revisionText.trim().length < 3 ? "#1a1a1a" : "#fff", color: requestingRevision || revisionText.trim().length < 3 ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: requestingRevision ? "default" : "pointer", textTransform: "uppercase" }}>
+                {requestingRevision ? "Sending..." : "Request Another Video"}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div onClick={() => setShowRevisionForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+            Request Another Video{revisionCount > 0 ? " (1 left)" : ""}
+          </div>
+        )
+      )}
+
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount >= 2 && (
+        <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "8px", lineHeight: 1.5 }}>
+          You have used both video requests for this deal. Release the payment or raise a dispute.
+        </p>
       )}
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && showDisputeForm && (
@@ -1584,6 +1663,14 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     if (!currentUserId) return;
     const { data: campaign } = await supabase.from("campaigns").select("brand_id").eq("id", app.campaign_id).single();
     if (campaign?.brand_id !== currentUserId) return;
+    // The local status can be stale (e.g. a payment landed a moment ago), and a
+    // creator who's been funded can never be screened out - re-check the real row.
+    const { data: fresh } = await supabase.from("applications").select("status").eq("id", app.id).single();
+    if (!fresh || ["funded", "paid", "disputed", "rejected"].includes(fresh.status)) {
+      setCampaignPickerFor(null);
+      await loadConversations();
+      return;
+    }
     await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
     setCampaignPickerFor(null);
     // Patch locally right away - loadConversations() below only refreshes

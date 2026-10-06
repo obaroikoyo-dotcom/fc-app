@@ -177,7 +177,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const deleteCampaign = async (id: string) => {
     if (!currentUserId) return;
     if (!window.confirm("Delete this campaign? This cannot be undone.")) return;
-    await supabase.from("campaigns").delete().eq("id", id).eq("brand_id", currentUserId);
+    const { error: deleteError } = await supabase.from("campaigns").delete().eq("id", id).eq("brand_id", currentUserId);
+    if (deleteError) {
+      window.alert(deleteError.message || "Couldn't delete this campaign.");
+      return;
+    }
     setCampaigns(prev => prev.filter(c => c.id !== id));
 
     // The DB row is gone, but any logos/overlays/style videos/b-roll

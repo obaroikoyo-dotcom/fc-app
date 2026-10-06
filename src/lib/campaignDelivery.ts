@@ -64,6 +64,35 @@ export async function notifyBrandOfDeliverable(applicationId: string): Promise<v
   }
 }
 
+// Sends a funded deal back for a new deliverable (max 2 times, enforced in
+// the database). The server clears the current video, restarts the 7-day
+// auto-release clock for whatever gets uploaded next, and notifies the creator.
+export async function requestDeliverableRevision(applicationId: string, note: string): Promise<void> {
+  const { error } = await supabase.rpc("request_deliverable_revision", { p_application_id: applicationId, p_note: note });
+  if (error) throw new Error(error.message);
+  try {
+    const { data: app } = await supabase
+      .from("applications")
+      .select("creator_id, campaign_id, campaigns(name)")
+      .eq("id", applicationId)
+      .single();
+    const campaign = Array.isArray(app?.campaigns) ? app?.campaigns[0] : app?.campaigns;
+    if (app) {
+      await supabase.functions.invoke("send-push", {
+        body: {
+          user_id: app.creator_id,
+          type: "revision_requested",
+          title: "New Video Requested",
+          body: `The brand asked for another video for "${campaign?.name ?? "your campaign"}": ${note}`,
+          data: { campaign_id: app.campaign_id, application_id: applicationId },
+        },
+      });
+    }
+  } catch (err) {
+    console.error("Failed to push revision request:", err);
+  }
+}
+
 export type DeliveryPlatform = "tiktok" | "instagram" | "youtube";
 
 // Each of these gates a fully-built integration (edge functions, DB
