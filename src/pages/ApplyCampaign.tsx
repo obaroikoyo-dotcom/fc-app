@@ -442,9 +442,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
         {/* Error */}
         {formError && (
-          <div style={{ background: "rgba(255,59,48,0.1)", border: "1px solid rgba(255,59,48,0.2)", borderRadius: "8px", padding: "12px" }}>
-            <p style={{ color: "#ff3b30", fontSize: "12px", margin: 0, fontWeight: 500 }}>{formError}</p>
-          </div>
+          <p role="alert" style={{ color: "#ff6b60", fontSize: "13px", margin: 0, lineHeight: 1.4 }}>{formError}</p>
         )}
 
         {/* Submit */}
