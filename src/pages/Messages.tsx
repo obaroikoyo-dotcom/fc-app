@@ -607,6 +607,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [disputing, setDisputing] = useState(false);
   const [revisionCount, setRevisionCount] = useState(0);
   const [revisionNote, setRevisionNote] = useState<string | null>(null);
+  const [revisionRequestedAt, setRevisionRequestedAt] = useState<string | null>(null);
   const [showRevisionForm, setShowRevisionForm] = useState(false);
   const [revisionText, setRevisionText] = useState("");
   const [requestingRevision, setRequestingRevision] = useState(false);
@@ -619,9 +620,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       const { data: app } = await supabase.from("applications").select("deliverable_url, platforms, media_delete_at").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
       // Separate query so the card still works before the revision columns exist.
-      const { data: rev } = await supabase.from("applications").select("revision_count, revision_note").eq("id", applicationId).single();
+      const { data: rev } = await supabase.from("applications").select("revision_count, revision_note, revision_requested_at").eq("id", applicationId).single();
       setRevisionCount(rev?.revision_count ?? 0);
       setRevisionNote(rev?.revision_note ?? null);
+      setRevisionRequestedAt(rev?.revision_requested_at ?? null);
       const resolvedPlatform = app?.platforms?.[0] || "";
       setPlatform(resolvedPlatform);
       const resolvedDeliveryPlatform = deliveryPlatformFor(resolvedPlatform);
@@ -648,11 +650,18 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       const { data: app } = await supabase.from("applications").select("deliverable_url").eq("id", applicationId).single();
       // null is meaningful now: a revision request clears the video.
       setDeliverableUrl(app?.deliverable_url ?? null);
-      const { data: rev } = await supabase.from("applications").select("revision_count, revision_note").eq("id", applicationId).single();
+      const { data: rev } = await supabase.from("applications").select("revision_count, revision_note, revision_requested_at").eq("id", applicationId).single();
       setRevisionCount(rev?.revision_count ?? 0);
       setRevisionNote(rev?.revision_note ?? null);
+      setRevisionRequestedAt(rev?.revision_requested_at ?? null);
     })();
   }, [refreshKey, applicationId]);
+
+  // Date the deal refunds to the brand if no replacement video has arrived
+  // (7 days after the request - enforced by the scheduled job, shown here).
+  const revisionRefundDate = revisionRequestedAt
+    ? new Date(new Date(revisionRequestedAt).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString([], { month: "short", day: "numeric" })
+    : null;
 
   const handleRequestRevision = async () => {
     if (requestingRevision || revisionText.trim().length < 3) return;
@@ -663,6 +672,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       setDeliverableUrl(null);
       setRevisionCount(c => c + 1);
       setRevisionNote(revisionText.trim());
+      setRevisionRequestedAt(new Date().toISOString());
       setShowRevisionForm(false);
       setRevisionText("");
     } catch (err) {
@@ -801,12 +811,19 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <div style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #262626", background: "#111", marginBottom: "10px" }}>
           <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "3px" }}>The brand asked for another video</p>
           <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.5, margin: 0 }}>{revisionNote}</p>
+          {revisionRefundDate && (
+            <p style={{ fontSize: "10px", color: "#888", lineHeight: 1.5, margin: "6px 0 0" }}>
+              Send the new video by {revisionRefundDate}. If it hasn't arrived by then, the deal is refunded to the brand.
+            </p>
+          )}
         </div>
       )}
 
       {role === "brand" && !deliverableUrl && applicationStatus === "funded" && (
         <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
-          {revisionNote ? "Waiting for the creator to send a new video." : "Waiting for the creator to send their deliverable."}
+          {revisionNote
+            ? `Waiting for the creator to send a new video.${revisionRefundDate ? ` If it hasn't arrived by ${revisionRefundDate}, your payment is refunded automatically.` : ""}`
+            : "Waiting for the creator to send their deliverable."}
         </p>
       )}
 

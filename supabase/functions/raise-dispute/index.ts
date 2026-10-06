@@ -7,6 +7,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ONESIGNAL_APP_ID = "66adae38-64f2-425f-b984-83e65f99ce1f";
+
+// In-app notification row plus a push, written with the service role (the
+// caller isn't allowed to notify the admin, so this can't go through the
+// client-side notify path).
+async function notify(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  userId: string,
+  type: string,
+  title: string,
+  body: string,
+  data: Record<string, unknown>,
+) {
+  await supabaseAdmin.from("notifications").insert({ user_id: userId, type, title, body, data });
+  const restApiKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
+  if (!restApiKey) return;
+  await fetch("https://onesignal.com/api/v1/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Key ${restApiKey}` },
+    body: JSON.stringify({
+      app_id: ONESIGNAL_APP_ID,
+      target_channel: "push",
+      include_aliases: { external_id: [userId] },
+      headings: { en: title },
+      contents: { en: body },
+      data,
+    }),
+  });
+}
+
 // Only the brand on a still-"funded" (delivered, not yet released) deal can
 // raise a dispute, and only within the same 7-day window auto-release
 // works off - past that, auto-release will already have paid the creator.
@@ -46,7 +76,7 @@ serve(async (req) => {
 
     const { data: application } = await supabaseAdmin
       .from("applications")
-      .select("id, creator_id, status, deliverable_uploaded_at, campaigns!inner(brand_id, name)")
+      .select("id, creator_id, campaign_id, status, deliverable_uploaded_at, campaigns!inner(brand_id, name)")
       .eq("id", application_id)
       .maybeSingle();
 
@@ -82,6 +112,25 @@ serve(async (req) => {
     if (insertError) throw insertError;
 
     await supabaseAdmin.from("applications").update({ status: "disputed", disputed_at: new Date().toISOString() }).eq("id", application_id);
+
+    // Nobody was being told: the admin had no way to know a dispute existed
+    // unless they happened to open the review screen, and the creator only
+    // found out by seeing the chat card change. Best-effort - the dispute is
+    // already recorded, so a failed notification must never fail the request.
+    const campaignName = (application as any).campaigns?.name ?? "a campaign";
+    const shortReason = reason.trim().slice(0, 140);
+    try {
+      const { data: adminId } = await supabaseAdmin.rpc("get_admin_user_id");
+      if (adminId) {
+        await notify(supabaseAdmin, adminId as string, "dispute_raised", "New Dispute",
+          `A brand disputed the delivery for "${campaignName}": ${shortReason}`, { application_id });
+      }
+      await notify(supabaseAdmin, application.creator_id, "dispute_raised", "Delivery Disputed",
+        `The brand raised a dispute on "${campaignName}". The funds stay held while FlipCollab reviews it, and you'll be told once it's resolved.`,
+        { application_id, campaign_id: (application as any).campaign_id });
+    } catch (err) {
+      console.error("raise-dispute notifications failed:", err);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

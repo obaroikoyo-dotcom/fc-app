@@ -37,6 +37,10 @@ interface DisputeRow {
   brand_name: string;
   creator_name: string;
   campaign_name: string;
+  deliverable_url: string | null;
+  previous_deliverable_url: string | null;
+  revision_note: string | null;
+  revision_count: number;
 }
 
 export default function AdminReview({ goBack }: Props) {
@@ -126,20 +130,24 @@ export default function AdminReview({ goBack }: Props) {
       setReports([]);
     }
 
-    const { data: disputeRows } = await supabase
-      .from("disputes")
-      .select("id, application_id, reason, created_at, applications(campaign_id, campaigns(name, brand_id, brand_profiles(name)), creator_id, creator_profiles(name))")
-      .eq("status", "open")
-      .order("created_at", { ascending: true });
+    // The disputes table is only readable by the brand/creator on each
+    // dispute, so a direct query always came back empty for the admin -
+    // this admin-only function returns the open ones.
+    const { data: disputeRows, error: disputeError } = await supabase.rpc("admin_open_disputes");
+    if (disputeError) console.error("Failed to load disputes:", disputeError);
 
     setDisputes((disputeRows || []).map((d: any) => ({
       id: d.id,
       application_id: d.application_id,
       reason: d.reason,
       created_at: d.created_at,
-      brand_name: d.applications?.campaigns?.brand_profiles?.name || "Brand",
-      creator_name: d.applications?.creator_profiles?.name || "Creator",
-      campaign_name: d.applications?.campaigns?.name || "Campaign",
+      brand_name: d.brand_name,
+      creator_name: d.creator_name,
+      campaign_name: d.campaign_name,
+      deliverable_url: d.deliverable_url,
+      previous_deliverable_url: d.previous_deliverable_url,
+      revision_note: d.revision_note,
+      revision_count: d.revision_count,
     })));
 
     setLoading(false);
@@ -329,7 +337,16 @@ export default function AdminReview({ goBack }: Props) {
                       </span>
                     </div>
                     <p style={{ color: "#888", fontSize: "10px", marginBottom: "8px" }}>{d.campaign_name} · {new Date(d.created_at).toLocaleString()}</p>
-                    <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "12px" }}>{d.reason}</p>
+                    <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{d.reason}</p>
+                    {d.revision_count > 0 && (
+                      <p style={{ color: "#888", fontSize: "11px", lineHeight: 1.5, marginBottom: "10px" }}>
+                        Revision requests used: {d.revision_count}/2{d.revision_note ? ` · last note: "${d.revision_note}"` : ""}
+                      </p>
+                    )}
+                    <div style={{ display: "flex", gap: "14px", marginBottom: "12px" }}>
+                      {d.deliverable_url && <a href={d.deliverable_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", fontSize: "11px", textDecoration: "underline" }}>Watch delivery</a>}
+                      {d.previous_deliverable_url && <a href={d.previous_deliverable_url} target="_blank" rel="noopener noreferrer" style={{ color: "#888", fontSize: "11px", textDecoration: "underline" }}>Watch earlier version</a>}
+                    </div>
                     <div style={{ display: "flex", gap: "8px" }}>
                       <div
                         onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "refund")}
