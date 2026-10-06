@@ -192,11 +192,14 @@ serve(async (req) => {
           .not("payout_release_mode", "is", null);
 
         for (const app of pendingApps || []) {
-          // Instant-mode deals are always eligible once funded. TikTok-gated
-          // ones must already have a confirmed live post - payouts becoming
-          // enabled is never itself a reason to skip that check.
-          let eligible = app.payout_release_mode === "instant";
-          if (!eligible && app.payout_release_mode === "tiktok_gated") {
+          // Money only ever lands once the deliverable is met - a creator's
+          // payouts becoming enabled (or Stripe re-sending account.updated,
+          // which it does often) is never itself a reason to release. Only
+          // a post-gated deal whose required post is already confirmed live
+          // is retried here; everything else waits for the brand's release,
+          // a confirmed post, or the 7-day auto-release after upload.
+          let eligible = false;
+          if (app.payout_release_mode === "tiktok_gated") {
             const { data: post } = await supabase
               .from("campaign_posts")
               .select("id")

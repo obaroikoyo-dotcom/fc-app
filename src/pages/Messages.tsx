@@ -661,6 +661,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {role === "creator" && !deliverableUrl && (
         <>
+          <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.55, marginBottom: "10px" }}>
+            Send your deliverable here to get your payout sent to your account. Until the brand approves it, your money stays pending.
+          </p>
           <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
           <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed #333", textAlign: "center", fontSize: "12px", color: "#bbb", cursor: uploading ? "default" : "pointer" }}>
             {uploading ? "Uploading..." : "Tap to upload your deliverable video"}
