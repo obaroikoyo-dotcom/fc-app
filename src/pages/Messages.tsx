@@ -349,18 +349,11 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       // caller's UI (e.g. showing/hiding "Release Payment Manually") needs
       // to reflect the real database state, not assume every payment ends
       // up "paid" the instant the card is charged.
-      let finalStatus: "funded" | "paid" = "funded";
-      if (!gatedPlatform) {
-        // If this fails (e.g. the creator hasn't finished payout setup),
-        // funds simply stay held as "funded" - same recoverable state as
-        // any other release attempt, nothing partial or lost.
-        try {
-          const result = await releasePayout(paymentApp.id);
-          if (result.released) finalStatus = "paid";
-        } catch (err) {
-          console.error("Instant release didn't complete, funds remain held:", err);
-        }
-      }
+      // Every deal stays held in escrow after payment, gated or not - money
+      // only lands with the creator once the deliverable is met: the brand
+      // releases it after reviewing, a gated post is confirmed live, or the
+      // 7-day auto-release passes after the upload. Nothing pays out instantly.
+      const finalStatus: "funded" | "paid" = "funded";
 
       await notifyAndPush({
         user_id: paymentApp.creator_id,
@@ -368,7 +361,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         title: "Payment Received",
         body: gatedPlatform
           ? `Funds for "${paymentApp.campaign_name}" are secured. Post your deliverable video to ${paymentApp.platforms?.[0] || "the platform"} from the chat to release your payout.`
-          : `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Refresh and check Payouts in Settings to see your balance.`,
+          : `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Deliver your video in the chat - your payout releases once the brand approves it, or automatically 7 days after you upload.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
 
