@@ -33,8 +33,13 @@ serve(async (req) => {
   try {
     const { data: due } = await supabaseAdmin
       .from("applications")
-      .select("id, campaign_id, creator_id, video_url, deliverable_url, campaigns(brand_id)")
+      .select("id, status, campaign_id, creator_id, video_url, deliverable_url, campaigns(brand_id)")
       .eq("media_deleted", false)
+      // Money held in escrow (or a dispute open): the deliverable is what the
+      // brand is reviewing and what an admin would judge, so it's never
+      // cleaned up until the deal settles. The database also clears
+      // media_delete_at when a deal becomes funded; this is the second lock.
+      .not("status", "in", "(funded,disputed)")
       .not("media_delete_at", "is", null)
       .lte("media_delete_at", new Date().toISOString());
 
@@ -58,7 +63,7 @@ serve(async (req) => {
             .select("id, campaigns!inner(brand_id)")
             .eq("creator_id", app.creator_id)
             .eq("campaigns.brand_id", brandId)
-            .eq("status", "accepted")
+            .in("status", ["accepted", "funded", "disputed"])
             .neq("id", app.id);
 
           if (!stillActive || stillActive.length === 0) {
@@ -98,7 +103,15 @@ serve(async (req) => {
         }
 
         await supabaseAdmin.from("applications")
-          .update({ video_url: null, deliverable_url: null, media_deleted: true })
+          .update({
+            video_url: null,
+            deliverable_url: null,
+            media_deleted: true,
+            // An unpaid deal whose early upload just got cleared must not keep
+            // a stale "delivered at" time, or the 7-day review clock would
+            // look like it had been running when the deal is later funded.
+            ...(app.status === "accepted" ? { deliverable_uploaded_at: null } : {}),
+          })
           .eq("id", app.id);
 
         results.applications_processed++;
