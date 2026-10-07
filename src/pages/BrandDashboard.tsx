@@ -9,6 +9,7 @@ import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import VerifiedBadge from "../components/VerifiedBadge";
 import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, formatResponseTime, type BrandTrackRecord } from "../lib/brandStats";
+import { dealBreakdown } from "../lib/fees";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -329,8 +330,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const brandName = (c as any).brand_profiles?.name;
                 const brandVerified = (c as any).brand_profiles?.verified;
                 const budgetVal = parseInt(c.budget, 10);
-                const currentTotalCost = budgetVal + budgetVal * 0.05;
-                const creatorNetPayout = isEnterprise ? budgetVal : budgetVal * 0.90;
+                // Same maths the server uses at checkout (see src/lib/fees.ts).
+                const dealMath = dealBreakdown((budgetVal || 0) * 100, isEnterprise);
+                const currentTotalCost = dealMath.totalCharge / 100;
+                const creatorNetPayout = dealMath.creatorPayout / 100;
                 const appCount = c.applications?.length || 0;
 
                 const isPreviewable = isOwn && feedTab === "discover";
@@ -471,7 +474,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           {isOwn && (
                             <span style={{ fontSize: "10px", color: "#aaa", marginTop: "4px", lineHeight: 1.3 }}>
                               {isEnterprise
-                                ? <span style={{ color: "#34c759", fontWeight: 500 }}>0% platform fee (Enterprise)</span>
+                                ? <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (0% platform fee + 2.5% + 20p card processing)</>
                                 : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (+5% fee)</>
                               }
                               <br />

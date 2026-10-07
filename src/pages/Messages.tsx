@@ -18,6 +18,7 @@ import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
+import { dealBreakdown } from "../lib/fees";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -237,13 +238,10 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     getCreatorPayoutsEnabled(paymentApp.creator_id).then(setPayoutsEnabled).catch(() => setPayoutsEnabled(null));
   }, [paymentApp.creator_id]);
 
-  const brandFee = isEnterprise ? 0 : Math.round(campaignBudget * 0.05);
-  const totalCharge = campaignBudget + brandFee;
-  // Mirrors create-payment-intent's exact rounding (creatorCut then
-  // subtracted from the budget) so this pre-payment display can never show
-  // a different number than what actually gets charged/recorded.
-  const creatorCut = isEnterprise ? 0 : Math.round(campaignBudget * 0.10);
-  const creatorPayoutDisplay = campaignBudget - creatorCut;
+  // Mirrors create-payment-intent's exact rounding (see src/lib/fees.ts) so
+  // this pre-payment display can never show a different number than what
+  // actually gets charged/recorded. The server recomputes all of it itself.
+  const { brandFee, processingFee, totalCharge, creatorPayout: creatorPayoutDisplay } = dealBreakdown(campaignBudget, isEnterprise);
 
   const handlePay = async () => {
     if (!stripe || !currentUserId) return;
@@ -390,10 +388,21 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
             <span style={{ color: "#fff", fontSize: "13px" }}>£{(brandFee / 100).toFixed(2)}</span>
           </div>
         )}
+        {isEnterprise && (
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+            <span style={{ color: "#999", fontSize: "13px" }}>Card processing fee (2.5% + 20p)</span>
+            <span style={{ color: "#fff", fontSize: "13px" }}>£{(processingFee / 100).toFixed(2)}</span>
+          </div>
+        )}
         <div style={{ borderTop: "1px solid #222", paddingTop: "6px", display: "flex", justifyContent: "space-between" }}>
           <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>Total</span>
           <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>£{(totalCharge / 100).toFixed(2)}</span>
         </div>
+        {isEnterprise && (
+          <p style={{ color: "#777", fontSize: "11px", lineHeight: 1.5, marginTop: "8px" }}>
+            Enterprise: no FlipCollab platform fee. The card processing fee helps cover what Stripe charges to take your card payment, and the creator still gets the full amount.
+          </p>
+        )}
       </div>
 
       {savedCard && (

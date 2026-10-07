@@ -91,11 +91,11 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
             <p style={{ color: "#fff", fontWeight: 600, margin: "0 0 6px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Platform Fees</p>
             {role === "brand" ? (
               <p style={{ margin: 0, color: "#ccc" }}>
-                Posting campaigns and reviewing applications is free. When you fund a collaboration, a <strong style={{ color: "#fff" }}>5% platform fee</strong> is added to the campaign budget to cover payment processing and escrow management.
+                Posting campaigns and reviewing applications is free. When you fund a collaboration, a <strong style={{ color: "#fff" }}>5% platform fee</strong> is added to the campaign budget to cover payment processing and escrow management. Enterprise brands pay no platform fee; instead their payments carry a <strong style={{ color: "#fff" }}>card processing fee of 2.5% + 20p</strong> of the campaign budget, added to the amount charged and shown before you pay. If a deal is refunded, you're refunded everything you paid for it.
               </p>
             ) : (
               <p style={{ margin: 0, color: "#ccc" }}>
-                FlipCollab deducts a <strong style={{ color: "#fff" }}>10% platform fee</strong> from your earnings on each completed collaboration. This covers payment processing, escrow protection, and platform operations.
+                FlipCollab deducts a <strong style={{ color: "#fff" }}>10% platform fee</strong> from your earnings on each completed collaboration. This covers payment processing, escrow protection, and platform operations. If the brand is on Enterprise, there is no platform fee and you keep 100%; any card processing fee is charged to the brand, never deducted from your payout.
               </p>
             )}
           </div>

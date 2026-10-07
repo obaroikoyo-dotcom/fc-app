@@ -50,6 +50,9 @@ serve(async (req) => {
     if (!campaign) throw new Error("Campaign not found");
     if (campaign.brand_id !== brand_id) throw new Error("Unauthorized");
     const amount = Math.round(parseFloat(campaign.budget) * 100);
+    // A budget that isn't a positive number would otherwise reach Stripe as
+    // NaN/negative and fail with a confusing error - refuse it up front.
+    if (!Number.isFinite(amount) || amount <= 0) throw new Error("This campaign doesn't have a valid budget to pay.");
 
     // creator_id was previously trusted straight from the request body with
     // no check it corresponds to a real application on this campaign -
@@ -172,7 +175,16 @@ serve(async (req) => {
     }
 
     const brandFee = is_enterprise ? 0 : Math.round(amount * 0.05);
-    const totalCharge = amount + brandFee;
+    // Enterprise brands pay no FlipCollab platform fee on either side, but Stripe
+    // still charges FlipCollab to take their card - without this, every
+    // Enterprise deal cost FlipCollab money (a £97,798 test deal cost £3,178.64
+    // in Stripe fees with nothing coming in). A flat 2.5% + 20p of the budget is
+    // added to what the brand's card is charged and stays in FlipCollab's
+    // balance; the creator's payout is unaffected. Standard brands pay 0 here
+    // because their 5% already covers it. Mirrored for display in
+    // src/lib/fees.ts - keep the two in sync.
+    const processingFee = is_enterprise ? Math.round(amount * 0.025) + 20 : 0;
+    const totalCharge = amount + brandFee + processingFee;
     const creatorCut = is_enterprise ? 0 : Math.round(amount * 0.10);
     const creatorPayout = amount - creatorCut;
 
@@ -184,6 +196,7 @@ serve(async (req) => {
       "metadata[brand_id]": brand_id,
       "metadata[creator_id]": creator_id,
       "metadata[campaign_id]": campaign_id,
+      "metadata[processing_fee]": processingFee.toString(),
     };
 
     if (stripe_customer_id) {
@@ -216,6 +229,7 @@ serve(async (req) => {
       amount,
       creator_payout: creatorPayout,
       platform_fee: brandFee + creatorCut,
+      processing_fee: processingFee,
       status: "pending",
       stripe_payment_intent_id: paymentIntent.id,
       payout_release_mode: payoutReleaseMode,
@@ -251,6 +265,7 @@ serve(async (req) => {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       creatorPayout,
+      processingFee,
       totalCharge,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

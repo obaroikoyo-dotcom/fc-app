@@ -211,8 +211,8 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're already on Enterprise</p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
             {currentSubscription.cancelAtPeriodEnd
-              ? "Your subscription is set to cancel at the end of the current billing period. You'll keep 0% fees until then."
-              : "Platform fees are waived for you and your creators. Manage or cancel your subscription from Settings."}
+              ? "Your subscription is set to cancel at the end of the current billing period. You'll keep 0% platform fees until then."
+              : "Platform fees are waived for you and your creators. Card payments carry a processing fee of 2.5% + 20p, shown before you pay. Manage or cancel your subscription from Settings."}
           </p>
           <div className="tap-btn" onClick={() => navigate("brand-profile")} style={{ padding: "13px 24px", borderRadius: "8px", border: "1px solid #222", color: "#ccc", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}>
             Go to Settings
@@ -245,8 +245,8 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
 
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#999", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>Scale Your Campaigns.<br />Pay Zero Fees.</h1>
-          <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7 }}>Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations.</p>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>Scale Your Campaigns.<br />Pay Zero Platform Fees.</h1>
+          <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7 }}>Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations. Card payments carry a small processing fee of 2.5% + 20p.</p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2.5rem" }}>
@@ -256,9 +256,13 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <span style={{ color: "#999" }}>Brand platform fee</span>
               <span style={{ color: "#bbb" }}>+5% per checkout</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
               <span style={{ color: "#999" }}>Creator platform fee</span>
               <span style={{ color: "#bbb" }}>-10% from payout</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+              <span style={{ color: "#999" }}>Card processing</span>
+              <span style={{ color: "#bbb" }}>Covered by the 5%</span>
             </div>
           </div>
 
@@ -269,9 +273,13 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <span style={{ color: "#777" }}>Brand platform fee</span>
               <span style={{ color: "#0a0a0a", fontWeight: 700 }}>0% waived</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "8px" }}>
               <span style={{ color: "#777" }}>Creator platform fee</span>
               <span style={{ color: "#0a0a0a", fontWeight: 700 }}>0% waived</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+              <span style={{ color: "#777" }}>Card processing</span>
+              <span style={{ color: "#0a0a0a", fontWeight: 700 }}>2.5% + 20p</span>
             </div>
           </div>
         </div>
@@ -280,7 +288,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>What's included</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {[
-              { title: "Zero Platform Fees", sub: "No percentage cuts on brand or creator side — ever." },
+              { title: "Zero Platform Fees", sub: "No FlipCollab percentage cut on the brand or creator side. Card payments carry a processing fee of 2.5% + 20p, shown before you pay." },
               { title: "Unlimited Campaigns", sub: "Run as many concurrent campaigns as your brand needs." },
               { title: "Advanced Creator Filters", sub: "Filter by deeper metric brackets and audience data." },
               { title: "Priority Support", sub: "Direct line to resolve disputes, payments, or workflow issues." },
@@ -329,9 +337,10 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>FAQs</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[
-              { q: "How does 0% fees work?", a: "Once Enterprise activates, platform fee calculations are bypassed at checkout — for both you and every creator you work with." },
-              { q: "Are card processing fees separate?", a: "Yes. Standard Stripe processing fees remain. Enterprise only waives FlipCollab's own platform service fees." },
-              { q: "Can I cancel anytime?", a: "Yes, from Settings, with no notice period required. Your 0% fees stay active until the end of the billing period you've already paid for, then the subscription ends. No lock-in contracts." },
+              { q: "How do 0% platform fees work?", a: "Once Enterprise activates, FlipCollab's own platform fees (5% for brands, 10% from creators) are bypassed at checkout — for both you and every creator you work with. The creator receives the full campaign budget." },
+              { q: "Are card processing fees separate?", a: "Yes. Enterprise waives FlipCollab's own platform fees, but taking a card payment still costs money through Stripe. So each payment carries a card processing fee of 2.5% of the campaign budget plus 20p, added to the total you pay and shown before you confirm. It goes towards Stripe's card processing cost, not towards a FlipCollab fee. Example: on a £1,000 campaign you pay £1,000 + £25.20 = £1,025.20 and the creator receives the full £1,000. On a standard account the same campaign costs £1,050 and the creator receives £900." },
+              { q: "Is a card processing fee charged if a deal is refunded?", a: "If a deal is refunded, you're refunded everything you paid for it, including the card processing fee." },
+              { q: "Can I cancel anytime?", a: "Yes, from Settings, with no notice period required. Your 0% platform fees stay active until the end of the billing period you've already paid for, then the subscription ends. No lock-in contracts." },
             ].map(({ q, a }) => (
               <div key={q} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                 <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>{q}</p>
@@ -349,7 +358,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <SuccessIcon />
                 <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
-                <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Enjoy zero-fee campaigns.</p>
+                <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Card payments carry a processing fee of 2.5% + 20p, shown before you pay.</p>
                 <div className="tap-btn" onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Back to Dashboard
                 </div>

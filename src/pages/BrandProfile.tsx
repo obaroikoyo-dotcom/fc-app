@@ -640,7 +640,7 @@ const loadFavourites = async () => {
           >
             <div>
               <p style={{ color: "#0a0a0a", fontSize: "13px", fontWeight: 700 }}>Upgrade to Enterprise</p>
-              <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>0% platform fees for you & creators</p>
+              <p style={{ color: "#999", fontSize: "12px", marginTop: "2px" }}>0% platform fees for you & creators (card processing 2.5% + 20p)</p>
             </div>
             <span style={{ fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>→</span>
           </div>
@@ -650,7 +650,7 @@ const loadFavourites = async () => {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
               <div>
                 <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Enterprise Plan Active</p>
-                <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>0% platform fees enabled</p>
+                <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>0% platform fees enabled · card processing 2.5% + 20p</p>
               </div>
               <span style={{ fontSize: "10px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Active</span>
             </div>
@@ -1088,7 +1088,8 @@ const loadFavourites = async () => {
       <div style={{ padding: "1.25rem" }}>
         {[
           { q: "How do I post a campaign?", a: "Go to the Post tab in the bottom nav. Fill in your campaign details, set a budget, and publish. Creators will be able to see and apply to it immediately." },
-          { q: "What is the platform fee?", a: "FlipCollab adds a 5% fee on top of what you pay creators. Upgrade to Enterprise for 0% fees on both sides." },
+          { q: "What is the platform fee?", a: "FlipCollab adds a 5% fee on top of what you pay creators, and takes 10% from the creator's earnings. That covers card processing, escrow and support. Upgrade to Enterprise for 0% platform fees on both sides — Enterprise payments then carry a card processing fee instead (see below)." },
+          { q: "What is the card processing fee on Enterprise?", a: "Enterprise removes FlipCollab's 5% and 10% platform fees, but taking a card payment still costs money through Stripe. So Enterprise payments carry a card processing fee of 2.5% of the campaign budget plus 20p, added to your total and shown before you pay. The creator still receives the full budget. Example: a £1,000 campaign costs £1,025.20 on Enterprise (the creator gets £1,000), versus £1,050 on a standard account (the creator gets £900). If a deal is refunded, you get back everything you paid for it, including this fee." },
           { q: "How do I pay creators?", a: "When you accept a creator's application, a payment is triggered via Stripe. Funds are held in escrow and released upon content delivery." },
           { q: "How do I know what I'm paying for before releasing funds?", a: "The creator uploads their deliverable video directly in your chat with them — you can watch it there before anything is released, no need to wait for it to go live anywhere." },
           { q: "What's the difference between automatic and manual release?", a: "For TikTok deals, you can require the creator's post to go live and be confirmed before payout releases automatically — extra proof beyond just the chat preview. Instagram and YouTube auto-release are coming soon. Otherwise, you release manually once you've reviewed the deliverable in chat, whenever you're ready." },
@@ -1154,7 +1155,7 @@ const renderTerms = () => (
         { t: "3. Brand Responsibilities", b: "Post accurate campaign information. Don't pay creators outside FlipCollab to bypass fees — results in immediate termination." },
         { t: "4. Payments, Deliverables & Disputes", b: "(a) Escrow. All payments are processed via Stripe. A brand's payment is held in escrow and is never paid out instantly. It is released to the creator when the brand releases it after reviewing the deliverable, when a required post is confirmed live (where the campaign requires one), or automatically 7 days after the creator uploads the deliverable if the brand takes no action. Creator payouts go straight to the creator's own connected Stripe account - FlipCollab never holds a creator's bank details. (b) Previews. Until the payment is released, a brand sees the deliverable only as a watermarked preview, and must not copy, record, download, share or use the preview or the deliverable in any way before then. The full-quality video is available once the payment is released. (c) Revisions. A brand may ask the creator for another video up to 2 times per deal. The creator has 7 days from each request to upload a new one, and if none arrives in that time the payment is refunded to the brand automatically. Each new upload restarts the 7-day review period. (d) Disputes. A brand can dispute a delivery in-app within 7 days of the upload. A creator can dispute a request for another video while they are waiting to resend, and can add their side to a dispute raised against them. While a dispute is open the funds stay held. A FlipCollab admin reviews it, including the deliverable and the chat history between the brand and the creator, and decides to refund the brand or release the payment to the creator. That decision is final within FlipCollab. (e) Active deals. Once a deal is funded, the brand cannot screen out the creator, delete the campaign or block the creator until the deal has been released, refunded or resolved." },
         { t: "5. Payment Delays", b: "Delays may occur during maintenance or incidents. All escrow funds are guaranteed to be processed once normal operations resume." },
-        { t: "6. Platform Fees", b: "A 5% fee is added to brand payments. Enterprise brands get 0% fees." },
+        { t: "6. Platform Fees", b: "A 5% fee is added to brand payments, and 10% is deducted from creator earnings. Enterprise brands pay 0% platform fees for as long as their subscription is active. Enterprise payments instead carry a card processing fee of 2.5% of the campaign budget plus 20p, added to the amount charged and shown before the brand pays; it goes towards the cost of processing the card payment and the creator still receives the full budget. If a deal is refunded, the brand is refunded everything it paid for that deal." },
         { t: "7. Prohibited Content", b: "No illegal, hateful, explicit, discriminatory, or misleading content. Violations result in account suspension or termination." },
         { t: "8. Intellectual Property", b: "Creators retain content ownership. Completing a campaign grants you a non-exclusive licence for promotional use as agreed." },
         { t: "9. Privacy", b: "We collect name, email, profile info, and payment data. We use Supabase, Stripe, and Vercel. We don't sell your data." },

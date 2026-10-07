@@ -5,6 +5,7 @@ import { usePersistedState } from "../lib/usePersistedState";
 import { useMemoryPersistedState, clearMemoryPersistedState } from "../lib/useMemoryPersistedState";
 import { uploadToR2 } from "../lib/r2Upload";
 import { socialPlatformFor } from "../lib/campaignDelivery";
+import { dealBreakdown } from "../lib/fees";
 
 export interface EditableCampaign {
   id: string;
@@ -155,9 +156,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   }, [editingCampaign]);
 
   const numericBudget = Math.max(0, parseInt(budget, 10) || 0);
-  const platformFee = isEnterprise ? 0 : numericBudget * 0.05;
-  const totalCost = numericBudget + platformFee;
-  const creatorPayout = isEnterprise ? numericBudget : numericBudget * 0.9;
+  // Same maths the server uses at checkout (see src/lib/fees.ts).
+  const breakdown = dealBreakdown(numericBudget * 100, isEnterprise);
+  const platformFee = breakdown.brandFee / 100;
+  const processingFee = breakdown.processingFee / 100;
+  const totalCost = breakdown.totalCharge / 100;
+  const creatorPayout = breakdown.creatorPayout / 100;
 
   const toggleDeliverable = (label: string) =>
     setDeliverables(prev => prev.includes(label) ? prev.filter(d => d !== label) : [...prev, label]);
@@ -441,6 +445,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                   <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
                   <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
+                {isEnterprise && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
+                    <span>Card processing fee (2.5% + 20p)</span>
+                    <span style={{ color: "#aaa" }}>£{processingFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+                )}
                 <hr style={{ border: "0", borderTop: "1px solid #161616", margin: "6px 0" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
                   <span>Total</span><span style={{ color: "#34c759" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -449,6 +459,11 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
                   <span>£{creatorPayout.toLocaleString()}</span>
                 </div>
+                {isEnterprise && (
+                  <p style={{ fontSize: "11px", color: "#777", lineHeight: 1.5, margin: "10px 0 0" }}>
+                    Enterprise has no FlipCollab platform fee and your creator keeps 100%. The card processing fee helps cover what Stripe charges to take your card payment. It's added when you fund a collaboration, and you'll see it before you pay.
+                  </p>
+                )}
                 {!isEnterprise && (
                   <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #161616", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: "11px", color: "#777" }}>Bypass platform fees by upgrading to{" "}</span>
@@ -461,6 +476,11 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                       FlipCollab Enterprise
                     </span>
                   </div>
+                )}
+                {!isEnterprise && (
+                  <p style={{ fontSize: "10px", color: "#666", lineHeight: 1.5, margin: "6px 0 0" }}>
+                    Enterprise replaces the 5% brand and 10% creator platform fees with a card processing fee of 2.5% + 20p.
+                  </p>
                 )}
               </div>
             )}
