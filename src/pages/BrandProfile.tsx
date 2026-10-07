@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { safeHttpUrl } from "../lib/safeUrl";
 import LocationInput from "../components/LocationInput";
 import VerifiedBadge from "../components/VerifiedBadge";
 import SettingsIcon, { ChevronIcon } from "../components/SettingsIcon";
@@ -505,7 +506,7 @@ const loadFavourites = async () => {
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Links</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <a href={website.startsWith("http") ? website : `https://${website}`} target="_blank" rel="noreferrer"
+              <a href={safeHttpUrl(website.startsWith("http") ? website : `https://${website}`)} target="_blank" rel="noreferrer"
                 style={{ fontSize: "13px", color: "#ccc", textDecoration: "underline" }}>{website}</a>
             </div>
           </div>

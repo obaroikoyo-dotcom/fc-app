@@ -125,7 +125,7 @@ serve(async (req) => {
           .eq("id", post.application_id)
           .single();
 
-        if (application && application.payout_release_mode === "youtube_gated" && application.status !== "paid") {
+        if (application && application.payout_release_mode === "youtube_gated" && application.status === "funded") {
           const result = await releasePayoutForApplication(supabase, application.id);
           payoutReleased = result.released;
           if (!result.released) {

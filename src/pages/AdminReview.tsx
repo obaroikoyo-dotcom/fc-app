@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safeHttpUrl } from "../lib/safeUrl";
 import { supabase } from "../lib/supabase";
 import { listUsers, setAccountStatus, type UserSearchResult } from "../lib/moderation";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -385,8 +386,8 @@ export default function AdminReview({ goBack }: Props) {
                       </p>
                     )}
                     <div style={{ display: "flex", gap: "14px", marginBottom: "12px" }}>
-                      {d.deliverable_url && <a href={d.deliverable_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", fontSize: "11px", textDecoration: "underline" }}>Watch delivery</a>}
-                      {d.previous_deliverable_url && <a href={d.previous_deliverable_url} target="_blank" rel="noopener noreferrer" style={{ color: "#888", fontSize: "11px", textDecoration: "underline" }}>Watch earlier version</a>}
+                      {d.deliverable_url && <a href={safeHttpUrl(d.deliverable_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", fontSize: "11px", textDecoration: "underline" }}>Watch delivery</a>}
+                      {d.previous_deliverable_url && <a href={safeHttpUrl(d.previous_deliverable_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#888", fontSize: "11px", textDecoration: "underline" }}>Watch earlier version</a>}
                       <span onClick={() => toggleDisputeChat(d.application_id)} style={{ color: "#fff", fontSize: "11px", textDecoration: "underline", cursor: "pointer" }}>
                         {chatOpenFor === d.application_id ? "Hide chat" : "Read chat"}
                       </span>
@@ -407,8 +408,8 @@ export default function AdminReview({ goBack }: Props) {
                               </p>
                               <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.5, margin: 0, wordBreak: "break-word" }}>
                                 {m.deleted ? "[deleted message] " : ""}{m.text}
-                                {m.video_url && <> <a href={m.video_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[video]</a></>}
-                                {m.image_url && <> <a href={m.image_url} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[image]</a></>}
+                                {m.video_url && <> <a href={safeHttpUrl(m.video_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[video]</a></>}
+                                {m.image_url && <> <a href={safeHttpUrl(m.image_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[image]</a></>}
                               </p>
                             </div>
                           ))

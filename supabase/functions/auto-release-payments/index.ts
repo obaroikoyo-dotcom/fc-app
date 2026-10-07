@@ -62,13 +62,38 @@ serve(async (req) => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: due } = await supabaseAdmin
       .from("applications")
-      .select("id")
+      .select("id, creator_id")
       .eq("status", "funded")
       .not("deliverable_uploaded_at", "is", null)
       .lte("deliverable_uploaded_at", sevenDaysAgo);
 
+    // A creator who hasn't finished payout setup can't be paid yet. Trying
+    // anyway every 15 minutes made the release code add a fresh "Set up
+    // payouts" notification on every run (96 a day), so check first and nudge
+    // at most once a day instead.
+    const creatorIds = [...new Set((due ?? []).map((a: { creator_id: string }) => a.creator_id))];
+    const { data: accounts } = creatorIds.length
+      ? await supabaseAdmin.from("creator_stripe_accounts").select("user_id, payouts_enabled").in("user_id", creatorIds)
+      : { data: [] as { user_id: string; payouts_enabled: boolean }[] };
+    const payoutReady = new Set((accounts ?? []).filter((a: { payouts_enabled: boolean }) => a.payouts_enabled).map((a: { user_id: string }) => a.user_id));
+
     for (const app of due ?? []) {
       try {
+        if (!payoutReady.has(app.creator_id)) {
+          const { data: recent } = await supabaseAdmin
+            .from("notifications")
+            .select("id")
+            .eq("user_id", app.creator_id)
+            .eq("type", "payout_setup_needed")
+            .gte("created_at", new Date(Date.now() - DAY_MS).toISOString())
+            .contains("data", { application_id: app.id })
+            .limit(1);
+          if (!recent?.length) {
+            await notify(supabaseAdmin, app.creator_id, "payout_setup_needed", "Set up payouts to get paid",
+              "Your payout is ready to release, but you need to finish setting up payouts first.", { application_id: app.id });
+          }
+          continue;
+        }
         const result = await releasePayoutForApplication(supabaseAdmin, app.id);
         if (result.released) results.released++;
         else results.errors.push(`application ${app.id}: ${result.reason} - ${result.error ?? ""}`);

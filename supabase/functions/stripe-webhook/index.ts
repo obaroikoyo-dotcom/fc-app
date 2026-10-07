@@ -162,6 +162,22 @@ serve(async (req) => {
       .eq("stripe_subscription_id", subscription.id);
   }
 
+  // If Stripe's failed-payment setting is "mark as unpaid" rather than
+  // "cancel", a lapsed subscription is never deleted and Enterprise would stay
+  // on without being paid for. Treat a subscription that has become unpaid (or
+  // otherwise dead) the same as a deleted one. (past_due is left alone: that
+  // is Stripe still retrying the card.) Needs the endpoint to receive
+  // customer.subscription.updated events in Stripe.
+  if (event.type === "customer.subscription.updated") {
+    const subscription = event.data.object as Stripe.Subscription;
+    if (["unpaid", "canceled", "incomplete_expired"].includes(subscription.status)) {
+      await supabase
+        .from("brand_profiles")
+        .update({ is_enterprise: false, subscription_cancel_at_period_end: false })
+        .eq("stripe_subscription_id", subscription.id);
+    }
+  }
+
   // A creator's payout release can fail with "not_connected" if their
   // Stripe payout setup wasn't finished yet at the moment a post got
   // confirmed live or an instant payment landed - nothing previously

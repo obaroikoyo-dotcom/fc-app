@@ -34,6 +34,9 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user || user.id !== brand_id) throw new Error("Unauthorized");
 
+    // Only the two real plans; anything else would reach Stripe with no price.
+    if (plan !== "monthly" && plan !== "annual") throw new Error("Choose a valid plan.");
+
     const withinLimit = await checkRateLimit(supabase, "create-subscription", clientIdentifier(req, user.id), {
       windowSeconds: 600,
       maxRequests: 5,
@@ -78,7 +81,10 @@ if (existingBrand?.stripe_customer_id) {
   const customerRes = await fetch("https://api.stripe.com/v1/customers", {
     method: "POST",
     headers: { "Authorization": `Bearer ${secretKey}`, "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({ email, "metadata[brand_id]": brand_id, ...addressParams }),
+    // The signed-in user's own email, not whatever the request body claims -
+    // otherwise a Stripe customer (and its receipts) could be created under
+    // someone else's address.
+    body: new URLSearchParams({ email: user.email || email || "", "metadata[brand_id]": brand_id, ...addressParams }),
   });
   customer = await customerRes.json();
 }

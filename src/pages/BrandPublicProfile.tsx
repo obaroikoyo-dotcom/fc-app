@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safeHttpUrl } from "../lib/safeUrl";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { withTimeout } from "../lib/withTimeout";
@@ -474,7 +475,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
           <div style={sectionStyle}>
             <label style={labelStyle}>Links</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <a href={brand.website} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#fff", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
+              <a href={safeHttpUrl(brand.website)} target="_blank" rel="noopener noreferrer" style={{ fontSize: "13px", color: "#fff", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ color: "#888", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.08em", width: "70px" }}>Website</span>
                 <span style={{ color: "#ccc", textDecoration: "underline" }}>{brand.website}</span>
               </a>

@@ -9,6 +9,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Every upload becomes a public link on the storage domain, so the file
+// type is restricted to real media: previously any logged-in user could ask
+// for an upload link for an .html or .js file (or any content type) and host
+// a page on FlipCollab's storage domain. The extension and the content type
+// must agree, and the kind of file must match what that upload is for.
+const IMAGE_EXTS = new Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "avif", "bmp"]);
+const VIDEO_EXTS = new Set(["mp4", "mov", "m4v", "webm", "3gp", "3gpp", "mpeg", "mpg", "mkv", "avi"]);
+const IMAGE_TYPE = /^image\/(jpe?g|pjpeg|png|x-png|webp|gif|heic|heif|avif|bmp)$/i;
+const VIDEO_TYPE = /^video\/[a-z0-9.+-]+$/i;
+
+function classifyUpload(ext: string, contentType: unknown): "image" | "video" | "svg" | null {
+  if (typeof contentType !== "string") return null;
+  const e = ext.toLowerCase();
+  if (e === "svg") return contentType.toLowerCase() === "image/svg+xml" ? "svg" : null;
+  if (IMAGE_EXTS.has(e)) return IMAGE_TYPE.test(contentType) ? "image" : null;
+  if (VIDEO_EXTS.has(e)) return VIDEO_TYPE.test(contentType) ? "video" : null;
+  return null;
+}
+
 const BUCKET = Deno.env.get("R2_BUCKET_NAME") ?? "";
 const PUBLIC_URL = (Deno.env.get("R2_PUBLIC_URL") ?? "").replace(/\/$/, "");
 const ACCOUNT_ID = Deno.env.get("R2_ACCOUNT_ID") ?? "";
@@ -130,6 +149,24 @@ serve(async (req) => {
     } else {
       return new Response(JSON.stringify({ error: "Unknown purpose" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // What kind of file each upload is allowed to be. SVG is only for campaign
+    // overlay graphics (an advertised feature); everywhere else it's refused.
+    let allowedKinds: string[];
+    if (purpose === "avatar") allowedKinds = ["image"];
+    else if (purpose === "pitch" || purpose === "deliverable") allowedKinds = ["video"];
+    else if (purpose === "message-media") allowedKinds = ["image", "video"];
+    else if (folder === "logos") allowedKinds = ["image"];
+    else if (folder === "overlays") allowedKinds = ["image", "svg"];
+    else if (folder === "style-videos") allowedKinds = ["video"];
+    else allowedKinds = ["image", "video"];
+    const kind = classifyUpload(ext, content_type);
+    if (!kind || !allowedKinds.includes(kind)) {
+      return new Response(JSON.stringify({ error: "That file type isn't allowed for this upload." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

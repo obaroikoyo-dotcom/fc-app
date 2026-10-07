@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { safeHttpUrl } from "../lib/safeUrl";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
@@ -763,7 +764,7 @@ setTimeout(() => setSaved(false), 2000);
                 {platformPosts.length > 0 && (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid #1a1a1a" }}>
                     {platformPosts.map(post => (
-                      <a key={`${post.platform}-${post.post_id}`} href={post.post_url} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
+                      <a key={`${post.platform}-${post.post_id}`} href={safeHttpUrl(post.post_url)} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
                         {/* Some platforms (TikTok in particular) hand back a short-lived
                             signed thumbnail URL that can expire before this cached copy
                             is ever shown - hide the broken-image glyph rather than show it. */}

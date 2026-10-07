@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { safeHttpUrl, safeAssetLink } from "../lib/safeUrl";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
 import { notifyAndPush } from "../lib/push";
@@ -345,7 +346,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
     {campaign.landing_link && (
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
         <span style={{ color: "#888" }}>Link</span>
-        <a href={campaign.landing_link} target="_blank" rel="noreferrer" style={{ color: "#aaa", maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{campaign.landing_link}</a>
+        <a href={safeHttpUrl(campaign.landing_link)} target="_blank" rel="noreferrer" style={{ color: "#aaa", maxWidth: "60%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{campaign.landing_link}</a>
       </div>
     )}
     {campaign.utm_code && (
@@ -375,7 +376,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
             return isVideo ? (
               <video key={i} src={url} controls style={{ width: "150px", height: "150px", borderRadius: "8px", background: "#000", objectFit: "cover" }} />
             ) : (
-              <a key={i} href={url} target="_blank" rel="noreferrer" style={{ display: "block", width: "80px", height: "80px", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a", background: "#fff", flexShrink: 0 }}>
+              <a key={i} href={safeAssetLink(url)} target="_blank" rel="noreferrer" style={{ display: "block", width: "80px", height: "80px", borderRadius: "8px", overflow: "hidden", border: "1px solid #1a1a1a", background: "#fff", flexShrink: 0 }}>
                 <img src={url} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
               </a>
             );
