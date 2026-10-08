@@ -58,6 +58,40 @@ serve(async (req) => {
       }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // A brand with an Enterprise subscription must not keep being billed after
+    // its account is gone, so cancel it at Stripe first. If that can't be done
+    // the account is left alone and the user is told, rather than deleted with a
+    // live subscription behind it. A subscription Stripe no longer has (or has
+    // already ended) is fine.
+    const { data: brand } = await supabaseAdmin
+      .from("brand_profiles")
+      .select("stripe_subscription_id")
+      .eq("id", user_id)
+      .maybeSingle();
+    if (brand?.stripe_subscription_id) {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+      const subUrl = `https://api.stripe.com/v1/subscriptions/${encodeURIComponent(brand.stripe_subscription_id)}`;
+      const subRes = await fetch(subUrl, { headers: { "Authorization": `Bearer ${stripeKey}` } });
+      const sub = await subRes.json();
+      const alreadyGone = sub.error?.code === "resource_missing" || sub.status === "canceled";
+      if (!alreadyGone) {
+        if (sub.error) {
+          console.error("delete-user: couldn't read subscription", sub.error);
+          return new Response(JSON.stringify({
+            error: "We couldn't cancel your Enterprise subscription, so your account hasn't been deleted. Please try again in a moment.",
+          }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        const cancelRes = await fetch(subUrl, { method: "DELETE", headers: { "Authorization": `Bearer ${stripeKey}` } });
+        const canceled = await cancelRes.json();
+        if (canceled.error && canceled.error.code !== "resource_missing") {
+          console.error("delete-user: couldn't cancel subscription", canceled.error);
+          return new Response(JSON.stringify({
+            error: "We couldn't cancel your Enterprise subscription, so your account hasn't been deleted. Please try again in a moment.",
+          }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      }
+    }
+
     // Deleting the DB rows (or the auth user, which cascades to them) never
     // touched storage - uploaded files were left behind forever, silently
     // eating quota. Best-effort cleanup before the account itself goes;

@@ -75,6 +75,16 @@ serve(async (req) => {
     });
     if (!withinLimit) return rateLimitResponse(corsHeaders);
 
+    // Tells the database which website uploads live on, so it can refuse a
+    // deliverable or pitch link that points anywhere else (the database can't
+    // read this function's environment). Best-effort: an upload never fails
+    // because of it.
+    try {
+      if (PUBLIC_URL) await supabaseAdmin.rpc("set_app_secret", { p_key: "r2_public_host", p_value: new URL(PUBLIC_URL).host });
+    } catch (hostErr) {
+      console.error("Couldn't sync the storage host:", hostErr);
+    }
+
     const { purpose, ext, content_type, campaign_id, application_id, conversation_id, folder } = await req.json();
     if (!purpose || !ext || typeof ext !== "string" || !/^[a-z0-9]{1,8}$/i.test(ext)) {
       return new Response(JSON.stringify({ error: "purpose and a valid ext are required" }), {

@@ -1924,21 +1924,6 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     }
   };
 
-  // Full "delete for everyone" - text and any media, distinct from the
-  // automatic retention policy's media-only cleanup. The realtime UPDATE
-  // handler propagates this to the other person's screen live.
-  const deleteMessage = async (messageId: string) => {
-    if (!window.confirm("Delete this for both of you? This cannot be undone.")) return;
-    setActionSheetFor(null);
-    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, text: "", video_url: null, image_url: null, deleted_at: new Date().toISOString() } : m));
-    try {
-      const { error } = await supabase.functions.invoke("delete-message-media", { body: { message_id: messageId } });
-      if (error) throw error;
-    } catch (err) {
-      console.error("Failed to delete message:", err);
-    }
-  };
-
   const startEditMessage = (m: Message) => {
     setActionSheetFor(null);
     setEditingMessageId(m.id);
@@ -2962,18 +2947,6 @@ return (
                   <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Edit
-              </div>
-            )}
-            {actionSheetFor.sender_id === currentUserId && (
-              <div
-                onClick={() => deleteMessage(actionSheetFor.id)}
-                style={{ padding: "14px 16px", fontSize: "14px", color: "#ff4d4d", cursor: "pointer", display: "flex", alignItems: "center", gap: "14px", borderTop: "1px solid #1a1a1a" }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                  <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                Delete for everyone
               </div>
             )}
             <div

@@ -1,108 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { S3Client, DeleteObjectCommand } from "https://esm.sh/@aws-sdk/client-s3@3.600.0";
-import { checkRateLimit, clientIdentifier, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BUCKET = Deno.env.get("R2_BUCKET_NAME") ?? "";
-const ACCOUNT_ID = Deno.env.get("R2_ACCOUNT_ID") ?? "";
-
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: Deno.env.get("R2_ACCESS_KEY_ID") ?? "",
-    secretAccessKey: Deno.env.get("R2_SECRET_ACCESS_KEY") ?? "",
-  },
-});
-
-// Sender-initiated "delete for everyone" - full message (text and any
-// media), not just the media-only cleanup the automatic retention policy
-// does. Distinct from that policy on purpose: retention must never touch
-// text (kept as potential deal evidence), but a person choosing to unsend
-// their own message is a different, ordinary messaging feature - matches
-// how WhatsApp/iMessage "delete for everyone" actually behaves.
-serve(async (req) => {
+// "Delete for everyone" was removed from the app: it blanked a message's text
+// and media for good, so either person could erase evidence while a dispute
+// was open. The button is gone, and this refuses anyone who calls it directly.
+// Messages can still be edited (edit-message) until the other person has seen
+// them, and expired media is cleaned up by r2-scheduled-cleanup.
+serve((req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const callerClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY") ?? "", {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user: caller }, error: callerError } = await callerClient.auth.getUser();
-    if (callerError || !caller) {
-      return new Response(JSON.stringify({ error: "Not authorized" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const supabaseAdmin = createClient(supabaseUrl, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
-
-    const withinLimit = await checkRateLimit(supabaseAdmin, "delete-message-media", clientIdentifier(req, caller.id), {
-      windowSeconds: 60,
-      maxRequests: 30,
-    });
-    if (!withinLimit) return rateLimitResponse(corsHeaders);
-
-    const { message_id } = await req.json();
-    if (!message_id) {
-      return new Response(JSON.stringify({ error: "message_id is required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const { data: message } = await supabaseAdmin
-      .from("messages")
-      .select("id, sender_id, video_url, image_url, media_expired_at, deleted_at")
-      .eq("id", message_id)
-      .maybeSingle();
-
-    if (!message || message.sender_id !== caller.id) {
-      return new Response(JSON.stringify({ error: "Not authorized for this message" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    if (message.deleted_at) {
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const url = !message.media_expired_at ? (message.video_url || message.image_url) : null;
-    if (url) {
-      const key = new URL(url).pathname.replace(/^\//, "");
-      try {
-        await s3.send(new DeleteObjectCommand({ Bucket: BUCKET, Key: key }));
-      } catch (err) {
-        console.error("R2 delete failed (continuing to clear the message row):", err);
-      }
-    }
-
-    await supabaseAdmin.from("messages").update({
-      text: "",
-      video_url: null,
-      image_url: null,
-      deleted_at: new Date().toISOString(),
-    }).eq("id", message_id);
-
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    console.error("delete-message-media error:", err);
-    return new Response(JSON.stringify({ error: String((err as Error).message || err) }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  return new Response(JSON.stringify({ error: "Deleting messages is no longer available." }), {
+    status: 410,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 });
