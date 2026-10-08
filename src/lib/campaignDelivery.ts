@@ -61,8 +61,8 @@ export async function notifyBrandOfDeliverable(applicationId: string): Promise<v
       type: "deliverable_uploaded",
       title: "Deliverable Received",
       body: funded
-        ? `Your creator sent their deliverable for "${campaign.name}". Are you happy with it? You have ${REVIEW_WINDOW_DAYS} days to check it. Tell us you're happy, ask for another video, or report a problem. If you don't respond, the payment is released to the creator automatically.`
-        : `Your creator has already sent their deliverable for "${campaign.name}". Once you've paid, you'll have ${REVIEW_WINDOW_DAYS} days to check it and tell us if you're happy.`,
+        ? `Your creator sent their video for "${campaign.name}". Are you happy with it? You have ${REVIEW_WINDOW_DAYS} days to answer. If you don't, the payment is released to the creator automatically.`
+        : `Your creator has already sent their video for "${campaign.name}". Once you've paid, you'll have ${REVIEW_WINDOW_DAYS} days to check it.`,
       data: { campaign_id: app.campaign_id, application_id: app.id },
     });
   } catch (err) {

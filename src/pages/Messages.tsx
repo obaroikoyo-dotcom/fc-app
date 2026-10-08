@@ -401,7 +401,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         </div>
         {isEnterprise && (
           <p style={{ color: "#777", fontSize: "11px", lineHeight: 1.5, marginTop: "8px" }}>
-            Enterprise: no FlipCollab platform fee. The card processing fee helps cover what Stripe charges to take your card payment, and the creator still gets the full amount.
+            No FlipCollab platform fee on Enterprise. The card processing fee covers Stripe's cost of taking your payment. The creator still gets the full amount.
           </p>
         )}
       </div>
@@ -453,7 +453,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
             Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
             <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "#ccc", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
           </p>
-          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and tell us you're happy with the video once you have the file — the payment is released the same way.</p>
+          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and tell us you're happy with the video once you have the file. The payment is released the same way.</p>
         </div>
       </div>
       )}
@@ -578,7 +578,7 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
         </div>
       </div>
       <p style={{ fontSize: "10px", color: "#888", marginTop: "6px", lineHeight: 1.5 }}>
-        This is a preview. The full-quality video without the watermark shows here once the payment is released, which happens when you tell us you're happy or when the review time ends.
+        This is a preview. The clean video without the watermark appears once the payment is released, either when you tell us you're happy or when the review time ends.
       </p>
     </div>
   );
@@ -913,7 +913,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
           {revisionNote
             ? `Waiting for the creator to send a new video.${revisionRefundDate ? ` If it hasn't arrived by ${revisionRefundDate}, your payment is refunded automatically.` : ""}`
-            : `Waiting for the creator to send their deliverable. Once it arrives you'll have ${REVIEW_WINDOW_DAYS} days to check it and tell us if you're happy.`}
+            : `Waiting for the creator to send their deliverable. Once it arrives you'll have ${REVIEW_WINDOW_DAYS} days to check it.`}
         </p>
       )}
 
@@ -933,13 +933,13 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <div style={{ marginBottom: "10px" }}>
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>Are you happy with the content?</p>
           <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55, margin: 0 }}>
-            Have a look at the video below.{" "}
+            Watch the video below.{" "}
             {deliveryPlatform
-              ? `If it's right, tell us you're happy, or wait for it to be confirmed live on ${platform} and the payment is released automatically.`
-              : "If it's what you asked for, tell us you're happy and the payment goes to the creator."}
+              ? `If it's right, tap Yes, or wait for it to be confirmed live on ${platform} and the payment is released automatically.`
+              : "If it's what you asked for, tap Yes and the payment goes to the creator."}
             {reviewEndMs !== null && reviewMsLeft !== null && (
               reviewMsLeft > 0
-                ? ` You have ${formatTimeLeft(reviewMsLeft)} left to check it. If you don't respond by ${formatReviewEnd(reviewEndMs)}, the payment is released to the creator automatically.`
+                ? ` You have ${formatTimeLeft(reviewMsLeft)} left. If you don't answer by ${formatReviewEnd(reviewEndMs)}, the payment is released to the creator automatically.`
                 : " The review time is up, so the payment is being released to the creator."
             )}
           </p>

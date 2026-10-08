@@ -461,7 +461,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 </div>
                 {isEnterprise && (
                   <p style={{ fontSize: "11px", color: "#777", lineHeight: 1.5, margin: "10px 0 0" }}>
-                    Enterprise has no FlipCollab platform fee and your creator keeps 100%. The card processing fee helps cover what Stripe charges to take your card payment. It's added when you fund a collaboration, and you'll see it before you pay.
+                    No FlipCollab platform fee, and your creator keeps 100%. The card processing fee covers Stripe's cost of taking your payment. You'll see it before you pay.
                   </p>
                 )}
                 {!isEnterprise && (
