@@ -142,6 +142,7 @@ const [cancelLoading, setCancelLoading] = useState(false);
 const [cancelError, setCancelError] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 const [showCancelModal, setShowCancelModal] = useState(false);
 const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
 
@@ -754,21 +755,34 @@ const loadFavourites = async () => {
               This deletes your profile, campaign history and messages. It can't be undone.
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
-              <div onClick={() => !deletingAccount && setShowDeleteConfirm(false)} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: deletingAccount ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              <div onClick={() => { if (!deletingAccount) { setShowDeleteConfirm(false); setDeleteError(""); } }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: deletingAccount ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 Cancel
               </div>
               <div onClick={async () => {
-                if (deletingAccount) return;
+                if (deletingAccount || !userId) return;
                 setDeletingAccount(true);
-                if (userId) {
-                  await supabase.from("profiles").delete().eq("id", userId);
-                  await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+                setDeleteError("");
+                // The server checks for money still held in escrow before it deletes anything,
+                // so it goes first. The profile row used to be removed before that check ran.
+                const { error: deleteFnError } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+                if (deleteFnError) {
+                  let message = "Couldn't delete your account. Please try again.";
+                  try {
+                    const errBody = await (deleteFnError as any)?.context?.json();
+                    if (errBody?.error) message = errBody.error;
+                  } catch { /* keep the generic message */ }
+                  setDeleteError(message);
+                  setDeletingAccount(false);
+                  return;
                 }
+                // The account is gone. This clears the profile row if the database didn't already.
+                await supabase.from("profiles").delete().eq("id", userId);
                 await forceSignOut();
               }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid rgba(255,68,68,0.3)", color: "#ff4444", opacity: deletingAccount ? 0.5 : 1, fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 {deletingAccount ? "Deleting..." : "Delete"}
               </div>
             </div>
+            {deleteError && <p style={{ color: "#ff4444", fontSize: "12px", lineHeight: 1.5, marginTop: "12px" }}>{deleteError}</p>}
           </div>
         </div>
       )}

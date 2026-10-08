@@ -137,6 +137,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     isPushEnabled().then(setNotificationsEnabled);
@@ -506,7 +507,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     // see release-payout) - there's no separate "withdrawal" step anymore
     // to subtract, unlike the old manual-payout system this replaced.
     const earned = data.filter(t => t.status !== "failed" && released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
-    const pending = data.filter(t => t.status !== "failed" && !released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
+    const pending = data.filter(t => t.status === "completed" && !released.has(t.campaign_id)).reduce((sum, t) => sum + t.creator_payout, 0);
     setWalletBalance(earned);
     setPendingBalance(pending);
   }
@@ -978,21 +979,34 @@ setTimeout(() => setSaved(false), 2000);
               This deletes your profile, campaign history, messages and any pending balance. It can't be undone.
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
-              <div onClick={() => !deletingAccount && setShowDeleteConfirm(false)} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: deletingAccount ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              <div onClick={() => { if (!deletingAccount) { setShowDeleteConfirm(false); setDeleteError(""); } }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: deletingAccount ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 Cancel
               </div>
               <div onClick={async () => {
-                if (deletingAccount) return;
+                if (deletingAccount || !userId) return;
                 setDeletingAccount(true);
-                if (userId) {
-                  await supabase.from("profiles").delete().eq("id", userId);
-                  await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+                setDeleteError("");
+                // The server checks for money still held in escrow before it deletes anything,
+                // so it goes first. The profile row used to be removed before that check ran.
+                const { error: deleteFnError } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+                if (deleteFnError) {
+                  let message = "Couldn't delete your account. Please try again.";
+                  try {
+                    const errBody = await (deleteFnError as any)?.context?.json();
+                    if (errBody?.error) message = errBody.error;
+                  } catch { /* keep the generic message */ }
+                  setDeleteError(message);
+                  setDeletingAccount(false);
+                  return;
                 }
+                // The account is gone. This clears the profile row if the database didn't already.
+                await supabase.from("profiles").delete().eq("id", userId);
                 await forceSignOut();
               }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid rgba(255,68,68,0.3)", color: "#ff4444", opacity: deletingAccount ? 0.5 : 1, fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 {deletingAccount ? "Deleting..." : "Delete"}
               </div>
             </div>
+            {deleteError && <p style={{ color: "#ff4444", fontSize: "12px", lineHeight: 1.5, marginTop: "12px" }}>{deleteError}</p>}
           </div>
         </div>
       )}
@@ -1611,7 +1625,7 @@ setTimeout(() => setSaved(false), 2000);
       <div style={{ padding: "1.25rem" }}>
         {[
           { q: "Why is my balance still pending?", a: "Pending means the brand has paid and the money is held safely in escrow, but it hasn't been released to you yet. It releases when the brand confirms they're happy with your video, when your post is confirmed live (TikTok deals), or automatically 5 days after you upload your deliverable if the brand doesn't respond. The 5-day timer only starts once your video is uploaded and the brand has paid. Also check that the Payouts section in Settings says \"Payouts active\". If you finished setup after the brand paid, the brand may need to confirm again, or it releases when the 5 days end." },
-          { q: "How do I get paid?", a: "Once a brand approves your content, funds are released from escrow and transferred directly to your connected Stripe account - set this up once in Payouts, and every future release goes straight to your bank on Stripe's own payout schedule." },
+          { q: "How do I get paid?", a: "Funds are released from escrow when the brand says they're happy with your content, or automatically 5 days after you upload if they don't answer. They go straight to your connected Stripe account, so set that up once in Payouts. After that, every release reaches your bank on Stripe's own payout schedule." },
           { q: "What if the brand asks for another video?", a: "The brand can send a deal back for a new video up to 2 times, with a note on what to change. Your earlier video is cleared from the card, but it isn't lost. FlipCollab keeps it. Upload the new one in the same chat within 7 days. Your payout timer starts again from the new upload. If no new video arrives within 7 days, the deal is refunded to the brand, and we remind you at day 3 and day 6." },
           { q: "Why does the brand's view of my video say preview?", a: "Until the brand releases your payment, they only see your video as a watermarked preview, so it can't be used without paying you. Once your payment is released, they get the clean video." },
           { q: "When does the brand actually see my deliverable?", a: "As soon as you upload your video in the chat, the brand can watch it right there, before it's posted anywhere and before any money moves. That preview is what they're checking when we ask if they're happy with the content." },

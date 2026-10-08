@@ -920,7 +920,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       {role === "creator" && !deliverableUrl && applicationStatus !== "disputed" && (
         <>
           <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.55, marginBottom: "10px" }}>
-            Send your deliverable here to get your payout sent to your account. Until the brand approves it, your money stays pending.
+            Send your deliverable here to get paid. Once it's uploaded, the brand has {REVIEW_WINDOW_DAYS} days to check it. If they say they're happy, or they don't answer in that time, your payment is released.
           </p>
           <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
           <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed #333", textAlign: "center", fontSize: "12px", color: "#bbb", cursor: uploading ? "default" : "pointer" }}>
@@ -971,10 +971,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           ) : !deliveryPlatform ? (
             <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.5 }}>
               {!platform
-                ? "This campaign doesn't require a specific platform - your payment is released once the brand confirms they're happy with your video."
+                ? `This campaign doesn't require a specific platform. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`
                 : socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
-                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - your payment is released once the brand confirms they're happy with your video.`
-                : `${platform} doesn't support automatic post verification - your payment is released once the brand confirms they're happy with your video.`}
+                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`
+                : `${platform} doesn't support automatic post verification. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`}
             </p>
           ) : !socialConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Connect Social Platforms to post this and get paid.</p>
@@ -1176,10 +1176,10 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
         <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Get a head start</p>
         <p style={{ color: "#aaa", fontSize: "12px", lineHeight: 1.5 }}>
           {deliveryPlatform
-            ? `You can upload your deliverable now, before the brand even pays. Once they do, if they require a ${platform} post for release, your payout goes out automatically once it's confirmed live - if they don't require that, your payout is released once they confirm they're happy with it, so feel free to send this anytime.`
+            ? `You can upload your deliverable now, before the brand pays. If they require a ${platform} post for release, your payout goes out once it's confirmed live. If not, it's released when they say they're happy with it, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days of paying.`
             : !platform
-            ? "You can upload your deliverable now, before the brand even pays - this campaign doesn't require a specific platform, so once they pay your payout is released as soon as they confirm they're happy with it."
-            : `You can upload your deliverable now, before the brand even pays - ${platform} doesn't support automatic post verification, so once they pay your payout is released as soon as they confirm they're happy with it.`}
+            ? `You can upload your deliverable now, before the brand pays. This campaign doesn't require a specific platform, so once they pay your payout is released when they say they're happy with it, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`
+            : `You can upload your deliverable now, before the brand pays. ${platform} doesn't support automatic post verification, so once they pay your payout is released when they say they're happy with it, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`}
         </p>
       </div>
       {deliverableUrl ? (
