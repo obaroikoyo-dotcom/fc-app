@@ -8,10 +8,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ONESIGNAL_APP_ID = "66adae38-64f2-425f-b984-83e65f99ce1f";
+
+// In-app notification row plus a push, written with the service role.
+async function notify(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  userId: string,
+  type: string,
+  title: string,
+  body: string,
+  data: Record<string, unknown>,
+) {
+  await supabaseAdmin.from("notifications").insert({ user_id: userId, type, title, body, data });
+  const restApiKey = Deno.env.get("ONESIGNAL_REST_API_KEY");
+  if (!restApiKey) return;
+  await fetch("https://onesignal.com/api/v1/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Key ${restApiKey}` },
+    body: JSON.stringify({
+      app_id: ONESIGNAL_APP_ID,
+      target_channel: "push",
+      include_aliases: { external_id: [userId] },
+      headings: { en: title },
+      contents: { en: body },
+      data,
+    }),
+  });
+}
+
 // Replaces the old client-side "flip applications.status to paid" release
-// calls (Messages.tsx's manual-release button and its ungated instant-pay
-// path) - creating the actual Stripe Transfer needs the secret key, so this
-// can no longer happen directly from the browser.
+// calls - creating the actual Stripe Transfer needs the secret key, so this
+// can no longer happen directly from the browser. Called when the brand
+// answers "Are you happy with the content?" with yes.
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -44,7 +72,7 @@ serve(async (req) => {
 
     const { data: application, error: appError } = await supabaseAdmin
       .from("applications")
-      .select("id, status, campaigns(brand_id)")
+      .select("id, status, creator_id, campaign_id, campaigns(brand_id, name)")
       .eq("id", application_id)
       .single();
     if (appError || !application) {
@@ -78,6 +106,18 @@ serve(async (req) => {
     const result = await releasePayoutForApplication(supabaseAdmin, application_id);
 
     if (result.released) {
+      // Tell the creator the money is on its way (the brand just said they're
+      // happy). Best-effort: the release has already happened, so a failed
+      // notification must never turn this into an error.
+      if (!result.alreadyReleased) {
+        try {
+          await notify(supabaseAdmin, application.creator_id, "payout_released", "Payment Released",
+            `The brand is happy with your content for "${campaign.name ?? "your campaign"}", so your payment has been released to your account. It will reach your bank on Stripe's usual payout schedule.`,
+            { application_id: application.id, campaign_id: application.campaign_id });
+        } catch (notifyErr) {
+          console.error("release-payout: creator notification failed:", notifyErr);
+        }
+      }
       return new Response(JSON.stringify({ released: true, transfer_id: result.transferId, alreadyReleased: result.alreadyReleased }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

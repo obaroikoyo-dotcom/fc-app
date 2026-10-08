@@ -19,6 +19,7 @@ import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 import { dealBreakdown } from "../lib/fees";
+import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -319,9 +320,9 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
     if (confirmResult.paymentIntent?.status === "succeeded") {
       // Gated deals: charge now, but hold the transaction and leave the
       // application out of "paid" until a creator-posted video is confirmed
-      // live on the campaign's platform (or the brand manually releases it
-      // later). Ungated deals keep the exact previous behavior - charge and
-      // release in the same instant.
+      // live on the campaign's platform (or the brand confirms they're happy
+      // later, or the review window runs out). Nothing is ever released in
+      // the same instant as the charge.
       // Both paths land on "funded" first - actual release (the real Stripe
       // Transfer to the creator) always goes through releasePayout, either
       // right away below (ungated) or later via the gated/manual triggers.
@@ -349,8 +350,8 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       // up "paid" the instant the card is charged.
       // Every deal stays held in escrow after payment, gated or not - money
       // only lands with the creator once the deliverable is met: the brand
-      // releases it after reviewing, a gated post is confirmed live, or the
-      // 7-day auto-release passes after the upload. Nothing pays out instantly.
+      // confirms they're happy, a gated post is confirmed live, or the
+      // 5-day review window ends after the upload. Nothing pays out instantly.
       const finalStatus: "funded" | "paid" = "funded";
 
       await notifyAndPush({
@@ -359,7 +360,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         title: "Payment Received",
         body: gatedPlatform
           ? `Funds for "${paymentApp.campaign_name}" are secured. Post your deliverable video to ${paymentApp.platforms?.[0] || "the platform"} from the chat to release your payout.`
-          : `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Deliver your video in the chat - your payout releases once the brand approves it, or automatically 7 days after you upload.`,
+          : `Funds for "${paymentApp.campaign_name}" have been secured in escrow. Deliver your video in the chat - your payout is released once the brand confirms they're happy with it, or automatically 5 days after you upload if they don't respond.`,
         data: { campaign_id: paymentApp.campaign_id }
       });
 
@@ -452,7 +453,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
             Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
             <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "#ccc", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
           </p>
-          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and use "Release Payment Manually" once you have the file — funds release the same way.</p>
+          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and tell us you're happy with the video once you have the file — the payment is released the same way.</p>
         </div>
       </div>
       )}
@@ -460,14 +461,14 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         <ComingSoonNotice
           title={`${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post verification`}
           pillLabel="Coming Soon"
-          body={`Automatic release once your ${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post is confirmed live isn't available yet - funds are held in escrow and you'll release payment manually once delivery is confirmed.`}
+          body={`Automatic release once your ${socialPlatformFor(paymentApp.platforms?.[0]) === "instagram" ? "Instagram" : "YouTube"} post is confirmed live isn't available yet - funds are held in escrow, and once the video is delivered you'll have ${REVIEW_WINDOW_DAYS} days to tell us you're happy with it.`}
         />
       )}
       {!deliveryPlatform && !socialPlatformFor(paymentApp.platforms?.[0]) && (
         <ComingSoonNotice
           title={`${paymentApp.platforms?.[0] || "This platform"} post verification`}
           pillLabel="Not Available"
-          body="This platform doesn't support automatic post verification - funds are held in escrow and you'll release payment manually once delivery is confirmed."
+          body="This platform doesn't support automatic post verification - funds are held in escrow, and once the video is delivered you'll have 5 days to tell us you're happy with it."
         />
       )}
 
@@ -577,7 +578,7 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
         </div>
       </div>
       <p style={{ fontSize: "10px", color: "#888", marginTop: "6px", lineHeight: 1.5 }}>
-        This is a preview. The full-quality video without the watermark shows here once you release the payment.
+        This is a preview. The full-quality video without the watermark shows here once the payment is released, which happens when you tell us you're happy or when the review time ends.
       </p>
     </div>
   );
@@ -599,10 +600,15 @@ interface EscrowDeliveryCardProps {
 // Creators upload their deliverable and post it to their own TikTok to
 // release their own payout automatically; brands can only post the same
 // deliverable to their own TikTok once that release has already
-// happened, and can always manually release for deals that never touch
-// TikTok at all (in-person handoffs, etc).
+// happened. Once a video is delivered the brand is asked if they're happy
+// (Vinted-style): yes releases the payment, and no answer within the review
+// window releases it automatically.
 function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, paymentMessage, refreshKey }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
+  // When the review clock started (upload, or payment if the creator uploaded
+  // first). Drives the "you have X left" line and the creator's deadline note.
+  const [deliveredAt, setDeliveredAt] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
   const [mediaDeleteAt, setMediaDeleteAt] = useState<string | null>(null);
   const [platform, setPlatform] = useState("");
   const [deliveryPlatform, setDeliveryPlatform] = useState<DeliveryPlatform | null>(null);
@@ -629,8 +635,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
   useEffect(() => {
     (async () => {
-      const { data: app } = await supabase.from("applications").select("deliverable_url, platforms, media_delete_at").eq("id", applicationId).single();
+      const { data: app } = await supabase.from("applications").select("deliverable_url, deliverable_uploaded_at, platforms, media_delete_at").eq("id", applicationId).single();
       if (app?.deliverable_url) setDeliverableUrl(app.deliverable_url);
+      setDeliveredAt(app?.deliverable_uploaded_at ?? null);
       // Separate query so the card still works before the revision columns exist.
       const { data: rev } = await supabase.from("applications").select("revision_count, revision_note, revision_requested_at").eq("id", applicationId).single();
       setRevisionCount(rev?.revision_count ?? 0);
@@ -659,15 +666,27 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   useEffect(() => {
     if (!refreshKey) return;
     (async () => {
-      const { data: app } = await supabase.from("applications").select("deliverable_url").eq("id", applicationId).single();
+      const { data: app } = await supabase.from("applications").select("deliverable_url, deliverable_uploaded_at").eq("id", applicationId).single();
       // null is meaningful now: a revision request clears the video.
       setDeliverableUrl(app?.deliverable_url ?? null);
+      setDeliveredAt(app?.deliverable_uploaded_at ?? null);
       const { data: rev } = await supabase.from("applications").select("revision_count, revision_note, revision_requested_at").eq("id", applicationId).single();
       setRevisionCount(rev?.revision_count ?? 0);
       setRevisionNote(rev?.revision_note ?? null);
       setRevisionRequestedAt(rev?.revision_requested_at ?? null);
     })();
   }, [refreshKey, applicationId]);
+
+  // Keeps the "you have X left" countdown moving while a delivered video is
+  // waiting for the brand's answer.
+  useEffect(() => {
+    if (!deliveredAt || applicationStatus !== "funded") return;
+    const t = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(t);
+  }, [deliveredAt, applicationStatus]);
+
+  const reviewEndMs = reviewEndsAt(deliveredAt);
+  const reviewMsLeft = reviewEndMs !== null ? reviewEndMs - now : null;
 
   // Date the deal refunds to the brand if no replacement video has arrived
   // (7 days after the request - enforced by the scheduled job, shown here).
@@ -710,6 +729,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     try {
       await requestDeliverableRevision(applicationId, revisionText.trim());
       setDeliverableUrl(null);
+      setDeliveredAt(null);
       setRevisionCount(c => c + 1);
       setRevisionNote(revisionText.trim());
       setRevisionRequestedAt(new Date().toISOString());
@@ -750,6 +770,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     try {
       const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
+      setDeliveredAt(new Date().toISOString());
       notifyBrandOfDeliverable(applicationId);
     } catch (err) {
       setError((err as Error).message || "Upload failed");
@@ -892,7 +913,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
           {revisionNote
             ? `Waiting for the creator to send a new video.${revisionRefundDate ? ` If it hasn't arrived by ${revisionRefundDate}, your payment is refunded automatically.` : ""}`
-            : "Waiting for the creator to send their deliverable."}
+            : `Waiting for the creator to send their deliverable. Once it arrives you'll have ${REVIEW_WINDOW_DAYS} days to check it and tell us if you're happy.`}
         </p>
       )}
 
@@ -909,9 +930,20 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {deliverableUrl && role === "brand" && applicationStatus === "funded" && (
-        <p style={{ fontSize: "10px", color: "#888", marginBottom: "8px", lineHeight: 1.5 }}>
-          Review the video below before releasing — {deliveryPlatform ? `release now, or wait for it to be confirmed live on ${platform} and it'll release automatically.` : "release manually whenever you're happy with it."}
-        </p>
+        <div style={{ marginBottom: "10px" }}>
+          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>Are you happy with the content?</p>
+          <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55, margin: 0 }}>
+            Have a look at the video below.{" "}
+            {deliveryPlatform
+              ? `If it's right, tell us you're happy, or wait for it to be confirmed live on ${platform} and the payment is released automatically.`
+              : "If it's what you asked for, tell us you're happy and the payment goes to the creator."}
+            {reviewEndMs !== null && reviewMsLeft !== null && (
+              reviewMsLeft > 0
+                ? ` You have ${formatTimeLeft(reviewMsLeft)} left to check it. If you don't respond by ${formatReviewEnd(reviewEndMs)}, the payment is released to the creator automatically.`
+                : " The review time is up, so the payment is being released to the creator."
+            )}
+          </p>
+        </div>
       )}
 
       {deliverableUrl && (
@@ -919,6 +951,14 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {error && <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
+
+      {role === "creator" && applicationStatus === "funded" && deliverableUrl && reviewEndMs !== null && (
+        <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
+          {reviewMsLeft !== null && reviewMsLeft > 0
+            ? `The brand has until ${formatReviewEnd(reviewEndMs)} to check your video. If they don't respond by then, your payment is released to your account automatically.`
+            : "The brand's review time is up, so your payment is being released to your account."}
+        </p>
+      )}
 
       {canCreatorPost && deliverableUrl && (
         <div>
@@ -931,11 +971,10 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           ) : !deliveryPlatform ? (
             <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.5 }}>
               {!platform
-                ? "This campaign doesn't require a specific platform - the brand releases your payment once they've confirmed delivery."
+                ? "This campaign doesn't require a specific platform - your payment is released once the brand confirms they're happy with your video."
                 : socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
-                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - the brand releases your payment once they've confirmed delivery.`
-                : `${platform} doesn't support automatic post verification - the brand releases your payment once they've confirmed delivery.`}
-              {" "}If they don't get to it, it releases to you automatically after 7 days.
+                ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon - your payment is released once the brand confirms they're happy with your video.`
+                : `${platform} doesn't support automatic post verification - your payment is released once the brand confirms they're happy with your video.`}
             </p>
           ) : !socialConnected ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Connect Social Platforms to post this and get paid.</p>
@@ -971,24 +1010,21 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         </div>
       )}
 
-      {role === "brand" && applicationStatus === "funded" && (
-        <>
-          <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
-            {deliverableUrl && !showDisputeForm && (
-              <div onClick={() => setShowDisputeForm(true)} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
-                Dispute Delivery
-              </div>
-            )}
-            <div onClick={!releasing ? handleManualRelease : undefined} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #333", background: "transparent", color: releasing ? "#555" : "#fff", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
-              {releasing ? "Releasing..." : "Release Funds to Creator"}
+      {/* The old standalone "Release Funds" button is gone: once a video has
+          been delivered the brand is asked if they're happy, and "Yes" is what
+          releases the payment (same release-payout call as before). With
+          nothing delivered yet there is nothing to confirm. */}
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && (
+        <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+          {!showDisputeForm && (
+            <div onClick={() => setShowDisputeForm(true)} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+              Report a Problem
             </div>
+          )}
+          <div onClick={!releasing ? handleManualRelease : undefined} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #fff", background: releasing ? "#1a1a1a" : "#fff", color: releasing ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
+            {releasing ? "Confirming..." : "Yes, I'm happy"}
           </div>
-          <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "6px", lineHeight: 1.4 }}>
-            {deliverableUrl
-              ? "Left unreviewed, this releases to the creator automatically 7 days after delivery."
-              : "Use Release if you're posting this yourself or it was delivered off-platform."}
-          </p>
-        </>
+        </div>
       )}
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount < 2 && !showDisputeForm && (
@@ -1023,7 +1059,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount >= 2 && (
         <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "8px", lineHeight: 1.5 }}>
-          You have used both video requests for this deal. Release the payment or raise a dispute.
+          You have used both video requests for this deal. Tell us you're happy, or report a problem.
         </p>
       )}
 
@@ -1140,10 +1176,10 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
         <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Get a head start</p>
         <p style={{ color: "#aaa", fontSize: "12px", lineHeight: 1.5 }}>
           {deliveryPlatform
-            ? `You can upload your deliverable now, before the brand even pays. Once they do, if they require a ${platform} post for release, your payout goes out automatically once it's confirmed live - if they don't require that, they'll release it manually whenever they're happy, so feel free to send this anytime.`
+            ? `You can upload your deliverable now, before the brand even pays. Once they do, if they require a ${platform} post for release, your payout goes out automatically once it's confirmed live - if they don't require that, your payout is released once they confirm they're happy with it, so feel free to send this anytime.`
             : !platform
-            ? "You can upload your deliverable now, before the brand even pays - this campaign doesn't require a specific platform, so once they pay they'll just release your payout manually whenever they're happy with it."
-            : `You can upload your deliverable now, before the brand even pays - ${platform} doesn't support automatic post verification, so once they pay they'll just release your payout manually whenever they're happy with it.`}
+            ? "You can upload your deliverable now, before the brand even pays - this campaign doesn't require a specific platform, so once they pay your payout is released as soon as they confirm they're happy with it."
+            : `You can upload your deliverable now, before the brand even pays - ${platform} doesn't support automatic post verification, so once they pay your payout is released as soon as they confirm they're happy with it.`}
         </p>
       </div>
       {deliverableUrl ? (
@@ -2552,7 +2588,7 @@ return (
                         Funded — Awaiting Delivery
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
-                        Review the deliverable below once it's in - if you don't release or dispute it, it releases to the creator automatically after 7 days.
+                        Once the video is in, tell us if you're happy with it. You have 5 days - if you don't respond, the payment is released to the creator automatically.
                       </p>
                     </>
                   ) : activeConvo.application_status === "disputed" ? (
@@ -2588,8 +2624,8 @@ return (
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         {deliveryPlatformFor(activeConvo.campaign_platforms?.[0])
-                          ? "Upload your deliverable and post it below - your payout releases automatically once it's confirmed live, or after 7 days either way."
-                          : "Upload your deliverable below - the brand releases your payout once they confirm it, or it releases automatically after 7 days either way."}
+                          ? "Upload your deliverable and post it below - your payout releases automatically once it's confirmed live, or 5 days after delivery if the brand hasn't responded."
+                          : "Upload your deliverable below - your payout is released once the brand confirms they're happy, or automatically 5 days after delivery if they don't respond."}
                       </p>
                     </>
                   ) : activeConvo.application_status === "paid" ? (

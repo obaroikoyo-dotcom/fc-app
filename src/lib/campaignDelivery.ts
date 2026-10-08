@@ -1,6 +1,7 @@
 import { supabase } from "./supabase";
 import { uploadToR2 } from "./r2Upload";
 import { notifyAndPush } from "./push";
+import { REVIEW_WINDOW_DAYS } from "./review";
 
 export interface CampaignPost {
   id: string;
@@ -52,16 +53,16 @@ export async function notifyBrandOfDeliverable(applicationId: string): Promise<v
       .single();
     const campaign = Array.isArray(app?.campaigns) ? app?.campaigns[0] : app?.campaigns;
     if (!app || !campaign?.brand_id) return;
-    // Before payment there's nothing for the brand to release or dispute yet,
-    // so say what's actually true instead of telling them to review a payout.
+    // Before payment there's nothing to confirm or dispute yet, so say what's
+    // actually true instead of asking them to review a payout.
     const funded = app.status === "funded";
     await notifyAndPush({
       user_id: campaign.brand_id,
       type: "deliverable_uploaded",
       title: "Deliverable Received",
       body: funded
-        ? `Your creator sent their deliverable for "${campaign.name}". Review it in the chat, then release the payout, ask for another video, or raise a dispute.`
-        : `Your creator has already sent their deliverable for "${campaign.name}". Once you've paid, you can review it in the chat before anything is released.`,
+        ? `Your creator sent their deliverable for "${campaign.name}". Are you happy with it? You have ${REVIEW_WINDOW_DAYS} days to check it. Tell us you're happy, ask for another video, or report a problem. If you don't respond, the payment is released to the creator automatically.`
+        : `Your creator has already sent their deliverable for "${campaign.name}". Once you've paid, you'll have ${REVIEW_WINDOW_DAYS} days to check it and tell us if you're happy.`,
       data: { campaign_id: app.campaign_id, application_id: app.id },
     });
   } catch (err) {
@@ -70,8 +71,8 @@ export async function notifyBrandOfDeliverable(applicationId: string): Promise<v
 }
 
 // Sends a funded deal back for a new deliverable (max 2 times, enforced in
-// the database). The server clears the current video, restarts the 7-day
-// auto-release clock for whatever gets uploaded next, and notifies the creator.
+// the database). The server clears the current video, restarts the review
+// clock for whatever gets uploaded next, and notifies the creator.
 export async function requestDeliverableRevision(applicationId: string, note: string): Promise<void> {
   const { error } = await supabase.rpc("request_deliverable_revision", { p_application_id: applicationId, p_note: note });
   if (error) throw new Error(error.message);

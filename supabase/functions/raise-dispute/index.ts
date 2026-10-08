@@ -38,8 +38,10 @@ async function notify(
 }
 
 // Only the brand on a still-"funded" (delivered, not yet released) deal can
-// raise a dispute, and only within the same 7-day window auto-release
-// works off - past that, auto-release will already have paid the creator.
+// raise a dispute, and only within the same review window auto-release
+// works off (5 days - keep in step with auto-release-payments and
+// src/lib/review.ts) - past that, auto-release will already have paid the creator.
+const REVIEW_WINDOW_DAYS = 5;
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -101,8 +103,8 @@ serve(async (req) => {
         });
       }
       const daysSinceDelivery = (Date.now() - new Date(application.deliverable_uploaded_at).getTime()) / (1000 * 60 * 60 * 24);
-      if (daysSinceDelivery > 7) {
-        return new Response(JSON.stringify({ error: "The 7-day window to dispute this delivery has passed." }), {
+      if (daysSinceDelivery > REVIEW_WINDOW_DAYS) {
+        return new Response(JSON.stringify({ error: `The ${REVIEW_WINDOW_DAYS}-day window to report a problem with this delivery has passed.` }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
