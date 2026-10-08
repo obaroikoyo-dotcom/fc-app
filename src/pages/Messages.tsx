@@ -2049,7 +2049,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     await notifyAndPush({
       user_id: app.creator_id,
       type: "campaign_chatting",
-      title: "Chat Opened! 💬",
+      title: "Chat Opened!",
       body: `${currentUserName} initiated a discussion for your "${app.campaign_name}" pitch.`,
       data: { campaign_id: app.campaign_id, conversation_id: targetConvoId }
     });
@@ -2461,7 +2461,6 @@ return (
 
           {(activeApplication.status === "accepted" || activeApplication.status === "chatting") && (
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
-              <p style={{ fontSize: "20px", marginBottom: "8px" }}>💬</p>
               <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>Chat open with creator</p>
               <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Discuss deliverables in the chat tab. You can safely lock in the deal and process payments straight from the conversation bar anytime.</p>
             </div>
