@@ -138,7 +138,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
           <div>
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Social Sign-In & Linked Accounts</span>
-            <span>You may sign in or verify your account using Google, TikTok, or Instagram. We only receive what the provider shares when you sign in — typically your name and email. We use this data solely to create and authenticate your account, never for advertising.</span>
+            <span>You may sign in or verify your account using Google, TikTok, or Instagram. We only receive what the provider shares when you sign in, typically your name and email. We use this data solely to create and authenticate your account, never for advertising.</span>
           </div>
 
           <div>
