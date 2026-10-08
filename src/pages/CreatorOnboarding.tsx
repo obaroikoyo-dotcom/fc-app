@@ -736,7 +736,10 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 8 — Done
     <div key={8} style={{ textAlign: "center" }}>
-      <div style={{ fontSize: "48px", marginBottom: "1.5rem" }}>🎉</div>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", margin: "0 auto 1.5rem" }}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="m8.4 12.4 2.5 2.5 4.8-5.2" />
+      </svg>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
     </div>,

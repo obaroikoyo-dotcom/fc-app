@@ -174,7 +174,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       await notifyAndPush({
         user_id: campaign.brand_id,
         type: "campaign_application",
-        title: "New Application 📩",
+        title: "New Application",
         body: `${myCreatorName} applied to your campaign "${campaign.name}".`,
         data: { campaign_id: campaign.id }
       });

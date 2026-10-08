@@ -2461,6 +2461,9 @@ return (
 
           {(activeApplication.status === "accepted" || activeApplication.status === "chatting") && (
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", margin: "0 auto 10px" }}>
+                <ChatBubbleIcon />
+              </div>
               <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>Chat open with creator</p>
               <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Discuss deliverables in the chat tab. You can safely lock in the deal and process payments straight from the conversation bar anytime.</p>
             </div>
