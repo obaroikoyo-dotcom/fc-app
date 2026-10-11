@@ -21,7 +21,7 @@ export async function uploadToR2({ purpose, file, campaign_id, application_id, c
   const ext = (file.name.split(".").pop() || "bin").toLowerCase();
 
   const { data, error } = await supabase.functions.invoke("r2-presigned-url", {
-    body: { purpose, ext, content_type: file.type || undefined, campaign_id, application_id, conversation_id, folder },
+    body: { purpose, ext, content_type: file.type || undefined, size: file.size, campaign_id, application_id, conversation_id, folder },
   });
   if (error || !data?.uploadUrl) {
     let message = "Failed to prepare upload.";

@@ -28,6 +28,15 @@ function classifyUpload(ext: string, contentType: unknown): "image" | "video" | 
   return null;
 }
 
+// Largest file accepted for each kind. Videos match the 2 GB limit the app
+// already applies on the device; photos match the 15 MB limit for chat images.
+const MAX_BYTES: Record<"image" | "video" | "svg", number> = {
+  image: 15 * 1024 * 1024,
+  video: 2 * 1024 * 1024 * 1024,
+  svg: 1 * 1024 * 1024,
+};
+const MAX_LABEL: Record<"image" | "video" | "svg", string> = { image: "15 MB", video: "2 GB", svg: "1 MB" };
+
 const BUCKET = Deno.env.get("R2_BUCKET_NAME") ?? "";
 const PUBLIC_URL = (Deno.env.get("R2_PUBLIC_URL") ?? "").replace(/\/$/, "");
 const ACCOUNT_ID = Deno.env.get("R2_ACCOUNT_ID") ?? "";
@@ -85,7 +94,7 @@ serve(async (req) => {
       console.error("Couldn't sync the storage host:", hostErr);
     }
 
-    const { purpose, ext, content_type, campaign_id, application_id, conversation_id, folder } = await req.json();
+    const { purpose, ext, content_type, size, campaign_id, application_id, conversation_id, folder } = await req.json();
     if (!purpose || !ext || typeof ext !== "string" || !/^[a-z0-9]{1,8}$/i.test(ext)) {
       return new Response(JSON.stringify({ error: "purpose and a valid ext are required" }), {
         status: 400,
@@ -180,15 +189,38 @@ serve(async (req) => {
       });
     }
 
+    // The size has to be declared and within the limit for this kind of file.
+    // It is then signed into the upload link, so R2 itself refuses a body of any
+    // other length: a modified client can't declare 1 MB and send 5 GB.
+    const declaredSize = Number(size);
+    if (!Number.isInteger(declaredSize) || declaredSize <= 0) {
+      return new Response(JSON.stringify({ error: "The file size is required. Refresh the app and try again." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (declaredSize > MAX_BYTES[kind]) {
+      return new Response(JSON.stringify({ error: `That file is too large. The limit for this upload is ${MAX_LABEL[kind]}.` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const command = new PutObjectCommand({
       Bucket: BUCKET,
       Key: path,
-      ContentType: typeof content_type === "string" ? content_type : undefined,
+      ContentType: content_type as string,
+      ContentLength: declaredSize,
     });
     // 5 minutes is enough to actually send even a large video over a slow
     // connection, without leaving a long-lived write credential floating
-    // around in the client.
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
+    // around in the client. The file type and length are signed too (by
+    // default only the host is), so the upload can't be sent with a different
+    // Content-Type than the one that was checked above, such as text/html.
+    const uploadUrl = await getSignedUrl(s3, command, {
+      expiresIn: 300,
+      signableHeaders: new Set(["content-type", "content-length"]),
+    });
 
     return new Response(JSON.stringify({ uploadUrl, publicUrl: `${PUBLIC_URL}/${path}`, path }), {
       status: 200,

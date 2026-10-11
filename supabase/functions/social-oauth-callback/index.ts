@@ -40,8 +40,18 @@ const r2 = new S3Client({
 async function mirrorThumbnail(sourceUrl: string, key: string): Promise<string> {
   const res = await fetch(sourceUrl);
   if (!res.ok) throw new Error(`thumbnail fetch failed: ${res.status}`);
+  // Whatever the provider sends, only a small picture is mirrored, and the
+  // type stored is one we choose, never the raw header from their server.
+  const MAX_THUMBNAIL_BYTES = 10 * 1024 * 1024;
+  const sentType = (res.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  const knownImage = /^image\/(jpeg|jpg|png|webp|gif)$/.test(sentType);
+  if (!knownImage && sentType !== "" && sentType !== "application/octet-stream" && sentType !== "binary/octet-stream") {
+    throw new Error(`thumbnail is not an image (${sentType})`);
+  }
+  if (Number(res.headers.get("content-length") || 0) > MAX_THUMBNAIL_BYTES) throw new Error("thumbnail is too large");
   const body = new Uint8Array(await res.arrayBuffer());
-  const contentType = res.headers.get("content-type") || "image/jpeg";
+  if (body.byteLength > MAX_THUMBNAIL_BYTES) throw new Error("thumbnail is too large");
+  const contentType = knownImage ? sentType.replace("image/jpg", "image/jpeg") : "image/jpeg";
 
   const uploadUrl = await getSignedUrl(
     r2,
