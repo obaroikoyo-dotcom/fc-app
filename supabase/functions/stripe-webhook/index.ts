@@ -12,18 +12,30 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 
 serve(async (req) => {
+  // Fail closed. With an empty secret the signature check below would still
+  // "pass" for anyone who signs a fake event with an empty key (the Stripe
+  // library accepts that), so a missing or mistyped secret has to stop every
+  // event rather than let forged ones through. Real signing secrets always
+  // start with whsec_.
+  if (!webhookSecret.startsWith("whsec_")) {
+    console.error("stripe-webhook: STRIPE_WEBHOOK_SECRET is missing or malformed - refusing every event");
+    return new Response("Webhook is not configured", { status: 500 });
+  }
+
   const signature = req.headers.get("stripe-signature");
+  if (!signature) return new Response("Missing signature", { status: 400 });
   const body = await req.text();
 
   let event;
   try {
-    event = await stripe.webhooks.constructEventAsync(
-      body,
-      signature!,
-      webhookSecret
-    );
+    // Raw body plus the signature header, checked against the signing secret.
+    // Anything that wasn't signed by Stripe with that secret, was changed after
+    // signing, or is older than 5 minutes is refused here, before it touches
+    // the database.
+    event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
   } catch (err) {
-    return new Response(`Webhook signature verification failed: ${err}`, { status: 400 });
+    console.error("stripe-webhook: signature verification failed:", err);
+    return new Response("Invalid signature", { status: 400 });
   }
 
   const supabase = createClient(
@@ -213,7 +225,7 @@ serve(async (req) => {
           // which it does often) is never itself a reason to release. Only
           // a post-gated deal whose required post is already confirmed live
           // is retried here; everything else waits for the brand's release,
-          // a confirmed post, or the 7-day auto-release after upload.
+          // a confirmed post, or the 5-day auto-release after upload.
           let eligible = false;
           if (app.payout_release_mode === "tiktok_gated") {
             const { data: post } = await supabase
