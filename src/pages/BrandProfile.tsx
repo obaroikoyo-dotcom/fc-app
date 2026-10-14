@@ -34,11 +34,11 @@ interface Props {
 const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home", "Jewellery & Accessories", "Skincare", "Haircare", "Travel & Hospitality", "Parenting & Family", "Pet Care", "Finance & Fintech", "Education & E-learning", "Gaming", "Automotive", "Sports & Outdoors", "Luxury Goods", "Sustainability & Eco", "Alcohol & Beverages", "Subscription Boxes", "Home & Garden", "Art & Creative Tools"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Reels", "TikTok Placements", "Product Reviews", "Long-form Vlogs", "Dedicated Demos", "Stories", "Unboxings"];
 const CREATOR_TIERS = [
-  { label: "Nano-Tier Scale", sub: "Under 10k", value: "nano" },
-  { label: "Micro-Tier Authority", sub: "10k - 100k", value: "micro" },
-  { label: "Mid-Tier Influence", sub: "100k - 500k", value: "mid" },
-  { label: "Macro-Tier Reach", sub: "500k - 1M", value: "macro" },
-  { label: "Elite/Mega Impact", sub: "1M+", value: "mega" },
+  { label: "Nano creators", sub: "Under 10k", value: "nano" },
+  { label: "Micro creators", sub: "10k - 100k", value: "micro" },
+  { label: "Mid-size creators", sub: "100k - 500k", value: "mid" },
+  { label: "Macro creators", sub: "500k - 1M", value: "macro" },
+  { label: "Mega creators", sub: "1M+", value: "mega" },
 ];
 
 type SettingsSection =

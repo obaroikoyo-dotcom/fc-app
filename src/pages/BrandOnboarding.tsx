@@ -26,11 +26,11 @@ const GoogleIcon = (
 const INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Tech & SaaS", "Health & Wellness", "Food & Beverage", "Fitness", "Design & Home", "Jewellery & Accessories", "Skincare", "Haircare", "Travel & Hospitality", "Parenting & Family", "Pet Care", "Finance & Fintech", "Education & E-learning", "Gaming", "Automotive", "Sports & Outdoors", "Luxury Goods", "Sustainability & Eco", "Alcohol & Beverages", "Subscription Boxes", "Home & Garden", "Art & Creative Tools"];
 const ACTIVATION_TYPES = ["UGC Video Assets", "Instagram Reels", "Instagram Stories", "Instagram Carousels", "TikTok Placements", "YouTube Shorts", "Product Reviews", "Unboxings", "Tutorials", "Long-form Vlogs", "GRWM", "Hauls", "Comparisons", "Livestreams", "Podcasts", "Testimonials", "Dedicated Demos"];
 const CREATOR_TIERS = [
-  { label: "Nano-Tier Scale", sub: "Under 10k: High-engagement niche focus", value: "nano" },
-  { label: "Micro-Tier Authority", sub: "10k - 100k: Optimized for reach & conversion", value: "micro" },
-  { label: "Mid-Tier Influence", sub: "100k - 500k: Established market presence", value: "mid" },
-  { label: "Macro-Tier Reach", sub: "500k - 1M: Mass awareness spikes", value: "macro" },
-  { label: "Elite/Mega Impact", sub: "1M+: Cultural celebrity & global visibility", value: "mega" }
+  { label: "Nano creators", sub: "Under 10k followers. Small and loyal.", value: "nano" },
+  { label: "Micro creators", sub: "10k to 100k. Strong reach and trust.", value: "micro" },
+  { label: "Mid-size creators", sub: "100k to 500k. Well known in their niche.", value: "mid" },
+  { label: "Macro creators", sub: "500k to 1M. Big audiences.", value: "macro" },
+  { label: "Mega creators", sub: "Over 1M. Household names.", value: "mega" }
 ];
 const TOTAL_SCREENS = 8;
 const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
@@ -227,7 +227,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
   const handleSignup = async () => {
     setError("");
-    if (!email || !password) return setError("Corporate credentials required.");
+    if (!email || !password) return setError("Enter your email and a password.");
     if (password !== confirm) return setError("Passwords do not match.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
 
@@ -242,7 +242,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
       if (signUpError) {
         if (signUpError.message.toLowerCase().includes("already")) {
-          setError("This corporate email is registered. Proceed to authentication.");
+          setError("This email already has an account. Try logging in instead.");
         } else {
           setError(signUpError.message);
         }
@@ -377,7 +377,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
     borderRadius: "20px",
     border: `1px solid ${active ? "#fff" : "#222"}`,
     background: active ? "#fff" : "transparent",
-    color: active ? "#0a0a0a" : "#555",
+    color: active ? "#0a0a0a" : "#a3a3a3",
     fontSize: "13px",
     fontWeight: 500,
     cursor: "pointer",
@@ -387,20 +387,20 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Protocol</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Initialize corporate identity</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Establish parameters to connect with creators who match your target positioning.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's set up your brand</h1>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Tell us a little about your business so we can match you with the right creators.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Registered Business Name</label>
-        <input style={inputStyle} placeholder="e.g. Acme Corporation" value={companyName} onChange={e => setCompanyName(e.target.value)} autoFocus />
+        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Business name</label>
+        <input style={inputStyle} placeholder="e.g. Glow Skincare" value={companyName} onChange={e => setCompanyName(e.target.value)} autoFocus />
       </div>
     </div>,
 
     // Screen 1 — Positioning
     <div key={1}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Market Segment</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Select sector alignment</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Creators categorize partnership offers by operational fields.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your industry</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What industry are you in?</h1>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Creators use this to find brands in their niche.</p>
       <div style={{ position: "relative", marginBottom: "1.5rem" }}>
   {selectedIndustries.length > 0 && (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
@@ -414,7 +414,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
   <input
     style={inputStyle}
-    placeholder="Type to search or add your own sector"
+    placeholder="Search for your industry, or add your own"
     value={industryInput}
     onChange={e => { setIndustryInput(e.target.value); setShowIndustryDropdown(true); }}
     onFocus={() => setShowIndustryDropdown(true)}
@@ -435,7 +435,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 </div>
 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
   <div>
-    <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Headquarters Location</label>
+    <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Where are you based?</label>
     <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
   </div>
 </div>
@@ -443,26 +443,26 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 2 — Web Presence & Description
     <div key={2}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Profile</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verification parameters</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Provide credentials to support verification steps.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>About your brand</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Tell creators about your brand</h1>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>A website and a short description help creators trust you. Both are optional.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         <div>
-          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Corporate Website URL</label>
+          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Website</label>
           <input style={inputStyle} placeholder="https://yourbrand.com" value={website} onChange={e => setWebsite(e.target.value)} />
         </div>
         <div>
-          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Executive Summary / Mission Statement</label>
-          <input style={inputStyle} placeholder="Describe your brand voice and creative philosophy..." value={bio} onChange={e => setBio(e.target.value)} />
+          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>What does your brand do?</label>
+          <input style={inputStyle} placeholder="A sentence or two about your brand" value={bio} onChange={e => setBio(e.target.value)} />
         </div>
       </div>
     </div>,
 
     // Screen 3 — Campaign & Activation Directives
     <div key={3}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Asset Strategies</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Required media formats</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select the asset distributions required for your placements.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content you want</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What kind of content do you need?</h1>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Pick everything that applies. You can change this later.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {ACTIVATION_TYPES.map(act => (
           <div key={act} onClick={() => toggleContent(act)} style={chipStyle(contentTypes.includes(act))}>
@@ -471,16 +471,16 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         ))}
       </div>
       <div>
-        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Target Demographics</label>
-        <input style={inputStyle} placeholder="e.g. Gen Z Design Enthusiasts, UK Tech Professionals" value={targetAudience} onChange={e => setTargetAudience(e.target.value)} />
+        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Who are you trying to reach?</label>
+        <input style={inputStyle} placeholder="e.g. Gen Z skincare fans in the UK" value={targetAudience} onChange={e => setTargetAudience(e.target.value)} />
       </div>
     </div>,
 
     // Screen 4 — Strategic Alignment & Capital Allocation
     <div key={4}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What is your target creator tier?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Defining your target allows our algorithm to prioritize the right talent for your brand voice.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Creator size</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What size of creator are you looking for?</h1>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>This helps us suggest the right creators for your brand.</p>
       
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
         {CREATOR_TIERS.map(tier => (
@@ -497,7 +497,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             }}
           >
             <span style={{ fontSize: "15px", fontWeight: 700, color: targetTier === tier.value ? "#0a0a0a" : "#fff" }}>{tier.label}</span>
-            <span style={{ fontSize: "11px", opacity: 0.6, color: targetTier === tier.value ? "#333" : "#555" }}>{tier.sub}</span>
+            <span style={{ fontSize: "12px", color: targetTier === tier.value ? "#444" : "#999" }}>{tier.sub}</span>
           </div>
         ))}
       </div>
@@ -505,9 +505,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 5 — Access Credentials
     <div key={5}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Authentication</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Secure corporate portal</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Credentials are handled in compliance with standardized protocols.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Create your account</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your login</h1>
+      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>We'll email you a code to confirm your address.</p>
       {isOAuthUser ? (
         <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
           Continuing as <strong>{email}</strong> via Google
@@ -515,15 +515,15 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Corporate Email Address</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
             <input style={inputStyle} placeholder="hello@company.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Portal Password</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Portal Password</label>
+            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
           </div>
 
@@ -563,7 +563,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
       <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your socials</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
-        Verified brands get more replies from creators. Connect TikTok or Instagram to show a verified account on your profile — no posting access needed, just proof it's really you.
+        Verified brands get more replies from creators. Connect TikTok or Instagram to show a verified account on your profile. We don't need posting access, it's just proof that it's really you.
       </p>
       {socialNotice && (
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -606,9 +606,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 7 — Visual Branding Identification
     <div key={7}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Visual Assets</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Upload brand iconography</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>Identifiable logomarks build consistency and trust throughout application touchpoints.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your logo</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add your logo</h1>
+      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>A logo helps creators recognise you in the app. You can skip this and add it later.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <div onClick={() => logoRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "14px", border: `2px dashed ${brandLogo ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
           {brandLogo
@@ -616,7 +616,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             : <span style={{ fontSize: "32px", color: "#777" }}>+</span>}
         </div>
         <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogo} />
-        <p style={{ fontSize: "12px", color: "#888" }}>{brandLogo ? "Modify logomark" : "Assign logomark"}</p>
+        <p style={{ fontSize: "12px", color: "#888" }}>{brandLogo ? "Change logo" : "Add logo"}</p>
       </div>
     </div>,
   ];
@@ -629,20 +629,20 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   };
 
   const buttonLabel = () => {
-    if (screen === 0) return companyName.trim() ? "Continue →" : "Enter company name to proceed";
+    if (screen === 0) return companyName.trim() ? "Continue →" : "Enter your business name";
     if (screen === 1) return (selectedIndustries.length > 0 || location.trim()) ? "Continue →" : "Skip step →";
     if (screen === 2) return (website.trim() || bio.trim()) ? "Continue →" : "Skip step →";
     if (screen === 3) return (contentTypes.length > 0 || targetAudience.trim()) ? "Continue →" : "Skip step →";
-    if (screen === 4) return targetTier ? "Continue →" : "Provide parameters to proceed";
+    if (screen === 4) return targetTier ? "Continue →" : "Pick a creator size to continue";
     if (screen === 5) {
-      if (!termsAccepted) return "Accept Terms and Conditions to proceed";
-      if (!isOAuthUser && !email.trim()) return "Enter your email to proceed";
+      if (!termsAccepted) return "Accept the terms to continue";
+      if (!isOAuthUser && !email.trim()) return "Enter your email to continue";
       if (!isOAuthUser && password.length < 6) return "Password must be at least 6 characters";
       if (!isOAuthUser && password !== confirm) return "Passwords must match";
       return "Continue →";
     }
     if (screen === 6) return socialConnections.length > 0 ? "Continue →" : "Skip for now →";
-    if (screen === 7) return "Review Agreements & Deploy →";
+    if (screen === 7) return "Finish →";
     return "Continue →";
   };
 
@@ -706,20 +706,20 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
               onClick={loading ? undefined : handleFinish}
               style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1, pointerEvents: "auto" }}
             >
-              {loading ? "Registering profile..." : "Finish & Initialize →"}
+              {loading ? "Setting up your profile..." : "Finish setup →"}
             </div>
             <div
               onClick={loading ? undefined : handleFinish}
               style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
             >
-              Skip configuration
+              Skip for now
             </div>
           </div>
         ) : (
           <div
             className="tap-btn"
             onClick={(!loading && canProceed()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : next) : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
+            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#888", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
             {screen === 5 && loading ? "Sending code..." : buttonLabel()}
           </div>

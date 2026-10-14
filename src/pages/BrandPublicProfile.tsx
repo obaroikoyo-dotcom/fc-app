@@ -18,11 +18,11 @@ import {
 } from "../lib/brandStats";
 
 const CREATOR_TIERS = [
-  { label: "Nano-Tier Scale", value: "nano" },
-  { label: "Micro-Tier Authority", value: "micro" },
-  { label: "Mid-Tier Influence", value: "mid" },
-  { label: "Macro-Tier Reach", value: "macro" },
-  { label: "Elite/Mega Impact", value: "mega" },
+  { label: "Nano creators", value: "nano" },
+  { label: "Micro creators", value: "micro" },
+  { label: "Mid-size creators", value: "mid" },
+  { label: "Macro creators", value: "macro" },
+  { label: "Mega creators", value: "mega" },
 ];
 const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
 const SOCIAL_ICON: Record<SocialPlatform, (size: number) => React.ReactNode> = {

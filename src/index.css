@@ -96,3 +96,13 @@ html, body {
 .inverted-theme [style*="background-image"] {
   filter: invert(1) hue-rotate(180deg);
 }
+
+/* Text rendering and wrapping, app-wide. Grayscale smoothing keeps light text
+   on dark from looking heavy on Apple screens, balance stops a heading from
+   ending on one lonely word, and pretty does the same for paragraphs. */
+html, body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3 { text-wrap: balance; }
+p { text-wrap: pretty; }
