@@ -96,9 +96,9 @@ export default function VerifyEmail({ navigate, email }: Props) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
@@ -140,13 +140,13 @@ export default function VerifyEmail({ navigate, email }: Props) {
           </svg>
         </div>
 
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "2rem", letterSpacing: "-0.02em" }}>FlipCollab</p>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "2rem", letterSpacing: "-0.02em" }}>FlipCollab</p>
 
         <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "2.25rem 2rem" }}>
 
           <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
 
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
+          <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
 
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
             We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>

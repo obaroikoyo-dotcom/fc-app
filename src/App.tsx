@@ -211,7 +211,7 @@ function NotificationPermissionPrompt({ onEnable, onDismiss }: { onEnable: () =>
       display: "flex",
       flexDirection: "column",
       gap: "0.75rem",
-      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+      fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
       boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
     }}>
       <div>
@@ -605,16 +605,16 @@ export default function App() {
   if (loading && page !== "splash") {
     return (
       <div className="app-shell" style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "#777", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Loading...</p>
+        <p style={{ color: "#777", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Loading...</p>
       </div>
     );
   }
 
   if (accountBlocked) {
     return (
-      <div className="app-shell" style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-        <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "0.75rem" }}>
+      <div className="app-shell" style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "0.75rem" }}>
           {accountBlocked.status === "banned" ? "Account banned" : "Account suspended"}
         </p>
         <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>

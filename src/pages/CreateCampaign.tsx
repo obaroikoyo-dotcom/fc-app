@@ -60,7 +60,7 @@ const inp: React.CSSProperties = {
   fontSize: "13px",
   outline: "none",
   width: "100%",
-  fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+  fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
   boxSizing: "border-box",
 };
 

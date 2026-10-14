@@ -18,10 +18,10 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+    <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       <div style={{ width: "100%", maxWidth: "640px", padding: "4rem 1.5rem 6rem" }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "2rem" }}>
+        <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "2rem" }}>
           About FlipCollab
         </h1>
         {PARAGRAPHS.map((p, i) => (
@@ -30,14 +30,14 @@ export default function AboutPage() {
           </p>
         ))}
 
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
+        <h2 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
           What FlipCollab does
         </h2>
         <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
           FlipCollab is a creator collaboration marketplace. Brands create an account, post paid or gifted campaigns describing the content they need, and review creators who apply. Creators create a profile, browse open campaigns, and apply to the ones that fit their audience and niche. Once a brand accepts a creator, the two message each other directly inside FlipCollab to agree on deliverables and timelines. For paid campaigns, the brand's payment is held securely in escrow via Stripe and released to the creator once the agreed content is delivered.
         </p>
 
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
+        <h2 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
           Your data
         </h2>
         <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>

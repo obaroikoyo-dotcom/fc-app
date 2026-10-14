@@ -198,8 +198,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
       <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
@@ -209,7 +209,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             {tab === "post" && (
               <span onClick={() => { setEditingCampaign(null); setTab("campaigns"); }} style={{ fontSize: "20px", color: "#fff", cursor: "pointer", marginRight: "4px" }}>←</span>
             )}
-            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+            <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
               {tab === "campaigns" ? "Campaigns" : editingCampaign ? "Edit Campaign" : "Post Campaign"}
             </span>
             {isEnterprise && (
@@ -224,10 +224,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         {/* Feed Tabs */}
         {tab === "campaigns" && (
           <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
-            <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+            <button onClick={() => setFeedTab("yours")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "yours" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "yours" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
               Your Campaigns
             </button>
-            <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+            <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
               Market
             </button>
           </div>
@@ -250,22 +250,22 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             {feedTab === "yours" && trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0) && (
               <div style={{ display: "flex", gap: "10px" }}>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
-                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
+                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
+                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                   {trackRecord.avgRating != null ? (
                     <>
                       <StarRating rating={trackRecord.avgRating} size={12} />
-                      <p style={{ color: "#999", fontSize: "10px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                      <p style={{ color: "#999", fontSize: "10px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                     </>
                   ) : (
-                    <p style={{ color: "#999", fontSize: "10px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
+                    <p style={{ color: "#999", fontSize: "10px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
                   )}
                 </div>
                 <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
-                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Avg. reply time</p>
+                  <p style={{ color: "#fff", fontSize: "16px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
+                  <p style={{ color: "#999", fontSize: "10px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Avg. reply time</p>
                 </div>
               </div>
             )}
@@ -292,7 +292,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               </div>
             ) : !hasLoadedOnce && loading ? null : campaigns.length === 0 ? (
               <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>No campaigns yet</p>
                 <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>Post your first campaign and start finding creators.</p>
                 <div onClick={() => setTab("post")} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Post a Campaign
@@ -311,7 +311,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               });
               if (filtered.length === 0) return (
                 <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+                  <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
                     {feedTab === "yours" ? "No campaigns yet" : "No campaigns found"}
                   </p>
                   <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>
@@ -415,7 +415,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
+                      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
                       {c.video_required && (
                         <span style={{ flexShrink: 0, fontSize: "10px", color: "#999", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
                           Video Pitch Required
@@ -457,18 +457,18 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         c.type === "paid" && budgetVal ? (
                           <div style={{ display: "flex", flexDirection: "column" }}>
                             <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                            <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{creatorNetPayout.toLocaleString()}</span>
+                            <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif" }}>£{creatorNetPayout.toLocaleString()}</span>
                           </div>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column" }}>
                             <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", textTransform: "uppercase" }}>Gifted</span>
+                            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", textTransform: "uppercase" }}>Gifted</span>
                           </div>
                         )
                       ) : c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
-                          <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1 }}>
+                          <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>
                             £{budgetVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           {isOwn && (
@@ -485,7 +485,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column" }}>
                           <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
+                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
                         </div>
                       )}
                       {isPreviewable ? (

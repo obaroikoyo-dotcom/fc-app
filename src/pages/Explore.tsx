@@ -230,14 +230,14 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
       <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {/* Header */}
         <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
+          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
           <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
             {myAvatar ? <img src={myAvatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
           </div>
@@ -245,10 +245,10 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
         {/* Tabs */}
         <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
-          <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+          <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
             Discover Deals
           </button>
-          <button onClick={() => setFeedTab("pitches")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "pitches" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "pitches" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+          <button onClick={() => setFeedTab("pitches")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "pitches" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "pitches" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
             My Pitches ({applied.length})
           </button>
         </div>
@@ -294,7 +294,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
           </div>
         ) : !hasLoadedOnce && loading ? null : filteredCampaigns.length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
               {feedTab === "discover" ? "No new offers active" : "No pitches sent yet"}
             </p>
             <p style={{ fontSize: "12px", color: "#888", maxWidth: "260px", margin: "0 auto" }}>
@@ -338,7 +338,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                   </div>
                 </div>
 
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
 
                 <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#888", marginBottom: "12px" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -366,12 +366,12 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                     {c.type === "paid" && baseBudgetVal ? (
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {brandIsEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'Syne', sans-serif" }}>£{netCreatorPayout.toLocaleString()}</span>
+                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif" }}>£{netCreatorPayout.toLocaleString()}</span>
                       </div>
                     ) : (
                       <div style={{ display: "flex", flexDirection: "column" }}>
                         <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'Syne', sans-serif", textTransform: "uppercase" }}>Gifted</span>
+                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", textTransform: "uppercase" }}>Gifted</span>
                       </div>
                     )}
                   </div>

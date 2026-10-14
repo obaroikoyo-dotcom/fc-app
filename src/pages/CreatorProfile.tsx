@@ -337,8 +337,8 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
         },
         // These components render inside an iframe, which can't see fonts
         // loaded on our own page - without this, `fontFamily` below silently
-        // falls back to a generic system font instead of actually using DM Sans.
-        fonts: [{ cssSrc: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" }],
+        // falls back to a generic system font instead of actually using TikTok Sans.
+        fonts: [{ cssSrc: "https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap" }],
         appearance: {
           variables: {
             colorPrimary: "#ffffff",
@@ -349,7 +349,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
             colorDanger: "#ff3b30",
             buttonPrimaryColorBackground: "#ffffff",
             buttonPrimaryColorText: "#0a0a0a",
-            fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+            fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
             borderRadius: "8px",
             spacingUnit: "4px",
           },
@@ -588,8 +588,8 @@ setTimeout(() => setSaved(false), 2000);
     <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
       {icon && <SettingsIcon name={icon} color="#999" size={18} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
-        {sub && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
+        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
+        {sub && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
       </div>
       <ChevronIcon />
     </div>
@@ -598,7 +598,7 @@ setTimeout(() => setSaved(false), 2000);
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
   );
   const sectionHeader = (title: string, first = false) => (
-    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
+    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
@@ -613,7 +613,7 @@ setTimeout(() => setSaved(false), 2000);
         <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
       );
       return (
-        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
           <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
           <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
             {bar("90px", "18px")}
@@ -657,9 +657,9 @@ setTimeout(() => setSaved(false), 2000);
     }
 
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div ref={setProfileHeaderEl} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
         <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
@@ -675,7 +675,7 @@ setTimeout(() => setSaved(false), 2000);
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Name"}</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Name"}</p>
               {available && <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>}
             </div>
             <p style={{ fontSize: "13px", color: "#999" }}>{niche}{location ? ` · ${location}` : ""}</p>
@@ -740,14 +740,14 @@ setTimeout(() => setSaved(false), 2000);
                 <div style={{ padding: "14px 16px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     {PLATFORM_ICON[p]?.(18)}
-                    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
+                    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                   </div>
-                  {connection?.username && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection.username}</p>}
+                  {connection?.username && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection.username}</p>}
                   {followers != null && (
                     <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
                       <div>
-                        <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                        <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
+                        <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
                       </div>
                     </div>
                   )}
@@ -758,7 +758,7 @@ setTimeout(() => setSaved(false), 2000);
                   {syncingPlatform === connectedPlatform && platformPosts.length === 0 && (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px" }}>
                       <span className="spin" style={{ width: "12px", height: "12px", border: "2px solid #333", borderTopColor: "#999", borderRadius: "50%", display: "inline-block" }} />
-                      <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px" }}>Syncing your videos…</p>
+                      <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px" }}>Syncing your videos…</p>
                     </div>
                   )}
                 </div>
@@ -887,7 +887,7 @@ setTimeout(() => setSaved(false), 2000);
         {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
             <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
           </div>
         )}
@@ -900,16 +900,16 @@ setTimeout(() => setSaved(false), 2000);
   const renderSettingsHeader = (title: string, onBack: () => void) => (
     <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
       <span onClick={onBack} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
     </div>
   );
 
   // ─── SETTINGS MAIN MENU ───────────────────────────────────────────────────
   const renderSettingsMain = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
         <span onClick={() => setView("profile")} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
       </div>
 
       {/* Theme toggle at top */}
@@ -974,7 +974,7 @@ setTimeout(() => setSaved(false), 2000);
       {showDeleteConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
           <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem", boxSizing: "border-box" }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>Delete your account?</h3>
+            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>Delete your account?</h3>
             <p style={{ color: "#999", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>
               This deletes your profile, campaign history, messages and any pending balance. It can't be undone.
             </p>
@@ -1015,7 +1015,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── EDIT PROFILE ─────────────────────────────────────────────────────────
   const renderEditProfile = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Edit Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
@@ -1086,7 +1086,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── NICHE SELECTION ──────────────────────────────────────────────────────
   const renderNicheSelection = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Niche Selection", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Select all niches that describe your content. This helps brands find you in search.</p>
@@ -1117,7 +1117,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── MANAGE ACCOUNTS ──────────────────────────────────────────────────────
   const renderPostPicker = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader(`Choose ${pickerPlatform ? SOCIAL_PLATFORM_LABEL[pickerPlatform] : ""} videos`, () => setPickerPlatform(null))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
@@ -1165,7 +1165,7 @@ setTimeout(() => setSaved(false), 2000);
     const findConnection = (p: SocialPlatform) => socialConnections.find(c => c.platform === p);
 
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Connect Social Platforms", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {socialNotice && (
@@ -1218,7 +1218,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── PAYOUTS ──────────────────────────────────────────────────────────────
   const renderPayouts = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Payouts", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
@@ -1245,13 +1245,13 @@ setTimeout(() => setSaved(false), 2000);
                     Your balance
                   </p>
                   <p aria-hidden="true" style={{
-                    fontFamily: "'Syne', sans-serif", fontWeight: 800,
+                    fontFamily: "'TikTok Sans', sans-serif", fontWeight: 800,
                     fontSize: "10px", letterSpacing: "0.16em",
                     color: "rgba(255,255,255,0.32)",
                   }}>FLIPCOLLAB</p>
                 </div>
 
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, marginTop: "10px", fontVariantNumeric: "tabular-nums" }}>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, marginTop: "10px", fontVariantNumeric: "tabular-nums" }}>
                   £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
 
@@ -1392,7 +1392,7 @@ setTimeout(() => setSaved(false), 2000);
   };
 
   const renderNotifications = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Notifications", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
@@ -1421,7 +1421,7 @@ setTimeout(() => setSaved(false), 2000);
     if (userId) await supabase.from("creator_profiles").update({ [field]: newVal }).eq("id", userId);
   };
   const renderVisibility = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Visibility", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {[
@@ -1443,7 +1443,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── SHARE PROFILE ────────────────────────────────────────────────────────
   const renderShareProfile = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Share Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share your FlipCollab profile link with brands or on your socials.</p>
@@ -1459,7 +1459,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── FAVOURITES ───────────────────────────────────────────────────────────
   const renderFavourites = () => (
-  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Favourites", () => setSettingsSection("main"))}
     <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
       {(["campaigns", "creators"] as const).map(t => (
@@ -1519,7 +1519,7 @@ setTimeout(() => setSaved(false), 2000);
   const renderApplications = () => {
     const filtered = appFilter === "all" ? appliedCampaigns : appFilter === "accepted" ? appliedCampaigns.filter(a => a.status === "accepted" || a.status === "paid") : appliedCampaigns.filter(a => a.status === appFilter);
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
         {renderSettingsHeader("Applications", () => setSettingsSection("main"))}
         <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
           {(["all", "pending", "accepted", "rejected"] as const).map(f => (
@@ -1555,7 +1555,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── AUDIENCE & RATES ─────────────────────────────────────────────────────
   const renderAudienceData = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Audience & Rates", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <div>
@@ -1597,7 +1597,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── PAST COLLABS ─────────────────────────────────────────────────────────
   const renderPastCollabs = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Past Collaborations", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -1620,7 +1620,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── HELP ─────────────────────────────────────────────────────────────────
   const renderHelp = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Help Centre", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {[
@@ -1651,7 +1651,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── PRIVACY POLICY / TERMS ───────────────────────────────────────────────
 const renderPrivacyPolicy = () => (
-  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Privacy Policy", () => setSettingsSection("main"))}
     <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
       <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
@@ -1680,7 +1680,7 @@ const renderPrivacyPolicy = () => (
 );
 
 const renderTerms = () => (
-  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Terms of Service", () => setSettingsSection("main"))}
     <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
       <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
@@ -1712,7 +1712,7 @@ const renderTerms = () => (
 
   // ─── REPORTED & BLOCKED ───────────────────────────────────────────────────
   const renderReportsBlocked = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Reported & Blocked", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
@@ -1761,7 +1761,7 @@ const renderTerms = () => (
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   if (view === "profile") return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       {renderProfile()}
     </>
   );
@@ -1769,7 +1769,7 @@ const renderTerms = () => (
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.7s linear infinite; }
       `}</style>

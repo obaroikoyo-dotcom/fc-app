@@ -40,7 +40,7 @@ export default function ForgotPassword({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Reset your password</p>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Reset your password</p>
 
         {sent ? (
           <>

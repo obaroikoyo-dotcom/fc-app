@@ -24,11 +24,11 @@ export default function ErrorFallback() {
         justifyContent: "center",
         padding: "2rem",
         textAlign: "center",
-        fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+        fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
       }}
     >
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, marginBottom: "0.75rem" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, marginBottom: "0.75rem" }}>
         Something went wrong
       </p>
       <p style={{ fontSize: "13px", color: muted, lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>

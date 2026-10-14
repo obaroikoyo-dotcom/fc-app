@@ -98,7 +98,7 @@ export default function Login({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Welcome back</p>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Welcome back</p>
         <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Log in to your FlipCollab account.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

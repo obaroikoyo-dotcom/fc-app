@@ -45,7 +45,7 @@ interface Campaign {
 }
 
 const UI = {
-  input: { background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" } as React.CSSProperties,
+  input: { background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" } as React.CSSProperties,
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s" })
 };
 
@@ -192,7 +192,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
   }
 
   if (loading && !hasLoadedOnce) return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
       <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100, paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
         <div style={{ width: "20px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
@@ -221,24 +221,24 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
   if (!campaign) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#999", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Campaign not found.</p>
+      <p style={{ color: "#999", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Campaign not found.</p>
     </div>
   );
 
   if (blocked) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
-      <p style={{ color: "#999", fontSize: "13px", fontFamily: "'DM Sans', sans-serif", lineHeight: 1.7 }}>You can't apply to this campaign.</p>
+      <p style={{ color: "#999", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.7 }}>You can't apply to this campaign.</p>
     </div>
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Header */}
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100, paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
         <div onClick={goBack} style={{ cursor: "pointer", color: "#999", fontSize: "20px", lineHeight: 1 }}>←</div>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Apply</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Apply</span>
       </div>
 
       <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "8rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
@@ -250,7 +250,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
               <img src={campaign.brand_profiles.logo_url} style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover", background: "#111", border: "1px solid #1a1a1a", flexShrink: 0 }} />
             )}
             <div>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{campaign.name}</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{campaign.name}</p>
               <p style={{ fontSize: "12px", color: "#888" }}>{campaign.brand_profiles?.name || "Brand"}</p>
             </div>
           </div>
@@ -259,7 +259,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
               <span style={{ display: "block", fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Net Take-home {campaign.brand_profiles?.is_enterprise ? "(0% cut)" : "(-10%)"}
               </span>
-              <span style={{ fontSize: "16px", fontWeight: 800, color: "#34c759", fontFamily: "'Syne', sans-serif" }}>
+              <span style={{ fontSize: "16px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif" }}>
                 £{(parseInt(campaign.budget, 10) * (campaign.brand_profiles?.is_enterprise ? 1 : 0.90)).toLocaleString()}
               </span>
             </div>
@@ -459,7 +459,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "16px", width: "100%", maxWidth: "360px", padding: "2rem 1.75rem", textAlign: "center" }}>
             <img src="/icon-512.png" width="64" height="64" alt="FlipCollab" style={{ display: "block", width: "64px", height: "64px", borderRadius: "14px", margin: "0 auto 1.25rem auto" }} />
             <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
-            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Set up payouts first</h1>
+            <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Set up payouts first</h1>
             <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
               Before you apply, connect your payout details so you can get paid the moment a brand releases your payment. It only takes a couple of minutes.
             </p>

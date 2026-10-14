@@ -387,8 +387,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Protocol</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Initialize corporate identity</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Protocol</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Initialize corporate identity</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Establish parameters to connect with creators who match your target positioning.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Registered Business Name</label>
@@ -398,8 +398,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 1 — Positioning
     <div key={1}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Market Segment</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Select sector alignment</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Market Segment</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Select sector alignment</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Creators categorize partnership offers by operational fields.</p>
       <div style={{ position: "relative", marginBottom: "1.5rem" }}>
   {selectedIndustries.length > 0 && (
@@ -443,8 +443,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 2 — Web Presence & Description
     <div key={2}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Profile</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verification parameters</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Corporate Profile</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verification parameters</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Provide credentials to support verification steps.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         <div>
@@ -460,8 +460,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 3 — Campaign & Activation Directives
     <div key={3}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Asset Strategies</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Required media formats</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Asset Strategies</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Required media formats</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select the asset distributions required for your placements.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {ACTIVATION_TYPES.map(act => (
@@ -478,8 +478,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 4 — Strategic Alignment & Capital Allocation
     <div key={4}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What is your target creator tier?</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Strategic Alignment</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What is your target creator tier?</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Defining your target allows our algorithm to prioritize the right talent for your brand voice.</p>
       
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
@@ -505,8 +505,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 5 — Access Credentials
     <div key={5}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Authentication</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Secure corporate portal</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Authentication</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Secure corporate portal</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Credentials are handled in compliance with standardized protocols.</p>
       {isOAuthUser ? (
         <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
@@ -560,8 +560,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 6 — Connect socials
     <div key={6}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your socials</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your socials</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
         Verified brands get more replies from creators. Connect TikTok or Instagram to show a verified account on your profile — no posting access needed, just proof it's really you.
       </p>
@@ -606,8 +606,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 7 — Visual Branding Identification
     <div key={7}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Visual Assets</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Upload brand iconography</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Visual Assets</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Upload brand iconography</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>Identifiable logomarks build consistency and trust throughout application touchpoints.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <div onClick={() => logoRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "14px", border: `2px dashed ${brandLogo ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
@@ -649,9 +649,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:-webkit-autofill {
           -webkit-box-shadow: 0 0 0px 1000px #111 inset !important;
@@ -744,7 +744,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
             <img src="/icon-512.png" width="64" height="64" alt="FlipCollab" style={{ display: "block", width: "64px", height: "64px", borderRadius: "14px", margin: "0 auto 1.25rem auto" }} />
 
             <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
-            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
+            <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
             <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
               We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
             </p>

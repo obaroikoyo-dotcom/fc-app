@@ -22,7 +22,7 @@ html, body {
      wrapper too, but anything outside that (like the bottom nav bar's
      labels, which never set their own) previously had nothing to inherit
      and fell back to the browser's serif default. */
-  font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+  font-family: 'TikTok Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* Only a couple of onboarding screens had this - everywhere else, every

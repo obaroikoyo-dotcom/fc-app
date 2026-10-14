@@ -239,7 +239,7 @@ const LINES = [
 const UNDERLINE = strokeShape("0 0 200 10", [[0, 5], [35, 1.5], [90, 8.5], [130, 2], [170, 7.5], [200, 4]], 2.6);
 
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
 
   .lp {
     --m-edge-a: ${EDGES[0]};
@@ -258,7 +258,7 @@ const STYLES = `
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     background: #0a0a0a;
-    font-family: 'DM Sans', 'Helvetica Neue', sans-serif;
+    font-family: 'TikTok Sans', 'Helvetica Neue', sans-serif;
   }
   .lp *, .lp *::before, .lp *::after { box-sizing: border-box; }
   .lp :where(h1, h2, h3, p, ol) { margin: 0; padding: 0; }
@@ -290,7 +290,7 @@ const STYLES = `
   .lp-edge-d::before { -webkit-mask-image: var(--m-edge-d); mask-image: var(--m-edge-d); }
 
   .lp-wrap { width: 100%; max-width: 1600px; margin: 0 auto; padding-inline: clamp(1.25rem, 4vw, 4.5rem); }
-  .lp-display { font-family: 'Syne', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
+  .lp-display { font-family: 'TikTok Sans', sans-serif; font-weight: 800; letter-spacing: -0.02em; }
 
   /* Header */
   .lp-header { position: sticky; top: 0; z-index: 10; }
@@ -306,7 +306,7 @@ const STYLES = `
   .lp-header .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
   .lp-brand { display: flex; align-items: center; gap: 10px; }
   .lp-brand img { width: 32px; height: 32px; object-fit: contain; }
-  .lp-brand span { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 19px; color: var(--fg); letter-spacing: -0.01em; }
+  .lp-brand span { font-family: 'TikTok Sans', sans-serif; font-weight: 800; font-size: 19px; color: var(--fg); letter-spacing: -0.01em; }
   .lp-nav { display: flex; align-items: center; gap: 1.75rem; }
   .lp-nav a { display: none; font-size: 14px; font-weight: 500; color: var(--muted); }
   .lp-nav a:hover { color: var(--fg); }

@@ -44,7 +44,7 @@ export default function RoleSelect({ navigate }: Props) {
       >
         <div style={{ color: "#fff", marginBottom: "12px" }}>{icon}</div>
         <p style={{
-          fontFamily: "'Syne', sans-serif",
+          fontFamily: "'TikTok Sans', sans-serif",
           fontSize: "18px",
           fontWeight: 700,
           color: "#fff",
@@ -59,7 +59,7 @@ export default function RoleSelect({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "480px" }}>
         <img src={logo} className="no-reinvert" style={{ width: "150px", display: "block", margin: "0 auto 1rem" }} />
-<p style={{ fontFamily: "'Syne', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "1.5rem" }}>FlipCollab</p>
+<p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center", marginBottom: "1.5rem" }}>FlipCollab</p>
         <p style={{
           textAlign: "center",
           fontSize: "13px",

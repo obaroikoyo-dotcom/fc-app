@@ -203,7 +203,7 @@ const PAYMENT_CONFIRMED_PREFIX = "Payment secured!";
 const CARD_ELEMENT_OPTIONS = {
   hidePostalCode: true,
   style: {
-    base: { fontSize: "14px", color: "#fff", fontFamily: "'DM Sans', sans-serif", "::placeholder": { color: "#999" } },
+    base: { fontSize: "14px", color: "#fff", fontFamily: "'TikTok Sans', sans-serif", "::placeholder": { color: "#999" } },
     invalid: { color: "#ff3b30" },
   },
 };
@@ -375,7 +375,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
   return (
     <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "90vh", overflowY: "auto", padding: "1.25rem", boxSizing: "border-box" }}>
-      <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
+      <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
       <p style={{ color: "#999", fontSize: "12px", marginBottom: "1rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
 
       <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "0.85rem", marginBottom: "1rem" }}>
@@ -2150,9 +2150,9 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     else if (view === "app-detail") setView("campaign-apps");
   };
 return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
         @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
         .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #888; animation: typingBounce 1s ease-in-out infinite; }
@@ -2183,13 +2183,13 @@ return (
       <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
         {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
       </div>
-      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
         {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}
         {!blockedByIds.includes(otherParticipantId(activeConvo) || "") && activeConvo.other_verified && <VerifiedBadge />}
       </h1>
     </div>
   ) : (
-    <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+    <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
       {getHeader()}
     </h1>
   )}
@@ -2292,7 +2292,7 @@ return (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
               <p style={{ fontSize: "13px", color: "#888" }}>Post a campaign to start receiving applications.</p>
             </div>
           ) : (
@@ -2330,7 +2330,7 @@ return (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
           {activeCampaign.applications.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
               <p style={{ fontSize: "13px", color: "#888" }}>Share your campaign to get more creators applying.</p>
             </div>
           ) : (
@@ -2363,7 +2363,7 @@ return (
                 {activeApplication.creator_avatar ? <img src={activeApplication.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
               </div>
               <div>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{activeApplication.creator_name}</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{activeApplication.creator_name}</p>
                 <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>Applied to {activeApplication.campaign_name}</p>
               </div>
             </div>
@@ -2502,7 +2502,7 @@ return (
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
                 <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="#333" strokeWidth="2" strokeLinejoin="round"/>
               </svg>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No messages yet</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No messages yet</p>
               <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.6 }}>
                 {role === "creator" ? "Search for brands or creators to start a conversation." : "Accept applications to start conversations with creators."}
               </p>
@@ -2914,7 +2914,7 @@ return (
       {paymentPopup && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={() => setPaymentPopup(null)}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "360px", padding: "1.5rem", textAlign: "center" }}>
-            <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "10px" }}>{paymentPopup.title}</p>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "10px" }}>{paymentPopup.title}</p>
             <p style={{ color: "#ccc", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>{paymentPopup.body}</p>
             <div onClick={() => setPaymentPopup(null)} style={{ padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
               Got it
@@ -2962,7 +2962,7 @@ return (
       {campaignPickerFor && (
         <div onClick={() => setCampaignPickerFor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
           <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem" }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>
+            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>
               {campaignPickerFor === "pay" ? "Which campaign are you paying for?" : "Which campaign are you screening out?"}
             </h3>
             <p style={{ color: "#999", fontSize: "12px", marginBottom: "1.25rem" }}>

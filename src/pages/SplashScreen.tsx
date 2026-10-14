@@ -22,11 +22,11 @@ export default function SplashScreen() {
     <div style={{
       minHeight: "100vh", background: "#0a0a0a",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-      fontFamily: "'Syne', sans-serif",
+      fontFamily: "'TikTok Sans', sans-serif",
       overflow: "hidden",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
 
         @keyframes logoDraw {
           to { stroke-dashoffset: 0; }
@@ -124,7 +124,7 @@ export default function SplashScreen() {
 
       {/* Brand name */}
       <p className={`brand-text${phase === "out" ? " out" : ""}`} style={{
-        fontFamily: "'Syne', sans-serif",
+        fontFamily: "'TikTok Sans', sans-serif",
         fontSize: "13px", fontWeight: 800, color: "#fff",
         letterSpacing: "0.25em", textTransform: "uppercase", margin: 0,
       }}>

@@ -60,7 +60,7 @@ export default function PaymentContractModal({
       justifyContent: "center",
       zIndex: 9999,
       padding: "1rem",
-      fontFamily: "'DM Sans', sans-serif"
+      fontFamily: "'TikTok Sans', sans-serif"
     }}>
       <div style={{
         background: "#0a0a0a",
@@ -79,7 +79,7 @@ export default function PaymentContractModal({
           <span style={{ color: "#34c759", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Secure Collaboration Registry
           </span>
-          <h3 style={{ margin: "4px 0 0 0", color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'Syne', sans-serif" }}>
+          <h3 style={{ margin: "4px 0 0 0", color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'TikTok Sans', sans-serif" }}>
             Review & Fund Milestone Escrow
           </h3>
         </div>
@@ -129,7 +129,7 @@ export default function PaymentContractModal({
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Total Due Now to Escrow:</span>
-              <span style={{ color: "#34c759", fontSize: "18px", fontWeight: 800, fontFamily: "'Syne', sans-serif" }}>
+              <span style={{ color: "#34c759", fontSize: "18px", fontWeight: 800, fontFamily: "'TikTok Sans', sans-serif" }}>
                 £{totalEscrowCharge.toLocaleString()}
               </span>
             </div>

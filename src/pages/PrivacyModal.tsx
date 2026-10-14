@@ -38,7 +38,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
       justifyContent: "center",
       zIndex: 9999,
       padding: "1rem",
-      fontFamily: "'DM Sans', sans-serif"
+      fontFamily: "'TikTok Sans', sans-serif"
     }}>
       <div style={{
         background: "#0a0a0a",
@@ -53,7 +53,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
       }}>
         {/* Header */}
         <div style={{ padding: "1.25rem", borderBottom: "1px solid #111" }}>
-          <h3 style={{ margin: 0, color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'Syne', sans-serif" }}>
+          <h3 style={{ margin: 0, color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'TikTok Sans', sans-serif" }}>
             Privacy Policy
           </h3>
           <p style={{ margin: "4px 0 0 0", color: "#999", fontSize: "12px" }}>

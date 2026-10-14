@@ -14,10 +14,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       alignItems: "center",
       justifyContent: "center",
       padding: "2rem 1rem",
-      fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif",
+      fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:-webkit-autofill {
           -webkit-box-shadow: 0 0 0px 1000px #111 inset !important;

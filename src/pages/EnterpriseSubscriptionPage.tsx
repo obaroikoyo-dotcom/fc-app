@@ -13,7 +13,7 @@ const CARD_ELEMENT_OPTIONS = {
     base: {
       fontSize: "14px",
       color: "#fff",
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "'TikTok Sans', sans-serif",
       "::placeholder": { color: "#999" },
     },
     invalid: { color: "#ff3b30" },
@@ -201,14 +201,14 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
 
   if (currentSubscription?.isEnterprise) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px" }}>
           <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#999", cursor: "pointer" }}>←</span>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
+          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
           <SuccessIcon />
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're already on Enterprise</p>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're already on Enterprise</p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
             {currentSubscription.cancelAtPeriodEnd
               ? "Your subscription is set to cancel at the end of the current billing period. You'll keep 0% platform fees until then."
@@ -223,9 +223,9 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes enterpriseModalOverlayIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes enterpriseModalIn { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .enterprise-modal-overlay { animation: enterpriseModalOverlayIn 0.15s ease-out forwards; }
@@ -238,14 +238,14 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
 
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#999", cursor: "pointer" }}>←</span>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
       </div>
 
       <div style={{ padding: "2rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", paddingBottom: "6rem", maxWidth: "480px", margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#999", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>Scale Your Campaigns.<br />Pay Zero Platform Fees.</h1>
+          <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "30px", fontWeight: 800, lineHeight: 1.15, color: "#fff", marginBottom: "1rem" }}>Scale Your Campaigns.<br />Pay Zero Platform Fees.</h1>
           <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7 }}>Unlock 0% platform fees for you and your creators, plus advanced tools built for high-volume brand operations. Card payments carry a small processing fee of 2.5% + 20p.</p>
         </div>
 
@@ -285,7 +285,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         </div>
 
         <div style={{ marginBottom: "2.5rem" }}>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>What's included</p>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>What's included</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {[
               { title: "Zero Platform Fees", sub: "No FlipCollab percentage cut on the brand or creator side. Card payments carry a processing fee of 2.5% + 20p, shown before you pay." },
@@ -306,13 +306,13 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         </div>
 
         <div style={{ background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "1.5rem", textAlign: "center", marginBottom: "2.5rem" }}>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Enterprise Plan</p>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Enterprise Plan</p>
           <p style={{ fontSize: "12px", color: "#888", marginBottom: "1.5rem" }}>Scalable access for modern brand workflows</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "1.5rem" }}>
             <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "10px", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ textAlign: "left" }}>
                 <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Monthly</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£97<span style={{ fontSize: "13px", color: "#999", fontWeight: 400 }}>/mo</span></p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£97<span style={{ fontSize: "13px", color: "#999", fontWeight: 400 }}>/mo</span></p>
               </div>
               <span style={{ fontSize: "11px", color: "#999", border: "1px solid #222", borderRadius: "20px", padding: "4px 10px" }}>Cancel anytime</span>
             </div>
@@ -320,7 +320,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
               <div style={{ position: "absolute", top: 0, right: 0, background: "#fff", color: "#0a0a0a", fontSize: "9px", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "3px 10px", borderBottomLeftRadius: "6px" }}>Best Value</div>
               <div style={{ textAlign: "left" }}>
                 <p style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600, marginBottom: "4px" }}>Annual</p>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£82<span style={{ fontSize: "13px", color: "#999", fontWeight: 400 }}>/mo</span></p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "26px", fontWeight: 800, color: "#fff" }}>£82<span style={{ fontSize: "13px", color: "#999", fontWeight: 400 }}>/mo</span></p>
                 <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>£984 billed annually</p>
               </div>
               <span style={{ fontSize: "11px", color: "#fff", border: "1px solid #333", borderRadius: "20px", padding: "4px 10px" }}>Save £180/yr</span>
@@ -334,7 +334,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         </div>
 
         <div>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>FAQs</p>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "1rem" }}>FAQs</p>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[
               { q: "How do 0% platform fees work?", a: "Once Enterprise activates, FlipCollab's own platform fees (5% for brands, 10% from creators) are bypassed at checkout, for you and every creator you work with. The creator receives the full campaign budget." },
@@ -352,12 +352,12 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       </div>
 
       {showModal && createPortal(
-  <div className="enterprise-modal-overlay" onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.85)", zIndex: 99999, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
+  <div className="enterprise-modal-overlay" onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.85)", zIndex: 99999, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
   <div className="enterprise-modal-card" onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "750px", width: "95%", margin: "20px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem" }}>
             {paymentSuccess ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>
                 <SuccessIcon />
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>You're on Enterprise!</p>
                 <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.5rem" }}>Platform fees are now waived for you and your creators. Card payments carry a processing fee of 2.5% + 20p, shown before you pay.</p>
                 <div className="tap-btn" onClick={() => { setShowModal(false); navigate("brand-dashboard"); }} style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                   Back to Dashboard
@@ -366,7 +366,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
             ) : (
               <>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Complete Your Upgrade</p>
+                  <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>Complete Your Upgrade</p>
                   <span className="tap-btn" onClick={() => !paymentLoading && setShowModal(false)} style={{ color: paymentLoading ? "#444" : "#888", fontSize: "20px", cursor: paymentLoading ? "default" : "pointer", lineHeight: 1 }}>×</span>
                 </div>
 

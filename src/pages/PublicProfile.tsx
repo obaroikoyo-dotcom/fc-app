@@ -299,7 +299,7 @@ const startDM = async () => {
       <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
     );
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
       <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {bar("20px", "20px")}
@@ -386,7 +386,7 @@ const startDM = async () => {
 
   if (!creator) return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#777", fontSize: "13px", fontFamily: "'DM Sans', sans-serif" }}>Profile not found.</p>
+      <p style={{ color: "#777", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Profile not found.</p>
     </div>
   );
 
@@ -396,14 +396,14 @@ const startDM = async () => {
   const isPrivate = creator.profile_visible === false && !isOwner;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Top Nav */}
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           <span onClick={goBack} style={{ fontSize: "18px", color: "#999", cursor: "pointer" }}>←</span>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (creator.name || "Creator")}</span>
+          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (creator.name || "Creator")}</span>
         </div>
         {currentUserId && currentUserId !== profileId && !blockedByMe && (
           <span
@@ -417,7 +417,7 @@ const startDM = async () => {
 
       {(blockedByMe || blockedMe) ? (
         <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
             {blockedByMe ? "You've blocked this profile" : "User unavailable"}
           </p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>
@@ -472,7 +472,7 @@ const startDM = async () => {
 
       {!blockedByMe && !blockedMe && isPrivate && (
         <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>This profile is private</p>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>This profile is private</p>
           <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>{creator.name || "This creator"} has turned off public visibility for their profile.</p>
         </div>
       )}
@@ -490,7 +490,7 @@ const startDM = async () => {
 </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name}</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name}</p>
                 {creator.available && (
                   <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>
                 )}
@@ -579,14 +579,14 @@ const startDM = async () => {
                   <div style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       {PLATFORM_ICON[p]?.(18)}
-                      <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
+                      <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                     </div>
-                    {verified?.username && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{verified.username}</p>}
+                    {verified?.username && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{verified.username}</p>}
                     {followers != null && (
                       <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
                         <div>
-                          <p style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                          <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
+                          <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                          <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
                         </div>
                       </div>
                     )}
@@ -673,25 +673,25 @@ const startDM = async () => {
                 <label style={labelStyle}>Track Record</label>
                 <div style={{ display: "flex", gap: "10px", marginBottom: "1.25rem" }}>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
+                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
                   </div>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                     {trackRecord.avgRating != null ? (
                       <>
                         <StarRating rating={trackRecord.avgRating} size={13} />
-                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                       </>
                     ) : (
                       <>
-                        <p style={{ color: "#999", fontSize: "13px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>—</p>
-                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
+                        <p style={{ color: "#999", fontSize: "13px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>—</p>
+                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
                       </>
                     )}
                   </div>
                   <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Avg. turnaround</p>
+                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Avg. turnaround</p>
                   </div>
                 </div>
 
@@ -766,7 +766,7 @@ const startDM = async () => {
             !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
               <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
               <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
             </div>
           )}

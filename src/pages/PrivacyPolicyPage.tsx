@@ -22,10 +22,10 @@ export default function PrivacyPolicyPage() {
   }, []);
 
   return (
-    <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+    <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       <div style={{ width: "100%", maxWidth: "640px", padding: "4rem 1.5rem 6rem" }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
+        <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
           Privacy Policy
         </h1>
         <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: October 2026</p>

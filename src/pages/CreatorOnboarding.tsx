@@ -472,8 +472,8 @@ const [showOtp, setShowOtp] = useState(false);
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's build your creator profile</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's build your creator profile</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile helps brands find and connect with you for paid and gifted collabs.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
@@ -496,8 +496,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 1 — Niche & Location
     <div key={1}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Space</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you create?</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Space</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you create?</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Brands search by niche to find the right creators.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div style={{ position: "relative" }}>
@@ -543,8 +543,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 2 — Platforms
     <div key={2}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Platforms</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Where do you post?</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Platforms</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Where do you post?</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select all that apply. You can add more later.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {PLATFORMS.map(p => <div key={p} onClick={() => togglePlatform(p)} style={chipStyle(selectedPlatforms.includes(p))}>{p}</div>)}
@@ -567,8 +567,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 3 — Content Types
     <div key={3}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you make?</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you make?</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select everything you're comfortable creating.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
         {CONTENT_TYPES.map(c => <div key={c} onClick={() => toggleContent(c)} style={chipStyle(contentTypes.includes(c))}>{c}</div>)}
@@ -577,8 +577,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 4 — Rate Card
     <div key={4}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you charge?</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you charge?</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "1.5rem" }}>Optional. What you'd charge a brand for each one. You can always update this later.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem 0.75rem" }}>
         {[
@@ -601,8 +601,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 5 — Sign Up
     <div key={5}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your account</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your account</h1>
       <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Your details are safe and never shared with brands without your permission.</p>
       {isOAuthUser ? (
         <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
@@ -656,8 +656,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 6 — Verify Accounts
     <div key={6}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
         Connect Instagram, TikTok, or YouTube to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile. The account you connect should match the username you entered earlier.
       </p>
@@ -720,8 +720,8 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 7 — Profile Photo
     <div key={7}>
-      <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add a profile photo</h1>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add a profile photo</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>Optional, but creators with a photo get <span style={{ color: "#fff", fontWeight: 600 }}>3x more brand reach-outs</span>. You can always add one later from your profile.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
         <div onClick={() => picRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "50%", border: `2px dashed ${profilePic ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
@@ -740,7 +740,7 @@ const [showOtp, setShowOtp] = useState(false);
         <circle cx="12" cy="12" r="9" />
         <path d="m8.4 12.4 2.5 2.5 4.8-5.2" />
       </svg>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
       <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
     </div>,
   ];
@@ -773,9 +773,9 @@ const buttonLabel = () => {
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:-webkit-autofill {
           -webkit-box-shadow: 0 0 0px 1000px #111 inset !important;
@@ -870,7 +870,7 @@ const buttonLabel = () => {
       <img src="/icon-512.png" width="64" height="64" alt="FlipCollab" style={{ display: "block", width: "64px", height: "64px", borderRadius: "14px", margin: "0 auto 1.25rem auto" }} />
 
       <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
       <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
         We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
       </p>
@@ -908,7 +908,7 @@ const buttonLabel = () => {
   <div style={{ position: "fixed", inset: 0, background: "#0a0a0a", zIndex: 9999, display: "flex", flexDirection: "column" }}>
     <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
       <span onClick={() => setPickerPlatform(null)} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform ? PLATFORM_LABEL[pickerPlatform] : ""} videos</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform ? PLATFORM_LABEL[pickerPlatform] : ""} videos</span>
     </div>
     <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "6rem" }}>
       <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>

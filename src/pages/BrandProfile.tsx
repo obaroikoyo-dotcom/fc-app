@@ -367,8 +367,8 @@ const loadFavourites = async () => {
     <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
       {icon && <SettingsIcon name={icon} color="#999" size={18} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
-        {sub && <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
+        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
+        {sub && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
       </div>
       <ChevronIcon />
     </div>
@@ -377,7 +377,7 @@ const loadFavourites = async () => {
     <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
   );
   const sectionHeader = (title: string, first = false) => (
-    <p style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
+    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ──────────────────────────────────────────────────
@@ -392,7 +392,7 @@ const loadFavourites = async () => {
         <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
       );
       return (
-        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
           <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
           <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
             {bar("100px", "18px")}
@@ -436,9 +436,9 @@ const loadFavourites = async () => {
     }
 
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Brand Profile</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Brand Profile</span>
         <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
           <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
@@ -454,7 +454,7 @@ const loadFavourites = async () => {
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Brand"}</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Brand"}</p>
               {isVerified && <VerifiedBadge />}
               {isEnterprise && (
                 <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Enterprise</span>
@@ -561,25 +561,25 @@ const loadFavourites = async () => {
             <label style={labelStyle}>Track Record</label>
             <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
-                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
+                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
+                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
               </div>
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                 {trackRecord.avgRating != null ? (
                   <>
                     <StarRating rating={trackRecord.avgRating} size={13} />
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                   </>
                 ) : (
                   <>
-                    <p style={{ color: "#999", fontSize: "13px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>—</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
+                    <p style={{ color: "#999", fontSize: "13px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>—</p>
+                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
                   </>
                 )}
               </div>
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
-                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>Avg. reply time</p>
+                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{formatResponseTime(trackRecord.avgResponseHours) || "—"}</p>
+                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Avg. reply time</p>
               </div>
             </div>
             {reviews.length > 0 && (
@@ -608,7 +608,7 @@ const loadFavourites = async () => {
         {!contentTypes.length && !targetAudience && !targetTier && !website && !instagram && !tiktok && !socialConnections.length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
             <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◈</div>
-            <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
             <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added asset formats, target audience, or links yet. Fill these out from Edit Profile so creators know what you're looking for.</p>
           </div>
         )}
@@ -621,16 +621,16 @@ const loadFavourites = async () => {
   const renderSettingsHeader = (title: string, onBack: () => void) => (
     <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
       <span onClick={onBack} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
     </div>
   );
 
   // ─── SETTINGS MAIN MENU ───────────────────────────────────────────────────
   const renderSettingsMain = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
         <span onClick={() => setView("profile")} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
       </div>
 
       {/* Enterprise banner / theme toggle */}
@@ -673,7 +673,7 @@ const loadFavourites = async () => {
             {showCancelModal && (
               <div onClick={() => !cancelLoading && setShowCancelModal(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1.25rem", paddingTop: "4rem" }}>
                 <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem", width: "100%", maxWidth: "480px", marginBottom: "1rem" }}>
-                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>Manage Your Plan</p>
+                  <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>Manage Your Plan</p>
                   <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Switch billing periods or cancel your Enterprise subscription. Changes take effect immediately.</p>
 
                   <p style={{ fontSize: "12px", color: "#999", marginBottom: "10px", lineHeight: 1.6 }}>To cancel your Enterprise subscription and revert to standard platform fees, tap below. This cannot be undone.</p>
@@ -750,7 +750,7 @@ const loadFavourites = async () => {
       {showDeleteConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
           <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem", boxSizing: "border-box" }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>Delete your account?</h3>
+            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>Delete your account?</h3>
             <p style={{ color: "#999", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>
               This deletes your profile, campaign history and messages. It can't be undone.
             </p>
@@ -791,7 +791,7 @@ const loadFavourites = async () => {
 
   // ─── EDIT PROFILE ─────────────────────────────────────────────────────────
   const renderEditProfile = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Edit Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
@@ -829,7 +829,7 @@ const loadFavourites = async () => {
 
   // ─── INDUSTRY & CONTENT ───────────────────────────────────────────────────
   const renderIndustrySelection = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Industry & Content Needs", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <div>
@@ -867,7 +867,7 @@ const loadFavourites = async () => {
 
   // ─── CAMPAIGN PREFERENCES ─────────────────────────────────────────────────
   const renderCampaignPreferences = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "8rem" }}>
       {renderSettingsHeader("Campaign Preferences", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <div>
@@ -919,7 +919,7 @@ const loadFavourites = async () => {
   };
 
   const renderNotifications = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Notifications", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
@@ -938,7 +938,7 @@ const loadFavourites = async () => {
 
   // ─── VISIBILITY ───────────────────────────────────────────────────────────
   const renderVisibility = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Visibility", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
@@ -956,7 +956,7 @@ const loadFavourites = async () => {
 
   // ─── SHARE PROFILE ────────────────────────────────────────────────────────
   const renderShareProfile = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Share Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share your FlipCollab brand page with creators or on your social channels.</p>
@@ -975,7 +975,7 @@ const loadFavourites = async () => {
 
   // ─── FAVOURITES ───────────────────────────────────────────────────────────
   const renderFavourites = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Favourited Creators", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {favouritedCreators.length === 0 ? (
@@ -1007,7 +1007,7 @@ const loadFavourites = async () => {
     const findConnection = (p: SocialPlatform) => socialConnections.find(c => c.platform === p);
 
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Connect Social Platforms", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {socialNotice && (
@@ -1055,7 +1055,7 @@ const loadFavourites = async () => {
 
   const renderGetVerified = () => {
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Get Verified", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {isVerified ? (
@@ -1097,7 +1097,7 @@ const loadFavourites = async () => {
 
   // ─── HELP ─────────────────────────────────────────────────────────────────
   const renderHelp = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Help Centre", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {[
@@ -1129,7 +1129,7 @@ const loadFavourites = async () => {
 
   // ─── PRIVACY / TERMS ──────────────────────────────────────────────────────
 const renderPrivacyPolicy = () => (
-  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Privacy Policy", () => setSettingsSection("main"))}
     <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
       <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
@@ -1158,7 +1158,7 @@ const renderPrivacyPolicy = () => (
 );
 
 const renderTerms = () => (
-  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+  <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
     {renderSettingsHeader("Terms of Service", () => setSettingsSection("main"))}
     <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
       <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
@@ -1192,7 +1192,7 @@ const renderTerms = () => (
 
   // ─── REPORTED & BLOCKED ───────────────────────────────────────────────────
   const renderReportsBlocked = () => (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "6rem" }}>
       {renderSettingsHeader("Reported & Blocked", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
@@ -1241,14 +1241,14 @@ const renderTerms = () => (
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   if (view === "profile") return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       {renderProfile()}
     </>
   );
 
   return (
     <>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       {settingsSection === "main" && renderSettingsMain()}
       {settingsSection === "edit-profile" && renderEditProfile()}
       {settingsSection === "industry-selection" && renderIndustrySelection()}

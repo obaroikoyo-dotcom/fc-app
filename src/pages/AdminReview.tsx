@@ -226,7 +226,7 @@ export default function AdminReview({ goBack }: Props) {
   const header = (
     <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
       <span onClick={goBack} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Admin Review</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Admin Review</span>
     </div>
   );
 
@@ -240,7 +240,7 @@ export default function AdminReview({ goBack }: Props) {
       <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
     );
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
         {header}
         <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
@@ -268,7 +268,7 @@ export default function AdminReview({ goBack }: Props) {
 
   if (!authorized) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
         {header}
         <p style={{ padding: "2rem", color: "#999", fontSize: "13px", textAlign: "center" }}>Not authorized.</p>
       </div>
@@ -276,7 +276,7 @@ export default function AdminReview({ goBack }: Props) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", paddingBottom: "4rem" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "4rem" }}>
       {header}
 
       <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
