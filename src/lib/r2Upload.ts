@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { isDemoMode } from "./demo/mode";
 
 export type R2UploadPurpose = "avatar" | "campaign-asset" | "pitch" | "deliverable" | "message-media";
 
@@ -18,6 +19,12 @@ interface R2UploadParams {
 // call sites this replaces: give it a file and some context, get back a
 // public URL.
 export async function uploadToR2({ purpose, file, campaign_id, application_id, conversation_id, folder }: R2UploadParams): Promise<string> {
+  // In the demo a file never leaves the device - it just gets a local address.
+  if (isDemoMode()) {
+    const { localMediaUrl } = await import("./demo/media");
+    return localMediaUrl(file);
+  }
+
   const ext = (file.name.split(".").pop() || "bin").toLowerCase();
 
   const { data, error } = await supabase.functions.invoke("r2-presigned-url", {

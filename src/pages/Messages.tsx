@@ -20,6 +20,7 @@ import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 import { dealBreakdown } from "../lib/fees";
 import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
+import { isDemoMode } from "../lib/demo/mode";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -244,7 +245,29 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   // actually gets charged/recorded. The server recomputes all of it itself.
   const { brandFee, processingFee, totalCharge, creatorPayout: creatorPayoutDisplay } = dealBreakdown(campaignBudget, isEnterprise);
 
+  // Demo only: the demo backend funds the deal the moment the payment is
+  // created, so there is no card to confirm and nothing goes to Stripe.
+  const handleDemoPay = async (userId: string) => {
+    setProcessing(true);
+    setError("");
+    const res = await supabase.functions.invoke("create-payment-intent", {
+      body: { amount: campaignBudget, brand_id: userId, creator_id: paymentApp.creator_id, campaign_id: paymentApp.campaign_id },
+    });
+    if (res.error) {
+      setError("Payments are switched off in the demo.");
+      setProcessing(false);
+      return;
+    }
+    await new Promise(resolve => setTimeout(resolve, 900));
+    setProcessing(false);
+    onSuccess(paymentApp, "funded");
+  };
+
   const handlePay = async () => {
+    if (isDemoMode() && currentUserId) {
+      await handleDemoPay(currentUserId);
+      return;
+    }
     if (!stripe || !currentUserId) return;
 
     if (useNewCard && !addr.isFilled()) {
@@ -405,6 +428,12 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
           </p>
         )}
       </div>
+
+      {isDemoMode() && (
+        <p style={{ color: "#777", fontSize: "11px", lineHeight: 1.5, marginBottom: "1rem" }}>
+          Demo only. No card is charged, so there's no need to enter real card details.
+        </p>
+      )}
 
       {savedCard && (
         <div style={{ marginBottom: "0.75rem", display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -1489,7 +1518,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             // action rather than only ever surfacing the newest one.
             const { data: linkedApps } = await supabase
               .from("applications")
-              .select("id, status, campaign_id, platforms, campaigns(name, budget, brand_id)")
+              .select("id, status, campaign_id, platforms, campaigns!inner(name, budget, brand_id)")
               .eq("creator_id", creatorSearchId)
               .eq("campaigns.brand_id", brandSearchId)
               .order("created_at", { ascending: false });

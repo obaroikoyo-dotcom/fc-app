@@ -33,6 +33,8 @@ import { peekOnboardingDraftRole } from "./lib/onboardingDraft";
 import { peekGoogleLoginIntent, clearGoogleLoginIntent, peekAppleLoginIntent, clearAppleLoginIntent } from "./lib/authIntent";
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
 import { autoRequestPush, subscribeToPush, isPushEnabled, isIOSDevice } from "./lib/push";
+import { isDemoMode } from "./lib/demo/mode";
+import DemoNotice from "./components/DemoNotice";
 
 
 export type Page = 
@@ -731,6 +733,7 @@ case "brand-campaign-preview":
       {notifPromptUserId && (
         <NotificationPermissionPrompt onEnable={handleEnableNotifications} onDismiss={() => setNotifPromptUserId(null)} />
       )}
+      {isDemoMode() && page !== "splash" && <DemoNotice />}
     </div>
   );
 }

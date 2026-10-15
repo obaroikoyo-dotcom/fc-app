@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import App from "./App";
 import LandingPage from "./pages/LandingPage";
+import DemoEntry from "./pages/DemoEntry";
+import DemoGate from "./components/DemoGate";
+import { isDemoMode, demoRoleFromPath } from "./lib/demo/mode";
 
 // The about/privacy/terms subdomains already short-circuit inside App() to
 // their own standalone content, not the actual app - they should never show
@@ -31,7 +34,11 @@ export default function Root() {
   // the marketing page would just be an extra tap in the way of the thing
   // they actually clicked, same reasoning as the social-callback case above.
   const isProfileLink = /^\/(profile|brand)\/[0-9a-fA-F-]{36}\/?$/.test(window.location.pathname);
-  const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone || isSocialCallback || isProfileLink;
+  // /demo/creator and /demo/brand are links people are sent to look around
+  // with a made-up profile - straight into the app, no marketing page first.
+  // Plain /demo shows its own small picker instead (below).
+  const isDemoApp = isDemoMode() && demoRoleFromPath() !== null;
+  const skipLanding = MARKETING_SUBDOMAINS.includes(subdomain) || isStandalone || isSocialCallback || isProfileLink || isDemoApp;
   const [showApp, setShowApp] = useState(skipLanding);
 
   // Launching pushes a real history entry, so the browser's own back
@@ -50,6 +57,8 @@ export default function Root() {
     setShowApp(true);
   };
 
+  if (isDemoMode() && !isDemoApp) return <DemoEntry />;
+  if (isDemoApp) return <DemoGate><App /></DemoGate>;
   if (!showApp) return <LandingPage onLaunch={launch} />;
   return <App />;
 }

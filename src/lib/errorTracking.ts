@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/react";
 import { getLog } from "./debugLog";
+import { isDemoMode } from "./demo/mode";
 
 // The project's public key from Sentry (Project Settings -> Client Keys ->
 // DSN). It only lets this app SEND error reports to your project - it can't
@@ -64,6 +65,9 @@ export function sentryOptions(dsn: string): Sentry.BrowserOptions {
 export function initErrorTracking() {
   if (!enabled) return;
   Sentry.init(sentryOptions(SENTRY_DSN));
+  // Demo visits run against fake data, so tag them to keep them out of the
+  // real error picture.
+  if (isDemoMode()) Sentry.setTag("demo", "true");
 }
 
 // React 19 reports errors that nothing caught through these hooks. Only set

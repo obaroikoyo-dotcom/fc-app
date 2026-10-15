@@ -2,6 +2,8 @@
 // in index.html. The SDK isn't guaranteed to have finished loading by the
 // time app code runs, so every call goes through window.OneSignalDeferred -
 // the queue OneSignal itself drains once it's ready.
+import { isDemoMode } from "./demo/mode";
+
 const ONESIGNAL_APP_ID = "66adae38-64f2-425f-b984-83e65f99ce1f";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -14,6 +16,8 @@ declare global {
 }
 
 function withOneSignal(fn: (OneSignal: OneSignalSDK) => void | Promise<void>) {
+  // The demo never registers anyone with the push service.
+  if (isDemoMode()) return;
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(fn);
 }
@@ -39,6 +43,7 @@ export function oneSignalLogout() {
 }
 
 export function requestOneSignalPermission(): Promise<boolean> {
+  if (isDemoMode()) return Promise.resolve(false);
   return new Promise((resolve, reject) => {
     withOneSignal(async (OneSignal) => {
       try {
@@ -71,6 +76,8 @@ export function optInOneSignalPush() {
 // flag, not Notification.permission, or it looks "on" again after opting
 // out and revisiting the page.
 export function isOneSignalOptedIn(): Promise<boolean> {
+  // Reported as already on so the demo never shows a notification prompt.
+  if (isDemoMode()) return Promise.resolve(true);
   return new Promise((resolve) => {
     withOneSignal((OneSignal) => {
       resolve(!!OneSignal.User.PushSubscription.optedIn);
