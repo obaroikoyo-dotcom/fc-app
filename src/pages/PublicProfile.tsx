@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { safeHttpUrl } from "../lib/safeUrl";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -484,9 +485,7 @@ const startDM = async () => {
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
            <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777", flexShrink: 0, overflow: "hidden" }}>
-  {creator.avatar_url
-    ? <img src={creator.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-    : "◉"}
+  <img src={avatarSrc(creator.avatar_url, creator.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
 </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
@@ -745,7 +744,7 @@ const startDM = async () => {
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                             <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
-                              {r.brand_avatar ? <img src={r.brand_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                              <img src={avatarSrc(r.brand_avatar, r.brand_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             </div>
                             <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
                           </div>

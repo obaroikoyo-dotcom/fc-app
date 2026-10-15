@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -231,7 +232,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
             return (
               <div key={p.id} onClick={() => isC ? navigateToProfile(p.id) : navigateToBrandProfile(p.id)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  {cp?.avatar_url || bp?.avatar_url ? <img src={cp?.avatar_url || bp?.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : isC ? "◉" : "◈"}
+                  <img src={avatarSrc(cp?.avatar_url || bp?.avatar_url, cp?.name || bp?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 600 }}>

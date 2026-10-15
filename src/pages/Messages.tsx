@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { notifyAndPush } from "../lib/push";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
@@ -2210,7 +2211,7 @@ return (
       style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
     >
       <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
-        {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : activeConvo.other_avatar ? <img src={activeConvo.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : activeConvo.other_role === "creator" ? "◉" : "◈"}
+        {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : <img src={avatarSrc(activeConvo.other_avatar, activeConvo.other_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
       </div>
       <h1 style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
         {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}
@@ -2366,7 +2367,7 @@ return (
             activeCampaign.applications.map((app, i) => (
               <div key={app.id} onClick={() => { setActiveApplication(app); setView("app-detail"); }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
                 <div style={{ width: "44px", height: "44px", borderRadius: "50%", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#777" }}>
-                  {app.creator_avatar ? <img src={app.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                  <img src={avatarSrc(app.creator_avatar, app.creator_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
@@ -2389,7 +2390,7 @@ return (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#777" }}>
-                {activeApplication.creator_avatar ? <img src={activeApplication.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                <img src={avatarSrc(activeApplication.creator_avatar, activeApplication.creator_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
               <div>
                 <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{activeApplication.creator_name}</p>
@@ -2552,7 +2553,7 @@ return (
               return (
                 <div key={c.id} onClick={() => openChat(c)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer", background: isUnread ? "#11111144" : "transparent" }}>
                   <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#777", flexShrink: 0, overflow: "hidden", position: "relative" }}>
-                    {theyBlocked ? "◌" : c.other_avatar ? <img src={c.other_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : c.other_role === "creator" ? "◉" : "◈"}
+                    {theyBlocked ? "◌" : <img src={avatarSrc(c.other_avatar, c.other_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>

@@ -3,6 +3,7 @@ import { safeHttpUrl } from "../lib/safeUrl";
 import LocationInput from "../components/LocationInput";
 import { type Page } from "../App";
 import { supabase, forceSignOut } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { subscribeToPush, unsubscribeFromPush, isPushEnabled } from "../lib/push";
 import { startSocialConnect, getSocialConnections, disconnectSocialPlatform, getSocialPostOptions, getSocialPosts, setFeaturedPosts, MAX_FEATURED_POSTS, SOCIAL_PLATFORM_LABEL, type SocialConnection, type SocialPlatform, type SocialPostOption, type SocialPost } from "../lib/social";
 import VerifiedBadge from "../components/VerifiedBadge";
@@ -671,7 +672,7 @@ setTimeout(() => setSaved(false), 2000);
         {/* Avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777" }}>
-            {profilePic ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+            {(profilePic || name) && <img src={avatarSrc(profilePic, name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
@@ -868,7 +869,7 @@ setTimeout(() => setSaved(false), 2000);
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
-                          {r.brand_avatar ? <img src={r.brand_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                          <img src={avatarSrc(r.brand_avatar, r.brand_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                         <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
                       </div>
@@ -1500,7 +1501,7 @@ setTimeout(() => setSaved(false), 2000);
             {favourites.map((f, i) => (
               <div key={i} onClick={() => navigateToProfile(f.creator_id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {(f as any).display?.avatar_url ? <img src={(f as any).display.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                  <img src={avatarSrc((f as any).display?.avatar_url, (f as any).display?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f as any).display?.name || "Creator"}</p>
@@ -1723,7 +1724,7 @@ const renderTerms = () => (
             {blockedUsers.map(b => (
               <div key={b.blockRowId} style={{ display: "flex", alignItems: "center", gap: "12px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: b.role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
-                  {b.avatar ? <img src={b.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : b.role === "creator" ? "◉" : "◈"}
+                  <img src={avatarSrc(b.avatar, b.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{b.name}</p>

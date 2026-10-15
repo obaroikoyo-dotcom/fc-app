@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { safeHttpUrl, safeAssetLink } from "../lib/safeUrl";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { withTimeout } from "../lib/withTimeout";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
@@ -121,8 +122,8 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
         {/* Campaign title */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            {campaign.brand_profiles?.logo_url && (
-              <img src={campaign.brand_profiles.logo_url} style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover", background: "#111", border: "1px solid #1a1a1a", flexShrink: 0 }} />
+            {campaign.brand_profiles && (
+              <img src={avatarSrc(campaign.brand_profiles.logo_url, campaign.brand_profiles.name)} style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover", background: "#111", border: "1px solid #1a1a1a", flexShrink: 0 }} />
             )}
             <div>
               <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>{campaign.name}</p>

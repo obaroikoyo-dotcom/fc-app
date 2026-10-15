@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { safeHttpUrl } from "../lib/safeUrl";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { listUsers, setAccountStatus, type UserSearchResult } from "../lib/moderation";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
@@ -304,7 +305,7 @@ export default function AdminReview({ goBack }: Props) {
                 <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
                     <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
-                      {r.brand_logo ? <img src={r.brand_logo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                      <img src={avatarSrc(r.brand_logo, r.brand_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <div>
                       <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{r.brand_name}</p>
@@ -466,7 +467,7 @@ export default function AdminReview({ goBack }: Props) {
                   <div key={u.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                       <div style={{ width: "32px", height: "32px", borderRadius: u.role === "creator" ? "50%" : "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
-                        {u.avatar_url ? <img src={u.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : u.role === "creator" ? "◉" : "◈"}
+                        <img src={avatarSrc(u.avatar_url, u.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{u.name}</p>

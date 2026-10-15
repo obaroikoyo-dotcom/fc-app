@@ -2,6 +2,7 @@ import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import CreateCampaign, { type EditableCampaign } from "./CreateCampaign";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -77,6 +78,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const hasLoadedOnce = useHasLoadedOnce(loading);
   const [isEnterprise, setIsEnterprise] = useState(false);
   const [myLogo, setMyLogo] = useState<string | null>(null);
+  const [myName, setMyName] = useState<string | null>(null);
   const [now, setNow] = useState(new Date());
   const [feedTab, setFeedTab] = useState<"yours" | "discover">("yours");
   const [selectedNiche, setSelectedNiche] = useState("");
@@ -97,9 +99,10 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setCurrentUserId(user.id);
-          const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, logo_url").eq("id", user.id).single();
+          const { data: bp } = await supabase.from("brand_profiles").select("is_enterprise, logo_url, name").eq("id", user.id).single();
           if (bp?.is_enterprise) setIsEnterprise(true);
           if (bp?.logo_url) setMyLogo(bp.logo_url);
+          if (bp?.name) setMyName(bp.name);
           getBrandTrackRecord(user.id).then(setTrackRecord);
 
           // Other brands' drafts are never fetched at all - only this
@@ -217,7 +220,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
             )}
           </div>
           <div onClick={() => navigate("brand-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
-            {myLogo ? <img src={myLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
+            {(myLogo || myName) && <img src={avatarSrc(myLogo, myName)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
           </div>
         </div>
 
@@ -353,7 +356,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
                       >
                         <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
-                          {brandLogo ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                          <img src={avatarSrc(brandLogo, brandName)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                         <div>
                           <p style={{ display: "flex", alignItems: "center", gap: "4px", color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>

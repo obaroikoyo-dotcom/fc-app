@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -113,6 +114,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [applied, setApplied] = useState<string[]>([]);
   const [bookmarked, setBookmarked] = useState<string[]>([]);
   const [myAvatar, setMyAvatar] = useState<string | null>(null);
+  const [myName, setMyName] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [selectedNiche, setSelectedNiche] = usePersistedState("fc_explore_niche", "");
   const [selectedPlatform, setSelectedPlatform] = usePersistedState("fc_explore_platform", "");
@@ -152,6 +154,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     const { data } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", user.id).single();
     if (data) {
       if (data.avatar_url) setMyAvatar(data.avatar_url);
+      if (data.name) setMyName(data.name);
     }
 
     const { data: favs } = await supabase.from("campaign_favourites").select("campaign_id").eq("user_id", user.id);
@@ -239,7 +242,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
           <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
           <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
-            {myAvatar ? <img src={myAvatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "16px", color: "#fff" }}>◉</span>}
+            {(myAvatar || myName) && <img src={avatarSrc(myAvatar, myName)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
           </div>
         </div>
 
@@ -315,7 +318,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                       onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
                       style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", cursor: "pointer" }}
                     >
-                      {c.brand_profiles?.avatar_url ? <img src={c.brand_profiles.avatar_url} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+                      <img src={avatarSrc(c.brand_profiles?.avatar_url, c.brand_profiles?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <div>
                       <p style={{ display: "flex", alignItems: "center", gap: "4px", color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>

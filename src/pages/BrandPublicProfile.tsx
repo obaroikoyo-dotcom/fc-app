@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { safeHttpUrl } from "../lib/safeUrl";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { avatarSrc } from "../lib/avatar";
 import { withTimeout } from "../lib/withTimeout";
 import { useRefetchOnVisible } from "../lib/useRefetchOnVisible";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
@@ -398,7 +399,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
           <div style={{ width: "72px", height: "72px", borderRadius: "16px", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777", flexShrink: 0, overflow: "hidden" }}>
-            {avatar ? <img src={avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◈"}
+            <img src={avatarSrc(avatar, brand.name || brand.company_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>
@@ -599,7 +600,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
-                            {r.creator_avatar ? <img src={r.creator_avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "◉"}
+                            <img src={avatarSrc(r.creator_avatar, r.creator_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           </div>
                           <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.creator_name || "Creator"}</p>
                         </div>
