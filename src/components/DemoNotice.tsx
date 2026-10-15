@@ -11,8 +11,6 @@ export default function DemoNotice() {
   const close = () => {
     markNoticeSeen();
     setOpen(false);
-    // Lets the install prompt know it can start its countdown.
-    window.dispatchEvent(new Event("fc-demo-notice-closed"));
   };
 
   const button: React.CSSProperties = {

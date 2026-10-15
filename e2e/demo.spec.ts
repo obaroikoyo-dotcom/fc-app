@@ -15,6 +15,8 @@ async function openDemo(page: Page, role: "creator" | "brand") {
   page.on("request", r => { if (/supabase\.co|demo\.flipcollab\.invalid/.test(r.url())) leaks.push(r.url()); });
   page.on("pageerror", e => { if (!knownNoise.test(e.message)) errors.push(e.message); });
   await page.goto(`/demo/${role}`, { waitUntil: "domcontentloaded" });
+  // A browser that offers to install shows the home-screen ask first: say no.
+  await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
   await expect(page.getByText("You're looking at a demo")).toBeVisible({ timeout: 20_000 });
   await page.getByText("Got it", { exact: true }).click();
   return { leaks, errors };
@@ -29,6 +31,7 @@ const myId = (page: Page) => page.evaluate(() => JSON.parse(sessionStorage.getIt
 
 test("the picker offers both sides and starts a fresh made-up profile", async ({ page }) => {
   await page.goto("/demo", { waitUntil: "domcontentloaded" });
+  await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
   await expect(page.getByText("Try the demo")).toBeVisible();
   await page.getByText("I'm a Creator", { exact: true }).click();
   await expect(page).toHaveURL(/\/demo\/creator$/);
@@ -121,14 +124,23 @@ test.describe("on an iPhone", () => {
     isMobile: true,
   });
 
-  test("the demo offers to add FlipCollab to the home screen, once", async ({ page }) => {
-    await openDemo(page, "creator"); // dismisses the demo notice
-    const prompt = page.getByText("Add FlipCollab to your home screen");
-    await expect(prompt).toBeVisible({ timeout: 20_000 });
-    await page.getByText("Show me how", { exact: true }).click();
-    await expect(page.getByText("Scroll down and tap Add to Home Screen.")).toBeVisible();
-    await page.getByText("Got it", { exact: true }).click();
-    await expect(prompt).toBeHidden();
-    expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_install_seen"))).toBe("1");
+  test("the demo link opens with a big add-to-home-screen ask, once", async ({ page }) => {
+    // Straight away on the picker, before choosing brand or creator.
+    await page.goto("/demo", { waitUntil: "domcontentloaded" });
+    const ask = page.getByText("Add FlipCollab to your home screen");
+    await expect(ask).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText("Tap Add to Home Screen")).toBeVisible(); // the steps are on show
+    await page.getByText("Continue in browser", { exact: true }).click();
+    await expect(ask).toBeHidden();
+
+    // Choosing a side must not bring it back.
+    await page.getByText("I'm a Creator", { exact: true }).click();
+    await expect(page.getByText("You're looking at a demo")).toBeVisible({ timeout: 20_000 });
+    await expect(ask).toBeHidden();
+  });
+
+  test("a direct /demo/brand link asks straight away too", async ({ page }) => {
+    await page.goto("/demo/brand", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Add FlipCollab to your home screen")).toBeVisible({ timeout: 5_000 });
   });
 });

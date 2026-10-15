@@ -35,7 +35,6 @@ import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal"
 import { autoRequestPush, subscribeToPush, isPushEnabled, isIOSDevice } from "./lib/push";
 import { isDemoMode } from "./lib/demo/mode";
 import DemoNotice from "./components/DemoNotice";
-import DemoInstallPrompt from "./components/DemoInstallPrompt";
 
 
 export type Page = 
@@ -735,7 +734,6 @@ case "brand-campaign-preview":
         <NotificationPermissionPrompt onEnable={handleEnableNotifications} onDismiss={() => setNotifPromptUserId(null)} />
       )}
       {isDemoMode() && page !== "splash" && <DemoNotice />}
-      {isDemoMode() && page !== "splash" && <DemoInstallPrompt />}
     </div>
   );
 }

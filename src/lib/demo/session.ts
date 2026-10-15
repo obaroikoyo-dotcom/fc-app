@@ -74,7 +74,6 @@ export function startDemoSession(role: DemoRole): DemoSession {
   write(SESSION_KEY, JSON.stringify(session));
   remove(SNAPSHOT_KEY);
   remove(NOTICE_KEY);
-  remove(INSTALL_KEY);
   cached = session;
   return session;
 }
@@ -99,7 +98,6 @@ export function endDemoSession() {
   remove(SESSION_KEY);
   remove(SNAPSHOT_KEY);
   remove(NOTICE_KEY);
-  remove(INSTALL_KEY);
   cached = null;
 }
 
