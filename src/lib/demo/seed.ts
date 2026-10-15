@@ -193,6 +193,25 @@ function dateIn(now: number, days: number): string {
   return new Date(now + days * DAY).toISOString().slice(0, 10);
 }
 
+// Flat, muted picture tones that sit quietly on the app's dark screens.
+const PICTURE_TONES = ["#5b6b7a", "#7a6a5b", "#5e7a6a", "#7a5b6a", "#66667a", "#7a735b", "#5b7a78", "#7a625b"];
+
+// A made-up profile picture: initials on a flat tone, as a self-contained
+// image (nothing to host or fetch). The tone comes from the name itself, so a
+// person keeps the same picture on every visit.
+function monogram(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const tone = PICTURE_TONES[h % PICTURE_TONES.length];
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join("");
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">' +
+    `<rect width="120" height="120" fill="${tone}"/>` +
+    '<text x="60" y="60" dy="0.35em" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" ' +
+    `font-size="46" font-weight="700" fill="#f2f2f2">${initials}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 function slug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "");
 }
@@ -235,8 +254,8 @@ export function buildWorld(seed: number, userId: string, role: DemoRole, nowMs: 
     t.profiles.push({ id, role: "creator", email: `${handle}@demo.flipcollab.invalid`, account_status: "active", status_reason: null, created_at: isoAgo(nowMs, int(rng, 20, 160) * DAY) });
     t.creator_profiles.push({
       id, name, niche,
-      bio: pick(rng, CREATOR_BIO_TEMPLATES).replace("{niche}", niche.toLowerCase()).replace("{city}", city),
-      avatar_url: null, location: `${city}, United Kingdom`, age: int(rng, 20, 34),
+      bio: pick(rng, CREATOR_BIO_TEMPLATES).replace("{niche}", niche.toLowerCase()).replace("{city}", city).replace(/^./, c => c.toUpperCase()),
+      avatar_url: monogram(name), location: `${city}, United Kingdom`, age: int(rng, 20, 34),
       gender: pick(rng, ["Female", "Male", "Non-binary"]),
       available: chance(rng, 0.8), profile_visible: true, onboarding_complete: true,
       platforms, social_links: links, follower_counts: followers, engagement_rates: engagement,
@@ -281,7 +300,7 @@ export function buildWorld(seed: number, userId: string, role: DemoRole, nowMs: 
       website: `https://${handle}.example`, instagram: `@${handle}`, tiktok: `@${handle}`,
       location: `${city}, United Kingdom`, target_audience: arch.audience,
       content_types: arch.content, budget_range: pick(rng, TIERS.slice(0, 4)),
-      logo_url: null, avatar_url: null, verified: !!opts.verified, is_enterprise: !!opts.enterprise,
+      logo_url: monogram(name), avatar_url: monogram(name), verified: !!opts.verified, is_enterprise: !!opts.enterprise,
       profile_visible: true, onboarding_complete: true, subscription_cancel_at_period_end: false,
       created_at: isoAgo(nowMs, int(rng, 30, 200) * DAY),
     });
