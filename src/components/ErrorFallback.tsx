@@ -3,7 +3,7 @@
 export default function ErrorFallback() {
   let light = false;
   try {
-    light = localStorage.getItem("theme") !== "normal";
+    light = localStorage.getItem("fc_theme") !== "dark";
   } catch {
     // storage unavailable - fall back to the default (light) look
     light = true;
