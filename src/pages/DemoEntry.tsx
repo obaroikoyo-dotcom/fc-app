@@ -2,6 +2,7 @@ import { useState } from "react";
 import AuthLayout from "../components/AuthLayout";
 import logo from "../assets/logo.png";
 import { startDemoSession } from "../lib/demo/session";
+import { withDemoKey } from "../lib/demo/access";
 import type { DemoRole } from "../lib/demo/mode";
 
 const BuildingIcon = (
@@ -28,7 +29,7 @@ export default function DemoEntry() {
   const choose = (role: DemoRole) => {
     startDemoSession(role);
     // A full load, so the app boots as that person from the start.
-    window.location.assign(`/demo/${role}`);
+    window.location.assign(withDemoKey(`/demo/${role}`));
   };
 
   const card = (role: DemoRole, title: string, sub: string, icon: React.ReactNode) => {

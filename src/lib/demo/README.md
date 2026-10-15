@@ -5,6 +5,33 @@ A link people can open to try FlipCollab with a made-up profile, no sign-up.
 - `/demo` shows a picker (brand or creator).
 - `/demo/creator` and `/demo/brand` go straight in.
 
+## Who can open it
+
+It is private: an unlisted link, like a Google Docs "anyone with the link"
+share. The address carries a secret key (`/demo?k=...`). With no key, or a
+wrong one, every demo address sends the visitor to the normal front page, and
+none of the demo starts: no fake visitor, no demo client, no backend download.
+
+- `access.ts` holds SHA-256 fingerprints of the allowed keys (never the keys)
+  and decides once per page load, synchronously (`sha256.ts`), before the app
+  starts. `isDemoMode()` is true only for a demo address with a valid key.
+- `DemoClosed` (in `src/components`) is what a keyless demo address renders: it
+  sends the visitor to `/`.
+- A valid key is remembered for the tab and added to links inside the demo, so
+  a link copied part-way through still works for whoever receives it.
+- New link: `node scripts/demo-link.mjs`, paste the printed line into `ALLOWED`
+  in `access.ts`, publish, send the person the printed link. Give each person
+  their own so one can be switched off alone.
+- Switch a link off: delete its line from `ALLOWED` and publish.
+- `e2e-dev-key` works only on the local dev server (the production build strips
+  it), which is how the tests open the demo.
+
+This is a privacy measure, not a password. The check runs in the visitor's
+browser and the site's code is public, so a determined person could read the
+demo's code, though not a working key. Nothing in the demo is secret: it is made
+up data. For hard protection, put Vercel password protection or an edge
+middleware check in front of `/demo`.
+
 ## How it works
 
 The demo is the normal app, unchanged, running against a fake backend that

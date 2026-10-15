@@ -4,8 +4,9 @@ import LandingPage from "./pages/LandingPage";
 import DemoEntry from "./pages/DemoEntry";
 import DemoGate from "./components/DemoGate";
 import DemoInstallSheet from "./components/DemoInstallSheet";
+import DemoClosed from "./components/DemoClosed";
 import ThemeScope from "./components/ThemeScope";
-import { isDemoMode, demoRoleFromPath } from "./lib/demo/mode";
+import { isDemoMode, isDemoAddress, demoRoleFromPath } from "./lib/demo/mode";
 
 // The about/privacy/terms subdomains already short-circuit inside App() to
 // their own standalone content, not the actual app - they should never show
@@ -59,6 +60,9 @@ export default function Root() {
     setShowApp(true);
   };
 
+  // The demo is private: a /demo address without a valid link key goes to the
+  // front page and none of the demo starts (see src/lib/demo/access.ts).
+  if (isDemoAddress() && !isDemoMode()) return <DemoClosed />;
   // The home-screen ask comes first, over everything, as soon as a demo link opens.
   if (isDemoMode() && !isDemoApp) return <><ThemeScope><DemoEntry /></ThemeScope><DemoInstallSheet /></>;
   if (isDemoApp) return <><DemoGate><App /></DemoGate><DemoInstallSheet /></>;

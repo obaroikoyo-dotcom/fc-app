@@ -6,6 +6,10 @@ import { test, expect, type Page } from "@playwright/test";
 
 test.use({ viewport: { width: 390, height: 844 } });
 
+// The demo only opens with a private link key. The dev server accepts this one
+// (the production build does not), so the tests need no real link.
+const KEY = "k=e2e-dev-key";
+
 type Tables = Record<string, Array<Record<string, any>>>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 async function openDemo(page: Page, role: "creator" | "brand") {
@@ -14,7 +18,7 @@ async function openDemo(page: Page, role: "creator" | "brand") {
   const knownNoise = /OneSignal|Can only be used on|SDK already initialized|googleapis|gstatic|stripe/i;
   page.on("request", r => { if (/supabase\.co|demo\.flipcollab\.invalid/.test(r.url())) leaks.push(r.url()); });
   page.on("pageerror", e => { if (!knownNoise.test(e.message)) errors.push(e.message); });
-  await page.goto(`/demo/${role}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`/demo/${role}?${KEY}`, { waitUntil: "domcontentloaded" });
   // A browser that offers to install shows the home-screen ask first: say no.
   await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
   await expect(page.getByText("You're looking at a demo")).toBeVisible({ timeout: 20_000 });
@@ -30,12 +34,52 @@ async function db(page: Page): Promise<Tables> {
 const myId = (page: Page) => page.evaluate(() => JSON.parse(sessionStorage.getItem("fc_demo_session") || "null").userId as string);
 
 test("the picker offers both sides and starts a fresh made-up profile", async ({ page }) => {
-  await page.goto("/demo", { waitUntil: "domcontentloaded" });
+  await page.goto(`/demo?${KEY}`, { waitUntil: "domcontentloaded" });
   await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
   await expect(page.getByText("Try the demo")).toBeVisible();
   await page.getByText("I'm a Creator", { exact: true }).click();
-  await expect(page).toHaveURL(/\/demo\/creator$/);
+  // the key travels with the link so a copied address still works for others
+  await expect(page).toHaveURL(/\/demo\/creator\?k=e2e-dev-key$/);
   await expect(page.getByText("Discover deals")).toBeVisible({ timeout: 20_000 });
+});
+
+test.describe("without the private link", () => {
+  for (const [name, path] of [
+    ["no key", "/demo"],
+    ["no key on a side", "/demo/brand"],
+    ["a wrong key", "/demo?k=not-the-key"],
+    ["an empty key", "/demo/creator?k="],
+  ] as const) {
+    test(`${name}: sent to the front page, nothing of the demo shown`, async ({ page }) => {
+      const leaks: string[] = [];
+      // the demo's backend (a separate chunk) must not even be downloaded
+      page.on("request", r => { if (/supabase\.co|demo\.flipcollab\.invalid|\/lib\/demo\/engine/.test(r.url())) leaks.push(r.url()); });
+      await page.goto(path, { waitUntil: "domcontentloaded" });
+      await expect(page).toHaveURL(/^[^?]*\/$/, { timeout: 10_000 });
+      await expect(page.getByText("Try the demo")).toHaveCount(0);
+      await expect(page.getByText("You're looking at a demo")).toHaveCount(0);
+      expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_session"))).toBeNull();
+      expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_key"))).toBeNull();
+      expect(leaks).toEqual([]);
+    });
+  }
+
+  test("a key that was good earlier in the tab stops working once it is no longer valid", async ({ page }) => {
+    await page.goto(`/demo?${KEY}`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Try the demo")).toBeVisible();
+    // Someone swaps in a wrong key by hand: the saved one must not carry it.
+    await page.evaluate(() => sessionStorage.setItem("fc_demo_key", "forged"));
+    await page.goto("/demo", { waitUntil: "domcontentloaded" });
+    await expect(page).toHaveURL(/^[^?]*\/$/, { timeout: 10_000 });
+    expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_key"))).toBeNull();
+  });
+
+  test("a valid key is remembered for the tab, so a reload without it still opens", async ({ page }) => {
+    await page.goto(`/demo?${KEY}`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Try the demo")).toBeVisible();
+    await page.goto("/demo", { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Try the demo")).toBeVisible();
+  });
 });
 
 test("creator: apply, get accepted, chat, deliver, get paid", async ({ page }) => {
@@ -119,7 +163,8 @@ test("signing out of the demo goes back to the picker and forgets the visitor", 
   await page.mouse.click(352, 35);
   await expect(page.getByText("Account Settings", { exact: true })).toBeVisible();
   await page.getByText("Sign Out", { exact: true }).click();
-  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page).toHaveURL(/\/demo\?k=e2e-dev-key$/);
+  await expect(page.getByText("Try the demo")).toBeVisible();
   expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_session"))).toBeNull();
 });
 
@@ -132,7 +177,7 @@ test.describe("on an iPhone", () => {
 
   test("the demo link opens with a big add-to-home-screen ask, once", async ({ page }) => {
     // Straight away on the picker, before choosing brand or creator.
-    await page.goto("/demo", { waitUntil: "domcontentloaded" });
+    await page.goto(`/demo?${KEY}`, { waitUntil: "domcontentloaded" });
     const ask = page.getByText("Add FlipCollab to your home screen");
     await expect(ask).toBeVisible({ timeout: 5_000 });
     await expect(page.getByText("Tap Add to Home Screen")).toBeVisible(); // the steps are on show
@@ -146,7 +191,7 @@ test.describe("on an iPhone", () => {
   });
 
   test("a direct /demo/brand link asks straight away too", async ({ page }) => {
-    await page.goto("/demo/brand", { waitUntil: "domcontentloaded" });
+    await page.goto(`/demo/brand?${KEY}`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Add FlipCollab to your home screen")).toBeVisible({ timeout: 5_000 });
   });
 });

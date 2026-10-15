@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { isDemoMode } from "./demo/mode";
 import { createDemoClient } from "./demo/client";
 import { endDemoSession } from "./demo/session";
+import { withDemoKey } from "./demo/access";
 
 const supabaseUrl = "https://otbcvpgtxxidgtbxgzpo.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im90YmN2cGd0eHhpZGd0YnhnenBvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxOTE5MDUsImV4cCI6MjA5Mzc2NzkwNX0.g4fE1nkcI8vQac0iahsiBsts46lxFD4IhAE4lrwYNBE";
@@ -52,7 +53,7 @@ export async function forceSignOut() {
   // The real session in this browser (if any) is never touched.
   if (isDemoMode()) {
     endDemoSession();
-    window.location.assign("/demo");
+    window.location.assign(withDemoKey("/demo"));
     return;
   }
   try {
