@@ -33,3 +33,13 @@ export async function triggerInstallPrompt(): Promise<boolean> {
   deferredPrompt = null;
   return choice.outcome === "accepted";
 }
+
+// True when FlipCollab is already running from the home screen (Android and
+// desktop report display-mode: standalone, iOS sets navigator.standalone).
+export function isRunningAsApp(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
+}

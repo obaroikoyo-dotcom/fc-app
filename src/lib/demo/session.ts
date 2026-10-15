@@ -9,6 +9,7 @@ import { demoRoleFromPath, type DemoRole } from "./mode";
 const SESSION_KEY = "fc_demo_session";
 const SNAPSHOT_KEY = "fc_demo_db";
 const NOTICE_KEY = "fc_demo_notice_seen";
+const INSTALL_KEY = "fc_demo_install_seen";
 
 export interface DemoSession {
   role: DemoRole;
@@ -73,6 +74,7 @@ export function startDemoSession(role: DemoRole): DemoSession {
   write(SESSION_KEY, JSON.stringify(session));
   remove(SNAPSHOT_KEY);
   remove(NOTICE_KEY);
+  remove(INSTALL_KEY);
   cached = session;
   return session;
 }
@@ -97,6 +99,7 @@ export function endDemoSession() {
   remove(SESSION_KEY);
   remove(SNAPSHOT_KEY);
   remove(NOTICE_KEY);
+  remove(INSTALL_KEY);
   cached = null;
 }
 
@@ -114,4 +117,12 @@ export function hasSeenNotice(): boolean {
 
 export function markNoticeSeen() {
   write(NOTICE_KEY, "1");
+}
+
+export function hasSeenInstallPrompt(): boolean {
+  return read(INSTALL_KEY) === "1";
+}
+
+export function markInstallPromptSeen() {
+  write(INSTALL_KEY, "1");
 }

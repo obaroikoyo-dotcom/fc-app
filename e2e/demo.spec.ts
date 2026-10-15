@@ -113,3 +113,22 @@ test("signing out of the demo goes back to the picker and forgets the visitor", 
   await expect(page).toHaveURL(/\/demo$/);
   expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_session"))).toBeNull();
 });
+
+test.describe("on an iPhone", () => {
+  test.use({
+    userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+    hasTouch: true,
+    isMobile: true,
+  });
+
+  test("the demo offers to add FlipCollab to the home screen, once", async ({ page }) => {
+    await openDemo(page, "creator"); // dismisses the demo notice
+    const prompt = page.getByText("Add FlipCollab to your home screen");
+    await expect(prompt).toBeVisible({ timeout: 20_000 });
+    await page.getByText("Show me how", { exact: true }).click();
+    await expect(page.getByText("Scroll down and tap Add to Home Screen.")).toBeVisible();
+    await page.getByText("Got it", { exact: true }).click();
+    await expect(prompt).toBeHidden();
+    expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_install_seen"))).toBe("1");
+  });
+});

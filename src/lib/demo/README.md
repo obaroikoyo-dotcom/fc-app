@@ -27,6 +27,10 @@ lives inside the visitor's browser tab.
 - `session.ts` keeps the visit (role, seed, and a saved copy of the data) in
   sessionStorage, so a reload carries on. Closing the tab ends it.
 - `realtime.ts` replaces Supabase Realtime (no websockets).
+- `DemoNotice` ("this is a demo") and `DemoInstallPrompt` (add to home screen, shown
+  once, a few seconds after the notice, on phones or where the browser offers
+  to install) live in `src/components`. The installed app opens the real
+  FlipCollab, not the demo.
 
 ## Rules
 
