@@ -193,6 +193,30 @@ function dateIn(now: number, days: number): string {
   return new Date(now + days * DAY).toISOString().slice(0, 10);
 }
 
+// A cover tile for a made-up post: the caption set in white on a flat tone, the
+// way a lot of real short-video covers look. Self-contained, nothing to host.
+const TILE_TONES = ["#5b6b7a", "#7a6a5b", "#5e7a6a", "#7a5b6a", "#66667a", "#7a735b", "#5b7a78", "#7a625b"];
+function postTile(caption: string, salt: string): string {
+  let h = 0;
+  const key = caption + salt;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0;
+  const tone = TILE_TONES[h % TILE_TONES.length];
+  const words = caption.split(" ");
+  const lines: string[] = [];
+  let line = "";
+  for (const w of words) {
+    if ((line + " " + w).trim().length > 10 && line) { lines.push(line); line = w; } else { line = (line + " " + w).trim(); }
+  }
+  if (line) lines.push(line);
+  const shown = lines.slice(0, 4);
+  const startY = 84 - (shown.length - 1) * 9;
+  const text = shown
+    .map((l, i) => `<text x="45" y="${startY + i * 18}" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" font-weight="700" fill="#f2f2f2">${l.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</text>`)
+    .join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 90 160"><rect width="90" height="160" fill="${tone}"/>${text}</svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 function slug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, ".").replace(/^\.+|\.+$/g, "");
 }
@@ -248,17 +272,21 @@ export function buildWorld(seed: number, userId: string, role: DemoRole, nowMs: 
       hashtags: [`#${niche.toLowerCase()}`, "#ugc", "#ukcreator"],
       created_at: isoAgo(nowMs, int(rng, 20, 160) * DAY),
     });
-    if (opts.own) {
-      // Connected account with a few featured posts so the profile looks lived in.
+    // Featured posts for every creator so profiles look lived in; the visitor
+    // also has the account connected.
+    {
       const platform = platforms.includes("TikTok") ? "tiktok" : "instagram";
       const label = platform === "tiktok" ? "TikTok" : "Instagram";
-      t.social_connections.push({ id: uuid(rng), user_id: id, platform, username: handle, follower_count: Number(followers[label] ?? 12000), connected_at: isoAgo(nowMs, 30 * DAY) });
+      const count = Number(followers[label] ?? 12000);
+      if (opts.own) {
+        t.social_connections.push({ id: uuid(rng), user_id: id, platform, username: handle, follower_count: count, connected_at: isoAgo(nowMs, 30 * DAY) });
+      }
       const captions = ["Morning routine, unedited", "What I actually use every day", "Trying this so you don't have to", "A realistic day in my week", "Honest first impressions"];
-      captions.forEach((caption, i) => {
+      captions.slice(0, opts.own ? 5 : 3).forEach((caption, i) => {
         t.social_posts_cache.push({
           id: uuid(rng), user_id: id, platform, post_id: `demo-${i}`, post_url: "https://flipcollab.com/demo",
-          thumbnail_url: null, caption, posted_at: isoAgo(nowMs, (i + 2) * 3 * DAY), featured: true, username: handle,
-          follower_count: Number(followers[label] ?? 12000),
+          thumbnail_url: postTile(caption, name), caption, posted_at: isoAgo(nowMs, (i + 2) * 3 * DAY), featured: true, username: handle,
+          follower_count: count,
         });
       });
     }

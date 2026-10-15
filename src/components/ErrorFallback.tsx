@@ -3,9 +3,10 @@
 export default function ErrorFallback() {
   let light = false;
   try {
-    light = localStorage.getItem("theme") === "inverted";
+    light = localStorage.getItem("theme") !== "normal";
   } catch {
-    // storage unavailable - fall back to the default dark look
+    // storage unavailable - fall back to the default (light) look
+    light = true;
   }
   const bg = light ? "#ffffff" : "#0a0a0a";
   const fg = light ? "#0a0a0a" : "#ffffff";

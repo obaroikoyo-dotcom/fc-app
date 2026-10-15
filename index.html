@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="theme-color" content="#ffffff" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="FlipCollab" />
     <meta name="description" content="FlipCollab is a creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns. Brands post campaigns and find creators who match their audience; creators discover and apply to collaborations that fit their content and goals." />
     <!-- Link previews (WhatsApp, iMessage, X, Facebook, LinkedIn, Slack...).
@@ -32,6 +32,21 @@
     <meta name="twitter:description" content="Post a campaign, apply to one, or just watch the deals happen - payment held securely until the work's delivered." />
     <meta name="twitter:image" content="https://flipcollab.com/og-image.jpg" />
     <title>FlipCollab</title>
+    <!-- Light is the default look: paint the page white from the first frame
+         instead of flashing the dark base colour. The app removes this once
+         it has set the real theme itself. -->
+    <script>
+      try {
+        if (localStorage.getItem("theme") !== "normal") {
+          var s = document.createElement("style");
+          s.id = "theme-boot";
+          s.textContent = "html,body{background:#ffffff !important}";
+          document.head.appendChild(s);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute("content", "#ffffff");
+        }
+      } catch (e) {}
+    </script>
     <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js" async defer></script>

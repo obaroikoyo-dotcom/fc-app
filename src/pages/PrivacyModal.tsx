@@ -125,13 +125,13 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Trusted Partners We Work With</span>
             <span>FlipCollab runs on a small number of established, reputable service providers, each of which only receives the data they need to do their job:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "#fff" }}>Supabase</strong> — our database and account sign-in</li>
-              <li><strong style={{ color: "#fff" }}>Stripe</strong> — payments and creator payouts, a global leader in payment security</li>
-              <li><strong style={{ color: "#fff" }}>Vercel</strong> — hosting the app</li>
-              <li><strong style={{ color: "#fff" }}>Cloudflare</strong> — storing the photos and videos you upload</li>
-              <li><strong style={{ color: "#fff" }}>OneSignal</strong> — push notifications</li>
-              <li><strong style={{ color: "#fff" }}>LocationIQ</strong> — location search and address checking</li>
-              <li><strong style={{ color: "#fff" }}>Sentry</strong> — error monitoring, so we can find and fix crashes</li>
+              <li><strong style={{ color: "#fff" }}>Supabase</strong>: our database and account sign-in</li>
+              <li><strong style={{ color: "#fff" }}>Stripe</strong>: payments and creator payouts, a global leader in payment security</li>
+              <li><strong style={{ color: "#fff" }}>Vercel</strong>: hosting the app</li>
+              <li><strong style={{ color: "#fff" }}>Cloudflare</strong>: storing the photos and videos you upload</li>
+              <li><strong style={{ color: "#fff" }}>OneSignal</strong>: push notifications</li>
+              <li><strong style={{ color: "#fff" }}>LocationIQ</strong>: location search and address checking</li>
+              <li><strong style={{ color: "#fff" }}>Sentry</strong>: error monitoring, so we can find and fix crashes</li>
             </ul>
             <span style={{ display: "block", marginTop: "8px" }}>We don't sell your data to anyone, for any reason.</span>
           </div>

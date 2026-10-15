@@ -319,7 +319,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
         <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px 0" }}>Do's</p>
         {campaign.dos.filter(d => d).map((d, i) => (
-          <p key={i} style={{ fontSize: "12px", color: "#aaa", margin: "0 0 4px 0", lineHeight: 1.5 }}>— {d}</p>
+          <p key={i} style={{ fontSize: "12px", color: "#aaa", margin: "0 0 4px 0", lineHeight: 1.5 }}>• {d}</p>
         ))}
       </div>
     )}
@@ -327,7 +327,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
       <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
         <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px 0" }}>Don'ts</p>
         {campaign.donts.filter(d => d).map((d, i) => (
-          <p key={i} style={{ fontSize: "12px", color: "#aaa", margin: "0 0 4px 0", lineHeight: 1.5 }}>— {d}</p>
+          <p key={i} style={{ fontSize: "12px", color: "#aaa", margin: "0 0 4px 0", lineHeight: 1.5 }}>• {d}</p>
         ))}
       </div>
     )}

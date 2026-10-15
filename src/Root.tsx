@@ -4,6 +4,7 @@ import LandingPage from "./pages/LandingPage";
 import DemoEntry from "./pages/DemoEntry";
 import DemoGate from "./components/DemoGate";
 import DemoInstallSheet from "./components/DemoInstallSheet";
+import ThemeScope from "./components/ThemeScope";
 import { isDemoMode, demoRoleFromPath } from "./lib/demo/mode";
 
 // The about/privacy/terms subdomains already short-circuit inside App() to
@@ -59,7 +60,7 @@ export default function Root() {
   };
 
   // The home-screen ask comes first, over everything, as soon as a demo link opens.
-  if (isDemoMode() && !isDemoApp) return <><DemoEntry /><DemoInstallSheet /></>;
+  if (isDemoMode() && !isDemoApp) return <><ThemeScope><DemoEntry /></ThemeScope><DemoInstallSheet /></>;
   if (isDemoApp) return <><DemoGate><App /></DemoGate><DemoInstallSheet /></>;
   if (!showApp) return <LandingPage onLaunch={launch} />;
   return <App />;

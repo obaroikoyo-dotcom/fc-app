@@ -72,12 +72,12 @@ function CustomDropdown({ value, onChange, options, placeholder }: {
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ position: "relative", flex: 1 }}>
+    <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
       <div
         onClick={() => setOpen(p => !p)}
         style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
       >
-        <span>{value || placeholder}</span>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value || placeholder}</span>
         <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
       </div>
       {open && (
@@ -257,15 +257,13 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         </div>
 
         {/* Filters */}
-        <div style={{ padding: "1rem 1.25rem 0", display: "flex", gap: "8px" }}>
-          <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
-          <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
-        </div>
-        <div style={{ padding: "0.75rem 1.25rem 1rem" }}>
+        <div style={{ padding: "0.9rem 1.25rem 1rem", display: "flex", gap: "8px" }}>
+          <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="Niche" />
+          <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="Platform" />
           <CustomDropdown
-            value={sortBy === "budget" ? "Highest Budget" : "Newest"}
-            onChange={v => setSortBy(v === "Highest Budget" ? "budget" : "newest")}
-            options={["Newest", "Highest Budget"]}
+            value={sortBy === "budget" ? "Highest pay" : "Newest"}
+            onChange={v => setSortBy(v === "Highest pay" ? "budget" : "newest")}
+            options={["Newest", "Highest pay"]}
             placeholder="Sort"
           />
         </div>
@@ -296,13 +294,26 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             ))}
           </div>
         ) : !hasLoadedOnce && loading ? null : filteredCampaigns.length === 0 ? (
-          <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
-            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "6px" }}>
-              {feedTab === "discover" ? "No new offers active" : "No pitches sent yet"}
+          <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "2.75rem 1.75rem", textAlign: "center", marginTop: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "6px" }}>
+              <circle cx="12" cy="12" r="9" stroke="#919191" strokeWidth="1.6" />
+              <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" stroke="#919191" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+              {feedTab === "pitches" ? "No pitches yet" : selectedNiche || selectedPlatform ? "Nothing matches those filters" : "No campaigns right now"}
             </p>
-            <p style={{ fontSize: "12px", color: "#888", maxWidth: "260px", margin: "0 auto" }}>
-              {feedTab === "discover" ? "Try loosening your search filters up top." : "Opportunities you apply to will show up right here."}
+            <p style={{ margin: 0, fontSize: "14px", color: "#999", lineHeight: 1.5, maxWidth: "280px" }}>
+              {feedTab === "pitches"
+                ? "When you apply to a campaign, you can follow it here."
+                : selectedNiche || selectedPlatform
+                  ? "Try a different niche or platform."
+                  : "New campaigns from brands show up here as soon as they're posted."}
             </p>
+            {feedTab === "pitches" ? (
+              <div onClick={() => setFeedTab("discover")} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Browse campaigns</div>
+            ) : (selectedNiche || selectedPlatform) ? (
+              <div onClick={() => { setSelectedNiche(""); setSelectedPlatform(""); }} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Clear filters</div>
+            ) : null}
           </div>
         ) : (
           filteredCampaigns.map((c, i) => {
@@ -310,83 +321,84 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             const brandIsEnterprise = (c.brand_profiles as any)?.is_enterprise;
             const netCreatorPayout = brandIsEnterprise ? baseBudgetVal : baseBudgetVal * 0.90;
 
+            const paid = c.type === "paid" && !!baseBudgetVal;
+            const brandName = c.brand_profiles?.name || "Brand";
+
             return (
-              <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div
-                      onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
-                      style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", cursor: "pointer" }}
-                    >
+              <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1.1rem" }}>
+                {/* Who is offering it */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "14px" }}>
+                  <div
+                    onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
+                    style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", minWidth: 0 }}
+                  >
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0 }}>
                       <img src={avatarSrc(c.brand_profiles?.avatar_url, c.brand_profiles?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
-                    <div>
-                      <p style={{ display: "flex", alignItems: "center", gap: "4px", color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>
-                        {c.brand_profiles?.name || "Brand"}
-                        {c.brand_profiles?.verified && <VerifiedBadge size={12} />}
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 700, lineHeight: 1.2 }}>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{brandName}</span>
+                        {c.brand_profiles?.verified && <VerifiedBadge size={13} />}
                       </p>
-                      <p style={{ color: "#888", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>
+                      <p style={{ margin: 0, color: "#999", fontSize: "12px", marginTop: "2px" }}>{c.niche}</p>
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"}>
-                        <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#444"} strokeWidth="2" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                    <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #222", color: "#aaa", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>
-                      {c.type}
-                    </span>
+                  <div
+                    onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }}
+                    style={{ cursor: "pointer", display: "flex", alignItems: "center", padding: "8px", margin: "-8px", flexShrink: 0 }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"}>
+                      <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#919191"} strokeWidth="2" strokeLinejoin="round" />
+                    </svg>
                   </div>
                 </div>
 
-                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
-
-                <div style={{ display: "flex", gap: "14px", fontSize: "11px", color: "#888", marginBottom: "12px" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                    <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Posted:</span>
-                    <span style={{ color: "#aaa" }}>{formatRelativeTime(c.created_at, now)}</span>
-                  </span>
+                {/* What it is, and when */}
+                <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "19px", fontWeight: 800, lineHeight: 1.25, color: "#fff", marginBottom: "8px" }}>{c.name}</p>
+                <p style={{ margin: 0, fontSize: "13px", color: "#999", marginBottom: "12px" }}>
+                  Posted {formatRelativeTime(c.created_at, now)}
                   {c.deadline && (
-                    <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                      <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Deadline:</span>
-                      <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline)}</span>
-                    </span>
+                    <>
+                      <span style={{ margin: "0 7px" }}>·</span>
+                      Due <span style={{ color: "#fff", fontWeight: 600 }}>{formatDeadline(c.deadline)}</span>
+                    </>
                   )}
-                </div>
+                </p>
 
                 {c.platforms && c.platforms.length > 0 && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "14px" }}>
                     {c.platforms.map((p: string) => (
-                      <span key={p} style={{ fontSize: "10px", padding: "2px 8px", border: "1px solid #1f1f1f", borderRadius: "20px", color: "#999", background: "#0d0d0d" }}>{p}</span>
+                      <span key={p} style={{ fontSize: "12px", padding: "4px 10px", border: "1px solid #222", borderRadius: "20px", color: "#bbb", background: "#0d0d0d" }}>{p}</span>
                     ))}
                   </div>
                 )}
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
+                {/* What you get, and the way in */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderTop: "1px solid #1a1a1a", paddingTop: "14px" }}>
                   <div>
-                    {c.type === "paid" && baseBudgetVal ? (
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {brandIsEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                        <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif" }}>£{netCreatorPayout.toLocaleString()}</span>
-                      </div>
+                    {paid ? (
+                      <>
+                        <p style={{ margin: 0, fontSize: "12px", color: "#999", marginBottom: "2px" }}>You'd earn</p>
+                        <p style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{netCreatorPayout.toLocaleString()}</p>
+                        <p style={{ margin: 0, fontSize: "11px", color: "#999", marginTop: "3px" }}>{brandIsEnterprise ? "No platform fee" : "After the 10% platform fee"}</p>
+                      </>
                     ) : (
-                      <div style={{ display: "flex", flexDirection: "column" }}>
-                        <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                        <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", textTransform: "uppercase" }}>Gifted</span>
-                      </div>
+                      <>
+                        <p style={{ margin: 0, fontSize: "12px", color: "#999", marginBottom: "2px" }}>Reward</p>
+                        <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.2 }}>Gifted product</p>
+                      </>
                     )}
                   </div>
 
                   {c.my_application ? (
-                    <div style={{ padding: "5px 12px", borderRadius: "6px", background: "#111", border: "1px solid #262626", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", ...getStatusStyle(c.my_application.status) }}>
+                    <div style={{ padding: "9px 14px", borderRadius: "10px", background: "#111", border: "1px solid #262626", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0, ...getStatusStyle(c.my_application.status) }}>
                       {c.my_application.status}
                     </div>
                   ) : (
                     <div
                       onClick={() => navigateToApply && navigateToApply(c.id)}
-                      style={{ padding: "7px 16px", background: "#fff", color: "#0a0a0a", border: "1px solid #fff", borderRadius: "6px", fontSize: "11px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                      style={{ padding: "13px 26px", background: "#fff", color: "#0a0a0a", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
                     >
                       Apply
                     </div>

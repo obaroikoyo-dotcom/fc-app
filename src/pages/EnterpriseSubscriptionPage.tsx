@@ -165,7 +165,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
       </div>
       {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
       <div className="tap-btn" onClick={!paymentLoading ? handlePayment : undefined} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "#1a1a1a" : "#fff", color: paymentLoading ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
-        {paymentLoading ? "Processing..." : `Confirm — ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
+        {paymentLoading ? "Processing..." : `Confirm ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
       </div>
       <p style={{ fontSize: "11px", color: "#777", textAlign: "center", marginTop: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -329,7 +329,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
           <div className="tap-btn" onClick={() => setShowModal(true)} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
   Upgrade to Enterprise
 </div>
-          <p style={{ fontSize: "11px", color: "#777", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime — takes effect at the end of your current billing period.</p>
+          <p style={{ fontSize: "11px", color: "#777", marginTop: "10px", textAlign: "center" }}> Secured by Stripe. Cancel anytime. It takes effect at the end of your current billing period.</p>
           <p style={{ fontSize: "11px", color: "#777", marginTop: "6px", textAlign: "center" }}>Plan cannot be changed after subscribing. Cancel and resubscribe to switch.</p>
         </div>
 

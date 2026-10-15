@@ -42,7 +42,13 @@ test("creator: apply, get accepted, chat, deliver, get paid", async ({ page }) =
   const { leaks, errors } = await openDemo(page, "creator");
   const uid = await myId(page);
 
-  await page.getByText("Apply", { exact: true }).first().click();
+  // Apply to a campaign from a brand the visitor has no deal with yet, so the new
+  // chat is its own thread and the funded deal further down is left alone.
+  const before = await db(page);
+  const dealBrands = new Set(before.applications.filter(a => a.creator_id === uid).map(a => before.campaigns.find(c => c.id === a.campaign_id)?.brand_id));
+  const appliedTo = new Set(before.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+  const target = before.campaigns.find(c => !c.is_draft && !appliedTo.has(c.id) && !dealBrands.has(c.brand_id))!;
+  await page.locator(".item-enter", { has: page.getByText(target.name, { exact: true }) }).getByText("Apply", { exact: true }).click();
   await page.getByPlaceholder(/Introduce yourself/i).fill("Hi, I would love to make this for you.");
   await page.getByText(/TikTok Video|IG Reel|IG Story|YouTube Short/).last().click();
   // some campaigns ask for a video pitch: attach the sample clip

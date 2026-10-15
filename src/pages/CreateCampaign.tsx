@@ -405,7 +405,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
         <div style={{ marginBottom: "12px" }}>
           <label style={lbl}>Campaign title</label>
-          <input style={inp} placeholder="e.g. Summer drop launch — June 2026" value={name} onChange={e => setName(e.target.value)} />
+          <input style={inp} placeholder="e.g. Summer drop launch, June 2026" value={name} onChange={e => setName(e.target.value)} />
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>

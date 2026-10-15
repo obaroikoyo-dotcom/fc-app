@@ -346,7 +346,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     key={c.id}
                     className="item-enter"
                     onClick={isPreviewable ? () => navigateToCampaignPreview && navigateToCampaignPreview(c.id) : undefined}
-                    style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "12px", padding: "1rem", cursor: isPreviewable ? "pointer" : "default" }}
+                    style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "16px", padding: "1.1rem", cursor: isPreviewable ? "pointer" : "default" }}
                   >
 
                     {/* Header Row */}
@@ -355,15 +355,15 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         onClick={(e) => { e.stopPropagation(); isOwn ? navigate("brand-profile") : navigateToProfile && navigateToProfile(c.brand_id); }}
                         style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
                       >
-                        <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
+                        <div style={{ width: "40px", height: "40px", borderRadius: "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#777", flexShrink: 0 }}>
                           <img src={avatarSrc(brandLogo, brandName)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
                         <div>
-                          <p style={{ display: "flex", alignItems: "center", gap: "4px", color: "#fff", fontSize: "13px", fontWeight: 600, lineHeight: 1 }}>
+                          <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 700, lineHeight: 1.2 }}>
                             {brandName || "Brand"}
                             {brandVerified && <VerifiedBadge size={12} />}
                           </p>
-                          {c.niche && <p style={{ color: "#888", fontSize: "11px", marginTop: "3px" }}>{c.niche}</p>}
+                          {c.niche && <p style={{ margin: "2px 0 0", color: "#999", fontSize: "12px" }}>{c.niche}</p>}
                         </div>
                       </div>
 
@@ -418,7 +418,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>{c.name}</p>
+                      <p style={{ margin: "0 0 8px", fontFamily: "'TikTok Sans', sans-serif", fontSize: "19px", fontWeight: 800, lineHeight: 1.25, color: "#fff" }}>{c.name}</p>
                       {c.video_required && (
                         <span style={{ flexShrink: 0, fontSize: "10px", color: "#999", background: "#111", border: "1px solid #222", padding: "3px 8px", borderRadius: "4px", fontWeight: 500, letterSpacing: "0.04em" }}>
                           Video Pitch Required
@@ -426,22 +426,19 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                       )}
                     </div>
 
-                    <div style={{ display: "flex", gap: "14px", flexWrap: "wrap", fontSize: "11px", color: "#888", marginBottom: "12px" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                        <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Posted:</span>
-                        <span style={{ color: "#aaa" }}>{formatRelativeTime(c.created_at, now)}</span>
-                      </span>
+                    <p style={{ margin: "0 0 12px", fontSize: "13px", color: "#999" }}>
+                      Posted {formatRelativeTime(c.created_at, now)}
                       {c.deadline && (
-                        <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                          <span style={{ textTransform: "uppercase", fontSize: "9px", letterSpacing: "0.03em", color: "#777", fontWeight: 500 }}>Deadline:</span>
-                          <span style={{ color: "#fff", fontWeight: 500 }}>{formatDeadline(c.deadline)}</span>
-                        </span>
+                        <>
+                          <span style={{ margin: "0 7px" }}>·</span>
+                          Due <span style={{ color: "#fff", fontWeight: 600 }}>{formatDeadline(c.deadline)}</span>
+                        </>
                       )}
-                    </div>
+                    </p>
 
                     {c.platforms?.length > 0 && (
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
-                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "10px", padding: "2px 8px", border: "1px solid #1f1f1f", borderRadius: "20px", color: "#999", background: "#0d0d0d" }}>{p}</span>)}
+                        {c.platforms.map((p: string) => <span key={p} style={{ fontSize: "12px", padding: "4px 10px", border: "1px solid #222", borderRadius: "20px", color: "#bbb", background: "#0d0d0d" }}>{p}</span>)}
                       </div>
                     )}
 
@@ -453,29 +450,29 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     )}
 
                     {/* Bottom Row */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #161616", paddingTop: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderTop: "1px solid #1a1a1a", paddingTop: "14px" }}>
                       {isPreviewable ? (
                         // Matches Explore.tsx's creator-facing card exactly, since
                         // this is what a creator would actually see for this campaign.
                         c.type === "paid" && budgetVal ? (
                           <div style={{ display: "flex", flexDirection: "column" }}>
-                            <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Your Net Payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                            <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif" }}>£{creatorNetPayout.toLocaleString()}</span>
+                            <span style={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>Your Net Payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
+                            <span style={{ fontSize: "24px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.15 }}>£{creatorNetPayout.toLocaleString()}</span>
                           </div>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column" }}>
-                            <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", textTransform: "uppercase" }}>Gifted</span>
+                            <span style={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>Reward</span>
+                            <span style={{ fontSize: "20px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.2 }}>Gifted product</span>
                           </div>
                         )
                       ) : c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Base Budget</span>
-                          <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>
+                          <span style={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>Base Budget</span>
+                          <span style={{ fontSize: "24px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.15 }}>
                             £{budgetVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           {isOwn && (
-                            <span style={{ fontSize: "10px", color: "#aaa", marginTop: "4px", lineHeight: 1.3 }}>
+                            <span style={{ fontSize: "12px", color: "#999", marginTop: "6px", lineHeight: 1.5 }}>
                               {isEnterprise
                                 ? <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (0% platform fee + 2.5% + 20p card processing)</>
                                 : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (+5% fee)</>
@@ -487,16 +484,16 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         </div>
                       ) : (
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 500 }}>Reward</span>
-                          <span style={{ fontSize: "13px", fontWeight: 700, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1, textTransform: "uppercase" }}>Gifted</span>
+                          <span style={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>Reward</span>
+                          <span style={{ fontSize: "20px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.2 }}>Gifted product</span>
                         </div>
                       )}
                       {isPreviewable ? (
-                        <div style={{ padding: "7px 16px", border: "1px solid #222", borderRadius: "6px", fontSize: "11px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", color: "#aaa" }}>
+                        <div style={{ padding: "10px 16px", border: "1px solid #222", borderRadius: "10px", fontSize: "13px", fontWeight: 600, color: "#bbb" }}>
                           {appCount} application{appCount !== 1 ? "s" : ""}
                         </div>
                       ) : (
-                        <div style={{ fontSize: "11px", color: "#aaa", fontWeight: 600, letterSpacing: "0.02em", textTransform: "uppercase" }}>
+                        <div style={{ fontSize: "13px", color: "#bbb", fontWeight: 600 }}>
                           {appCount} application{appCount !== 1 ? "s" : ""}
                         </div>
                       )}

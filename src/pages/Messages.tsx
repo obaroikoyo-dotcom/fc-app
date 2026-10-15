@@ -503,7 +503,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       )}
 
       {payoutsEnabled === false && (
-        <p style={{ fontSize: "11px", color: "#999", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet — funds will be held in escrow until they do.</p>
+        <p style={{ fontSize: "11px", color: "#999", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet. Funds will be held in escrow until they do.</p>
       )}
 
       {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
@@ -997,7 +997,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // release, or instant) - always show the confirmation rather
             // than re-deriving it from myPost, which can be null for
             // deals released a way that never touched TikTok at all.
-            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? " — post confirmed live." : "."}</p>
+            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? ". The post is confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
             <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.5 }}>
               {!platform
@@ -1015,7 +1015,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           ) : myPost.status === "processing" ? (
             <p style={{ fontSize: "11px", color: "#999" }}>Posting to {platform}... this can take a minute.</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted — payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
+            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted. Payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -2260,7 +2260,7 @@ return (
         {view === "chat" && activeConvo && chatReportOpen && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
           <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
             {chatReportSubmitted ? (
-              <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
+              <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
             ) : (
               <>
                 <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {activeConvo.other_name}</p>
@@ -2412,7 +2412,7 @@ return (
           {reportOpen && !blockedIds.includes(activeApplication.creator_id) && (
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
               {reportSubmitted ? (
-                <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
+                <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
               ) : (
                 <>
                   <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report this application</p>
@@ -2597,12 +2597,12 @@ return (
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", flexShrink: 0 }}>
                   {activeConvo.application_status === "paid" ? (
                     <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#ccc", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
-                      <CheckIcon /> Deal Locked — Paid
+                      <CheckIcon /> Deal Locked: Paid
                     </span>
                   ) : activeConvo.application_status === "funded" ? (
                     <>
                       <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
-                        Funded — Awaiting Delivery
+                        Funded: Awaiting Delivery
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         Once the video is in, tell us if you're happy with it. You have 5 days - if you don't respond, the payment is released to the creator automatically.
@@ -2631,13 +2631,13 @@ return (
                         Application Screened Out
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
-                        The brand decided to pass on this specific campaign brief. Keep your head up! Landing the right brand partnerships takes time—keep refining your pitch and the right match will click.
+                        The brand decided to pass on this specific campaign brief. Keep your head up! Landing the right brand partnerships takes time. Keep refining your pitch and the right match will click.
                       </p>
                     </>
                   ) : activeConvo.application_status === "funded" ? (
                     <>
                       <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
-                        Funded — Deliver to Get Paid
+                        Funded: Deliver to Get Paid
                       </span>
                       <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         {deliveryPlatformFor(activeConvo.campaign_platforms?.[0])
@@ -2828,7 +2828,7 @@ return (
                       )}
                       {m.text && !m.deleted_at && !m.media_expired_at && editingMessageId !== m.id && <p style={{ padding: (m.video_url || m.image_url) ? "8px 6px 0" : 0 }}>{m.text}</p>}
                       {!m.deleted_at && editingMessageId !== m.id && (
-                        <p style={{ fontSize: "10px", color: mine ? "#888" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
+                        <p style={{ fontSize: "10px", color: mine ? "#5a5a5a" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
                           {m.edited_at && <span style={{ fontStyle: "italic", marginRight: "4px" }}>edited</span>}
                           {parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>
@@ -2888,7 +2888,7 @@ return (
           <div ref={inputBarRef} style={{ position: "fixed", bottom: "3.05rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
-                <NoEntryIcon /> You've blocked this user — unblock in Settings to message
+                <NoEntryIcon /> You've blocked this user. Unblock them in Settings to message
               </div>
             ) : blockedByIds.includes(otherParticipantId(activeConvo) || "") ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#888", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>

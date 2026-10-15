@@ -34,6 +34,7 @@ import { peekGoogleLoginIntent, clearGoogleLoginIntent, peekAppleLoginIntent, cl
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
 import { autoRequestPush, subscribeToPush, isPushEnabled, isIOSDevice } from "./lib/push";
 import { isDemoMode } from "./lib/demo/mode";
+import { isLightTheme, saveLightTheme, LIGHT_FILTER, UNDO_LIGHT_FILTER } from "./lib/theme";
 import DemoNotice from "./components/DemoNotice";
 
 
@@ -79,7 +80,7 @@ interface NavProps {
 
 function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
-  const inactiveColor = isInverted ? "#a3a3a3" : "#444";
+  const inactiveColor = isInverted ? "#6f6f6f" : "#8a8a8a";
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
@@ -102,7 +103,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
       </div>
 
       <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", display: "flex" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
               stroke={page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
@@ -135,7 +136,7 @@ interface BrandNavProps extends NavProps {
 
 function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted, unreadCount = 0 }: BrandNavProps) {
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
-  const inactiveColor = isInverted ? "#a3a3a3" : "#444";
+  const inactiveColor = isInverted ? "#6f6f6f" : "#8a8a8a";
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
   const borderColor = isInverted ? "#e5e5e5" : "#111";
 
@@ -166,7 +167,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
       </div>
 
       <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", display: "flex" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z"
               stroke={messagesActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
@@ -289,14 +290,14 @@ export default function App() {
     }
   };
 
-  const [isInverted, setIsInverted] = useState<boolean>(() => {  
-    return localStorage.getItem("theme") === "inverted";
-  });
+  // "Inverted" is the light look (the dark palette through a colour filter).
+  // Light is the default; see src/lib/theme.ts.
+  const [isInverted, setIsInverted] = useState<boolean>(() => isLightTheme());
 
   const toggleTheme = () => {
     setIsInverted(prev => {
       const next = !prev;
-      localStorage.setItem("theme", next ? "inverted" : "normal");
+      saveLightTheme(next);
       return next;
     });
   };
@@ -311,7 +312,10 @@ export default function App() {
   // with the theme so that sliver matches instead of showing through
   // as a stray black band.
   useEffect(() => {
+    document.getElementById("theme-boot")?.remove();
     document.body.style.background = isInverted ? "#ffffff" : "#0a0a0a";
+    // Phone browser bars follow the theme too.
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isInverted ? "#ffffff" : "#0a0a0a");
   }, [isInverted]);
 
   const navigate = (p: Page) => {
@@ -703,9 +707,9 @@ case "brand-campaign-preview":
   };
 
   return (
-    <div className="app-shell" style={{ filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "filter 0.2s ease", overflow: "hidden" }}>
+    <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", transition: "filter 0.2s ease", overflow: "hidden" }}>
       <style>{`
-  ${isInverted ? `img { filter: invert(1) hue-rotate(180deg); } img.no-reinvert { filter: none; } svg.verified-badge, svg.google-icon, svg.tiktok-icon, svg.instagram-icon, .true-color { filter: invert(1) hue-rotate(180deg); }` : ""}
+  ${isInverted ? `img, video, [style*="background-image"] { filter: ${UNDO_LIGHT_FILTER}; } img.no-reinvert { filter: none; } svg.verified-badge, svg.google-icon, svg.tiktok-icon, svg.instagram-icon, .true-color { filter: ${UNDO_LIGHT_FILTER}; }` : ""}
   @keyframes pageEnter {
   from { opacity: 0; transform: translateX(18px); }
   to { opacity: 1; transform: translateX(0); }

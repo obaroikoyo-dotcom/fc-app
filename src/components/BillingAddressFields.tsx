@@ -11,7 +11,7 @@ export default function BillingAddressFields({ addr }: { addr: BillingAddress })
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       <div style={{ position: "relative" }}>
-        <label style={fieldLabel}>Address Line 1 <span style={{ color: "#777", textTransform: "none", letterSpacing: 0 }}>— start typing to search</span></label>
+        <label style={fieldLabel}>Address Line 1 <span style={{ color: "#777", textTransform: "none", letterSpacing: 0 }}>(start typing to search)</span></label>
         <input
           value={addr.line1}
           onChange={e => addr.setLine1(e.target.value)}

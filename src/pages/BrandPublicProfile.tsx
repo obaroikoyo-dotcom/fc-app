@@ -352,7 +352,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       ) : reportOpen && (
         <div style={{ position: "fixed", top: "calc(57px + env(safe-area-inset-top, 0px))", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
           {reportSubmitted ? (
-            <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks — we'll review it.</p>
+            <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
           ) : (
             <>
               <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {brand.name || "this profile"}</p>
@@ -421,7 +421,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
 
         {showReadOnlyNotice && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", marginBottom: "2rem" }}>
-            <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>This is a read-only view — sign up to message this brand.</p>
+            <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>This is a read-only view. Sign up to message this brand.</p>
             <div onClick={() => navigate("role-select")} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: "6px", background: "#fff", color: "#0a0a0a", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Sign Up
             </div>

@@ -106,3 +106,54 @@ html, body {
 }
 h1, h2, h3 { text-wrap: balance; }
 p { text-wrap: pretty; }
+
+/* ---- Readability --------------------------------------------------------
+   The app's dimmest text greys (#333 to #888) were fine on a bright screen
+   in a dim room and unreadable anywhere else, and on the light look they
+   come out nearly white. They all become one comfortable mid grey. Only the
+   text colour is touched (the selectors anchor on "color:" so a background
+   or border of the same grey is left alone). */
+[style^="color: rgb(51, 51, 51)"],
+[style*="; color: rgb(51, 51, 51)"],
+[style^="color: rgb(68, 68, 68)"],
+[style*="; color: rgb(68, 68, 68)"],
+[style^="color: rgb(85, 85, 85)"],
+[style*="; color: rgb(85, 85, 85)"],
+[style^="color: rgb(102, 102, 102)"],
+[style*="; color: rgb(102, 102, 102)"],
+[style^="color: rgb(119, 119, 119)"],
+[style*="; color: rgb(119, 119, 119)"],
+[style^="color: rgb(136, 136, 136)"],
+[style*="; color: rgb(136, 136, 136)"] {
+  color: #919191 !important;
+}
+[stroke="#333"], [stroke="#444"], [stroke="#555"], [stroke="#666"], [stroke="#777"], [stroke="#888"] { stroke: #919191; }
+[fill="#333"], [fill="#444"], [fill="#555"], [fill="#666"], [fill="#777"], [fill="#888"] { fill: #919191; }
+
+/* ---- Light look: colours the filter would wash out ----------------------
+   The light look is the dark palette run through a colour filter. Greens,
+   oranges and blues come out well, but a red comes out salmon and a gold
+   comes out brown. Reds are passed through the filter's exact opposite first
+   so they land as a clear red; gold uses the base colour that the filter
+   turns into the nearest amber it can reach. */
+.theme-light [style^="color: rgb(255, 59, 48)"],
+.theme-light [style*="; color: rgb(255, 59, 48)"],
+.theme-light [style^="color: rgb(255, 68, 68)"],
+.theme-light [style*="; color: rgb(255, 68, 68)"],
+.theme-light [style^="color: rgb(255, 77, 77)"],
+.theme-light [style*="; color: rgb(255, 77, 77)"] {
+  color: #e5322d !important;
+  filter: brightness(0.957) hue-rotate(180deg) invert(1);
+}
+.theme-light [style^="background: rgb(255, 59, 48)"],
+.theme-light [style*="; background: rgb(255, 59, 48)"],
+.theme-light [style^="background: rgb(255, 68, 68)"],
+.theme-light [style*="; background: rgb(255, 68, 68)"],
+.theme-light [style^="background: rgb(255, 77, 77)"],
+.theme-light [style*="; background: rgb(255, 77, 77)"] {
+  filter: brightness(0.957) hue-rotate(180deg) invert(1);
+}
+.theme-light [style^="color: rgb(255, 184, 0)"],
+.theme-light [style*="; color: rgb(255, 184, 0)"] {
+  color: #be6e00 !important;
+}

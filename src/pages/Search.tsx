@@ -88,6 +88,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
   const [followers, setFollowers] = usePersistedState("fc_search_followers", "");
   const [sortBy, setSortBy] = usePersistedState("fc_search_sortby", "");
   const [visibleCount, setVisibleCount] = useState(10);
+  const [showFilters, setShowFilters] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useState(210);
   const scrollRef = useScrollRestoration("fc_search_scroll", !loading);
@@ -176,6 +177,8 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
   // everything past visibleCount is already computed, just not rendered yet,
   // so "Load More" reveals instantly with no fetch/recompute.
   const filtered = filteredAll.slice(0, visibleCount);
+  const activeFilterCount = [niche, followers, sortBy].filter(Boolean).length;
+  const clearFilters = () => { setQuery(""); setFilter("all"); setNiche(""); setFollowers(""); setSortBy(""); };
   useEffect(() => { setVisibleCount(10); }, [query, filter, niche, followers, sortBy]);
 
   return (
@@ -188,25 +191,36 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
           <input style={UI.input} placeholder={filter === "creators" ? "Search creators..." : "Search brands..."} value={query} onChange={e => setQuery(e.target.value)} />
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "14px" }}>
-          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
             {(["all", "creators", "brands"] as const).map(f => (
               <div key={f} onClick={() => setFilter(f)} style={UI.chip(filter === f)}>{f.toUpperCase()}</div>
             ))}
+            <div
+              onClick={() => setShowFilters(v => !v)}
+              style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "6px", padding: "7px 4px", fontSize: "13px", fontWeight: 600, color: showFilters || activeFilterCount > 0 ? "#fff" : "#999", cursor: "pointer" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="16" cy="7" r="2" stroke="currentColor" strokeWidth="2" />
+                <circle cx="8" cy="17" r="2" stroke="currentColor" strokeWidth="2" />
+              </svg>
+              Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            </div>
           </div>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <CustomDropdown value={niche} onChange={setNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
-            {filter !== "brands" && (
-              <CustomDropdown value={followers} onChange={setFollowers} options={["0-10k", "10k-50k", "50k-100k", "100k-1m", "1m+"]} placeholder="Any Followers" />
-            )}
-          </div>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <CustomDropdown
-              value={sortBy === "followers" ? "Most Followers" : sortBy === "name" ? "Name A-Z" : ""}
-              onChange={v => setSortBy(v === "Most Followers" ? "followers" : v === "Name A-Z" ? "name" : "")}
-              options={filter !== "brands" ? ["Most Followers", "Name A-Z"] : ["Name A-Z"]}
-              placeholder="Sort"
-            />
-          </div>
+          {showFilters && (
+            <div style={{ display: "flex", gap: "8px" }}>
+              <CustomDropdown value={niche} onChange={setNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="Niche" />
+              {filter !== "brands" && (
+                <CustomDropdown value={followers} onChange={setFollowers} options={["0-10k", "10k-50k", "50k-100k", "100k-1m", "1m+"]} placeholder="Followers" />
+              )}
+              <CustomDropdown
+                value={sortBy === "followers" ? "Most Followers" : sortBy === "name" ? "Name A-Z" : ""}
+                onChange={v => setSortBy(v === "Most Followers" ? "followers" : v === "Name A-Z" ? "name" : "")}
+                options={filter !== "brands" ? ["Most Followers", "Name A-Z"] : ["Name A-Z"]}
+                placeholder="Sort"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -225,7 +239,15 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
             ))}
           </div>
         ) : !hasLoadedOnce && loading ? null : filtered.length === 0 ? (
-          <p style={{ color: "#888", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>No results.</p>
+          <div style={{ textAlign: "center", marginTop: "3rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "6px" }}>
+              <circle cx="11" cy="11" r="7" stroke="#919191" strokeWidth="1.6" />
+              <path d="m16.5 16.5 4 4" stroke="#919191" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>No one matches that</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#999", lineHeight: 1.5, maxWidth: "260px" }}>Try a different name or niche, or clear what you've set.</p>
+            <div onClick={clearFilters} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Clear search</div>
+          </div>
         ) : (
           filtered.map((p, i) => {
             const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;

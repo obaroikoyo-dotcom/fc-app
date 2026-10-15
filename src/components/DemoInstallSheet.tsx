@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/logo.png";
+import ThemeScope from "./ThemeScope";
 import { hasSeenInstallPrompt, markInstallPromptSeen } from "../lib/demo/session";
 import { hasDeferredInstallPrompt, onInstallPromptAvailable, triggerInstallPrompt, isRunningAsApp } from "../lib/pwaInstall";
 
@@ -70,6 +71,7 @@ export default function DemoInstallSheet() {
   };
 
   return (
+    <ThemeScope zIndex={10000}>
     <div
       role="dialog"
       aria-modal="true"
@@ -143,5 +145,6 @@ export default function DemoInstallSheet() {
         )}
       </div>
     </div>
+    </ThemeScope>
   );
 }
