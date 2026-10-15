@@ -15,6 +15,8 @@ export async function launchApp(page: Page) {
   // Don't wait for every external script (fonts, push, Stripe) to finish loading.
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Launch FlipCollab" }).first().click();
+  // A browser that offers to install FlipCollab asks first; carry on in the browser.
+  await page.getByRole("button", { name: "Continue in browser" }).click({ timeout: 1_500 }).catch(() => undefined);
   await expect(page.getByText("Who are you?")).toBeVisible({ timeout: 20_000 });
 }
 

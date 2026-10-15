@@ -191,6 +191,70 @@ function SetupGuide({ onClose, canInstall, installing, added, onInstall }: {
   );
 }
 
+// Computer-only. Chrome and Edge can install FlipCollab as its own window with
+// its own icon, and offer to do it with one click. Launch gives that one chance
+// per visit; "Continue in browser" goes on into the app as before.
+function DesktopInstallGuide({ onBack, onContinue, canInstall, installing, added, onInstall }: {
+  onBack: () => void;
+  onContinue: () => void;
+  canInstall: boolean;
+  installing: boolean;
+  added: boolean;
+  onInstall: () => void;
+}) {
+  const backRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    backRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onBack();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onBack]);
+
+  return (
+    <div className="lp-guide lp-light" role="dialog" aria-modal="true" aria-labelledby="lp-guide-title">
+      <div className="lp-wrap">
+        <button ref={backRef} type="button" className="lp-btn lp-btn-ghost lp-btn-small lp-guide-back" onClick={onBack}>Back</button>
+
+        {added ? (
+          <>
+            <h2 id="lp-guide-title" className="lp-display lp-guide-title">FlipCollab is installed</h2>
+            <p className="lp-guide-sub">Open it from the new FlipCollab icon whenever you like. It opens in its own window, with no browser bar.</p>
+            <button type="button" className="lp-btn lp-btn-primary lp-guide-install" onClick={onContinue}>Continue in browser</button>
+          </>
+        ) : (
+          <>
+            <h2 id="lp-guide-title" className="lp-display lp-guide-title">Install FlipCollab on your computer</h2>
+            <p className="lp-guide-sub">It opens in its own window with its own icon, like a normal app. It takes a few seconds.</p>
+            {canInstall ? (
+              <button type="button" className="lp-btn lp-btn-primary lp-guide-install" onClick={onInstall} disabled={installing}>
+                {installing ? "Installing..." : "Install FlipCollab"}
+              </button>
+            ) : (
+              <p className="lp-guide-sub">No problem. You can install it later from the install icon in your browser's address bar, or from its menu.</p>
+            )}
+            <button type="button" className={canInstall ? "lp-btn lp-btn-ghost" : "lp-btn lp-btn-primary"} onClick={onContinue}>Continue in browser</button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Once per visit: after "Continue in browser", Launch goes straight in.
+const INSTALL_ASK_KEY = "fc_install_ask_skipped";
+function installAskSkipped(): boolean {
+  try { return sessionStorage.getItem(INSTALL_ASK_KEY) === "1"; } catch { return false; }
+}
+function skipInstallAsk() {
+  try { sessionStorage.setItem(INSTALL_ASK_KEY, "1"); } catch { /* storage blocked: it just asks again */ }
+}
+
 // The wavy shapes are SVG masks over a flat var() fill, so each section can
 // recolor them with CSS instead of needing a separate image per color. Each
 // one is a single curve stretched across the element (not a tiled pattern),
@@ -418,6 +482,7 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
   const [installing, setInstalling] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const [added, setAdded] = useState(false);
+  const [showDesktopGuide, setShowDesktopGuide] = useState(false);
 
   useEffect(() => {
     document.title = "FlipCollab";
@@ -434,10 +499,26 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
     if (accepted) setAdded(true);
   };
 
-  // Desktop has no home screen, so it launches straight in. On a phone the
-  // app runs from the home screen, so Launch opens the setup guide instead.
-  const launch = () => (isMobile ? setShowGuide(true) : onLaunch());
+  // On a phone the app runs from the home screen, so Launch opens the setup
+  // guide instead of the app. On a computer it goes straight in, except in a
+  // browser that is offering to install FlipCollab (Chrome, Edge): there it
+  // first asks, once per visit.
+  const launch = () => {
+    if (isMobile) {
+      setShowGuide(true);
+    } else if (canInstall && !installAskSkipped()) {
+      setShowDesktopGuide(true);
+    } else {
+      onLaunch();
+    }
+  };
   const closeGuide = useCallback(() => setShowGuide(false), []);
+  const closeDesktopGuide = useCallback(() => setShowDesktopGuide(false), []);
+  const continueInBrowser = () => {
+    skipInstallAsk();
+    setShowDesktopGuide(false);
+    onLaunch();
+  };
 
   const cta = (
     <div className="lp-cta">
@@ -548,6 +629,9 @@ export default function LandingPage({ onLaunch }: { onLaunch: () => void }) {
 
       {showGuide && (
         <SetupGuide onClose={closeGuide} canInstall={canInstall} installing={installing} added={added} onInstall={handleInstall} />
+      )}
+      {showDesktopGuide && (
+        <DesktopInstallGuide onBack={closeDesktopGuide} onContinue={continueInBrowser} canInstall={canInstall} installing={installing} added={added} onInstall={handleInstall} />
       )}
     </div>
   );
