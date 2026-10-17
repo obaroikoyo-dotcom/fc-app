@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { type Page } from "../App";
 import { supabase } from "../lib/supabase";
+import { functionErrorMessage } from "../lib/functionError";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { stripePromise } from "../lib/stripe";
 import { useBillingAddress } from "../lib/useBillingAddress";
@@ -121,7 +122,8 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
     });
 
     if (res.error || !res.data?.subscriptionId) {
-      onError("Failed to start subscription. Try again.");
+      const reason = res.error ? await functionErrorMessage(res.error) : null;
+      onError(reason || "Failed to start subscription. Try again.");
       onLoadingChange(false);
       return;
     }
