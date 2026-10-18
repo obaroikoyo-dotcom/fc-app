@@ -457,7 +457,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#777", marginTop: "4px" }}>
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                  <span>£{creatorPayout.toLocaleString()}</span>
+                  <span>£{creatorPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {isEnterprise && (
                   <p style={{ fontSize: "11px", color: "#777", lineHeight: 1.5, margin: "10px 0 0" }}>
