@@ -168,6 +168,50 @@ test("signing out of the demo goes back to the picker and forgets the visitor", 
   expect(await page.evaluate(() => sessionStorage.getItem("fc_demo_session"))).toBeNull();
 });
 
+test("brand: an applicant's pitch video is a watermarked preview", async ({ page }) => {
+  await openDemo(page, "brand");
+  // the seeded applicants have no pitch video: give this brand's applicants one
+  await page.evaluate(() => {
+    const saved = JSON.parse(sessionStorage.getItem("fc_demo_db") || "null");
+    const uid = JSON.parse(sessionStorage.getItem("fc_demo_session") || "null").userId;
+    const mine = new Set(saved.tables.campaigns.filter((c: { brand_id: string }) => c.brand_id === uid).map((c: { id: string }) => c.id));
+    for (const a of saved.tables.applications) if (mine.has(a.campaign_id)) a.video_url = "/demo-assets/sample.mp4";
+    sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+  });
+  await db(page); // let the saved copy settle, then read the edit back in
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+  await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
+  await page.getByText(/^[0-9]+ applications?$/).first().click();
+  await page.getByText(/^pending$/i).first().click();
+
+  await expect(page.getByText("Video Pitch", { exact: true })).toBeVisible();
+  await expect(page.getByText("PREVIEW", { exact: true }).first()).toBeAttached();
+  await expect(page.getByText("This is a preview of their pitch.")).toBeVisible();
+  // no native player: its own download and full screen buttons are not offered
+  await expect(page.locator("video[controls]")).toHaveCount(0);
+});
+
+test("the light theme does not flip a video's colours in full screen", async ({ page }) => {
+  await openDemo(page, "creator");
+  await page.evaluate(() => {
+    const v = document.createElement("video");
+    v.src = "/demo-assets/sample.mp4";
+    v.muted = true;
+    v.style.cssText = "position:relative;width:300px;height:170px;background:#000";
+    document.querySelector(".app-shell")!.appendChild(v);
+  });
+  const video = page.locator(".app-shell > video").last();
+  const inPage = await video.evaluate(v => getComputedStyle(v).filter);
+  expect(inPage, "in the page the video is flipped back to true colour").not.toBe("none");
+  await video.click({ position: { x: 150, y: 60 } }); // a real click, so full screen is allowed
+  await video.evaluate(v => v.requestFullscreen());
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.tagName)).toBe("VIDEO");
+  // full screen leaves the flipped page, so the flip-back must go too
+  expect(await page.evaluate(() => getComputedStyle(document.fullscreenElement!).filter)).toBe("none");
+  await page.evaluate(() => document.exitFullscreen());
+});
+
 test.describe("on an iPhone", () => {
   test.use({
     userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",

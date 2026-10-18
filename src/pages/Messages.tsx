@@ -523,7 +523,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 // disabled so the overlay can't be shaken off by the player) and a note
 // saying the clean copy comes after release. Creators and released deals
 // see the plain video.
-function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: boolean; maxHeight: string }) {
+function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; watermark: boolean; maxHeight: string; note?: string }) {
   const vref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -542,10 +542,13 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
     <div style={{ marginBottom: "10px" }}>
       <div
         style={expanded
-          ? { position: "fixed", inset: 0, zIndex: 9999, background: "#000", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }
-          : { position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000" }}
+          ? { position: "fixed", inset: 0, zIndex: 9999, background: "#000", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", isolation: "isolate" }
+          : { position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000", isolation: "isolate" }}
         onContextMenu={e => e.preventDefault()}
       >
+        {/* The light theme flips colours, which would turn this black backdrop
+            white wherever the video doesn't fill the box. true-color flips it back. */}
+        <div className="true-color" aria-hidden style={{ position: "absolute", inset: 0, zIndex: -1, background: "#000", pointerEvents: "none" }} />
         {/* No native controls on purpose: every browser's built-in control
             bar has its own fullscreen button (iOS Safari/Firefox ignore
             controlsList), and native fullscreen drops the watermark overlay.
@@ -608,7 +611,7 @@ function PreviewVideo({ src, watermark, maxHeight }: { src: string; watermark: b
         </div>
       </div>
       <p style={{ fontSize: "10px", color: "#888", marginTop: "6px", lineHeight: 1.5 }}>
-        This is a preview. The clean video without the watermark appears once the payment is released, either when you tell us you're happy or when the review time ends.
+        {note ?? "This is a preview. The clean video without the watermark appears once the payment is released, either when you tell us you're happy or when the review time ends."}
       </p>
     </div>
   );
@@ -2460,7 +2463,7 @@ return (
 {activeApplication.video_url && (
   <div style={{ marginBottom: "1.5rem" }}>
     <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Video Pitch</p>
-    <video src={activeApplication.video_url} controls style={{ width: "100%", borderRadius: "10px", background: "#000", maxHeight: "280px" }} />
+    <PreviewVideo src={activeApplication.video_url} watermark maxHeight="280px" note="This is a preview of their pitch." />
   </div>
 )}
           {activeApplication.platforms?.length > 0 && (

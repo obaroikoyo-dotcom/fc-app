@@ -709,7 +709,7 @@ case "brand-campaign-preview":
   return (
     <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", transition: "filter 0.2s ease", overflow: "hidden" }}>
       <style>{`
-  ${isInverted ? `img, video, [style*="background-image"] { filter: ${UNDO_LIGHT_FILTER}; } img.no-reinvert { filter: none; } svg.verified-badge, svg.google-icon, svg.tiktok-icon, svg.instagram-icon, .true-color { filter: ${UNDO_LIGHT_FILTER}; }` : ""}
+  ${isInverted ? `img, video, [style*="background-image"] { filter: ${UNDO_LIGHT_FILTER}; } video:fullscreen { filter: none; } video:-webkit-full-screen { filter: none; } img.no-reinvert { filter: none; } svg.verified-badge, svg.google-icon, svg.tiktok-icon, svg.instagram-icon, .true-color { filter: ${UNDO_LIGHT_FILTER}; }` : ""}
   @keyframes pageEnter {
   from { opacity: 0; transform: translateX(18px); }
   to { opacity: 1; transform: translateX(0); }
