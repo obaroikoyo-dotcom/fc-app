@@ -19,11 +19,18 @@ export default function SplashScreen() {
   }, []);
 
   return (
+    // Sized from its own box rather than the browser's 100vh (which on an
+    // iPhone can be taller than what is visible and shifts everything down),
+    // centred between the status bar and the home bar, and nothing on it can
+    // be scrolled or dragged.
     <div style={{
-      minHeight: "100vh", background: "#0a0a0a",
+      position: "relative", width: "100%", height: "100%",
+      padding: "env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px)",
+      background: "#0a0a0a",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       fontFamily: "'TikTok Sans', sans-serif",
       overflow: "hidden",
+      touchAction: "none", userSelect: "none", WebkitUserSelect: "none",
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');

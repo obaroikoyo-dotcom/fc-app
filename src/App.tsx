@@ -717,6 +717,10 @@ case "brand-campaign-preview":
   .page-enter {
     animation: pageEnter 0.18s ease-out;
   }
+  /* The splash and role screens sit still: no slide-in. */
+  .page-enter.page-still {
+    animation: none;
+  }
   @keyframes itemEnter {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -725,7 +729,7 @@ case "brand-campaign-preview":
     animation: itemEnter 0.28s ease-out backwards;
   }
 `}</style>
-     <div key={page} className="page-enter" style={{ height: "100%", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" }}>
+     <div key={page} className={page === "splash" || page === "role-select" ? "page-enter page-still" : "page-enter"} style={{ height: "100%", overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" }}>
   {renderPage()}
 </div>
       {CREATOR_PAGES.includes(page) && (!isPreviewPage || userRole === "creator") && (
