@@ -481,5 +481,13 @@ export function buildWorld(seed: number, userId: string, role: DemoRole, nowMs: 
     t.favourites.push({ id: uuid(rng), user_id: userId, creator_id: creators[7].id, created_at: isoAgo(nowMs, 5 * DAY) });
   }
 
+  // Every campaign above is due in two to six weeks, which would leave the
+  // Explore shelves (Closing soon, New today) empty. Pull a few dates in by
+  // position, not by chance, so nothing else that is seeded moves.
+  t.campaigns.filter(c => !c.is_draft).forEach((c, i) => {
+    if (i % 4 === 1) c.deadline = dateIn(nowMs, 2 + (i % 5));
+    if (i % 5 === 2) { c.created_at = isoAgo(nowMs, (3 + (i % 4)) * HOUR); c.updated_at = c.created_at; }
+  });
+
   return { tables: t };
 }

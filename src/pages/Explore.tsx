@@ -12,6 +12,7 @@ import { usePersistedState } from "../lib/usePersistedState";
 import { useScrollRestoration } from "../lib/useScrollRestoration";
 import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
+import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -36,6 +37,7 @@ interface Campaign {
     niche: string;
     avatar_url?: string;
     verified?: boolean;
+    is_enterprise?: boolean;
   } | null;
   my_application?: {
     status: "pending" | "approved" | "declined";
@@ -66,6 +68,27 @@ const formatRelativeTime = (dateString: string, now: Date) => {
   return `${diffDays} days ago`;
 };
 
+const DAY_MS = 86_400_000;
+
+// Whole calendar days from today to a "YYYY-MM-DD" deadline: 0 is today, negative is past.
+const daysLeft = (deadline: string, now: Date): number | null => {
+  const [y, m, d] = (deadline || "").split("-").map(Number);
+  if (!y || !m || !d) return null;
+  const due = new Date(y, m - 1, d).getTime();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.round((due - today) / DAY_MS);
+};
+const dueNote = (days: number) => (days === 0 ? "Due today" : days === 1 ? "Due tomorrow" : `Due in ${days} days`);
+const createdAt = (c: { created_at: string }) => (c.created_at ? new Date(c.created_at.endsWith("Z") ? c.created_at : c.created_at + "Z").getTime() : 0);
+// What the creator takes home: the whole budget from an Enterprise brand, 90% otherwise.
+const netPayout = (c: { budget: string; brand_profiles: { is_enterprise?: boolean } | null }) => {
+  const base = parseInt(c.budget, 10) || 0;
+  return c.brand_profiles?.is_enterprise ? base : base * 0.9;
+};
+
+type ShelfKey = "closing" | "top" | "fresh";
+const SHELF_TITLES: Record<ShelfKey, string> = { closing: "Closing soon", top: "Top paying", fresh: "New today" };
+
 export default function Explore({ navigate, navigateToProfile, navigateToApply }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
@@ -83,6 +106,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [selectedPlatform, setSelectedPlatform] = usePersistedState("fc_explore_platform", "");
   const [sortBy, setSortBy] = usePersistedState<"newest" | "budget">("fc_explore_sortby", "newest");
   const [showFilters, setShowFilters] = useState(false);
+  const [focus, setFocus] = useState<ShelfKey | null>(null); // "See all" on a shelf
   const [now, setNow] = useState(new Date());
   const scrollRef = useScrollRestoration("fc_explore_scroll", !loading);
 
@@ -197,6 +221,44 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
   const activeFilterCount = [selectedNiche, selectedPlatform, sortBy === "budget" ? "budget" : ""].filter(Boolean).length;
 
+  // Shelves on top of the feed: only on Discover, with no filter on (filtering
+  // means you want that list), and only once there are enough campaigns for them
+  // to be more than a repeat of the list. Campaigns whose deadline has passed
+  // are left out of them.
+  const discoverNow = feedTab === "discover" && activeFilterCount === 0;
+  const stillOpen = (c: Campaign) => { const d = daysLeft(c.deadline, now); return d === null || d >= 0; };
+  const shelfLists: Record<ShelfKey, Campaign[]> = {
+    closing: discoverNow
+      ? filteredCampaigns.filter(c => { const d = daysLeft(c.deadline, now); return d !== null && d >= 0 && d <= 7; })
+          .sort((a, b) => (daysLeft(a.deadline, now) ?? 0) - (daysLeft(b.deadline, now) ?? 0))
+      : [],
+    top: discoverNow
+      ? filteredCampaigns.filter(c => c.type === "paid" && netPayout(c) > 0 && stillOpen(c)).sort((a, b) => netPayout(b) - netPayout(a))
+      : [],
+    fresh: discoverNow
+      ? filteredCampaigns.filter(c => stillOpen(c) && now.getTime() - createdAt(c) < DAY_MS).sort((a, b) => createdAt(b) - createdAt(a))
+      : [],
+  };
+  const focusKey = discoverNow && focus && shelfLists[focus].length > 0 ? focus : null;
+  const showShelves = discoverNow && !focusKey && filteredCampaigns.length >= 4;
+  const feedList = focusKey ? shelfLists[focusKey] : filteredCampaigns;
+  const shelfNote = (key: ShelfKey, c: Campaign) => {
+    if (key === "closing") return dueNote(daysLeft(c.deadline, now) ?? 0);
+    if (key === "top") return c.niche || "";
+    return formatRelativeTime(c.created_at, now);
+  };
+  const shelfCard = (key: ShelfKey, c: Campaign): ShelfCard => ({
+    id: c.id,
+    brandName: c.brand_profiles?.name || "Brand",
+    brandAvatar: avatarSrc(c.brand_profiles?.avatar_url, c.brand_profiles?.name),
+    verified: !!c.brand_profiles?.verified,
+    name: c.name,
+    paid: c.type === "paid" && netPayout(c) > 0,
+    earn: netPayout(c),
+    note: shelfNote(key, c),
+    urgent: key === "closing" && (daysLeft(c.deadline, now) ?? 9) <= 2,
+  });
+
   const getStatusStyle = (status?: string): React.CSSProperties => {
     switch (status) {
       case "approved":
@@ -256,6 +318,20 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       {/* Campaign Feed */}
 <div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
       <div key={feedTab} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {showShelves && (["closing", "top", "fresh"] as const).map(key => {
+          const list = shelfLists[key];
+          if (key === "top" ? list.length < 2 : list.length === 0) return null;
+          return (
+            <CampaignShelf
+              key={key}
+              title={SHELF_TITLES[key]}
+              total={list.length}
+              cards={list.slice(0, 8).map(c => shelfCard(key, c))}
+              onOpen={id => navigateToApply && navigateToApply(id)}
+              onSeeAll={() => setFocus(key)}
+            />
+          );
+        })}
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (
@@ -277,7 +353,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
               </div>
             ))}
           </div>
-        ) : !hasLoadedOnce && loading ? null : filteredCampaigns.length === 0 ? (
+        ) : !hasLoadedOnce && loading ? null : feedList.length === 0 ? (
           <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "2.75rem 1.75rem", textAlign: "center", marginTop: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "6px" }}>
               <circle cx="12" cy="12" r="9" stroke="#919191" strokeWidth="1.6" />
@@ -300,7 +376,13 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             ) : null}
           </div>
         ) : (
-          filteredCampaigns.map((c, i) => {
+          <>
+          {focusKey ? (
+            <ShelfHeading title={SHELF_TITLES[focusKey]} count={feedList.length} actionLabel="Show everything" onAction={() => setFocus(null)} />
+          ) : showShelves ? (
+            <ShelfHeading title="All campaigns" count={feedList.length} />
+          ) : null}
+          {feedList.map((c, i) => {
             const baseBudgetVal = parseInt(c.budget, 10) || 0;
             const brandIsEnterprise = (c.brand_profiles as any)?.is_enterprise;
             const netCreatorPayout = brandIsEnterprise ? baseBudgetVal : baseBudgetVal * 0.90;
@@ -390,7 +472,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                 </div>
               </div>
             );
-          })
+          })}
+          </>
         )}
       </div>
       </div>

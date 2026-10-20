@@ -375,6 +375,66 @@ test.describe("filters", () => {
   });
 });
 
+test.describe("explore shelves", () => {
+  const shelf = (page: Page, title: string) => page.locator(`section[aria-label='${title}']`);
+
+  test("rows to swipe sideways sit above the feed, open the campaign, and 'See all' narrows the feed", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const t = await db(page);
+    const uid = await myId(page);
+    const applied = new Set(t.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+    const discover = t.campaigns.filter(c => !c.is_draft && !applied.has(c.id));
+
+    // the three rows, then the whole feed under its own heading
+    for (const title of ["Closing soon", "Top paying", "New today"]) await expect(shelf(page, title)).toBeVisible();
+    await expect(page.getByText("All campaigns", { exact: false }).first()).toBeVisible();
+    await expect(page.locator(".item-enter")).toHaveCount(discover.length);
+
+    // a row swipes sideways and each card says what it is
+    const top = shelf(page, "Top paying");
+    const swipe = await top.locator(".shelf-scroll").evaluate(el => ({ scrolls: el.scrollWidth > el.clientWidth, cards: el.children.length }));
+    expect(swipe.scrolls).toBe(true);
+    await expect(shelf(page, "Closing soon").getByText(/^Due (today|tomorrow|in \d+ days)$/).first()).toBeVisible();
+    await expect(top.getByText("You'd earn").first()).toBeVisible();
+
+    // tapping a card goes to that campaign's application
+    await shelf(page, "Closing soon").locator(".shelf-scroll > [role='button']").first().click();
+    await expect(page.getByPlaceholder(/Introduce yourself/i)).toBeVisible({ timeout: 10_000 });
+    await page.getByText("Explore", { exact: true }).last().click();
+
+    // "See all" narrows the feed to that row, in its order, and "Show everything" brings the rest back
+    const total = Number(await shelf(page, "Top paying").locator("p span").first().innerText());
+    await shelf(page, "Top paying").getByText("See all", { exact: true }).click();
+    await expect(shelf(page, "Top paying")).toHaveCount(0);
+    await expect(page.getByText("Show everything", { exact: true })).toBeVisible();
+    await expect(page.locator(".item-enter")).toHaveCount(total);
+    const earnings = (await page.locator(".item-enter").getByText(/^£[\d,.]+$/).allInnerTexts()).map(s => Number(s.replace(/[£,]/g, "")));
+    expect(earnings, "highest paying first").toEqual([...earnings].sort((a, b) => b - a));
+    await page.getByText("Show everything", { exact: true }).click();
+    await expect(page.locator(".item-enter")).toHaveCount(discover.length);
+    await expect(shelf(page, "Top paying")).toBeVisible();
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("the rows step aside for a filter and for My Pitches", async ({ page }) => {
+    await openDemo(page, "creator");
+    await expect(page.locator("section[aria-label]").first()).toBeVisible();
+
+    await page.getByText(/^Filters/).click();
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.getByRole("option", { name: "Wellness", exact: true }).click();
+    await expect(page.locator("section[aria-label]")).toHaveCount(0);
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.locator("[role='option']").first().click(); // the first row clears the niche
+    await expect(page.locator("section[aria-label]").first()).toBeVisible();
+
+    await page.getByText(/^My Pitches/).click();
+    await expect(page.locator("section[aria-label]")).toHaveCount(0);
+  });
+});
+
 test.describe("on an iPhone", () => {
   test.use({
     userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
