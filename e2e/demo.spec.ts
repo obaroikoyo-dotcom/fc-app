@@ -324,6 +324,47 @@ test.describe("filters", () => {
     expect(errors).toEqual([]);
   });
 
+  test("search: same menu and niche list, and a creator with several niches matches each of them", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+    // give one creator two niches (profiles can list several), then read it back in
+    const other = await page.evaluate(me => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db") || "null");
+      const creator = saved.tables.creator_profiles.find((p: { id: string }) => p.id !== me);
+      creator.niche = "Beauty, Anime";
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+      return creator.name as string;
+    }, uid);
+    await db(page);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.getByText("Search", { exact: true }).last().click({ timeout: 20_000 });
+
+    await expect(page.locator("[aria-haspopup='listbox']")).toHaveCount(0);
+    await page.getByText(/^Filters/).click();
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    const options = await page.locator("[role='option']").allInnerTexts();
+    expect(options.length).toBeGreaterThanOrEqual(40);
+    for (const added of ["Anime", "Property", "Weddings"]) expect(options).toContain(added);
+
+    // the creator with "Beauty, Anime" turns up under each of those niches, and under nothing else
+    await page.getByRole("option", { name: "Anime", exact: true }).click();
+    await expect(page.getByText("Filters (1)")).toBeVisible();
+    await expect(page.getByText(other, { exact: true })).toBeVisible();
+    await expect(page.locator(".item-enter")).toHaveCount(1);
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.getByRole("option", { name: "Beauty", exact: true }).click();
+    await expect(page.getByText(other, { exact: true })).toBeVisible();
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.getByRole("option", { name: "Property", exact: true }).click();
+    await expect(page.getByText("No one matches that")).toBeVisible();
+    await page.getByText("Clear search", { exact: true }).click();
+    await expect(page.locator(".item-enter").first()).toBeVisible();
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
   test("brand: the campaign form offers the same niches", async ({ page }) => {
     await openDemo(page, "brand");
     await page.getByText("Post", { exact: true }).last().click();

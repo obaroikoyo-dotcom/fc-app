@@ -10,6 +10,8 @@ import { getBlockedUserIds } from "../lib/blocks";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { usePersistedState } from "../lib/usePersistedState";
 import { useScrollRestoration } from "../lib/useScrollRestoration";
+import { NICHES_A_TO_Z } from "../lib/niches";
+import { FilterToggle, FilterPanel } from "../components/FilterBar";
 
 interface Props { navigate: (p: Page) => void; navigateToProfile: (id: string) => void; navigateToBrandProfile: (id: string) => void; navigateToMessages: (p: "messages-creator" | "messages-brand", convoId: string) => void; }
 interface Profile {
@@ -36,45 +38,6 @@ const UI = {
   input: { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", width: "100%" },
   chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" })
 };
-
-function CustomDropdown({ value, onChange, options, placeholder }: {
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  placeholder: string;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ position: "relative", flex: 1 }}>
-      <div
-        onClick={() => setOpen(p => !p)}
-        style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-      >
-        <span>{value || placeholder}</span>
-        <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
-      </div>
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
-          <div
-            onClick={() => { onChange(""); setOpen(false); }}
-            style={{ padding: "10px 14px", fontSize: "13px", color: !value ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: !value ? "#1a1a1a" : "transparent" }}
-          >
-            {placeholder}
-          </div>
-          {options.map(o => (
-            <div
-              key={o}
-              onClick={() => { onChange(o); setOpen(false); }}
-              style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
-            >
-              {o}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function Search({ navigateToProfile, navigateToBrandProfile, navigateToMessages }: Props) {
   const [query, setQuery] = usePersistedState("fc_search_query", "");
@@ -156,7 +119,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
     const name = cp?.name || bp?.name || "", nch = cp?.niche || bp?.niche || "", txt = query.toLowerCase();
 
     if (query && !name.toLowerCase().includes(txt) && !nch.toLowerCase().includes(txt) && !(cp?.hashtags || []).some(h => h.toLowerCase().includes(txt))) return false;
-    if (niche && nch.toLowerCase() !== niche.toLowerCase()) return false;
+    if (niche && !nch.split(",").some(n => n.trim().toLowerCase() === niche.toLowerCase())) return false;
 
     if (followers && p.role === "creator") {
       const fCount = maxFollowers(cp);
@@ -195,31 +158,26 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
             {(["all", "creators", "brands"] as const).map(f => (
               <div key={f} onClick={() => setFilter(f)} style={UI.chip(filter === f)}>{f.toUpperCase()}</div>
             ))}
-            <div
-              onClick={() => setShowFilters(v => !v)}
-              style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "6px", padding: "7px 4px", fontSize: "13px", fontWeight: 600, color: showFilters || activeFilterCount > 0 ? "#fff" : "#999", cursor: "pointer" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="16" cy="7" r="2" stroke="currentColor" strokeWidth="2" />
-                <circle cx="8" cy="17" r="2" stroke="currentColor" strokeWidth="2" />
-              </svg>
-              Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            <div style={{ marginLeft: "auto" }}>
+              <FilterToggle open={showFilters} count={activeFilterCount} onToggle={() => setShowFilters(v => !v)} />
             </div>
           </div>
           {showFilters && (
-            <div style={{ display: "flex", gap: "8px" }}>
-              <CustomDropdown value={niche} onChange={setNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="Niche" />
-              {filter !== "brands" && (
-                <CustomDropdown value={followers} onChange={setFollowers} options={["0-10k", "10k-50k", "50k-100k", "100k-1m", "1m+"]} placeholder="Followers" />
-              )}
-              <CustomDropdown
-                value={sortBy === "followers" ? "Most Followers" : sortBy === "name" ? "Name A-Z" : ""}
-                onChange={v => setSortBy(v === "Most Followers" ? "followers" : v === "Name A-Z" ? "name" : "")}
-                options={filter !== "brands" ? ["Most Followers", "Name A-Z"] : ["Name A-Z"]}
-                placeholder="Sort"
-              />
-            </div>
+            <FilterPanel
+              filters={[
+                { key: "niche", value: niche, onChange: setNiche, options: NICHES_A_TO_Z, placeholder: "Niche" },
+                ...(filter !== "brands"
+                  ? [{ key: "followers", value: followers, onChange: setFollowers, options: ["0-10k", "10k-50k", "50k-100k", "100k-1m", "1m+"], placeholder: "Followers" }]
+                  : []),
+                {
+                  key: "sort",
+                  value: sortBy === "followers" ? "Most Followers" : sortBy === "name" ? "Name A-Z" : "",
+                  onChange: v => setSortBy(v === "Most Followers" ? "followers" : v === "Name A-Z" ? "name" : ""),
+                  options: filter !== "brands" ? ["Most Followers", "Name A-Z"] : ["Name A-Z"],
+                  placeholder: "Sort",
+                },
+              ]}
+            />
           )}
         </div>
       </div>
