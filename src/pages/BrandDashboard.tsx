@@ -11,6 +11,8 @@ import VerifiedBadge from "../components/VerifiedBadge";
 import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, formatResponseTime, type BrandTrackRecord } from "../lib/brandStats";
 import { dealBreakdown } from "../lib/fees";
+import { NICHES_A_TO_Z } from "../lib/niches";
+import { FilterToggle, FilterPanel } from "../components/FilterBar";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -83,14 +85,24 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [feedTab, setFeedTab] = useState<"yours" | "discover">("yours");
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [hasMountedPostTab, setHasMountedPostTab] = useState(tab === "post");
   useEffect(() => { if (tab === "post") setHasMountedPostTab(true); }, [tab]);
   const [trackRecord, setTrackRecord] = useState<BrandTrackRecord | null>(null);
 
+  // The header is fixed, so the list below it is pushed down by its height. That
+  // changes with the tab, the Enterprise badge and the filter menus opening or
+  // closing, so follow it rather than measuring once.
   useLayoutEffect(() => {
-    if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
-  }, [tab, isEnterprise]);
+    const el = stickyRef.current;
+    if (!el) return;
+    const update = () => setStickyHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const fetchCampaigns = async () => {
     setLoading(true);
@@ -139,44 +151,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
     return () => clearInterval(clockInterval);
   }, []);
 
-  function CustomDropdown({ value, onChange, options, placeholder }: {
-    value: string;
-    onChange: (v: string) => void;
-    options: string[];
-    placeholder: string;
-  }) {
-    const [open, setOpen] = useState(false);
-    return (
-      <div style={{ position: "relative", flex: 1 }}>
-        <div
-          onClick={() => setOpen(p => !p)}
-          style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-        >
-          <span>{value || placeholder}</span>
-          <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
-        </div>
-        {open && (
-          <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
-            <div
-              onClick={() => { onChange(""); setOpen(false); }}
-              style={{ padding: "10px 14px", fontSize: "13px", color: !value ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: !value ? "#1a1a1a" : "transparent" }}
-            >
-              {placeholder}
-            </div>
-            {options.map(o => (
-              <div
-                key={o}
-                onClick={() => { onChange(o); setOpen(false); }}
-                style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
-              >
-                {o}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+  const activeFilterCount = [selectedNiche, selectedPlatform].filter(Boolean).length;
 
   const deleteCampaign = async (id: string) => {
     if (!currentUserId) return;
@@ -236,16 +211,27 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
           </div>
         )}
 
-        {/* Filters */}
+        {/* Filters: a button that opens the menus, like Search */}
         {tab === "campaigns" && (
-          <div style={{ padding: "1rem 1.25rem", display: "flex", gap: "8px" }}>
-            <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="All Niches" />
-            <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="All Platforms" />
-          </div>
+          <>
+            <div style={{ padding: "0.2rem 1.25rem", display: "flex", justifyContent: "flex-end" }}>
+              <FilterToggle open={showFilters} count={activeFilterCount} onToggle={() => setShowFilters(v => !v)} />
+            </div>
+            {showFilters && (
+              <div style={{ padding: "0.2rem 1.25rem 1rem" }}>
+                <FilterPanel
+                  filters={[
+                    { key: "niche", value: selectedNiche, onChange: setSelectedNiche, options: NICHES_A_TO_Z, placeholder: "All Niches" },
+                    { key: "platform", value: selectedPlatform, onChange: setSelectedPlatform, options: ["Instagram", "TikTok", "YouTube", "Twitter/X"], placeholder: "All Platforms" },
+                  ]}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem" }}>
+      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (
@@ -312,15 +298,20 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
                 return true;
               });
+              const filtersOn = !!(selectedNiche || selectedPlatform);
               if (filtered.length === 0) return (
                 <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
                   <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
-                    {feedTab === "yours" ? "No campaigns yet" : "No campaigns found"}
+                    {filtersOn ? "Nothing matches those filters" : feedTab === "yours" ? "No campaigns yet" : "No campaigns found"}
                   </p>
                   <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.7 }}>
-                    {feedTab === "yours" ? "Post your first campaign and start finding creators." : "Try adjusting your filters."}
+                    {filtersOn ? "Try a different niche or platform." : feedTab === "yours" ? "Post your first campaign and start finding creators." : "Try adjusting your filters."}
                   </p>
-                  {feedTab === "yours" && (
+                  {filtersOn ? (
+                    <div onClick={() => { setSelectedNiche(""); setSelectedPlatform(""); }} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                      Clear Filters
+                    </div>
+                  ) : feedTab === "yours" && (
                     <div onClick={() => setTab("post")} style={{ marginTop: "1.5rem", padding: "12px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                       Post a Campaign
                     </div>

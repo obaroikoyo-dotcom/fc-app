@@ -22,6 +22,7 @@ import { COUNTRIES } from "../lib/countries";
 import { loadConnectAndInitialize, type StripeConnectInstance } from "@stripe/connect-js";
 import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectPayouts } from "@stripe/react-connect-js";
 import { uploadToR2 } from "../lib/r2Upload";
+import { NICHES } from "../lib/niches";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -47,7 +48,6 @@ const PlayGlyph = () => (
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs", "Hauls", "GRWM", "Comparisons", "Skits", "Livestreams", "Carousels", "Podcasts", "Testimonials"];
 const LANGUAGES = ["English", "Spanish", "French", "Arabic", "Portuguese", "German", "Italian", "Mandarin", "Hindi", "Other"];
 const AGE_RANGES = ["9-15", "16-17", "18-24", "25-34", "35-44", "45+"];
-const NICHES = ["Tech", "Beauty", "Fitness", "Gaming", "Fashion", "Food", "Travel", "Lifestyle", "Finance", "Parenting", "Education", "Sports", "Music", "Comedy", "Art", "Wellness", "Pets", "DIY", "Business", "Automotive"];
 
 type SettingsSection =
   | "main"

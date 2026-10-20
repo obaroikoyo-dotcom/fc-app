@@ -44,9 +44,12 @@ test.describe("screens that sit still and centred", () => {
       const { ctx, page } = await openPhone(browser, p, { standalone: true });
       await page.goto("/", { waitUntil: "domcontentloaded" });
 
-      // ---- the splash, once its animation is in place
+      // ---- the splash. Its logo, name and exit all animate, and the exit starts
+      // at 2.4s, so measuring on a timer is a race. Switch the animations off
+      // and read where everything actually sits.
       await page.waitForSelector("svg[viewBox='0 0 365 219']");
-      await page.waitForTimeout(2200);
+      await page.addStyleTag({ content: "*, *::before, *::after { animation: none !important; transition: none !important; }" });
+      await page.waitForTimeout(150);
       const splash = await page.evaluate(() => {
         const logo = document.querySelector("svg[viewBox='0 0 365 219']")!.getBoundingClientRect();
         const name = [...document.querySelectorAll("p")].find(el => el.textContent?.trim() === "FlipCollab")!.getBoundingClientRect();

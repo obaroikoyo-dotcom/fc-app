@@ -10,6 +10,8 @@ import { getBlockedUserIds } from "../lib/blocks";
 import VerifiedBadge from "../components/VerifiedBadge";
 import { usePersistedState } from "../lib/usePersistedState";
 import { useScrollRestoration } from "../lib/useScrollRestoration";
+import { NICHES_A_TO_Z } from "../lib/niches";
+import { FilterToggle, FilterPanel } from "../components/FilterBar";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -64,45 +66,6 @@ const formatRelativeTime = (dateString: string, now: Date) => {
   return `${diffDays} days ago`;
 };
 
-function CustomDropdown({ value, onChange, options, placeholder }: {
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  placeholder: string;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
-      <div
-        onClick={() => setOpen(p => !p)}
-        style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-      >
-        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value || placeholder}</span>
-        <span style={{ color: "#888", fontSize: "10px" }}>{open ? "▲" : "▼"}</span>
-      </div>
-      {open && (
-        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100, overflow: "hidden" }}>
-          <div
-            onClick={() => { onChange(""); setOpen(false); }}
-            style={{ padding: "10px 14px", fontSize: "13px", color: !value ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: !value ? "#1a1a1a" : "transparent" }}
-          >
-            {placeholder}
-          </div>
-          {options.map(o => (
-            <div
-              key={o}
-              onClick={() => { onChange(o); setOpen(false); }}
-              style={{ padding: "10px 14px", fontSize: "13px", color: value === o ? "#fff" : "#555", cursor: "pointer", borderBottom: "1px solid #1a1a1a", background: value === o ? "#1a1a1a" : "transparent" }}
-            >
-              {o}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function Explore({ navigate, navigateToProfile, navigateToApply }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
@@ -119,12 +82,21 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const [selectedNiche, setSelectedNiche] = usePersistedState("fc_explore_niche", "");
   const [selectedPlatform, setSelectedPlatform] = usePersistedState("fc_explore_platform", "");
   const [sortBy, setSortBy] = usePersistedState<"newest" | "budget">("fc_explore_sortby", "newest");
+  const [showFilters, setShowFilters] = useState(false);
   const [now, setNow] = useState(new Date());
   const scrollRef = useScrollRestoration("fc_explore_scroll", !loading);
 
+  // The header is fixed, so the list below it is pushed down by its height. That
+  // height changes when the filter menus open or close, so follow it.
   useLayoutEffect(() => {
-    if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
-  }, [feedTab]);
+    const el = stickyRef.current;
+    if (!el) return;
+    const update = () => setStickyHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     fetchMyProfile().then((userId) => {
@@ -223,6 +195,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     return 0; // already newest-first from the server query
   });
 
+  const activeFilterCount = [selectedNiche, selectedPlatform, sortBy === "budget" ? "budget" : ""].filter(Boolean).length;
+
   const getStatusStyle = (status?: string): React.CSSProperties => {
     switch (status) {
       case "approved":
@@ -256,21 +230,31 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
           </button>
         </div>
 
-        {/* Filters */}
-        <div style={{ padding: "0.9rem 1.25rem 1rem", display: "flex", gap: "8px" }}>
-          <CustomDropdown value={selectedNiche} onChange={setSelectedNiche} options={["Lifestyle", "Beauty", "Fitness", "Tech", "Fashion"]} placeholder="Niche" />
-          <CustomDropdown value={selectedPlatform} onChange={setSelectedPlatform} options={["Instagram", "TikTok", "YouTube", "Twitter/X"]} placeholder="Platform" />
-          <CustomDropdown
-            value={sortBy === "budget" ? "Highest pay" : "Newest"}
-            onChange={v => setSortBy(v === "Highest pay" ? "budget" : "newest")}
-            options={["Newest", "Highest pay"]}
-            placeholder="Sort"
-          />
+        {/* Filters: a button that opens the menus, like Search */}
+        <div style={{ padding: "0.2rem 1.25rem", display: "flex", justifyContent: "flex-end" }}>
+          <FilterToggle open={showFilters} count={activeFilterCount} onToggle={() => setShowFilters(v => !v)} />
         </div>
+        {showFilters && (
+          <div style={{ padding: "0.2rem 1.25rem 1rem" }}>
+            <FilterPanel
+              filters={[
+                { key: "niche", value: selectedNiche, onChange: setSelectedNiche, options: NICHES_A_TO_Z, placeholder: "Niche" },
+                { key: "platform", value: selectedPlatform, onChange: setSelectedPlatform, options: ["Instagram", "TikTok", "YouTube", "Twitter/X"], placeholder: "Platform" },
+                {
+                  key: "sort",
+                  value: sortBy === "budget" ? "Highest pay" : "Newest",
+                  onChange: v => setSortBy(v === "Highest pay" ? "budget" : "newest"),
+                  options: ["Newest", "Highest pay"],
+                  placeholder: "Sort",
+                },
+              ]}
+            />
+          </div>
+        )}
       </div>
 
       {/* Campaign Feed */}
-<div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "11rem" }}>
+<div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
       <div key={feedTab} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

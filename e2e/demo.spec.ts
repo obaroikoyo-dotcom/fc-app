@@ -212,6 +212,128 @@ test("the light theme does not flip a video's colours in full screen", async ({ 
   await page.evaluate(() => document.exitFullscreen());
 });
 
+// How far down the fixed header at the top reaches (the list below must start under it).
+const headerBottom = (page: Page) => page.getByText(/^Filters/).evaluate(el => {
+  let node: HTMLElement | null = el as HTMLElement;
+  while (node && getComputedStyle(node).position !== "fixed") node = node.parentElement;
+  return node ? node.getBoundingClientRect().bottom : 0;
+});
+
+test.describe("filters", () => {
+  test("creator: tucked away until the button is tapped, long niche list, picking one filters the feed", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const t = await db(page);
+    const uid = await myId(page);
+    const applied = new Set(t.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+    const shown = (niche: string) => t.campaigns.filter(c => !c.is_draft && c.niche === niche && !applied.has(c.id)).length;
+    const niche = ["Wellness", "Tech", "Beauty", "Fitness", "Food", "Fashion", "Travel", "Gaming", "Pets", "Lifestyle"].find(n => shown(n) > 0)!;
+
+    // tucked away to start
+    await expect(page.getByText("Filters", { exact: true })).toBeVisible();
+    await expect(page.locator("[aria-haspopup='listbox']")).toHaveCount(0);
+    const closedBottom = await headerBottom(page);
+
+    // the button opens the menus, and the list moves down with the header
+    await page.getByText(/^Filters/).click();
+    await expect(page.locator("[aria-haspopup='listbox']")).toHaveCount(3);
+    expect(await headerBottom(page)).toBeGreaterThan(closedBottom);
+    const firstCardTop = await page.locator(".item-enter").first().evaluate(el => el.getBoundingClientRect().top);
+    expect(firstCardTop, "the first campaign is not hidden under the header").toBeGreaterThanOrEqual(await headerBottom(page));
+
+    // a long list: many niches, including ones that used to be missing, in A to Z order
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    const options = await page.locator("[role='option']").allInnerTexts();
+    expect(options.length).toBeGreaterThanOrEqual(40);
+    for (const added of ["Anime", "Home & Garden", "Property", "Student Life", "Wellness"]) expect(options).toContain(added);
+    const named = options.slice(1); // the first row clears the filter
+    expect(named, "niches are in A to Z order").toEqual([...named].sort((a, b) => a.localeCompare(b)));
+    // it scrolls inside its own menu rather than running off the screen
+    const menu = await page.locator("[role='listbox']").evaluate(el => ({ scrolls: el.scrollHeight > el.clientHeight, bottom: el.getBoundingClientRect().bottom, view: innerHeight }));
+    expect(menu.scrolls).toBe(true);
+    expect(menu.bottom).toBeLessThanOrEqual(menu.view);
+
+    // picking a niche closes the menu, counts as one filter and filters the feed
+    await page.getByRole("option", { name: niche, exact: true }).click();
+    await expect(page.locator("[role='listbox']")).toHaveCount(0);
+    await expect(page.getByText("Filters (1)")).toBeVisible();
+    await expect(page.locator(".item-enter")).toHaveCount(shown(niche));
+
+    // a niche nobody has posted in says so, and Clear filters brings the feed back
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.getByRole("option", { name: "Property", exact: true }).click();
+    await expect(page.getByText("Nothing matches those filters")).toBeVisible();
+    await page.getByText("Clear filters", { exact: true }).click();
+    await expect(page.getByText(/^Filters$/)).toBeVisible();
+    await expect(page.locator(".item-enter").first()).toBeVisible();
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("tapping away closes a menu without pressing what was underneath, and Escape closes it too", async ({ page }) => {
+    await openDemo(page, "creator");
+    await page.getByText(/^Filters/).click();
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await expect(page.locator("[role='listbox']")).toHaveCount(1);
+
+    // an Apply button is on screen under the tap: it must not open the application
+    await page.getByText("Apply", { exact: true }).first().click({ force: true });
+    await expect(page.locator("[role='listbox']")).toHaveCount(0);
+    await expect(page.getByPlaceholder(/Introduce yourself/i)).toHaveCount(0);
+    await expect(page.getByText("Discover deals", { exact: false }).first()).toBeVisible();
+
+    // opening one menu while another is open leaves only the new one open
+    await page.locator("[aria-haspopup='listbox']").nth(0).click();
+    await page.locator("[aria-haspopup='listbox']").nth(1).click();
+    await expect(page.locator("[role='listbox']")).toHaveCount(1);
+
+    await page.keyboard.press("Escape");
+    await expect(page.locator("[role='listbox']")).toHaveCount(0);
+  });
+
+  test("brand: same button, same niche list, and a filter that hides everything says so", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "brand");
+    const t = await db(page);
+    const uid = await myId(page);
+    const mine = t.campaigns.filter(c => c.brand_id === uid);
+    const niche = mine.find(c => c.niche)!.niche as string;
+    const shown = mine.filter(c => c.niche === niche).length;
+
+    await expect(page.locator("[aria-haspopup='listbox']")).toHaveCount(0);
+    await page.getByText(/^Filters/).click();
+    await expect(page.locator("[aria-haspopup='listbox']")).toHaveCount(2);
+
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    const options = await page.locator("[role='option']").allInnerTexts();
+    expect(options.length).toBeGreaterThanOrEqual(40);
+    for (const added of ["Anime", "Property", "Weddings"]) expect(options).toContain(added);
+
+    await page.getByRole("option", { name: niche, exact: true }).click();
+    await expect(page.getByText("Filters (1)")).toBeVisible();
+    await expect(page.locator(".item-enter")).toHaveCount(shown);
+
+    // hiding everything must not claim "No campaigns yet" when there are some
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.getByRole("option", { name: "Property", exact: true }).click();
+    await expect(page.getByText("Nothing matches those filters")).toBeVisible();
+    await expect(page.getByText("No campaigns yet")).toHaveCount(0);
+    await page.getByText("Clear Filters", { exact: true }).click();
+    await expect(page.locator(".item-enter")).toHaveCount(mine.length);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: the campaign form offers the same niches", async ({ page }) => {
+    await openDemo(page, "brand");
+    await page.getByText("Post", { exact: true }).last().click();
+    const select = page.locator("select").filter({ has: page.locator("option", { hasText: "Wellness" }) }).first();
+    const options = await select.locator("option").allInnerTexts();
+    expect(options.length).toBeGreaterThanOrEqual(41); // a prompt row plus every niche
+    for (const added of ["Anime", "Home & Garden", "Property"]) expect(options).toContain(added);
+  });
+});
+
 test.describe("on an iPhone", () => {
   test.use({
     userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
