@@ -114,7 +114,7 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Fixed Layout Typography: justifyValue -> justifyContent */}
@@ -123,11 +123,11 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
       </div>
 
       {/* Feed List */}
-      <div style={{ flex: 1, overflowY: "auto", paddingBottom: "6rem", paddingTop: "calc(57px + env(safe-area-inset-top, 0px))" }}>
+      <div style={{ flex: 1, overflowY: "auto", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", paddingTop: "calc(57px + env(safe-area-inset-top, 0px))" }}>
         {showSkeleton && notifications.length === 0 ? (
           <p style={{ color: "#888", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
         ) : loading && notifications.length === 0 ? null : notifications.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "calc(60 * var(--vh))", textAlign: "center", padding: "2rem" }}>
             <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>All caught up</p>
             <p style={{ fontSize: "13px", color: "#888" }}>When updates occur, they'll land right here.</p>
           </div>

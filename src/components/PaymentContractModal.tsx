@@ -70,7 +70,7 @@ export default function PaymentContractModal({
         maxWidth: "500px",
         display: "flex",
         flexDirection: "column",
-        maxHeight: "85vh",
+        maxHeight: "calc(85 * var(--vh))",
         overflow: "hidden"
       }}>
         

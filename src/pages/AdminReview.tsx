@@ -232,7 +232,7 @@ export default function AdminReview({ goBack }: Props) {
   );
 
   if (loading && !hasLoadedOnce && !showSkeleton) {
-    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>{header}</div>;
+    return <div style={{ minHeight: "100%", background: "#0a0a0a" }}>{header}</div>;
   }
 
   if (loading && !hasLoadedOnce) {
@@ -241,7 +241,7 @@ export default function AdminReview({ goBack }: Props) {
       <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
     );
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
         {header}
         <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
@@ -269,7 +269,7 @@ export default function AdminReview({ goBack }: Props) {
 
   if (!authorized) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
+      <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
         {header}
         <p style={{ padding: "2rem", color: "#999", fontSize: "13px", textAlign: "center" }}>Not authorized.</p>
       </div>
@@ -277,7 +277,7 @@ export default function AdminReview({ goBack }: Props) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "4rem" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}>
       {header}
 
       <div style={{ display: "flex", borderBottom: "1px solid #111" }}>

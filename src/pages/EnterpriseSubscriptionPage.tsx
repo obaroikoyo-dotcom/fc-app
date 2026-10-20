@@ -203,7 +203,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
 
   if (currentSubscription?.isEnterprise) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", display: "flex", flexDirection: "column" }}>
         <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", gap: "12px" }}>
           <span onClick={() => navigate("brand-dashboard")} style={{ fontSize: "20px", color: "#999", cursor: "pointer" }}>←</span>
           <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
@@ -225,7 +225,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes enterpriseModalOverlayIn { from { opacity: 0; } to { opacity: 1; } }
@@ -243,7 +243,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
         <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>FlipCollab Enterprise</span>
       </div>
 
-      <div style={{ padding: "2rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", paddingBottom: "6rem", maxWidth: "480px", margin: "0 auto" }}>
+      <div style={{ padding: "2rem 1.25rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", maxWidth: "480px", margin: "0 auto" }}>
 
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <span style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#999", display: "block", marginBottom: "1rem" }}>Tier Upgrade</span>
@@ -354,7 +354,7 @@ export default function EnterpriseSubscriptionPage({ navigate }: { navigate: (pa
       </div>
 
       {showModal && createPortal(
-  <div className="enterprise-modal-overlay" onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.85)", zIndex: 99999, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
+  <div className="enterprise-modal-overlay" onClick={() => !paymentLoading && setShowModal(false)} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.85)", zIndex: 99999, overflowY: "auto", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff" }}>
   <div className="enterprise-modal-card" onClick={e => e.stopPropagation()} style={{ position: "relative", maxWidth: "750px", width: "95%", margin: "20px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "1.5rem" }}>
             {paymentSuccess ? (
               <div style={{ textAlign: "center", padding: "1rem 0" }}>

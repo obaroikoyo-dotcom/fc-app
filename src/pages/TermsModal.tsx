@@ -52,7 +52,7 @@ export default function TermsModal({ isOpen, onAccept, onClose, role }: TermsMod
         maxWidth: "480px",
         display: "flex",
         flexDirection: "column",
-        maxHeight: "85vh",
+        maxHeight: "calc(85 * var(--vh))",
         overflow: "hidden"
       }}>
         {/* Header */}

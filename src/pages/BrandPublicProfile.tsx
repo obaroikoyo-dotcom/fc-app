@@ -233,7 +233,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   const sectionStyle: React.CSSProperties = { marginBottom: "2rem" };
 
   if (loading && !hasLoadedOnce && !showSkeleton) {
-    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+    return <div style={{ minHeight: "100%", background: "#0a0a0a" }} />;
   }
 
   if (loading && !hasLoadedOnce) {
@@ -242,13 +242,13 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
     );
     return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
       <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
         {bar("20px", "20px")}
         {bar("120px", "18px")}
       </div>
-      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
@@ -308,7 +308,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   }
 
   if (!brand) return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ color: "#777", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Profile not found.</p>
     </div>
   );
@@ -316,7 +316,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
   const avatar = brand.avatar_url || brand.logo_url;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Top Nav */}
@@ -394,7 +394,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       )}
 
       {!blockedByMe && !blockedMe && (
-      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
+      <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>

@@ -16,7 +16,7 @@ export default function ErrorFallback() {
     <div
       role="alert"
       style={{
-        minHeight: "100vh",
+        minHeight: "100%",
         background: bg,
         color: fg,
         display: "flex",

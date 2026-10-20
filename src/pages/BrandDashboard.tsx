@@ -176,7 +176,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
@@ -231,7 +231,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
         )}
       </div>
 
-      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
+      <div style={{ flex: 1, padding: "1.25rem", overflowY: "auto", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
 
         {/* Campaigns Tab */}
         {tab === "campaigns" && (

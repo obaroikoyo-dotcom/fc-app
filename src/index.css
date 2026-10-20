@@ -8,6 +8,21 @@
   box-sizing: border-box;
 }
 
+/* Two measures the layout shares.
+   --vh: one percent of the visible height. Plain vh counts the area under a
+   phone's browser bars too, so a modal sized in vh can be taller than what you
+   can see; dvh is the visible height, and phones too old for it fall back to vh.
+   --nav-h: how tall the bottom bar is, including the strip under it where the
+   home bar sits on phones that run edge to edge (0 on phones that don't).
+   Anything that sits just above the bar uses this, so it follows the bar. */
+:root {
+  --vh: 1vh;
+  --nav-h: calc(3.05rem + env(safe-area-inset-bottom, 0px));
+}
+@supports (height: 1dvh) {
+  :root { --vh: 1dvh; }
+}
+
 html, body {
   position: fixed;
   inset: 0;

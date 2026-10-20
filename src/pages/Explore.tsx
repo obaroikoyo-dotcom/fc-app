@@ -207,7 +207,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
@@ -254,7 +254,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       </div>
 
       {/* Campaign Feed */}
-<div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
+<div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", paddingTop: stickyHeight ? `${stickyHeight + 16}px` : "10rem" }}>
       <div key={feedTab} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

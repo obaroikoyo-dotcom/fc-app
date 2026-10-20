@@ -182,7 +182,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
   useEffect(() => { setVisibleCount(10); }, [query, filter, niche, followers, sortBy]);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       <div ref={headerRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
@@ -224,7 +224,7 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
         </div>
       </div>
 
-      <div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "6rem", paddingTop: `${headerHeight + 16}px`, display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div ref={scrollRef} style={{ flex: 1, padding: "1rem", overflowY: "auto", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", paddingTop: `${headerHeight + 16}px`, display: "flex", flexDirection: "column", gap: "10px" }}>
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3, 4, 5].map(i => (

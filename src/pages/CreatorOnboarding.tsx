@@ -773,7 +773,7 @@ const buttonLabel = () => {
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -910,7 +910,7 @@ const buttonLabel = () => {
       <span onClick={() => setPickerPlatform(null)} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
       <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform ? PLATFORM_LABEL[pickerPlatform] : ""} videos</span>
     </div>
-    <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "6rem" }}>
+    <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
         Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected). You can change this anytime from Settings.
       </p>

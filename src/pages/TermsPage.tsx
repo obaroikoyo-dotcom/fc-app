@@ -23,7 +23,7 @@ export default function TermsPage() {
   }, []);
 
   return (
-    <div style={{ height: "100vh", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
+    <div style={{ height: "100%", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       <div style={{ width: "100%", maxWidth: "640px", padding: "4rem 1.5rem 6rem" }}>
         <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>

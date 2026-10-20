@@ -96,7 +96,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "calc(2rem + env(safe-area-inset-top, 0px)) 2rem calc(2rem + env(safe-area-inset-bottom, 0px))" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes fadeInUp {

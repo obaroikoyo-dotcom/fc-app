@@ -134,3 +134,158 @@ test.describe("screens that sit still and centred", () => {
     });
   }
 });
+
+// ---------------------------------------------------------------------------
+// The bottom bar and everything that sits on it. On a phone that runs edge to
+// edge, the strip at the bottom belongs to the home bar and the strip at the top
+// to the status bar: nothing readable or tappable may sit in either, the end of
+// every page must scroll clear of the bottom bar, and anything pinned just above
+// the bar (the chat input) must sit right on it.
+// ---------------------------------------------------------------------------
+
+// What is visible inside the unsafe strips. Runs in the page.
+async function unsafeZoneOffenders(page: Page, top: number, bottom: number) {
+  return page.evaluate(({ top, bottom }) => {
+    const H = innerHeight;
+    const found: string[] = [];
+    const visibleAt = (el: Element, x: number, y: number) => {
+      const hit = document.elementFromPoint(x, y);
+      return !!hit && (hit === el || el.contains(hit) || hit.contains(el));
+    };
+    for (const el of Array.from(document.querySelectorAll("body *"))) {
+      const cs = getComputedStyle(el);
+      if (cs.visibility === "hidden" || cs.display === "none" || Number(cs.opacity) === 0) continue;
+      let own = "";
+      el.childNodes.forEach(n => { if (n.nodeType === 3) own += n.textContent; });
+      own = own.trim();
+      const media = ["svg", "IMG", "VIDEO"].includes(el.tagName);
+      if (!own && !media) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2 || r.bottom <= 0 || r.top >= H) continue;
+      const inTop = top > 0 && r.top < top - 0.5;
+      const inBottom = bottom > 0 && r.bottom > H - bottom + 0.5;
+      if (!inTop && !inBottom) continue;
+      const x = Math.min(Math.max(r.left + r.width / 2, 1), innerWidth - 1);
+      const y = inTop ? Math.max(Math.min(r.top + (top - r.top) / 2, top - 1), 1) : Math.min(Math.max(H - bottom + (r.bottom - (H - bottom)) / 2, H - bottom + 1), H - 1);
+      if (!visibleAt(el, x, y)) continue; // hidden behind a bar: nobody sees it there
+      found.push(`${inTop ? "top" : "bottom"} <${el.tagName.toLowerCase()}> "${own.slice(0, 24)}"`);
+    }
+    return Array.from(new Set(found)).slice(0, 6);
+  }, { top, bottom });
+}
+
+// Can the end of the page be scrolled up clear of the bottom bar (or the home bar if there is no bar)?
+async function endOfPageClear(page: Page, homeBar: number) {
+  return page.evaluate((homeBar) => {
+    const scroller = document.querySelector(".page-enter") as HTMLElement | null;
+    if (!scroller) return { ok: true, lowest: 0, limit: 0 };
+    scroller.scrollTop = scroller.scrollHeight;
+    let limit = innerHeight - homeBar;
+    for (const d of Array.from(document.querySelectorAll("div"))) {
+      if (getComputedStyle(d).position !== "fixed") continue;
+      const r = d.getBoundingClientRect();
+      if (r.bottom >= innerHeight - 0.5 && r.height < 200 && /Search/.test(d.textContent || "") && /Profile/.test(d.textContent || "")) limit = Math.min(limit, r.top);
+    }
+    let lowest = 0;
+    scroller.querySelectorAll("*").forEach(el => {
+      let own = "";
+      el.childNodes.forEach(n => { if (n.nodeType === 3) own += n.textContent; });
+      if (!own.trim() || el.closest("[style*='position: fixed']")) return;
+      const r = el.getBoundingClientRect();
+      if (r.height >= 2 && r.bottom > 0 && r.bottom > lowest) lowest = r.bottom;
+    });
+    scroller.scrollTop = 0;
+    return { ok: lowest <= limit + 0.5, lowest: Math.round(lowest), limit: Math.round(limit) };
+  }, homeBar);
+}
+
+async function enterDemo(page: Page, role: "creator" | "brand") {
+  await page.goto(`/demo/${role}?k=e2e-dev-key`, { waitUntil: "domcontentloaded" });
+  await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+  await page.getByText("Got it", { exact: true }).click({ timeout: 20_000 });
+  await page.waitForTimeout(1_200);
+}
+
+// The fixed bar at the bottom of the screen that holds the navigation labels.
+function bottomBar() {
+  for (const d of Array.from(document.querySelectorAll("div"))) {
+    if (getComputedStyle(d).position !== "fixed") continue;
+    const r = d.getBoundingClientRect();
+    if (r.bottom >= innerHeight - 0.5 && r.height < 200 && /Search/.test(d.textContent || "") && /Profile/.test(d.textContent || "")) return { top: r.top, bottom: r.bottom, height: r.height };
+  }
+  return null;
+}
+
+const BAR_PHONES = [PHONES[0], PHONES[1], PHONES[3], PHONES[4], PHONES[5]];
+
+test.describe("bottom bar and the home bar zone", () => {
+  for (const p of BAR_PHONES) {
+    for (const role of ["creator", "brand"] as const) {
+      test(`${role} screens keep clear of the status bar and home bar: ${p.name}`, async ({ browser }) => {
+        const { ctx, page } = await openPhone(browser, p, { standalone: false });
+        await enterDemo(page, role);
+
+        const tab = (text: string) => page.getByText(text, { exact: true }).last().click();
+        const screens: Array<[string, () => Promise<unknown>]> = role === "creator"
+          ? [
+            ["explore", async () => undefined],
+            ["search", () => tab("Search")],
+            ["messages", () => tab("Messages")],
+            ["profile", () => tab("Profile")],
+          ]
+          : [
+            ["campaigns", async () => undefined],
+            ["post", () => tab("Post")],
+            ["search", () => tab("Search")],
+            ["messages", () => tab("Messages")],
+            ["profile", () => tab("Profile")],
+          ];
+        for (const [name, go] of screens) {
+          await go();
+          await page.waitForTimeout(800);
+          expect(await unsafeZoneOffenders(page, p.top, p.bottom), `${name}: nothing readable in the status bar or home bar zone`).toEqual([]);
+          const end = await endOfPageClear(page, p.bottom);
+          expect(end.ok, `${name}: the end of the page scrolls clear of the bottom bar (lowest ${end.lowest}, limit ${end.limit})`).toBe(true);
+        }
+
+        // the bar still runs to the bottom edge of the screen, and is taller by exactly the home bar zone
+        const bar = await page.evaluate(bottomBar);
+        expect(bar, "the bottom bar is there").not.toBeNull();
+        expect(Math.abs(bar!.bottom - p.h), "the bar reaches the bottom edge").toBeLessThanOrEqual(0.5);
+        expect(bar!.height).toBeGreaterThanOrEqual(48 + p.bottom);
+        expect(bar!.height).toBeLessThanOrEqual(52 + p.bottom);
+        await ctx.close();
+      });
+    }
+  }
+
+  for (const p of [PHONES[0], PHONES[3], PHONES[4]]) {
+    test(`chat input sits right on the bottom bar: ${p.name}`, async ({ browser }) => {
+      const { ctx, page } = await openPhone(browser, p, { standalone: false });
+      await enterDemo(page, "creator");
+      const t = await page.evaluate(() => JSON.parse(sessionStorage.getItem("fc_demo_db") || "null").tables);
+      const uid = await page.evaluate(() => JSON.parse(sessionStorage.getItem("fc_demo_session") || "null").userId as string);
+      const convo = t.conversations.find((c: { participant_1: string; participant_2: string }) => c.participant_1 === uid || c.participant_2 === uid);
+      const other = convo.participant_1 === uid ? convo.participant_2 : convo.participant_1;
+      const name = (t.brand_profiles.find((b: { id: string }) => b.id === other) || t.creator_profiles.find((c: { id: string }) => c.id === other)).name;
+      await page.getByText("Messages", { exact: true }).last().click();
+      await page.getByText(name, { exact: true }).first().click();
+      await page.getByPlaceholder(/^Message/).waitFor();
+      const gap = await page.evaluate(() => {
+        const input = document.querySelector("input[placeholder^='Message'], textarea[placeholder^='Message']") as HTMLElement;
+        let box: HTMLElement | null = input;
+        while (box && !(getComputedStyle(box).position === "fixed" && box.style.bottom)) box = box.parentElement;
+        let barTop = innerHeight;
+        for (const d of Array.from(document.querySelectorAll("div"))) {
+          if (getComputedStyle(d).position !== "fixed") continue;
+          const r = d.getBoundingClientRect();
+          if (r.bottom >= innerHeight - 0.5 && r.height < 200 && /Search/.test(d.textContent || "") && /Profile/.test(d.textContent || "")) barTop = Math.min(barTop, r.top);
+        }
+        return box ? barTop - box.getBoundingClientRect().bottom : null;
+      });
+      expect(gap, "the input bar is found").not.toBeNull();
+      expect(Math.abs(gap!), "the input bar meets the bottom bar with no gap and no overlap").toBeLessThanOrEqual(2.5);
+      await ctx.close();
+    });
+  }
+});

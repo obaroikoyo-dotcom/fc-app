@@ -83,7 +83,7 @@ export default function DemoInstallSheet() {
       }}
     >
       <div style={{
-        width: "100%", maxWidth: "480px", maxHeight: "92vh", overflowY: "auto", boxSizing: "border-box",
+        width: "100%", maxWidth: "480px", maxHeight: "calc(92 * var(--vh))", overflowY: "auto", boxSizing: "border-box",
         background: "#0a0a0a", border: "1px solid #1a1a1a", borderBottom: "none", borderRadius: "20px 20px 0 0",
         padding: "1.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px))",
         display: "flex", flexDirection: "column", gap: "1.25rem",

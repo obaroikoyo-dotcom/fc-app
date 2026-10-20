@@ -398,7 +398,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   };
 
   return (
-    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "90vh", overflowY: "auto", padding: "1.25rem", boxSizing: "border-box" }}>
+    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "calc(90 * var(--vh))", overflowY: "auto", padding: "1.25rem", boxSizing: "border-box" }}>
       <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
       <p style={{ color: "#999", fontSize: "12px", marginBottom: "1rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
 
@@ -2183,7 +2183,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     else if (view === "app-detail") setView("campaign-apps");
   };
 return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
@@ -2322,7 +2322,7 @@ return (
 
       {/* Applications Tab */}
       {role === "brand" && view === "list" && brandTab === "applications" && (
-        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
+        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
           {campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
               <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
@@ -2360,7 +2360,7 @@ return (
 
       {/* Campaign Applications List */}
       {view === "campaign-apps" && activeCampaign && (
-        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
+        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
           {activeCampaign.applications.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
               <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
@@ -2389,7 +2389,7 @@ return (
 
       {/* Application Detail */}
       {view === "app-detail" && activeApplication && (
-        <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "8rem", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem" }}>
+        <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#777" }}>
@@ -2516,7 +2516,7 @@ return (
 
       {/* Messages Tab List View */}
       {(role === "creator" || (role === "brand" && brandTab === "messages")) && view === "list" && (
-        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "6rem" }}>
+        <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
           {!hasLoadedOnce && showSkeleton ? (
   <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
     {[1, 2, 3, 4, 5].map(i => (
@@ -2531,7 +2531,7 @@ return (
     ))}
   </div>
 ) : !hasLoadedOnce && loading ? null : conversations.length === 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", textAlign: "center", padding: "2rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "calc(60 * var(--vh))", textAlign: "center", padding: "2rem" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
                 <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="#333" strokeWidth="2" strokeLinejoin="round"/>
               </svg>
@@ -2691,7 +2691,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `${inputBarHeight + 65}px` : "8rem" }}>
+          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `calc(${inputBarHeight + 65}px + env(safe-area-inset-bottom, 0px))` : "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
             {messages.length === 0 && (
               <p style={{ color: "#777", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -2888,7 +2888,7 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div ref={inputBarRef} style={{ position: "fixed", bottom: "3.05rem", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
+          <div ref={inputBarRef} style={{ position: "fixed", bottom: "var(--nav-h)", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
               <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <NoEntryIcon /> You've blocked this user. Unblock them in Settings to message

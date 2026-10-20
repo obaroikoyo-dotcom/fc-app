@@ -69,11 +69,11 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
   }, [campaignId]);
 
   if (loading && !hasLoadedOnce && !showSkeleton) {
-    return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+    return <div style={{ minHeight: "100%", background: "#0a0a0a" }} />;
   }
 
   if (loading && !hasLoadedOnce) return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
       <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
       <div style={{ padding: "1rem 1.25rem", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100, paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
         <div style={{ width: "20px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
@@ -97,13 +97,13 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
   );
 
   if (!campaign) return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <p style={{ color: "#999", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Campaign not found.</p>
     </div>
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Header */}
@@ -117,7 +117,7 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
         </span>
       </div>
 
-      <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "3rem", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
+      <div style={{ padding: "1.5rem 1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem", paddingBottom: "calc(var(--nav-h) + 1.5rem)", paddingTop: "calc(5rem + env(safe-area-inset-top, 0px))" }}>
 
         {/* Campaign title */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>

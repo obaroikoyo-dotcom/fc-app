@@ -86,7 +86,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 calc(2px + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -148,7 +148,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 2px 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 calc(2px + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -205,7 +205,7 @@ function NotificationPermissionPrompt({ onEnable, onDismiss }: { onEnable: () =>
       position: "fixed",
       left: "1rem",
       right: "1rem",
-      bottom: "5.5rem",
+      bottom: "calc(var(--nav-h) + 2.45rem)",
       zIndex: 9998,
       background: "#111",
       border: "1px solid #1a1a1a",
@@ -314,6 +314,7 @@ export default function App() {
   useEffect(() => {
     document.getElementById("theme-boot")?.remove();
     document.body.style.background = isInverted ? "#ffffff" : "#0a0a0a";
+    document.documentElement.style.background = isInverted ? "#ffffff" : "#0a0a0a";
     // Phone browser bars follow the theme too.
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", isInverted ? "#ffffff" : "#0a0a0a");
   }, [isInverted]);
@@ -610,7 +611,7 @@ export default function App() {
 
   if (loading && page !== "splash") {
     return (
-      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "#777", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Loading...</p>
       </div>
     );
@@ -618,7 +619,7 @@ export default function App() {
 
   if (accountBlocked) {
     return (
-      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
         <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "0.75rem" }}>
           {accountBlocked.status === "banned" ? "Account banned" : "Account suspended"}

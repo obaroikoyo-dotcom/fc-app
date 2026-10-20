@@ -17,6 +17,6 @@ export default function DemoGate({ children }: { children: ReactNode }) {
     return () => { live = false; };
   }, []);
 
-  if (!ready) return <div style={{ minHeight: "100vh", background: "#0a0a0a" }} />;
+  if (!ready) return <div style={{ minHeight: "100%", background: "#0a0a0a" }} />;
   return <>{children}</>;
 }

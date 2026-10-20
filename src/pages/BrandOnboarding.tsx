@@ -649,7 +649,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
