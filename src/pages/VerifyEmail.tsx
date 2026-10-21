@@ -195,7 +195,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
 
           <div
             onClick={resending ? undefined : handleResend}
-            style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: resent ? "#34c759" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: resending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px", opacity: resending ? 0.6 : 1, transition: "all 0.2s" }}
+            style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: resent ? "#fff" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: resending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px", opacity: resending ? 0.6 : 1, transition: "all 0.2s" }}
           >
             {resending ? "Sending..." : resent ? "Code resent" : "Resend code"}
           </div>

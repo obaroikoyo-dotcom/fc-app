@@ -536,7 +536,7 @@ const loadFavourites = async () => {
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    {connection && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
+                    {connection && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#fff" }}>Verified ✓</span>}
                     {connection?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{connection.follower_count.toLocaleString()} followers</p>}
                   </div>
                 </div>

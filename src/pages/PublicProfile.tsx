@@ -430,7 +430,7 @@ const startDM = async () => {
       ) : reportOpen && (
         <div style={{ position: "fixed", top: "calc(57px + env(safe-area-inset-top, 0px))", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
           {reportSubmitted ? (
-            <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
+            <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
           ) : (
             <>
               <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {creator.name || "this profile"}</p>

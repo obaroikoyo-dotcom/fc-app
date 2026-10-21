@@ -76,7 +76,7 @@ export default function PaymentContractModal({
         
         {/* Modal Title Block */}
         <div style={{ padding: "1.25rem", borderBottom: "1px solid #111" }}>
-          <span style={{ color: "#34c759", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <span style={{ color: "#fff", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Secure Collaboration Registry
           </span>
           <h3 style={{ margin: "4px 0 0 0", color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'TikTok Sans', sans-serif" }}>
@@ -108,7 +108,7 @@ export default function PaymentContractModal({
           </div>
 
           {/* Legal Escrow Protection Guarantee */}
-          <div style={{ borderLeft: "2px solid #34c759", paddingLeft: "10px", margin: 0 }}>
+          <div style={{ borderLeft: "2px solid #fff", paddingLeft: "10px", margin: 0 }}>
             <p style={{ margin: 0, color: "#aaa", fontSize: "11px", lineHeight: "1.6" }}>
               <strong>Escrow Protection:</strong> Funds are safely charged via Stripe and securely held in our escrow vault. The creator can see the funds are secured but cannot withdraw them until you review and approve the finalized content uploads.
             </p>
@@ -129,7 +129,7 @@ export default function PaymentContractModal({
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Total Due Now to Escrow:</span>
-              <span style={{ color: "#34c759", fontSize: "18px", fontWeight: 800, fontFamily: "'TikTok Sans', sans-serif" }}>
+              <span style={{ color: "#fff", fontSize: "18px", fontWeight: 800, fontFamily: "'TikTok Sans', sans-serif" }}>
                 £{totalEscrowCharge.toLocaleString()}
               </span>
             </div>

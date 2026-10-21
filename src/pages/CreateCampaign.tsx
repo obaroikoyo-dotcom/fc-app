@@ -554,7 +554,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
                   <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
-                  <span style={{ color: isEnterprise ? "#34c759" : "#444" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span style={{ color: isEnterprise ? "#fff" : "#444" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {isEnterprise && (
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
@@ -564,7 +564,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 )}
                 <hr style={{ border: "0", borderTop: "1px solid #161616", margin: "6px 0" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
-                  <span>Total</span><span style={{ color: "#34c759" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>Total</span><span style={{ color: "#fff" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#777", marginTop: "4px" }}>
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
@@ -703,10 +703,11 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         </div>
         <div
           onClick={!posting ? () => postCampaign(false) : undefined}
+          className={posted ? "fc-pop" : undefined}
           style={{
             flex: 2, padding: "13px", borderRadius: "6px",
             background: posted ? "#0f0f0f" : posting ? "#0f0f0f" : "#fff",
-            color: posted ? "#34c759" : posting ? "#444" : "#0a0a0a",
+            color: posted ? "#fff" : posting ? "#444" : "#0a0a0a",
             border: posted ? "1px solid #1a1a1a" : posting ? "1px solid #1e1e1e" : "1px solid #fff",
             fontSize: "12px", fontWeight: 600, textAlign: "center",
             cursor: posting ? "default" : "pointer",

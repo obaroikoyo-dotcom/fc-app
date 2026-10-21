@@ -331,6 +331,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (
                   <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem" }}>
+                    <div style={{ height: "84px", margin: "-1.25rem -1.25rem 12px", borderRadius: "11px 11px 0 0", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
@@ -514,7 +515,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         c.type === "paid" && budgetVal ? (
                           <div style={{ display: "flex", flexDirection: "column" }}>
                             <span style={{ fontSize: "12px", color: "#999", fontWeight: 500 }}>Your Net Payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                            <span style={{ fontSize: "24px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.15 }}>£{creatorNetPayout.toLocaleString()}</span>
+                            <span style={{ fontSize: "24px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.15 }}>£{creatorNetPayout.toLocaleString()}</span>
                           </div>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -531,8 +532,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                           {isOwn && (
                             <span style={{ fontSize: "12px", color: "#999", marginTop: "6px", lineHeight: 1.5 }}>
                               {isEnterprise
-                                ? <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (0% platform fee + 2.5% + 20p card processing)</>
-                                : <>Total: <span style={{ color: "#34c759", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (+5% fee)</>
+                                ? <>Total: <span style={{ color: "#fff", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (0% platform fee + 2.5% + 20p card processing)</>
+                                : <>Total: <span style={{ color: "#fff", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (+5% fee)</>
                               }
                               <br />
                               Creator nets <span style={{ color: "#fff", fontWeight: 500 }}>£{creatorNetPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>{!isEnterprise && " (-10% cut)"}

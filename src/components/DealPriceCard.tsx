@@ -73,7 +73,7 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
       </div>
 
       {open && (
-        <div style={{ borderTop: "1px solid #1c1c1c", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div className="fc-pop" style={{ borderTop: "1px solid #1c1c1c", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
           <p style={{ margin: 0, fontSize: "13px", color: "#fff", fontWeight: 600 }}>
             {mine ? `You offered ${pounds(open.amount)}` : `${otherName} offered ${pounds(open.amount)}`}
           </p>

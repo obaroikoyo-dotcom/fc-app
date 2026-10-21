@@ -144,7 +144,7 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, g
                 {c.paid ? (
                   <>
                     <p style={{ margin: 0, fontSize: "11px", color: "#999" }}>{c.figureLabel ?? "You'd earn"}</p>
-                    <p style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>{c.figure}</p>
+                    <p style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>{c.figure}</p>
                   </>
                 ) : (
                   <>

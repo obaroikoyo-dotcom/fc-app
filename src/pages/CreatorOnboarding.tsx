@@ -683,7 +683,7 @@ const [showOtp, setShowOtp] = useState(false);
                 {connection ? (
                   <div style={{ display: "flex", gap: "8px" }}>
                     <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: "pointer" }}>Choose videos</span>
-                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#34c759" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
+                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#fff" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
                   </div>
                 ) : platform === "youtube" ? (
                   <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
@@ -897,7 +897,7 @@ const buttonLabel = () => {
       <div
         className="tap-btn"
         onClick={otpResending ? undefined : handleOtpResend}
-        style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#34c759" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: otpResending ? "none" : "auto" }}
+        style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#fff" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: otpResending ? "none" : "auto" }}
       >
         {otpResending ? "Sending..." : otpResent ? "Code resent" : "Resend code"}
       </div>

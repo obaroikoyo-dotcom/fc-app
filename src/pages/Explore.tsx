@@ -241,7 +241,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const getStatusStyle = (status?: string): React.CSSProperties => {
     switch (status) {
       case "approved":
-      case "paid": return { color: "#34c759" };
+      case "paid": return { color: "#fff" };
       case "declined": return { color: "#ff3b30" };
       default: return { color: "#ff9500" };
     }
@@ -315,6 +315,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (
               <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
+                <div style={{ height: "84px", margin: "-1rem -1rem 12px", borderRadius: "11px 11px 0 0", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
                   <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -427,7 +428,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                     {paid ? (
                       <>
                         <p style={{ margin: 0, fontSize: "12px", color: "#999", marginBottom: "2px" }}>You'd earn</p>
-                        <p style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{netCreatorPayout.toLocaleString()}</p>
+                        <p style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{netCreatorPayout.toLocaleString()}</p>
                         <p style={{ margin: 0, fontSize: "11px", color: "#999", marginTop: "3px" }}>{brandIsEnterprise ? "No platform fee" : "After the 10% platform fee"}</p>
                       </>
                     ) : (

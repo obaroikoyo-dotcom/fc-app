@@ -203,6 +203,13 @@ interface Campaign {
   applications: Application[];
 }
 
+// The small action buttons in a chat's top bar (Pay, Screen Out, report): big enough to
+// hit with a thumb, 38px tall.
+const headerAction: React.CSSProperties = {
+  display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: "38px", boxSizing: "border-box",
+  padding: "0 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", flexShrink: 0,
+};
+
 const REACTION_EMOJI = ["❤️", "😂", "😮", "😢", "👍"];
 const CHAT_OPENED_PREFIX = "Chat Opened!";
 const PAYMENT_CONFIRMED_PREFIX = "Payment secured!";
@@ -2231,13 +2238,13 @@ return (
           navigateToProfile?.(otherId);
         }
       }}
-      style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
+      style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", minWidth: 0 }}
     >
       <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
         {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : <img src={avatarSrc(activeConvo.other_avatar, activeConvo.other_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
       </div>
-      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
-        {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}
+      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}</span>
         {!blockedByIds.includes(otherParticipantId(activeConvo) || "") && activeConvo.other_verified && <VerifiedBadge />}
       </h1>
     </div>
@@ -2252,25 +2259,9 @@ return (
               <span style={{ fontSize: "9px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 8px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-                {role === "brand" && (
-                  <>
-                    <span
-                      onClick={handlePayButtonClick}
-                      style={{ fontSize: "10px", fontWeight: 600, color: payableApps.length > 0 ? "#0a0a0a" : "#444", background: payableApps.length > 0 ? "#fff" : "#161616", cursor: payableApps.length > 0 ? "pointer" : "default", padding: "5px 10px", borderRadius: "6px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}
-                    >
-                      Pay
-                    </span>
-                    <span
-                      onClick={handleScreenOutButtonClick}
-                      style={{ fontSize: "10px", fontWeight: 600, color: payableApps.length > 0 ? "#ff3b30" : "#444", border: `1px solid ${payableApps.length > 0 ? "#3a1a1a" : "#222"}`, cursor: payableApps.length > 0 ? "pointer" : "default", padding: "5px 10px", borderRadius: "6px", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}
-                    >
-                      Screen Out
-                    </span>
-                  </>
-                )}
                 <span
                   onClick={() => { setChatReportOpen(o => !o); setChatReportSubmitted(false); }}
-                  style={{ fontSize: "11px", color: "#aaa", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+                  style={{ ...headerAction, fontSize: "14px", color: "#aaa", cursor: "pointer", border: "1px solid #222", padding: "0", width: "38px" }}
                 >
                   ⚑
                 </span>
@@ -2279,11 +2270,29 @@ return (
           )}
         </div>
 
+        {/* Chat actions (brand): their own row, big enough to hit, so the name above keeps its room */}
+        {view === "chat" && activeConvo && role === "brand" && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
+          <div style={{ display: "flex", gap: "10px", padding: "10px 1.25rem", borderBottom: "1px solid #111", background: "#0a0a0a" }}>
+            <span
+              onClick={handlePayButtonClick}
+              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "#0a0a0a" : "#444", background: payableApps.length > 0 ? "#fff" : "#161616", cursor: payableApps.length > 0 ? "pointer" : "default" }}
+            >
+              Pay
+            </span>
+            <span
+              onClick={handleScreenOutButtonClick}
+              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "#ff3b30" : "#444", border: `1px solid ${payableApps.length > 0 ? "#3a1a1a" : "#222"}`, cursor: payableApps.length > 0 ? "pointer" : "default" }}
+            >
+              Screen Out
+            </span>
+          </div>
+        )}
+
         {/* Chat report panel */}
         {view === "chat" && activeConvo && chatReportOpen && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
           <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
             {chatReportSubmitted ? (
-              <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
+              <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
             ) : (
               <>
                 <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {activeConvo.other_name}</p>
@@ -2425,7 +2434,7 @@ return (
             ) : (
               <span
                 onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
-                style={{ fontSize: "11px", color: "#aaa", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+                style={{ ...headerAction, fontSize: "14px", color: "#aaa", cursor: "pointer", border: "1px solid #222", padding: "0", width: "38px" }}
               >
                 ⚑ Report
               </span>
@@ -2435,7 +2444,7 @@ return (
           {reportOpen && !blockedIds.includes(activeApplication.creator_id) && (
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
               {reportSubmitted ? (
-                <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
+                <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
               ) : (
                 <>
                   <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report this application</p>

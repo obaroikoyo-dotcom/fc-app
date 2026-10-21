@@ -585,7 +585,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
                   </div>
                 </div>
                 {connection ? (
-                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Connected ✓</span>
+                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#fff" }}>Connected ✓</span>
                 ) : (
                   <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                     {connectingPlatform === platform ? "Connecting..." : "Connect"}
@@ -770,7 +770,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
             <div
               onClick={otpResending ? undefined : handleOtpResend}
-              style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#34c759" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+              style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#fff" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               {otpResending ? "Sending..." : otpResent ? "Code resent" : "Resend code"}
             </div>

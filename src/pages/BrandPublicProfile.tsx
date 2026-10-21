@@ -352,7 +352,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
       ) : reportOpen && (
         <div style={{ position: "fixed", top: "calc(57px + env(safe-area-inset-top, 0px))", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
           {reportSubmitted ? (
-            <p style={{ fontSize: "13px", color: "#34c759" }}>Report submitted. Thanks, we'll review it.</p>
+            <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
           ) : (
             <>
               <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {brand.name || "this profile"}</p>
@@ -505,7 +505,7 @@ export default function BrandPublicProfile({ navigate, profileId, goBack }: Prop
                     </div>
                   </div>
                   <div style={{ textAlign: "right" }}>
-                    {info && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#34c759" }}>Verified ✓</span>}
+                    {info && <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #333", color: "#fff" }}>Verified ✓</span>}
                     {info?.follower_count != null && <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{info.follower_count.toLocaleString()} followers</p>}
                   </div>
                 </div>

@@ -260,7 +260,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
               <span style={{ display: "block", fontSize: "9px", color: "#888", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Net Take-home {campaign.brand_profiles?.is_enterprise ? "(0% cut)" : "(-10%)"}
               </span>
-              <span style={{ fontSize: "16px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif" }}>
+              <span style={{ fontSize: "16px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif" }}>
                 £{(parseInt(campaign.budget, 10) * (campaign.brand_profiles?.is_enterprise ? 1 : 0.90)).toLocaleString()}
               </span>
             </div>
@@ -428,7 +428,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
           <input type="file" disabled={submitting} accept="video/*" onChange={handleVideoFileChange}
             style={{ ...UI.input, background: "#111", border: "1px dashed #222", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.5 : 1 }} />
           {videoFile && !submitting && (
-            <p style={{ color: "#34c759", fontSize: "12px", marginTop: "6px" }}>✓ {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)</p>
+            <p style={{ color: "#fff", fontSize: "12px", marginTop: "6px" }}>✓ {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)</p>
           )}
           {uploadProgress !== null && (
             <div style={{ marginTop: "12px" }}>

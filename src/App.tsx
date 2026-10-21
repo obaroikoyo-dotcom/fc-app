@@ -92,14 +92,14 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
           <polygon points="10,14 14,10 13,15 9,13" fill={page === "explore" ? activeColor : inactiveColor}/>
         </svg>
-        <span style={{ fontSize: "10px", color: page === "explore" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: page === "explore" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
       </div>
       <div onClick={() => navigate("search-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="11" cy="11" r="7" stroke={page === "search-creator" ? activeColor : inactiveColor} strokeWidth="2"/>
           <line x1="16.65" y1="16.65" x2="21" y2="21" stroke={page === "search-creator" ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
         </svg>
-        <span style={{ fontSize: "10px", color: page === "search-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: page === "search-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Search</span>
       </div>
 
       <div onClick={() => navigate("messages-creator")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
@@ -112,7 +112,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
             <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30", border: `2px solid ${bgColor}` }} />
           )}
         </div>
-        <span style={{ fontSize: "10px", color: page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
       </div>
 
       <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
@@ -121,7 +121,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
           <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
             stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8" strokeLinecap="round"/>
         </svg>
-        <span style={{ fontSize: "10px", color: page === "creator-profile" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: page === "creator-profile" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
       </div>
     </div>
     </div>
@@ -156,14 +156,14 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
           <rect x="3" y="14" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
           <rect x="14" y="14" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
         </svg>
-        <span style={{ fontSize: "9px", color: campaignsActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Campaigns</span>
+        <span className="nav-label" style={{ fontSize: "10px", color: campaignsActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Campaigns</span>
       </div>
       <div onClick={() => { setViewingProfileId(null); navigate("search-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="11" cy="11" r="7" stroke={searchActive ? activeColor : inactiveColor} strokeWidth="2"/>
           <line x1="16.65" y1="16.65" x2="21" y2="21" stroke={searchActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
         </svg>
-        <span style={{ fontSize: "10px", color: searchActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Search</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: searchActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Search</span>
       </div>
 
       <div onClick={() => { setViewingProfileId(null); navigate("messages-brand"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer", position: "relative" }}>
@@ -176,7 +176,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
             <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30", border: `2px solid ${bgColor}` }} />
           )}
         </div>
-        <span style={{ fontSize: "10px", color: messagesActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Messages</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: messagesActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Messages</span>
       </div>
 
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("post"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
@@ -184,7 +184,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
           <line x1="12" y1="5" x2="12" y2="19" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
           <line x1="5" y1="12" x2="19" y2="12" stroke={postActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinecap="round"/>
         </svg>
-        <span style={{ fontSize: "10px", color: postActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Post</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: postActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Post</span>
       </div>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-profile"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -192,7 +192,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
           <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
             stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8" strokeLinecap="round"/>
         </svg>
-        <span style={{ fontSize: "10px", color: profileActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Profile</span>
+        <span className="nav-label" style={{ fontSize: "11px", color: profileActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Profile</span>
       </div>
     </div>
     </div>

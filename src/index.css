@@ -172,3 +172,44 @@ p { text-wrap: pretty; }
 .theme-light [style*="; color: rgb(255, 184, 0)"] {
   color: #be6e00 !important;
 }
+
+/* --- Readability --------------------------------------------------------------
+   Much of the app's secondary text was set in very faint greys at 9 to 11px:
+   fine to look at, hard to read, especially outdoors. Two floors, applied to
+   the finished page so no screen needs touching:
+   - Text greys darker than #999 are lifted to #999. (The colours here are the
+     dark-look values; the light look flips them, so #999 reads as a mid-dark
+     grey on white, about 5.4:1. Anything fainter than that was under 4.5:1.)
+     #444 and darker are left alone: they are disabled and inactive states.
+   - Text under 12px is raised: 9px to 11px, 10px and 11px to 12px.
+   The bottom bar labels (.nav-label) set their own size, and tiny numbers
+   inside badges keep to what fits (see .keep-size). */
+[style^="color: rgb(85, 85, 85)"], [style*="; color: rgb(85, 85, 85)"],
+[style^="color: rgb(102, 102, 102)"], [style*="; color: rgb(102, 102, 102)"],
+[style^="color: rgb(119, 119, 119)"], [style*="; color: rgb(119, 119, 119)"],
+[style^="color: rgb(136, 136, 136)"], [style*="; color: rgb(136, 136, 136)"] {
+  color: #999 !important;
+}
+[style*="font-size: 9px"]:not(.nav-label):not(.keep-size) { font-size: 11px !important; }
+[style*="font-size: 10px"]:not(.nav-label):not(.keep-size),
+[style*="font-size: 11px"]:not(.nav-label):not(.keep-size) { font-size: 12px !important; }
+
+/* The bottom bar is a fixed height (--nav-h) that other things sit on, so its labels
+   keep a fixed line height however big the letters are. */
+.nav-label { line-height: 12px; }
+
+/* A press on a button gives a little back. */
+button:not(:disabled), [role="button"] {
+  transition: transform 90ms ease, background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
+
+/* Something just worked: it arrives with a short, soft pop instead of appearing. */
+@keyframes fc-pop { 0% { opacity: 0; transform: scale(0.96) translateY(4px); } 100% { opacity: 1; transform: none; } }
+@keyframes fc-tick { 0% { stroke-dashoffset: 24; } 100% { stroke-dashoffset: 0; } }
+.fc-pop { animation: fc-pop 220ms ease-out both; }
+.fc-tick path { stroke-dasharray: 24; animation: fc-tick 320ms ease-out 80ms both; }
+@media (prefers-reduced-motion: reduce) {
+  .fc-pop, .fc-tick path { animation: none; }
+  button:not(:disabled):active, [role="button"]:active { transform: none; }
+}
