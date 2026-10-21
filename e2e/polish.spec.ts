@@ -110,3 +110,17 @@ test("a chat's top bar: Pay, Screen Out and report are easy to tap, and a long n
   const bar = (await page.locator("div[style*=\"position: fixed\"]").first().boundingBox())!;
   expect(bar.y + bar.height).toBeLessThan(200);
 });
+
+test("an applicant's page: the Report button holds its label and is easy to tap", async ({ page }) => {
+  await openDemo(page, "brand");
+  await page.getByText("Messages", { exact: true }).last().click();
+  await page.getByText(/^[0-9]+ applications?$/).first().click(); // first campaign
+  await page.getByText(/^pending$/i).first().click(); // first pending applicant
+  const report = page.getByText(/Report$/).filter({ hasText: "⚑" }).first();
+  await expect(report).toBeVisible();
+  const box = (await report.boundingBox())!;
+  expect(box.height, "at least 36px tall").toBeGreaterThanOrEqual(36);
+  const fits = await report.evaluate(el => el.scrollWidth <= el.clientWidth + 1);
+  expect(fits, "the label sits inside the button").toBe(true);
+  expect(box.x + box.width, "stays on the screen").toBeLessThanOrEqual(390);
+});

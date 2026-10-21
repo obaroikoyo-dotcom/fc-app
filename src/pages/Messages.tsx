@@ -2434,7 +2434,7 @@ return (
             ) : (
               <span
                 onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
-                style={{ ...headerAction, fontSize: "14px", color: "#aaa", cursor: "pointer", border: "1px solid #222", padding: "0", width: "38px" }}
+                style={{ ...headerAction, color: "#aaa", cursor: "pointer", border: "1px solid #222" }}
               >
                 ⚑ Report
               </span>
