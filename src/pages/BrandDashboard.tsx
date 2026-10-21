@@ -13,6 +13,9 @@ import { getBrandTrackRecord, formatResponseTime, type BrandTrackRecord } from "
 import { dealBreakdown } from "../lib/fees";
 import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
+import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
+import CampaignTile from "../components/CampaignTile";
+import { SHELF_TITLES, bandTag, buildShelves, daysLeft, dueNote, emptyShelves, shelfIsShown, type ShelfKey } from "../lib/campaignShelves";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -36,6 +39,8 @@ interface Campaign {
   created_at: string;
   script: string;
   applications: { id: string }[];
+  brand_profiles?: { name?: string; logo_url?: string; verified?: boolean } | null;
+  is_draft?: boolean;
   objective?: string;
   deliverables?: string[];
   vibe?: string;
@@ -86,6 +91,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   const [selectedNiche, setSelectedNiche] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [focus, setFocus] = useState<ShelfKey | null>(null); // "See all" on a Market row
   const [editingCampaign, setEditingCampaign] = useState<Campaign | null>(null);
   const [hasMountedPostTab, setHasMountedPostTab] = useState(tab === "post");
   useEffect(() => { if (tab === "post") setHasMountedPostTab(true); }, [tab]);
@@ -152,6 +158,51 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
   }, []);
 
   const activeFilterCount = [selectedNiche, selectedPlatform].filter(Boolean).length;
+
+  // Your campaigns, or the market, with the filters applied.
+  const visibleCampaigns = campaigns.filter(c => {
+    const isOwn = c.brand_id === currentUserId;
+    if (feedTab === "yours" && !isOwn) return false;
+    // Drafts are only ever visible on your own "Your Campaigns"
+    // list, never in Market - even your own.
+    if (feedTab === "discover" && c.is_draft) return false;
+    if (selectedNiche && c.niche !== selectedNiche) return false;
+    if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
+    return true;
+  });
+
+  // Rows on top of the market, like Explore has for creators: only on Market, with
+  // no filter on, and only once there are enough campaigns for them to be more than
+  // a repeat of the list. Ranked by budget.
+  const budgetOf = (c: Campaign) => parseInt(c.budget, 10) || 0;
+  const marketNow = tab === "campaigns" && feedTab === "discover" && activeFilterCount === 0;
+  const shelfLists: Record<ShelfKey, Campaign[]> = marketNow ? buildShelves(visibleCampaigns, now, budgetOf) : emptyShelves<Campaign>();
+  const focusKey = marketNow && focus && shelfLists[focus].length > 0 ? focus : null;
+  const showShelves = marketNow && !focusKey && visibleCampaigns.length >= 4;
+  const feedList = focusKey ? shelfLists[focusKey] : visibleCampaigns;
+  const shelfCard = (key: ShelfKey, c: Campaign): ShelfCard => {
+    const budget = budgetOf(c);
+    return {
+      id: c.id,
+      brandName: c.brand_profiles?.name || "Brand",
+      brandAvatar: avatarSrc(c.brand_profiles?.logo_url, c.brand_profiles?.name),
+      verified: !!c.brand_profiles?.verified,
+      name: c.name,
+      niche: c.niche || "",
+      paid: c.type === "paid" && budget > 0,
+      figure: `£${budget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      figureLabel: "Budget",
+      note: key === "closing" ? dueNote(daysLeft(c.deadline, now) ?? 0) : key === "top" ? c.niche || "" : formatRelativeTime(c.created_at, now),
+      urgent: key === "closing" && (daysLeft(c.deadline, now) ?? 9) <= 2,
+    };
+  };
+  // Your own campaign opens its preview; someone else's opens their profile.
+  const openShelfCampaign = (id: string) => {
+    const c = campaigns.find(x => x.id === id);
+    if (!c) return;
+    if (c.brand_id === currentUserId) navigateToCampaignPreview?.(id);
+    else navigateToProfile?.(c.brand_id);
+  };
 
   const deleteCampaign = async (id: string) => {
     if (!currentUserId) return;
@@ -258,6 +309,21 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 </div>
               </div>
             )}
+            {showShelves && (["closing", "top", "fresh"] as const).map(key => {
+              const list = shelfLists[key];
+              if (!shelfIsShown(key, list)) return null;
+              return (
+                <CampaignShelf
+                  key={key}
+                  title={SHELF_TITLES[key]}
+                  total={list.length}
+                  cards={list.slice(0, 8).map(c => shelfCard(key, c))}
+                  onOpen={openShelfCampaign}
+                  onSeeAll={() => setFocus(key)}
+                  gutter="1.25rem"
+                />
+              );
+            })}
             {!hasLoadedOnce && showSkeleton ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {[1, 2, 3].map(i => (
@@ -288,16 +354,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 </div>
               </div>
             ) : (() => {
-              const filtered = campaigns.filter(c => {
-                const isOwn = c.brand_id === currentUserId;
-                if (feedTab === "yours" && !isOwn) return false;
-                // Drafts are only ever visible on your own "Your Campaigns"
-                // list, never in Market - even your own.
-                if (feedTab === "discover" && (c as any).is_draft) return false;
-                if (selectedNiche && c.niche !== selectedNiche) return false;
-                if (selectedPlatform && !c.platforms?.includes(selectedPlatform)) return false;
-                return true;
-              });
+              const filtered = feedList;
               const filtersOn = !!(selectedNiche || selectedPlatform);
               if (filtered.length === 0) return (
                 <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "3rem 2rem", textAlign: "center", marginTop: "2rem" }}>
@@ -318,7 +375,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                   )}
                 </div>
               );
-              return <>{filtered.map((c, i) => {
+              return <>{focusKey ? (
+                <ShelfHeading title={SHELF_TITLES[focusKey]} count={filtered.length} actionLabel="Show everything" onAction={() => setFocus(null)} />
+              ) : showShelves ? (
+                <ShelfHeading title="All campaigns" count={filtered.length} />
+              ) : null}{filtered.map((c, i) => {
                 const isOwn = c.brand_id === currentUserId;
                 const brandLogo = (c as any).brand_profiles?.logo_url;
                 const brandName = (c as any).brand_profiles?.name;
@@ -331,6 +392,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                 const appCount = c.applications?.length || 0;
 
                 const isPreviewable = isOwn && feedTab === "discover";
+                const tag = c.is_draft ? undefined : bandTag(c, now);
 
                 return (
                   <div
@@ -339,6 +401,8 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     onClick={isPreviewable ? () => navigateToCampaignPreview && navigateToCampaignPreview(c.id) : undefined}
                     style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "16px", padding: "1.1rem", cursor: isPreviewable ? "pointer" : "default" }}
                   >
+                    <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} />
+                    <div style={{ height: "12px" }} />
 
                     {/* Header Row */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
@@ -354,7 +418,6 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                             {brandName || "Brand"}
                             {brandVerified && <VerifiedBadge size={12} />}
                           </p>
-                          {c.niche && <p style={{ margin: "2px 0 0", color: "#999", fontSize: "12px" }}>{c.niche}</p>}
                         </div>
                       </div>
 

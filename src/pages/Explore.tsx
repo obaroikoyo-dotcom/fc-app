@@ -14,6 +14,7 @@ import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
 import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
 import CampaignTile from "../components/CampaignTile";
+import { SHELF_TITLES, bandTag, buildShelves, daysLeft, dueNote, emptyShelves, shelfIsShown, type ShelfKey } from "../lib/campaignShelves";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -69,26 +70,11 @@ const formatRelativeTime = (dateString: string, now: Date) => {
   return `${diffDays} days ago`;
 };
 
-const DAY_MS = 86_400_000;
-
-// Whole calendar days from today to a "YYYY-MM-DD" deadline: 0 is today, negative is past.
-const daysLeft = (deadline: string, now: Date): number | null => {
-  const [y, m, d] = (deadline || "").split("-").map(Number);
-  if (!y || !m || !d) return null;
-  const due = new Date(y, m - 1, d).getTime();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  return Math.round((due - today) / DAY_MS);
-};
-const dueNote = (days: number) => (days === 0 ? "Due today" : days === 1 ? "Due tomorrow" : `Due in ${days} days`);
-const createdAt = (c: { created_at: string }) => (c.created_at ? new Date(c.created_at.endsWith("Z") ? c.created_at : c.created_at + "Z").getTime() : 0);
 // What the creator takes home: the whole budget from an Enterprise brand, 90% otherwise.
 const netPayout = (c: { budget: string; brand_profiles: { is_enterprise?: boolean } | null }) => {
   const base = parseInt(c.budget, 10) || 0;
   return c.brand_profiles?.is_enterprise ? base : base * 0.9;
 };
-
-type ShelfKey = "closing" | "top" | "fresh";
-const SHELF_TITLES: Record<ShelfKey, string> = { closing: "Closing soon", top: "Top paying", fresh: "New today" };
 
 export default function Explore({ navigate, navigateToProfile, navigateToApply }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -227,19 +213,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   // to be more than a repeat of the list. Campaigns whose deadline has passed
   // are left out of them.
   const discoverNow = feedTab === "discover" && activeFilterCount === 0;
-  const stillOpen = (c: Campaign) => { const d = daysLeft(c.deadline, now); return d === null || d >= 0; };
-  const shelfLists: Record<ShelfKey, Campaign[]> = {
-    closing: discoverNow
-      ? filteredCampaigns.filter(c => { const d = daysLeft(c.deadline, now); return d !== null && d >= 0 && d <= 7; })
-          .sort((a, b) => (daysLeft(a.deadline, now) ?? 0) - (daysLeft(b.deadline, now) ?? 0))
-      : [],
-    top: discoverNow
-      ? filteredCampaigns.filter(c => c.type === "paid" && netPayout(c) > 0 && stillOpen(c)).sort((a, b) => netPayout(b) - netPayout(a))
-      : [],
-    fresh: discoverNow
-      ? filteredCampaigns.filter(c => stillOpen(c) && now.getTime() - createdAt(c) < DAY_MS).sort((a, b) => createdAt(b) - createdAt(a))
-      : [],
-  };
+  const shelfLists: Record<ShelfKey, Campaign[]> = discoverNow ? buildShelves(filteredCampaigns, now, netPayout) : emptyShelves<Campaign>();
   const focusKey = discoverNow && focus && shelfLists[focus].length > 0 ? focus : null;
   const showShelves = discoverNow && !focusKey && filteredCampaigns.length >= 4;
   const feedList = focusKey ? shelfLists[focusKey] : filteredCampaigns;
@@ -256,7 +230,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     name: c.name,
     niche: c.niche || "",
     paid: c.type === "paid" && netPayout(c) > 0,
-    earn: netPayout(c),
+    figure: `£${netPayout(c).toLocaleString()}`,
     note: shelfNote(key, c),
     urgent: key === "closing" && (daysLeft(c.deadline, now) ?? 9) <= 2,
   });
@@ -322,7 +296,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
       <div key={feedTab} className="page-enter" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {showShelves && (["closing", "top", "fresh"] as const).map(key => {
           const list = shelfLists[key];
-          if (key === "top" ? list.length < 2 : list.length === 0) return null;
+          if (!shelfIsShown(key, list)) return null;
           return (
             <CampaignShelf
               key={key}
@@ -391,9 +365,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
             const paid = c.type === "paid" && !!baseBudgetVal;
             const brandName = c.brand_profiles?.name || "Brand";
-            // one tag on the colour band: a close deadline outranks being new
-            const dl = daysLeft(c.deadline, now);
-            const tag = dl !== null && dl >= 0 && dl <= 3 ? "Closing soon" : now.getTime() - createdAt(c) < DAY_MS ? "New" : undefined;
+            const tag = bandTag(c, now);
 
             return (
               <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1.1rem" }}>

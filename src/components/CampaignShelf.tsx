@@ -13,7 +13,8 @@ export interface ShelfCard {
   name: string;
   niche: string;
   paid: boolean;
-  earn: number; // what the creator would take home, for paid campaigns
+  figure: string; // the money, already formatted ("£189"), for paid campaigns
+  figureLabel?: string; // what the money is; "You'd earn" unless the page says otherwise
   note: string; // the small line on the right: a deadline, a niche, how long ago
   urgent: boolean; // the note is a deadline that is close
 }
@@ -41,21 +42,22 @@ export function ShelfHeading({ title, count, actionLabel, onAction }: { title: s
   );
 }
 
-export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll }: {
+export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, gutter = "1rem" }: {
   title: string;
   total: number;
   cards: ShelfCard[];
   onOpen: (id: string) => void;
   onSeeAll: () => void;
+  gutter?: string; // the page's side padding, so the row can run to the screen edges
 }) {
   return (
     <section aria-label={title} style={{ marginBottom: "0.75rem" }}>
       <style>{`.shelf-scroll { scrollbar-width: none; } .shelf-scroll::-webkit-scrollbar { display: none; }`}</style>
       <ShelfHeading title={title} count={total} actionLabel="See all" onAction={onSeeAll} />
-      {/* Runs to both screen edges (the page pads 1rem each side) and snaps card by card */}
+      {/* Runs to both screen edges (the page pads `gutter` each side) and snaps card by card */}
       <div
         className="shelf-scroll"
-        style={{ display: "flex", gap: "10px", overflowX: "auto", overscrollBehaviorX: "contain", scrollSnapType: "x proximity", scrollPaddingLeft: "1rem", WebkitOverflowScrolling: "touch", margin: "10px -1rem 0", padding: "0 1rem 2px" }}
+        style={{ display: "flex", gap: "10px", overflowX: "auto", overscrollBehaviorX: "contain", scrollSnapType: "x proximity", scrollPaddingLeft: gutter, WebkitOverflowScrolling: "touch", margin: `10px calc(-1 * ${gutter}) 0`, padding: `0 ${gutter} 2px` }}
       >
         {cards.map(c => (
           <div
@@ -81,8 +83,8 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll }:
               <div style={{ minWidth: 0 }}>
                 {c.paid ? (
                   <>
-                    <p style={{ margin: 0, fontSize: "11px", color: "#999" }}>You'd earn</p>
-                    <p style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{c.earn.toLocaleString()}</p>
+                    <p style={{ margin: 0, fontSize: "11px", color: "#999" }}>{c.figureLabel ?? "You'd earn"}</p>
+                    <p style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "#34c759", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>{c.figure}</p>
                   </>
                 ) : (
                   <>

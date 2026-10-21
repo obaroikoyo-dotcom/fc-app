@@ -442,6 +442,56 @@ test.describe("explore shelves", () => {
     await expect(page.locator(".item-enter > .true-color").getByText(/^(New|Closing soon)$/).first()).toBeVisible();
   });
 
+  test("brand Market tab: the same rows and colour bands, tapping opens a preview or a profile, no rows on Your Campaigns", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "brand");
+    const t = await db(page);
+    const uid = await myId(page);
+    const myName = t.brand_profiles.find(b => b.id === uid)!.name as string;
+    const market = t.campaigns.filter(c => !c.is_draft);
+
+    // Your Campaigns: bands on the cards, no rows
+    await expect(page.locator("section[aria-label]")).toHaveCount(0);
+    const mine = t.campaigns.filter(c => c.brand_id === uid);
+    await expect(page.locator(".item-enter > .true-color")).toHaveCount(mine.length);
+
+    // Market: the three rows, money shown as a budget, and a band on every card
+    await page.getByText("Market", { exact: true }).click();
+    for (const title of ["Closing soon", "Top paying", "New today"]) await expect(shelf(page, title)).toBeVisible();
+    await expect(shelf(page, "Top paying").getByText("Budget").first()).toBeVisible();
+    await expect(page.locator(".item-enter")).toHaveCount(market.length);
+    await expect(page.locator(".item-enter > .true-color")).toHaveCount(market.length);
+    expect(await shelf(page, "Top paying").locator(".shelf-scroll").evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
+
+    // another brand's card opens their profile
+    const theirs = shelf(page, "Top paying").locator(".shelf-scroll > [role='button']").filter({ hasNotText: myName }).first();
+    await theirs.click();
+    await expect(page.getByText("Market", { exact: true })).toHaveCount(0);
+    await page.getByText("←", { exact: true }).first().click();
+    await page.getByText("Market", { exact: true }).click();
+
+    // one of your own opens its preview
+    await shelf(page, "Top paying").locator(".shelf-scroll > [role='button']").filter({ hasText: myName }).first().click();
+    await expect(page.getByText("Campaign Preview", { exact: false }).first()).toBeVisible({ timeout: 10_000 });
+    await page.getByText("←", { exact: true }).first().click();
+    await page.getByText("Market", { exact: true }).click();
+
+    // See all narrows the list to the row, Show everything undoes it
+    const total = Number(await shelf(page, "Top paying").locator("p span").first().innerText());
+    await shelf(page, "Top paying").getByText("See all", { exact: true }).click();
+    await expect(page.locator(".item-enter")).toHaveCount(total);
+    await page.getByText("Show everything", { exact: true }).click();
+    await expect(page.locator(".item-enter")).toHaveCount(market.length);
+
+    // a filter puts the rows away
+    await page.getByText(/^Filters/).click();
+    await page.locator("[aria-haspopup='listbox']").first().click();
+    await page.getByRole("option", { name: "Wellness", exact: true }).click();
+    await expect(page.locator("section[aria-label]")).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
   test("the rows step aside for a filter and for My Pitches", async ({ page }) => {
     await openDemo(page, "creator");
     await expect(page.locator("section[aria-label]").first()).toBeVisible();

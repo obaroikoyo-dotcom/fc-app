@@ -483,10 +483,14 @@ export function buildWorld(seed: number, userId: string, role: DemoRole, nowMs: 
 
   // Every campaign above is due in two to six weeks, which would leave the
   // Explore shelves (Closing soon, New today) empty. Pull a few dates in by
-  // position, not by chance, so nothing else that is seeded moves.
-  t.campaigns.filter(c => !c.is_draft).forEach((c, i) => {
-    if (i % 4 === 1) c.deadline = dateIn(nowMs, 2 + (i % 5));
-    if (i % 5 === 2) { c.created_at = isoAgo(nowMs, (3 + (i % 4)) * HOUR); c.updated_at = c.created_at; }
+  // position, not by chance, so nothing else that is seeded moves. Only among
+  // campaigns the visitor has not already applied to, since those are the ones
+  // Explore lists, and so there is always at least one of each when there are
+  // three or more.
+  const appliedByMe = new Set(t.applications.filter(a => a.creator_id === userId).map(a => a.campaign_id));
+  t.campaigns.filter(c => !c.is_draft && !appliedByMe.has(c.id)).forEach((c, i) => {
+    if (i % 3 === 1) c.deadline = dateIn(nowMs, 2 + (i % 5));
+    if (i % 4 === 2) { c.created_at = isoAgo(nowMs, (3 + (i % 4)) * HOUR); c.updated_at = c.created_at; }
   });
 
   return { tables: t };
