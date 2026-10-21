@@ -1,9 +1,13 @@
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import VerifiedBadge from "./VerifiedBadge";
 import CampaignTile from "./CampaignTile";
 
 // A row of campaigns you swipe sideways (Closing soon, Top paying, New today)
 // for the top of Explore. Written in the app's dark palette like everything
-// else; the light look is applied on top.
+// else; the light look is applied on top. A phone swipes it; with a mouse there
+// is nothing to swipe (the scroll bar is hidden and the wheel only goes up and
+// down), so a pair of arrows next to "See all" scroll it a screenful at a time.
+// They only appear where there is a mouse, and each greys out at its end.
 
 export interface ShelfCard {
   id: string;
@@ -21,25 +25,36 @@ export interface ShelfCard {
 }
 
 // A section title with its count and, optionally, a link on the right.
-export function ShelfHeading({ title, count, actionLabel, onAction }: { title: string; count: number; actionLabel?: string; onAction?: () => void }) {
+export function ShelfHeading({ title, count, actionLabel, onAction, trailing }: { title: string; count: number; actionLabel?: string; onAction?: () => void; trailing?: ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "12px" }}>
       <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>
         {title}
         <span style={{ color: "#999", fontWeight: 500, fontSize: "13px", marginLeft: "8px" }}>{count}</span>
       </p>
-      {actionLabel && (
-        <span
-          role="button"
-          tabIndex={0}
-          onClick={onAction}
-          onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAction?.(); } }}
-          style={{ fontSize: "13px", fontWeight: 600, color: "#999", cursor: "pointer", padding: "4px 0", flexShrink: 0 }}
-        >
-          {actionLabel}
-        </span>
-      )}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+        {trailing}
+        {actionLabel && (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={onAction}
+            onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAction?.(); } }}
+            style={{ fontSize: "13px", fontWeight: 600, color: "#999", cursor: "pointer", padding: "4px 0", flexShrink: 0 }}
+          >
+            {actionLabel}
+          </span>
+        )}
+      </div>
     </div>
+  );
+}
+
+function Chevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d={direction === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -51,12 +66,54 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, g
   onSeeAll: () => void;
   gutter?: string; // the page's side padding, so the row can run to the screen edges
 }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  // Which arrows can still go somewhere. Measured when the row is first laid out,
+  // when it is resized, and as it scrolls (all callbacks, never during a render).
+  useEffect(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const measure = () => {
+      setAtStart(el.scrollLeft <= 1);
+      setAtEnd(el.scrollLeft + el.clientWidth >= el.scrollWidth - 1);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    el.addEventListener("scroll", measure, { passive: true });
+    return () => { observer.disconnect(); el.removeEventListener("scroll", measure); };
+  }, [cards.length]);
+
+  const scrollRow = (direction: -1 | 1) => {
+    const el = scroller.current;
+    if (!el) return;
+    const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollBy({ left: direction * Math.max(200, el.clientWidth * 0.8), behavior: calm ? "auto" : "smooth" });
+  };
+
+  const arrows = (
+    <div className="shelf-arrows" style={{ gap: "6px" }}>
+      <button type="button" className="shelf-arrow" aria-label={`Scroll ${title} left`} disabled={atStart} onClick={() => scrollRow(-1)}><Chevron direction="left" /></button>
+      <button type="button" className="shelf-arrow" aria-label={`Scroll ${title} right`} disabled={atEnd} onClick={() => scrollRow(1)}><Chevron direction="right" /></button>
+    </div>
+  );
+
   return (
     <section aria-label={title} style={{ marginBottom: "0.75rem" }}>
-      <style>{`.shelf-scroll { scrollbar-width: none; } .shelf-scroll::-webkit-scrollbar { display: none; }`}</style>
-      <ShelfHeading title={title} count={total} actionLabel="See all" onAction={onSeeAll} />
+      <style>{`
+        .shelf-scroll { scrollbar-width: none; }
+        .shelf-scroll::-webkit-scrollbar { display: none; }
+        .shelf-arrows { display: none; }
+        @media (hover: hover) and (pointer: fine) { .shelf-arrows { display: flex; } }
+        .shelf-arrow { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid #2a2a2a; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .shelf-arrow:hover:not(:disabled) { background: #1a1a1a; border-color: #3a3a3a; }
+        .shelf-arrow:disabled { opacity: 0.3; cursor: default; }
+      `}</style>
+      <ShelfHeading title={title} count={total} actionLabel="See all" onAction={onSeeAll} trailing={arrows} />
       {/* Runs to both screen edges (the page pads `gutter` each side) and snaps card by card */}
       <div
+        ref={scroller}
         className="shelf-scroll"
         style={{ display: "flex", gap: "10px", overflowX: "auto", overscrollBehaviorX: "contain", scrollSnapType: "x proximity", scrollPaddingLeft: gutter, WebkitOverflowScrolling: "touch", margin: `10px calc(-1 * ${gutter}) 0`, padding: `0 ${gutter} 2px` }}
       >

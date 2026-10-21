@@ -492,6 +492,39 @@ test.describe("explore shelves", () => {
     expect(errors).toEqual([]);
   });
 
+  test("with a mouse a row has arrows that scroll it, each greyed out at its end", async ({ page }) => {
+    const { errors } = await openDemo(page, "creator");
+    const row = shelf(page, "Top paying");
+    const scroller = row.locator(".shelf-scroll");
+    const left = row.getByRole("button", { name: "Scroll Top paying left" });
+    const right = row.getByRole("button", { name: "Scroll Top paying right" });
+    const x = () => scroller.evaluate(el => el.scrollLeft);
+
+    await expect(left).toBeVisible();
+    await expect(left, "nothing to the left at the start").toBeDisabled();
+    await expect(right).toBeEnabled();
+    expect(await x()).toBe(0);
+
+    await right.click();
+    await expect.poll(x, "the arrow moves the row").toBeGreaterThan(100);
+    await expect(left).toBeEnabled();
+
+    // keep going until the last card: then there is nowhere further to go
+    for (let i = 0; i < 12 && await right.isEnabled(); i++) {
+      await right.click();
+      await page.waitForTimeout(450);
+    }
+    await expect(right).toBeDisabled();
+    await expect(left).toBeEnabled();
+
+    await left.click();
+    await expect(right).toBeEnabled({ timeout: 5_000 });
+
+    // the arrows do not cover "See all"
+    await expect(row.getByText("See all", { exact: true })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
   test("the rows step aside for a filter and for My Pitches", async ({ page }) => {
     await openDemo(page, "creator");
     await expect(page.locator("section[aria-label]").first()).toBeVisible();
@@ -591,6 +624,15 @@ test.describe("on an iPhone", () => {
     userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
     hasTouch: true,
     isMobile: true,
+  });
+
+  test("the rows keep to swiping: no scroll arrows on a touch screen", async ({ page }) => {
+    await page.goto(`/demo/creator?${KEY}`, { waitUntil: "domcontentloaded" });
+    await page.getByText("Continue in browser", { exact: true }).click({ timeout: 5_000 });
+    await expect(page.getByText("You're looking at a demo")).toBeVisible({ timeout: 20_000 });
+    await page.getByText("Got it", { exact: true }).click();
+    await expect(page.locator("section[aria-label='Top paying']")).toBeVisible();
+    await expect(page.locator(".shelf-arrow").first()).toBeHidden();
   });
 
   test("the demo link opens with a big add-to-home-screen ask, once", async ({ page }) => {
