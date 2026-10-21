@@ -12,6 +12,7 @@ export interface ShelfCard {
   verified: boolean;
   name: string;
   niche: string;
+  photo?: string; // the campaign's cover photo, when it has one
   paid: boolean;
   figure: string; // the money, already formatted ("£189"), for paid campaigns
   figureLabel?: string; // what the money is; "You'd earn" unless the page says otherwise
@@ -68,7 +69,7 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, g
             onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(c.id); } }}
             style={{ flex: "0 0 auto", width: "min(250px, 72%)", minHeight: "200px", scrollSnapAlign: "start", background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px", cursor: "pointer" }}
           >
-            <CampaignTile niche={c.niche} height={52} bleed="1rem" />
+            <CampaignTile niche={c.niche} height={52} bleed="1rem" photo={c.photo} />
             <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
               <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0 }}>
                 <img src={c.brandAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />

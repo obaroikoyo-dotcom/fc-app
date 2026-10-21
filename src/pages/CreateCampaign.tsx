@@ -6,6 +6,8 @@ import { useMemoryPersistedState, clearMemoryPersistedState } from "../lib/useMe
 import { uploadToR2 } from "../lib/r2Upload";
 import { socialPlatformFor } from "../lib/campaignDelivery";
 import { dealBreakdown } from "../lib/fees";
+import { prepareCoverPhoto, coverSrc } from "../lib/coverPhoto";
+import CampaignTile from "../components/CampaignTile";
 
 export interface EditableCampaign {
   id: string;
@@ -25,6 +27,7 @@ export interface EditableCampaign {
   landing_link?: string;
   utm_code?: string;
   is_draft?: boolean;
+  cover_url?: string | null;
 }
 
 interface Props {
@@ -82,6 +85,19 @@ const card: React.CSSProperties = {
   marginBottom: "8px",
 };
 
+const coverButton: React.CSSProperties = {
+  flex: 1,
+  padding: "9px 0",
+  borderRadius: "6px",
+  border: "1px solid #1e1e1e",
+  background: "transparent",
+  color: "#999",
+  fontSize: "12px",
+  fontWeight: 500,
+  cursor: "pointer",
+  fontFamily: "inherit",
+};
+
 const sectionTitle = (label: string, sub: string) => (
   <div style={{ marginBottom: "1rem", paddingBottom: "10px", borderBottom: "1px solid #161616" }}>
     <p style={{ fontSize: "12px", fontWeight: 600, color: "#ccc", margin: 0, letterSpacing: "0.02em" }}>{label}</p>
@@ -124,6 +140,22 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const [overlays, setOverlays] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_overlays", []);
   const [styleVideos, setStyleVideos] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_styleVideos", []);
   const [broll, setBroll] = useMemoryPersistedState<AssetFile[]>("fc_create_campaign_broll", []);
+  // The cover photo is already shrunk by the time it is stored here (see
+  // prepareCoverPhoto), so what the brand previews is exactly what is uploaded.
+  const [cover, setCover] = useMemoryPersistedState<File | null>("fc_create_campaign_cover", null);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [removeCover, setRemoveCover] = useState(false); // editing: the brand tapped Remove on the saved photo
+  // Starting to edit a different campaign (or leaving edit mode) clears all of it:
+  // a photo picked for one campaign must never be saved onto another. Set while
+  // rendering, as React advises for state that depends on a prop.
+  const [coverFormFor, setCoverFormFor] = useState(editingCampaign);
+  if (coverFormFor !== editingCampaign) {
+    setCoverFormFor(editingCampaign);
+    setCover(null);
+    setCoverError(null);
+    setRemoveCover(false);
+  }
+  const coverRef = useRef<HTMLInputElement | null>(null);
   const logosRef = useRef<HTMLInputElement | null>(null);
   const overlaysRef = useRef<HTMLInputElement | null>(null);
   const styleVideosRef = useRef<HTMLInputElement | null>(null);
@@ -154,6 +186,39 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
     setLandingLink(editingCampaign.landing_link || "");
     setUtmCode(editingCampaign.utm_code || "");
   }, [editingCampaign]);
+
+  // The address the preview shows. Made while rendering (not in an effect) and
+  // let go of once a newer photo replaces it, which also holds up under the
+  // double-run React does in development.
+  const coverPreview = useMemo(() => (cover ? URL.createObjectURL(cover) : undefined), [cover]);
+  const lastPreview = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const previous = lastPreview.current;
+    lastPreview.current = coverPreview;
+    if (previous && previous !== coverPreview) URL.revokeObjectURL(previous);
+  }, [coverPreview]);
+
+  const savedCover = editingCampaign && !removeCover ? coverSrc(editingCampaign.cover_url) : undefined;
+  const shownCover = coverPreview ?? savedCover;
+
+  const pickCover = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setCoverError(null);
+    try {
+      setCover(await prepareCoverPhoto(file));
+      setRemoveCover(false);
+    } catch (err) {
+      setCoverError(err instanceof Error ? err.message : "That photo can't be used. Try another.");
+    }
+  };
+
+  const clearCover = () => {
+    setCover(null);
+    setCoverError(null);
+    if (savedCover) setRemoveCover(true);
+  };
 
   const numericBudget = Math.max(0, parseInt(budget, 10) || 0);
   // Same maths the server uses at checkout (see src/lib/fees.ts).
@@ -254,13 +319,30 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       if (Object.keys(assetUpdates).length > 0) {
         await supabase.from("campaigns").update(assetUpdates).eq("id", campaign.id).eq("brand_id", user.id);
       }
+      // The cover is its own step: the campaign is already saved by now, so a
+      // photo that fails to upload must not undo that - the brand is told instead.
+      let coverFailed = false;
+      if (cover || (editingCampaign && removeCover)) {
+        try {
+          const coverUrl = cover
+            ? await uploadToR2({ purpose: "campaign-asset", file: cover, campaign_id: campaign.id, folder: "covers" })
+            : null;
+          const { error: coverUpdateError } = await supabase.from("campaigns")
+            .update({ cover_url: coverUrl }).eq("id", campaign.id).eq("brand_id", user.id);
+          if (coverUpdateError) throw coverUpdateError;
+        } catch (err) {
+          console.error("Failed to save the cover photo:", err);
+          coverFailed = true;
+        }
+      }
       // Successfully saved to the real campaign row - the stored draft has
       // served its purpose, safe to drop immediately.
       ["name", "objective", "objectiveOther", "budget", "type", "deadline", "niche", "deliverables", "videoRequired", "vibe", "dos", "donts", "promoCode", "landingLink", "utmCode"]
         .forEach(k => sessionStorage.removeItem(`fc_create_campaign_${k}`));
-      ["logos", "overlays", "styleVideos", "broll"].forEach(k => clearMemoryPersistedState(`fc_create_campaign_${k}`));
+      ["logos", "overlays", "styleVideos", "broll", "cover"].forEach(k => clearMemoryPersistedState(`fc_create_campaign_${k}`));
 
       setPosted(true);
+      if (coverFailed) setError("Saved, but the cover photo didn't upload. Edit the campaign to add it again.");
       setTimeout(() => {
         setPosted(false);
         // This component stays mounted (just hidden) across tab switches
@@ -289,8 +371,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         setOverlays([]);
         setStyleVideos([]);
         setBroll([]);
+        setCover(null);
+        setRemoveCover(false);
+        setCoverError(null);
+        setError(null);
         onPosted();
-      }, 1500);
+      }, coverFailed ? 4000 : 1500);
     } catch (e) {
       console.error(e);
       setError("Something went wrong. Please try again.");
@@ -398,6 +484,31 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
   return (
     <div ref={containerRef} style={{ display: "flex", flexDirection: "column" }}>
+
+      {/* Section 0 — Cover photo */}
+      <div style={card}>
+        {sectionTitle("Cover photo", "Shown across the top of your campaign card. Optional.")}
+        <input type="file" ref={coverRef} accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={pickCover} data-testid="cover-input" />
+        {shownCover ? (
+          <>
+            <CampaignTile niche={niche} height={84} bleed="0px" photo={shownCover} radius="8px" />
+            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+              <button type="button" onClick={() => coverRef.current?.click()} style={coverButton}>Replace photo</button>
+              <button type="button" onClick={clearCover} style={coverButton}>Remove</button>
+            </div>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => coverRef.current?.click()}
+            style={{ display: "block", width: "100%", border: "1px dashed #1a1a1a", borderRadius: "6px", padding: "18px 10px", textAlign: "center", cursor: "pointer", background: "#0a0a0a", fontFamily: "inherit" }}
+          >
+            <span style={{ display: "block", fontSize: "12px", color: "#999", fontWeight: 500, marginBottom: "2px" }}>Add a cover photo</span>
+            <span style={{ display: "block", fontSize: "10px", color: "#777", letterSpacing: "0.04em" }}>JPG, PNG or WebP. Without one, the card shows a colour for your niche.</span>
+          </button>
+        )}
+        {coverError && <p style={{ color: "#ff4d4d", fontSize: "12px", margin: "8px 0 0" }}>{coverError}</p>}
+      </div>
 
       {/* Section 1 — Mechanics */}
       <div style={card}>

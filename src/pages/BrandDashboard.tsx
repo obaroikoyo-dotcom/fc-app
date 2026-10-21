@@ -15,6 +15,7 @@ import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
 import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
 import CampaignTile from "../components/CampaignTile";
+import { coverSrc } from "../lib/coverPhoto";
 import { SHELF_TITLES, bandTag, buildShelves, daysLeft, dueNote, emptyShelves, shelfIsShown, type ShelfKey } from "../lib/campaignShelves";
 
 interface Props {
@@ -41,6 +42,7 @@ interface Campaign {
   applications: { id: string }[];
   brand_profiles?: { name?: string; logo_url?: string; verified?: boolean } | null;
   is_draft?: boolean;
+  cover_url?: string | null;
   objective?: string;
   deliverables?: string[];
   vibe?: string;
@@ -189,6 +191,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
       verified: !!c.brand_profiles?.verified,
       name: c.name,
       niche: c.niche || "",
+      photo: coverSrc(c.cover_url),
       paid: c.type === "paid" && budget > 0,
       figure: `£${budget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       figureLabel: "Budget",
@@ -401,7 +404,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                     onClick={isPreviewable ? () => navigateToCampaignPreview && navigateToCampaignPreview(c.id) : undefined}
                     style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: `1px solid ${isOwn ? "#222" : "#1a1a1a"}`, borderRadius: "16px", padding: "1.1rem", cursor: isPreviewable ? "pointer" : "default" }}
                   >
-                    <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} />
+                    <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} photo={coverSrc(c.cover_url)} />
                     <div style={{ height: "12px" }} />
 
                     {/* Header Row */}

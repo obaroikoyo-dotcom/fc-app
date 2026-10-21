@@ -509,6 +509,83 @@ test.describe("explore shelves", () => {
   });
 });
 
+test.describe("campaign cover photos", () => {
+  // The smallest valid PNG: enough to be a real picture the browser can read.
+  const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+
+  test("brand: a photo added on the Post form replaces the colour band, shows on the Market tab, and can be removed", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "brand");
+    await page.getByText("Post", { exact: true }).last().click();
+    const input = page.getByTestId("cover-input");
+
+    // something that is not a photo is refused, with a reason
+    await input.setInputFiles({ name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("hello") });
+    await expect(page.getByText("Choose a JPG, PNG or WebP photo.")).toBeVisible();
+    await expect(page.locator("img.no-reinvert")).toHaveCount(0);
+
+    // a real photo shows as a preview of the card's band
+    await input.setInputFiles({ name: "shop.png", mimeType: "image/png", buffer: PNG });
+    await expect(page.locator("img.no-reinvert")).toHaveCount(1);
+    await expect(page.getByText("Choose a JPG, PNG or WebP photo.")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Replace photo" })).toBeVisible();
+
+    await page.getByPlaceholder(/Summer drop launch/).fill("Cover photo check");
+    await page.locator("select").filter({ has: page.locator("option", { hasText: "Wellness" }) }).first().selectOption("Wellness");
+    await page.getByText("Gifted", { exact: true }).click();
+    await page.getByText("Post Campaign", { exact: true }).last().click();
+
+    // saved on the campaign, as a picture the app can show
+    await expect(page.getByText("Campaigns", { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+    const posted = (await db(page)).campaigns.find(c => c.name === "Cover photo check");
+    expect(posted?.cover_url, "the photo is saved on the campaign").toMatch(/^data:image\//);
+
+    // Your Campaigns shows it in place of the colour band
+    const card = page.locator(".item-enter").filter({ hasText: "Cover photo check" });
+    await expect(card.locator("img.no-reinvert")).toHaveCount(1);
+    await expect.poll(() => card.locator("img.no-reinvert").evaluate((img: HTMLImageElement) => img.naturalWidth), "the picture actually loads").toBeGreaterThan(0);
+
+    // and so does the Market tab (the same card for everyone else)
+    await page.getByText("Market", { exact: true }).click();
+    await expect(page.locator(".item-enter").filter({ hasText: "Cover photo check" }).locator("img.no-reinvert")).toHaveCount(1);
+
+    // editing it: the saved photo is there to see, and Remove puts the colour band back
+    await page.getByText("Your Campaigns", { exact: true }).click();
+    await page.locator(".item-enter").filter({ hasText: "Cover photo check" }).getByTitle("Edit").click();
+    await expect(page.locator("img.no-reinvert")).toHaveCount(1);
+    await page.getByRole("button", { name: "Remove" }).click();
+    await expect(page.getByText("Add a cover photo")).toBeVisible();
+    await page.getByText("Save Changes", { exact: true }).last().click();
+    await expect(page.getByText("Campaigns", { exact: true }).first()).toBeVisible({ timeout: 15_000 });
+    expect((await db(page)).campaigns.find(c => c.name === "Cover photo check")?.cover_url ?? null).toBeNull();
+    await expect(page.locator(".item-enter").filter({ hasText: "Cover photo check" }).locator("img.no-reinvert")).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("only an https address (or, in the demo, a picture kept on the device) is ever used as a cover", async ({ page }) => {
+    await openDemo(page, "creator");
+    // The same check the cards use, run on addresses a hostile row might carry.
+    const out = await page.evaluate(async () => {
+      const { coverSrc } = await import("/src/lib/coverPhoto.ts");
+      const png = "data:image/png;base64,iVBORw0KGgo=";
+      return {
+        https: coverSrc("https://files.example/campaign-assets/a/b/covers/1-x.jpg"),
+        http: coverSrc("http://tracker.example/pixel.png"),
+        script: coverSrc("javascript:alert(1)"),
+        svg: coverSrc("data:image/svg+xml;base64,PHN2Zz48L3N2Zz4="),
+        otherData: coverSrc("data:text/html;base64,PGI+"),
+        demoPicture: coverSrc(png),
+        empty: coverSrc(""),
+        missing: coverSrc(null),
+      };
+    });
+    expect(out.https).toBe("https://files.example/campaign-assets/a/b/covers/1-x.jpg");
+    expect(out.demoPicture).toBe("data:image/png;base64,iVBORw0KGgo=");
+    for (const k of ["http", "script", "svg", "otherData", "empty", "missing"] as const) expect(out[k], k).toBeUndefined();
+  });
+});
+
 test.describe("on an iPhone", () => {
   test.use({
     userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",

@@ -14,6 +14,7 @@ import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
 import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
 import CampaignTile from "../components/CampaignTile";
+import { coverSrc } from "../lib/coverPhoto";
 import { SHELF_TITLES, bandTag, buildShelves, daysLeft, dueNote, emptyShelves, shelfIsShown, type ShelfKey } from "../lib/campaignShelves";
 
 interface Props { 
@@ -33,6 +34,7 @@ interface Campaign {
   deadline: string;
   created_at: string;
   script: string;
+  cover_url?: string | null;
   video_required: boolean;
   brand_profiles: {
     name: string;
@@ -229,6 +231,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     verified: !!c.brand_profiles?.verified,
     name: c.name,
     niche: c.niche || "",
+    photo: coverSrc(c.cover_url),
     paid: c.type === "paid" && netPayout(c) > 0,
     figure: `£${netPayout(c).toLocaleString()}`,
     note: shelfNote(key, c),
@@ -369,7 +372,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
             return (
               <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1.1rem" }}>
-                <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} />
+                <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} photo={coverSrc(c.cover_url)} />
                 <div style={{ height: "14px" }} />
                 {/* Who is offering it */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "14px" }}>

@@ -110,7 +110,7 @@ serve(async (req) => {
       path = `${folderName}/${caller.id}.${ext}`;
 
     } else if (purpose === "campaign-asset") {
-      const ASSET_FOLDERS = ["logos", "overlays", "style-videos", "broll"];
+      const ASSET_FOLDERS = ["logos", "overlays", "style-videos", "broll", "covers"];
       if (!campaign_id || !folder || !ASSET_FOLDERS.includes(folder)) {
         return new Response(JSON.stringify({ error: "campaign_id and a valid folder are required" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -180,6 +180,7 @@ serve(async (req) => {
     else if (folder === "logos") allowedKinds = ["image"];
     else if (folder === "overlays") allowedKinds = ["image", "svg"];
     else if (folder === "style-videos") allowedKinds = ["video"];
+    else if (folder === "covers") allowedKinds = ["image"];
     else allowedKinds = ["image", "video"];
     const kind = classifyUpload(ext, content_type);
     if (!kind || !allowedKinds.includes(kind)) {
