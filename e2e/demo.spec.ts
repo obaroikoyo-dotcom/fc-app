@@ -576,11 +576,11 @@ test.describe("campaign cover photos", () => {
     const card = page.locator(".item-enter").filter({ hasText: "Cover photo check" });
     await expect(card.locator("img.no-reinvert")).toHaveCount(1);
     await expect.poll(() => card.locator("img.no-reinvert").evaluate((img: HTMLImageElement) => img.naturalWidth), "the picture actually loads").toBeGreaterThan(0);
-    // a picture-shaped area (16:9), and nothing laid over it to dim it: only the
+    // a wide banner (5:2, not tall enough to fill the screen), and nothing laid over it to dim it: only the
     // picture and the small label and tag sit in it
     const tile = card.locator(".true-color").first();
     const box = (await tile.boundingBox())!;
-    expect(Math.abs(box.height / box.width - 9 / 16), "16:9").toBeLessThan(0.02);
+    expect(Math.abs(box.height / box.width - 2 / 5), "5:2").toBeLessThan(0.02);
     await expect(tile.locator(":scope > div"), "no dark layer over the photo").toHaveCount(0);
 
     // and so does the Market tab (the same card for everyone else)

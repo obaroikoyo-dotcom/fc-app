@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { toneOf } from "../lib/avatar";
 
-// A photo gets a proper picture-shaped area (16:9, what a landscape phone photo or
-// a product shot already is), so most of it shows; a colour band is a slim strip.
-export const PHOTO_RATIO = "16 / 9";
+// A photo gets a wide banner (5:2, about 135px tall on a phone card): taller than a
+// colour band so a good part of the picture shows, short enough that a card still
+// reads as a card and several fit on the screen. 16:9 was tried and filled the screen.
+export const PHOTO_RATIO = "5 / 2";
 
 // The band across the top of a campaign card. With a cover photo it shows the
 // photo; without one, a flat tone picked from the niche (the same eight tones as
