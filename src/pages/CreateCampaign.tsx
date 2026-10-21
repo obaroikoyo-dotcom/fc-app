@@ -487,7 +487,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
 
       {/* Section 0 — Cover photo */}
       <div style={card}>
-        {sectionTitle("Cover photo", "Shown across the top of your campaign card. Optional.")}
+        {sectionTitle("Cover photo", "Shown across the top of your campaign card, as wide as the card. Landscape photos show the most. Optional.")}
         <input type="file" ref={coverRef} accept="image/jpeg,image/png,image/webp" style={{ display: "none" }} onChange={pickCover} data-testid="cover-input" />
         {shownCover ? (
           <>
