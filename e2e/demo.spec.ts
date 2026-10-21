@@ -418,6 +418,30 @@ test.describe("explore shelves", () => {
     expect(errors).toEqual([]);
   });
 
+  test("every campaign card has a colour band named for its niche, the same colour for the same niche", async ({ page }) => {
+    await openDemo(page, "creator");
+    const t = await db(page);
+    const uid = await myId(page);
+    const applied = new Set(t.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+    const discover = t.campaigns.filter(c => !c.is_draft && !applied.has(c.id));
+
+    const bands = await page.locator(".item-enter > .true-color").evaluateAll(els => els.map(el => ({
+      niche: el.querySelector("span")?.textContent || "",
+      colour: getComputedStyle(el).backgroundColor,
+    })));
+    expect(bands.length, "one band on every card in the feed").toBe(discover.length);
+    const seen = new Map<string, string>();
+    for (const b of bands) {
+      expect(b.niche, "the band names the niche").not.toBe("");
+      if (seen.has(b.niche)) expect(b.colour, `${b.niche} is always the same colour`).toBe(seen.get(b.niche));
+      else seen.set(b.niche, b.colour);
+    }
+    // the shelf cards carry a (shorter) band too
+    expect(await page.locator("section[aria-label] .shelf-scroll > [role='button'] > .true-color").count()).toBeGreaterThan(0);
+    // a campaign posted within a day or due within three days says so on its band
+    await expect(page.locator(".item-enter > .true-color").getByText(/^(New|Closing soon)$/).first()).toBeVisible();
+  });
+
   test("the rows step aside for a filter and for My Pitches", async ({ page }) => {
     await openDemo(page, "creator");
     await expect(page.locator("section[aria-label]").first()).toBeVisible();

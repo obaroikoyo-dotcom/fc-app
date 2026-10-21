@@ -23,6 +23,15 @@ function initialsOf(name: string): string {
   return letters || "?";
 }
 
+// The tone for a piece of text: the same text always gets the same one. Used
+// for the default pictures (by name) and the colour band on a campaign (by niche).
+export function toneOf(text: string | null | undefined): string {
+  const clean = (text ?? "").trim();
+  let h = 0;
+  for (let i = 0; i < clean.length; i++) h = (h * 31 + clean.charCodeAt(i)) >>> 0;
+  return TONES[h % TONES.length];
+}
+
 // A self-contained image address (nothing to host or fetch), usable anywhere
 // an <img src> goes.
 export function monogram(name: string | null | undefined): string {
@@ -30,9 +39,7 @@ export function monogram(name: string | null | undefined): string {
   const hit = cache.get(clean);
   if (hit) return hit;
 
-  let h = 0;
-  for (let i = 0; i < clean.length; i++) h = (h * 31 + clean.charCodeAt(i)) >>> 0;
-  const tone = TONES[h % TONES.length];
+  const tone = toneOf(clean);
   const svg =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">' +
     `<rect width="120" height="120" fill="${tone}"/>` +

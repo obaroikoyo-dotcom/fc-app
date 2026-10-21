@@ -1,4 +1,5 @@
 import VerifiedBadge from "./VerifiedBadge";
+import CampaignTile from "./CampaignTile";
 
 // A row of campaigns you swipe sideways (Closing soon, Top paying, New today)
 // for the top of Explore. Written in the app's dark palette like everything
@@ -10,6 +11,7 @@ export interface ShelfCard {
   brandAvatar: string;
   verified: boolean;
   name: string;
+  niche: string;
   paid: boolean;
   earn: number; // what the creator would take home, for paid campaigns
   note: string; // the small line on the right: a deadline, a niche, how long ago
@@ -62,8 +64,9 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll }:
             tabIndex={0}
             onClick={() => onOpen(c.id)}
             onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(c.id); } }}
-            style={{ flex: "0 0 auto", width: "min(250px, 72%)", minHeight: "168px", scrollSnapAlign: "start", background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px", cursor: "pointer" }}
+            style={{ flex: "0 0 auto", width: "min(250px, 72%)", minHeight: "200px", scrollSnapAlign: "start", background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px", cursor: "pointer" }}
           >
+            <CampaignTile niche={c.niche} height={52} bleed="1rem" />
             <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
               <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0 }}>
                 <img src={c.brandAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />

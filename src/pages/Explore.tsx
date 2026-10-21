@@ -13,6 +13,7 @@ import { useScrollRestoration } from "../lib/useScrollRestoration";
 import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
 import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
+import CampaignTile from "../components/CampaignTile";
 
 interface Props { 
   navigate: (p: Page) => void; 
@@ -253,6 +254,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     brandAvatar: avatarSrc(c.brand_profiles?.avatar_url, c.brand_profiles?.name),
     verified: !!c.brand_profiles?.verified,
     name: c.name,
+    niche: c.niche || "",
     paid: c.type === "paid" && netPayout(c) > 0,
     earn: netPayout(c),
     note: shelfNote(key, c),
@@ -389,9 +391,14 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
 
             const paid = c.type === "paid" && !!baseBudgetVal;
             const brandName = c.brand_profiles?.name || "Brand";
+            // one tag on the colour band: a close deadline outranks being new
+            const dl = daysLeft(c.deadline, now);
+            const tag = dl !== null && dl >= 0 && dl <= 3 ? "Closing soon" : now.getTime() - createdAt(c) < DAY_MS ? "New" : undefined;
 
             return (
               <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1.1rem" }}>
+                <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} />
+                <div style={{ height: "14px" }} />
                 {/* Who is offering it */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", marginBottom: "14px" }}>
                   <div
@@ -406,7 +413,6 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{brandName}</span>
                         {c.brand_profiles?.verified && <VerifiedBadge size={13} />}
                       </p>
-                      <p style={{ margin: 0, color: "#999", fontSize: "12px", marginTop: "2px" }}>{c.niche}</p>
                     </div>
                   </div>
 
