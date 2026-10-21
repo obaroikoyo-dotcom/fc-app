@@ -10,6 +10,7 @@ import type { Ctx } from "./ctx";
 import { notifyUser } from "./rpc";
 import { releaseDeal } from "./functions";
 import { SAMPLE_VIDEO_URL } from "./seed";
+import { dealPricePounds } from "./prices";
 
 export type Scheduler = (fn: () => void, ms: number) => void;
 
@@ -83,6 +84,33 @@ export function startAutomation(ctx: Ctx, schedule: Scheduler = (fn, ms) => { se
       say(convo, other, reply);
       tellMe(other, reply, convo);
     }, 3300);
+  };
+
+  // --- the visitor offered a different price: the other side answers -----------
+  // Anything from half to double the current price is accepted; beyond that they
+  // decline and come back with the nearest price they would take.
+  const answerOffer = (offerId: string) => {
+    const offer = db.rows("price_offers").find(o => o.id === offerId);
+    if (!offer || offer.status !== "pending") return;
+    const app = db.rows("applications").find(a => a.id === offer.application_id);
+    const campaign = db.rows("campaigns").find(c => c.id === app?.campaign_id);
+    if (!app || !campaign) return;
+    const other = (me === app.creator_id ? campaign.brand_id : app.creator_id) as string;
+    const convo = conversationBetween(me, other);
+    const current = dealPricePounds(db, app);
+    const amount = Number(offer.amount);
+    const now = new Date().toISOString();
+    if (amount >= current * 0.5 && amount <= current * 2) {
+      db.update("price_offers", [offer], { status: "accepted", responded_at: now });
+      const text = `Happy to go with £${amount}. Thanks for agreeing that with me.`;
+      if (convo) say(convo, other, text);
+      notifyUser(ctx, me, "price_offer", "Price agreed", `Your offer of £${amount} for "${campaign.name}" was accepted.`, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
+      return;
+    }
+    db.update("price_offers", [offer], { status: "declined", responded_at: now });
+    const counter = Math.max(1, Math.round(amount < current * 0.5 ? current * 0.5 : current * 2));
+    db.insert("price_offers", { application_id: app.id, proposed_by: other, amount: counter, status: "pending", responded_at: null }, now);
+    notifyUser(ctx, me, "price_offer", "New price offered", `${nameOf(other)} can't do £${amount} for "${campaign.name}" but offered £${counter} instead.`, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
   };
 
   // --- creator visitor applied: the brand accepts and opens a chat ------------
@@ -159,6 +187,11 @@ export function startAutomation(ctx: Ctx, schedule: Scheduler = (fn, ms) => { se
 
     if (c.table === "messages" && c.eventType === "INSERT" && created?.sender_id === me) {
       onMessage(created);
+      return;
+    }
+
+    if (c.table === "price_offers" && c.eventType === "INSERT" && created?.proposed_by === me && created.status === "pending") {
+      schedule(() => answerOffer(created.id), 4000);
       return;
     }
 

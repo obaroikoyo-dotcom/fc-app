@@ -20,6 +20,8 @@ import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 import { dealBreakdown } from "../lib/fees";
+import DealPriceCard from "../components/DealPriceCard";
+import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
 import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
 import { isDemoMode } from "../lib/demo/mode";
 
@@ -135,6 +137,7 @@ interface LinkedApplication {
   campaign_id: string;
   campaign_name: string;
   campaign_budget: number;
+  campaign_type: string;
   platforms: string[];
 }
 
@@ -153,6 +156,8 @@ interface Conversation {
   application_status?: string;
   campaign_id?: string;
   campaign_budget?: number;
+  campaign_type?: string;
+  other_is_enterprise?: boolean;
   campaign_name?: string;
   campaign_platforms?: string[];
 }
@@ -1279,6 +1284,8 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [campaignBudget, setCampaignBudget] = useState(0);
   const [campaignPickerFor, setCampaignPickerFor] = useState<"pay" | "screenout" | null>(null);
   const [isEnterprise, setIsEnterprise] = useState(false);
+  // Prices agreed in this chat, for every deal between this pair (live).
+  const { offers: dealOffers, refresh: refreshDealOffers } = useDealOffers((activeConvo?.linked_applications || []).map(a => a.id));
   const [savedCard, setSavedCard] = useState<{ last4: string; brand: string; pm_id: string } | null>(null);
   const [paymentPopup, setPaymentPopup] = useState<{ title: string; body: string } | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
@@ -1501,15 +1508,17 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             let otherName = "Unknown";
             let otherAvatar = null;
             let otherVerified = false;
+            let otherEnterprise = false;
             if (profile?.role === "creator") {
               const { data: cp } = await supabase.from("creator_profiles").select("name, avatar_url").eq("id", otherId).single();
               otherName = cp?.name || "Unknown";
               otherAvatar = cp?.avatar_url || null;
             } else {
-              const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url, verified").eq("id", otherId).single();
+              const { data: bp } = await supabase.from("brand_profiles").select("name, avatar_url, verified, is_enterprise").eq("id", otherId).single();
               otherName = bp?.name || "Unknown";
               otherAvatar = bp?.avatar_url || null;
               otherVerified = !!bp?.verified;
+              otherEnterprise = !!bp?.is_enterprise;
             }
 
             // Match live app link properties to conversational items to maintain in-chat actions
@@ -1522,19 +1531,23 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             // action rather than only ever surfacing the newest one.
             const { data: linkedApps } = await supabase
               .from("applications")
-              .select("id, status, campaign_id, platforms, campaigns!inner(name, budget, brand_id)")
+              .select("id, status, campaign_id, platforms, campaigns!inner(name, budget, brand_id, type)")
               .eq("creator_id", creatorSearchId)
               .eq("campaigns.brand_id", brandSearchId)
               .order("created_at", { ascending: false });
 
-            const linkedApplications: LinkedApplication[] = (linkedApps || []).map(a => ({
-              id: a.id,
-              status: a.status,
-              campaign_id: a.campaign_id,
-              campaign_name: (a.campaigns as any)?.name || "Campaign",
-              campaign_budget: parseInt((a.campaigns as any)?.budget, 10) || 0,
-              platforms: a.platforms || [],
-            }));
+            const linkedApplications: LinkedApplication[] = (linkedApps || []).map(a => {
+              const camp = a.campaigns as unknown as { name?: string; budget?: string; type?: string } | null;
+              return {
+                id: a.id,
+                status: a.status,
+                campaign_id: a.campaign_id,
+                campaign_name: camp?.name || "Campaign",
+                campaign_budget: parseInt(camp?.budget ?? "", 10) || 0,
+                campaign_type: camp?.type || "paid",
+                platforms: a.platforms || [],
+              };
+            });
             const latestApp = linkedApplications[0];
 
             return {
@@ -1543,12 +1556,14 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
               other_role: profile?.role,
               other_avatar: otherAvatar,
               other_verified: otherVerified,
+              other_is_enterprise: otherEnterprise,
               linked_applications: linkedApplications,
               application_id: latestApp?.id,
               application_status: latestApp?.status,
               campaign_id: latestApp?.campaign_id,
               campaign_name: latestApp?.campaign_name,
               campaign_budget: latestApp?.campaign_budget || 0,
+              campaign_type: latestApp?.campaign_type,
               campaign_platforms: latestApp?.platforms || []
             };
           }));
@@ -1800,9 +1815,13 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   const payableApps: LinkedApplication[] = (activeConvo?.linked_applications || [])
     .filter(a => a.status !== "paid" && a.status !== "funded" && a.status !== "rejected");
 
+  // What a deal costs right now: the price agreed in this chat, else the campaign's
+  // own budget (which a chat price never changes).
+  const dealPriceOf = (app: LinkedApplication): number => currentDealPrice(dealOffers[app.id], app.campaign_budget).price;
+
   const openPaymentModalForApp = (app: LinkedApplication) => {
     if (!activeConvo) return;
-    setCampaignBudget(app.campaign_budget * 100);
+    setCampaignBudget(dealPriceOf(app) * 100);
     setPaymentApp({
       id: app.id,
       campaign_id: app.campaign_id,
@@ -1827,6 +1846,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       campaign_id: activeConvo.campaign_id || "",
       campaign_name: activeConvo.campaign_name || "",
       campaign_budget: activeConvo.campaign_budget || 0,
+      campaign_type: activeConvo.campaign_type || "paid",
       platforms: activeConvo.campaign_platforms || [],
     });
   };
@@ -2705,6 +2725,22 @@ return (
               // but no reason to make them wait to upload.
               const showPreFundingUploadCard = role === "creator" && !!activeConvo?.application_id && !!currentUserId
                 && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded";
+              // The price can be talked over until the deal is paid or closed; a gifted
+              // campaign has no price to change.
+              const showPriceCard = !!activeConvo?.application_id && activeConvo.campaign_type === "paid" && (activeConvo.campaign_budget || 0) > 0
+                && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded" && activeConvo.application_status !== "disputed";
+              const priceCardEl = showPriceCard && activeConvo?.application_id && currentUserId ? (
+                <DealPriceCard
+                  applicationId={activeConvo.application_id}
+                  role={role === "brand" ? "brand" : "creator"}
+                  currentUserId={currentUserId}
+                  otherName={activeConvo.other_name || (role === "brand" ? "the creator" : "the brand")}
+                  baseBudget={activeConvo.campaign_budget || 0}
+                  offers={dealOffers[activeConvo.application_id]}
+                  brandIsEnterprise={role === "brand" ? isEnterprise : !!activeConvo.other_is_enterprise}
+                  onChanged={refreshDealOffers}
+                />
+              ) : null;
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
               const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
               const dividerAtIdx = paymentIdx + 1;
@@ -2718,7 +2754,7 @@ return (
               // since there's no longer a live delivery card for those.
               const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid" || activeConvo?.application_status === "disputed";
 
-              return messages.map((m, i) => {
+              const list = messages.map((m, i) => {
               const mine = m.sender_id === currentUserId;
               const msgReactions = reactions[m.id] || [];
               const uniqueEmoji = [...new Set(msgReactions.map(r => r.emoji))];
@@ -2741,6 +2777,7 @@ return (
                     </div>
                   </div>
                 )}
+                {i === cardInsertAtIdx && priceCardEl}
                 {showPreFundingUploadCard && i === cardInsertAtIdx && activeConvo?.application_id && currentUserId && (
                   <PreFundingDeliverableCard applicationId={activeConvo.application_id} currentUserId={currentUserId} />
                 )}
@@ -2875,6 +2912,8 @@ return (
                 </div>
               );
               });
+              // Nothing follows "Chat Opened" yet, so there is no message to put the card in front of.
+              return <>{list}{messages.length <= cardInsertAtIdx && priceCardEl}</>;
             })()}
             {otherIsTyping && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
@@ -3009,7 +3048,7 @@ return (
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", cursor: "pointer" }}
                 >
                   <span style={{ color: "#fff", fontSize: "13px", fontWeight: 500 }}>{app.campaign_name}</span>
-                  {campaignPickerFor === "pay" && <span style={{ color: "#ccc", fontSize: "12px" }}>£{app.campaign_budget.toFixed(2)}</span>}
+                  {campaignPickerFor === "pay" && <span style={{ color: "#ccc", fontSize: "12px" }}>£{dealPriceOf(app).toFixed(2)}</span>}
                 </div>
               ))}
             </div>
@@ -3026,7 +3065,12 @@ return (
           <Elements stripe={stripePromise}>
             <PaymentModalContent
               paymentApp={paymentApp}
-              campaignBudget={campaignBudget}
+              campaignBudget={(() => {
+                // Follows the live price, so an offer accepted while this is open is what
+                // the brand sees (the server charges the agreed price either way).
+                const open = activeConvo?.linked_applications?.find(a => a.id === paymentApp.id);
+                return open ? dealPriceOf(open) * 100 : campaignBudget;
+              })()}
               isEnterprise={isEnterprise}
               currentUserId={currentUserId}
               savedCard={savedCard}

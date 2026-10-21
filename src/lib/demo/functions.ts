@@ -8,6 +8,7 @@ import { dealBreakdown } from "../fees";
 import type { Row } from "./query";
 import type { Ctx } from "./ctx";
 import { notifyUser } from "./rpc";
+import { dealPricePounds } from "./prices";
 
 export interface FnResult {
   status: number;
@@ -57,7 +58,9 @@ export function runFunction(ctx: Ctx, name: string, body: Row): FnResult {
       const app = db.rows("applications").find(a => a.campaign_id === body.campaign_id && a.creator_id === body.creator_id);
       if (!app) return fail(404, "We couldn't find that application.");
       if (app.status === "funded" || app.status === "paid") return fail(400, "This deal has already been paid for.");
-      fundDeal(ctx, app, Math.round(Number(body.amount) || 0));
+      // Like the real function, the price comes from the data (the price agreed in the
+      // chat, else the campaign's budget), never from what the page sent.
+      fundDeal(ctx, app, dealPricePounds(db, app) * 100);
       return ok({ clientSecret: "pi_demo_secret_not_a_real_secret", paymentIntentId: "pi_demo" });
     }
 

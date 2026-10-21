@@ -104,7 +104,7 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
     if (!notif.data) return;
     const messagesPage = userRole === "brand" ? "messages-brand" : "messages-creator";
 
-    if ((notif.type === "new_message" || notif.type === "campaign_chatting") && notif.data.conversation_id) {
+    if ((notif.type === "new_message" || notif.type === "campaign_chatting" || notif.type === "price_offer") && notif.data.conversation_id) {
       navigateToMessages(messagesPage, notif.data.conversation_id);
     } else if (notif.type === "payment_received" || notif.type === "campaign_application" || notif.type === "application_reminder") {
       // These don't carry a conversation_id - land on the messages list for

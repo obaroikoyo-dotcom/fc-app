@@ -228,7 +228,7 @@ export function buildWorld(seed: number, userId: string, role: DemoRole, nowMs: 
     conversations: [], messages: [], notifications: [], transactions: [], favourites: [],
     campaign_favourites: [], blocks: [], reports: [], social_connections: [], social_posts_cache: [],
     verification_requests: [], message_reactions: [], creator_reviews: [], brand_reviews: [],
-    disputes: [], campaign_posts: [],
+    disputes: [], campaign_posts: [], price_offers: [],
   };
 
   const usedNames = new Set<string>();

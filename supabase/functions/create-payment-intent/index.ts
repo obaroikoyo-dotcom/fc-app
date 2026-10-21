@@ -49,10 +49,7 @@ serve(async (req) => {
     const { data: campaign } = await supabase.from("campaigns").select("budget, brand_id").eq("id", campaign_id).single();
     if (!campaign) throw new Error("Campaign not found");
     if (campaign.brand_id !== brand_id) throw new Error("Unauthorized");
-    const amount = Math.round(parseFloat(campaign.budget) * 100);
-    // A budget that isn't a positive number would otherwise reach Stripe as
-    // NaN/negative and fail with a confusing error - refuse it up front.
-    if (!Number.isFinite(amount) || amount <= 0) throw new Error("This campaign doesn't have a valid budget to pay.");
+    const budgetAmount = Math.round(parseFloat(campaign.budget) * 100);
 
     // creator_id was previously trusted straight from the request body with
     // no check it corresponds to a real application on this campaign -
@@ -66,6 +63,44 @@ serve(async (req) => {
       .not("status", "in", "(paid,funded,rejected,disputed)")
       .maybeSingle();
     if (!eligibleApp) throw new Error("No eligible application for this creator on this campaign");
+
+    // A price agreed in the chat (see price_offers) replaces the campaign's budget
+    // for this one deal; the campaign itself is never changed. It is read here, from
+    // the database - never from anything the browser sends.
+    const { data: agreedOffer } = await supabase
+      .from("price_offers")
+      .select("amount")
+      .eq("application_id", eligibleApp.id)
+      .eq("status", "accepted")
+      .order("responded_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const amount = agreedOffer ? Number(agreedOffer.amount) * 100 : budgetAmount;
+    // A price that isn't a positive number would otherwise reach Stripe as
+    // NaN/negative and fail with a confusing error - refuse it up front.
+    if (!Number.isFinite(amount) || amount <= 0) throw new Error("This campaign doesn't have a valid budget to pay.");
+
+    // is_enterprise was previously trusted straight from the request body -
+    // any brand could pass is_enterprise: true and pay 0% fees regardless of
+    // whether they actually have an active Enterprise subscription. Read the
+    // real, server-authoritative flag instead (locked down against
+    // self-editing by the brand_profiles trigger).
+    const { data: brandProfile } = await supabase.from("brand_profiles").select("is_enterprise, stripe_customer_id").eq("id", brand_id).single();
+    const is_enterprise = !!brandProfile?.is_enterprise;
+
+    const brandFee = is_enterprise ? 0 : Math.round(amount * 0.05);
+    // Enterprise brands pay no FlipCollab platform fee on either side, but Stripe
+    // still charges FlipCollab to take their card - without this, every
+    // Enterprise deal cost FlipCollab money (a £97,798 test deal cost £3,178.64
+    // in Stripe fees with nothing coming in). A flat 2.5% + 20p of the budget is
+    // added to what the brand's card is charged and stays in FlipCollab's
+    // balance; the creator's payout is unaffected. Standard brands pay 0 here
+    // because their 5% already covers it. Mirrored for display in
+    // src/lib/fees.ts - keep the two in sync.
+    const processingFee = is_enterprise ? Math.round(amount * 0.025) + 20 : 0;
+    const totalCharge = amount + brandFee + processingFee;
+    const creatorCut = is_enterprise ? 0 : Math.round(amount * 0.10);
+    const creatorPayout = amount - creatorCut;
 
     // Guards against double-charging: if a payment for this exact deal was
     // already started (e.g. the brand's confirmation never made it back to
@@ -99,9 +134,20 @@ serve(async (req) => {
         // webhook/reconciliation will resolve the rest shortly.
         throw new Error("This payment already went through - refresh in a moment.");
       }
-      if (existingPI.status && existingPI.status !== "canceled") {
-        // Still genuinely incomplete (e.g. requires_payment_method) - reuse
-        // the same PaymentIntent instead of creating a duplicate one.
+      if (existingPI.status && existingPI.status !== "canceled" && existingPI.amount !== totalCharge) {
+        // The price changed (agreed in the chat) after this payment was started.
+        // Retire the old one - cancelling also kills its client secret, so it can
+        // never be paid at the old amount - and start a fresh one below.
+        const cancelRes = await fetch(`https://api.stripe.com/v1/payment_intents/${existingTx.stripe_payment_intent_id}/cancel`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY")}` },
+        });
+        if (!cancelRes.ok) throw new Error("The earlier payment for this deal is still being processed. Try again in a minute.");
+        await supabase.from("transactions").update({ status: "canceled" }).eq("id", existingTx.id);
+      } else if (existingPI.status && existingPI.status !== "canceled") {
+        // Still genuinely incomplete (e.g. requires_payment_method) and for the
+        // right amount - reuse the same PaymentIntent instead of creating a
+        // duplicate one.
         return new Response(JSON.stringify({
           clientSecret: existingPI.client_secret,
           paymentIntentId: existingPI.id,
@@ -119,14 +165,6 @@ serve(async (req) => {
         await supabase.from("transactions").update({ status: "canceled" }).eq("id", existingTx.id);
       }
     }
-
-    // is_enterprise was previously trusted straight from the request body -
-    // any brand could pass is_enterprise: true and pay 0% fees regardless of
-    // whether they actually have an active Enterprise subscription. Read the
-    // real, server-authoritative flag instead (locked down against
-    // self-editing by the brand_profiles trigger).
-    const { data: brandProfile } = await supabase.from("brand_profiles").select("is_enterprise, stripe_customer_id").eq("id", brand_id).single();
-    const is_enterprise = !!brandProfile?.is_enterprise;
 
     // Every brand gets a Stripe Customer the first time they pay for a
     // campaign (not just via the Enterprise subscription), so their card can
@@ -173,20 +211,6 @@ serve(async (req) => {
         };
       }
     }
-
-    const brandFee = is_enterprise ? 0 : Math.round(amount * 0.05);
-    // Enterprise brands pay no FlipCollab platform fee on either side, but Stripe
-    // still charges FlipCollab to take their card - without this, every
-    // Enterprise deal cost FlipCollab money (a £97,798 test deal cost £3,178.64
-    // in Stripe fees with nothing coming in). A flat 2.5% + 20p of the budget is
-    // added to what the brand's card is charged and stays in FlipCollab's
-    // balance; the creator's payout is unaffected. Standard brands pay 0 here
-    // because their 5% already covers it. Mirrored for display in
-    // src/lib/fees.ts - keep the two in sync.
-    const processingFee = is_enterprise ? Math.round(amount * 0.025) + 20 : 0;
-    const totalCharge = amount + brandFee + processingFee;
-    const creatorCut = is_enterprise ? 0 : Math.round(amount * 0.10);
-    const creatorPayout = amount - creatorCut;
 
     const params: Record<string, string> = {
       amount: totalCharge.toString(),

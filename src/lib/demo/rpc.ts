@@ -3,6 +3,7 @@
 
 import { PgError, type Row } from "./query";
 import type { Ctx } from "./ctx";
+import { dealPricePounds } from "./prices";
 
 export function notifyUser(ctx: Ctx, userId: string, type: string, title: string, body: string, data: Row = {}): Row {
   return ctx.db.insert("notifications", { user_id: userId, type, title, body, data });
@@ -81,6 +82,49 @@ export function runRpc(ctx: Ctx, fn: string, args: Row): unknown {
       const dispute = db.rows("disputes").find(d => d.id === args.p_dispute_id);
       if (!dispute) throw new PgError(400, "P0001", "We couldn't find that dispute.");
       db.update("disputes", [dispute], { creator_response: String(args.p_response ?? "") });
+      return null;
+    }
+
+    // Changing a deal's price in the chat: the same checks as the real functions.
+    case "propose_deal_price": {
+      const me = ctx.session.userId;
+      const amount = Number(args.p_amount);
+      if (!Number.isInteger(amount) || amount < 1 || amount > 100000) throw new PgError(400, "P0001", "Enter a price between £1 and £100,000.");
+      const app = db.rows("applications").find(a => a.id === args.p_application_id);
+      const campaign = db.rows("campaigns").find(c => c.id === app?.campaign_id);
+      if (!app || !campaign || (me !== app.creator_id && me !== campaign.brand_id)) throw new PgError(400, "P0001", "not authorized");
+      if (campaign.type !== "paid") throw new PgError(400, "P0001", "Only paid campaigns have a price to change.");
+      if (["paid", "funded", "rejected", "disputed"].includes(String(app.status))) throw new PgError(400, "P0001", "The price is locked once a deal is paid or closed.");
+      const convo = db.rows("conversations").find(c => (c.participant_1 === app.creator_id && c.participant_2 === campaign.brand_id) || (c.participant_1 === campaign.brand_id && c.participant_2 === app.creator_id));
+      if (!convo) throw new PgError(400, "P0001", "Start the conversation first, then agree a price in the chat.");
+      const offers = db.rows("price_offers").filter(o => o.application_id === app.id);
+      if (offers.length >= 30) throw new PgError(400, "P0001", "There have been a lot of offers on this deal. Agree the price in the chat and go with the current one.");
+      if (amount === dealPricePounds(db, app)) throw new PgError(400, "P0001", "That is already the price for this deal.");
+      const now = new Date().toISOString();
+      db.update("price_offers", offers.filter(o => o.status === "pending"), { status: "replaced", responded_at: now });
+      const created = db.insert("price_offers", { application_id: app.id, proposed_by: me, amount, status: "pending", responded_at: null }, now);
+      const other = me === app.creator_id ? campaign.brand_id : app.creator_id;
+      notifyUser(ctx, other as string, "price_offer", "New price offered", `A new price of £${amount} was offered for "${campaign.name}". Open the chat to accept or decline.`, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo.id });
+      return created.id;
+    }
+
+    case "answer_deal_price": {
+      const me = ctx.session.userId;
+      const offer = db.rows("price_offers").find(o => o.id === args.p_offer_id);
+      const app = db.rows("applications").find(a => a.id === offer?.application_id);
+      const campaign = db.rows("campaigns").find(c => c.id === app?.campaign_id);
+      const action = String(args.p_action);
+      if (!offer || !app || !campaign || !["accept", "decline", "withdraw"].includes(action) || (me !== app.creator_id && me !== campaign.brand_id)) throw new PgError(400, "P0001", "not authorized");
+      if (offer.status !== "pending") throw new PgError(400, "P0001", "This offer is no longer open.");
+      if (action === "withdraw" ? me !== offer.proposed_by : me === offer.proposed_by) throw new PgError(400, "P0001", "not authorized");
+      if (action === "accept" && ["paid", "funded", "rejected", "disputed"].includes(String(app.status))) throw new PgError(400, "P0001", "The price is locked once a deal is paid or closed.");
+      const status = action === "accept" ? "accepted" : action === "decline" ? "declined" : "withdrawn";
+      db.update("price_offers", [offer], { status, responded_at: new Date().toISOString() });
+      if (status !== "withdrawn") {
+        const convo = db.rows("conversations").find(c => (c.participant_1 === app.creator_id && c.participant_2 === campaign.brand_id) || (c.participant_1 === campaign.brand_id && c.participant_2 === app.creator_id));
+        notifyUser(ctx, offer.proposed_by as string, "price_offer", status === "accepted" ? "Price agreed" : "Price offer declined",
+          `Your offer of £${offer.amount} for "${campaign.name}" was ${status}.`, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
+      }
       return null;
     }
 

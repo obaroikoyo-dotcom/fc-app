@@ -68,6 +68,7 @@ function restore(session: DemoSession): Tables | null {
     const snap = JSON.parse(raw);
     if (snap?.v === SNAPSHOT_VERSION && snap.userId === session.userId && snap.tables) {
       dropDeadBlobUrls(snap.tables as Tables);
+      (snap.tables as Tables).price_offers ??= []; // a visit saved before price offers existed
       return snap.tables as Tables;
     }
   } catch {

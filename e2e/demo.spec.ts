@@ -542,6 +542,119 @@ test.describe("explore shelves", () => {
   });
 });
 
+test.describe("changing a deal's price in the chat", () => {
+  const card = (page: Page) => page.getByTestId("deal-price-card");
+  const money = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  test("creator: offer a price, get it accepted, get a counter-offer and accept it; the campaign's own price never moves", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+
+    // Apply to a paid campaign from a brand the visitor has no deal with yet
+    const before = await db(page);
+    const dealBrands = new Set(before.applications.filter(a => a.creator_id === uid).map(a => before.campaigns.find(c => c.id === a.campaign_id)?.brand_id));
+    const appliedTo = new Set(before.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+    const target = before.campaigns.find(c => !c.is_draft && c.type === "paid" && Number(c.budget) >= 100 && !appliedTo.has(c.id) && !dealBrands.has(c.brand_id))!;
+    const base = Math.round(Number(target.budget));
+    const brandName = before.brand_profiles.find(b => b.id === target.brand_id)!.name as string;
+    await page.locator(".item-enter", { has: page.getByText(target.name, { exact: true }) }).getByText("Apply", { exact: true }).click();
+    await page.getByPlaceholder(/Introduce yourself/i).fill("Hi, I would love to make this for you.");
+    await page.getByText(/TikTok Video|IG Reel|IG Story|YouTube Short/).last().click();
+    if (await page.locator("input[type=file]").count()) await page.locator("input[type=file]").first().setInputFiles("public/demo-assets/sample.mp4");
+    await page.getByText(/^Submit Application$/i).click();
+    await expect.poll(async () => (await db(page)).applications.find(a => a.creator_id === uid && a.campaign_id === target.id)?.status, { timeout: 25_000 }).toBe("accepted");
+
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+
+    // the price is on show, with what it means for the creator (90% after the platform fee)
+    await expect(card(page)).toBeVisible();
+    await expect(card(page).getByText(`£${base.toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(card(page).getByText(`You'd receive £${money(base * 0.9)} after the 10% platform fee`)).toBeVisible();
+
+    // offers that are not allowed are refused, with a reason, and nothing is saved
+    await card(page).getByRole("button", { name: "Offer a different price" }).click();
+    await card(page).getByRole("textbox").fill("0");
+    await card(page).getByRole("button", { name: "Send offer" }).click();
+    await expect(card(page).getByRole("alert")).toContainText("whole number of pounds");
+    await card(page).getByRole("textbox").fill(String(base));
+    await card(page).getByRole("button", { name: "Send offer" }).click();
+    await expect(card(page).getByRole("alert")).toContainText("already the price");
+    expect((await db(page)).price_offers).toEqual([]);
+
+    // a fair offer is sent, then the (simulated) brand accepts it
+    const fair = base + 20;
+    await card(page).getByRole("textbox").fill(String(fair));
+    await card(page).getByRole("button", { name: "Send offer" }).click();
+    await expect(card(page).getByText(`You offered £${fair.toLocaleString()}`)).toBeVisible();
+    await expect(card(page).getByText("Agreed price")).toBeVisible({ timeout: 15_000 });
+    await expect(card(page).getByText(`£${fair.toLocaleString()}`, { exact: true })).toBeVisible();
+
+    // an offer far too high is declined and the brand comes back with its own price
+    await card(page).getByRole("button", { name: "Offer a different price" }).click();
+    await card(page).getByRole("textbox").fill(String(fair * 10));
+    await card(page).getByRole("button", { name: "Send offer" }).click();
+    const counter = fair * 2;
+    await expect(card(page).getByText(`${brandName} offered £${counter.toLocaleString()}`)).toBeVisible({ timeout: 15_000 });
+    await card(page).getByRole("button", { name: `Accept £${counter.toLocaleString()}` }).click();
+    await expect(card(page).getByText(`£${counter.toLocaleString()}`, { exact: true })).toBeVisible();
+
+    // what was saved: each offer's end state, and the campaign itself untouched
+    const t = await db(page);
+    const app = t.applications.find(a => a.creator_id === uid && a.campaign_id === target.id)!;
+    const offers = t.price_offers.filter(o => o.application_id === app.id);
+    expect(offers.map(o => `${o.amount}:${o.status}`).sort()).toEqual([`${fair}:accepted`, `${fair * 10}:declined`, `${counter}:accepted`].sort());
+    expect(Number(t.campaigns.find(c => c.id === target.id)!.budget), "the campaign keeps its own price").toBe(Number(target.budget));
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: a lower price is agreed in the chat; the brand is charged that price plus its fee and the creator gets it less theirs", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "brand");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const mine = new Map(t0.campaigns.filter(c => c.brand_id === uid && !c.is_draft && c.type === "paid" && Number(c.budget) >= 100).map(c => [c.id, c]));
+    const pending = t0.applications.find(a => mine.has(a.campaign_id) && a.status === "pending")!;
+    const campaign = mine.get(pending.campaign_id)!;
+    const creatorName = t0.creator_profiles.find(c => c.id === pending.creator_id)!.name as string;
+    const base = Math.round(Number(campaign.budget));
+    const agreed = Math.round(base * 0.8);
+
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(campaign.name, { exact: true }).first().click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+    await page.getByText("Accept & Chat", { exact: true }).click();
+    await page.getByText(/Go to messages/i).click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    await expect(card(page)).toBeVisible();
+    await expect(card(page).getByText(`£${money(base * 1.05)} charged to you, including the 5% platform fee`)).toBeVisible();
+    await card(page).getByRole("button", { name: "Offer a different price" }).click();
+    await card(page).getByRole("textbox").fill(String(agreed));
+    await expect(card(page).getByText(`£${money(agreed * 1.05)} charged to you, including the 5% platform fee`)).toBeVisible(); // the preview
+    await card(page).getByRole("button", { name: "Send offer" }).click();
+    await expect(card(page).getByText("Agreed price")).toBeVisible({ timeout: 15_000 });
+
+    // paying: the button and the saved payment both use the agreed price
+    await page.getByText("Pay", { exact: true }).first().click();
+    await expect(page.getByText(`Pay £${money(agreed * 1.05)}`)).toBeVisible();
+    await page.getByText(/^Pay £/).click();
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === pending.id)?.status, { timeout: 15_000 }).toBe("funded");
+    const after = await db(page);
+    const tx = after.transactions.find(x => x.campaign_id === campaign.id && x.creator_id === pending.creator_id)!;
+    expect(tx.creator_payout, "the creator gets the agreed price less their 10%").toBe(Math.round(agreed * 100 * 0.9));
+    expect(tx.amount, "the brand is charged the agreed price plus its 5%").toBe(Math.round(agreed * 100 * 1.05));
+    expect(Number(after.campaigns.find(c => c.id === campaign.id)!.budget), "the campaign keeps its own price").toBe(Number(campaign.budget));
+
+    // once paid, the price is locked and the card is gone
+    await expect(card(page)).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe("campaign cover photos", () => {
   // The smallest valid PNG: enough to be a real picture the browser can read.
   const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
