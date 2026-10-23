@@ -25,6 +25,7 @@ import { cardElementOptions } from "../lib/stripeTheme";
 import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
 import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
 import { isDemoMode } from "../lib/demo/mode";
+import { downloadDeliverable } from "../lib/deliverableDownload";
 
 const LockIcon = () => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
@@ -617,7 +618,7 @@ function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; waterm
         </div>
       </div>
       <p style={{ fontSize: "10px", color: "var(--t-888)", marginTop: "6px", lineHeight: 1.5 }}>
-        {note ?? "This is a preview. The clean video without the watermark appears once the payment is released, either when you tell us you're happy or when the review time ends."}
+        {note ?? "This is a preview. The clean video without the watermark, with a download button, appears once the payment is released, either when you tell us you're happy or when the review time ends."}
       </p>
     </div>
   );
@@ -656,6 +657,8 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [myPost, setMyPost] = useState<CampaignPost | null>(null);
   const [posting, setPosting] = useState(false);
   const [releasing, setReleasing] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadNote, setDownloadNote] = useState("");
   const [showDisputeForm, setShowDisputeForm] = useState(false);
   const [disputeReason, setDisputeReason] = useState("");
   const [disputing, setDisputing] = useState(false);
@@ -843,6 +846,21 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
     setReleasing(false);
   };
 
+  // After the payment is released the brand can save the clean video (no PREVIEW watermark).
+  const handleDownload = async () => {
+    if (!deliverableUrl) return;
+    setDownloading(true);
+    setError("");
+    setDownloadNote("");
+    try {
+      const { openedInTab } = await downloadDeliverable(applicationId, deliverableUrl);
+      setDownloadNote(openedInTab ? "The video opened in a new tab. Press and hold it, or use its menu, to save it." : "Your download has started.");
+    } catch (err) {
+      setError((err as Error).message || "Couldn't download the video.");
+    }
+    setDownloading(false);
+  };
+
   const handleRaiseDispute = async () => {
     if (!disputeReason.trim()) return;
     setDisputing(true);
@@ -989,6 +1007,21 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <PreviewVideo src={deliverableUrl} watermark={role === "brand" && applicationStatus !== "paid"} maxHeight="220px" />
       )}
 
+      {role === "brand" && applicationStatus === "paid" && deliverableUrl && (
+        <div style={{ marginBottom: "10px" }}>
+          <div
+            role="button"
+            onClick={!downloading ? handleDownload : undefined}
+            style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--c-fff)", background: downloading ? "var(--c-1a1a1a)" : "var(--c-fff)", color: downloading ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: downloading ? "default" : "pointer", textTransform: "uppercase", letterSpacing: "0.04em" }}
+          >
+            {downloading ? "Preparing..." : "Download video"}
+          </div>
+          <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.5, margin: "6px 0 0", textAlign: "center" }}>
+            {downloadNote || "The payment is released, so this is the clean video with no watermark."}
+          </p>
+        </div>
+      )}
+
       {error && <p style={{ fontSize: "11px", color: "var(--t-ff3b30)", marginBottom: "8px" }}>{error}</p>}
 
       {role === "creator" && applicationStatus === "funded" && deliverableUrl && reviewEndMs !== null && (
@@ -1064,6 +1097,11 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             {releasing ? "Confirming..." : "Yes, I'm happy"}
           </div>
         </div>
+      )}
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && !showDisputeForm && (
+        <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.5, margin: "6px 0 0", textAlign: "center" }}>
+          Tapping Yes releases the payment and lets you download the video without the watermark.
+        </p>
       )}
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount < 2 && !showDisputeForm && (

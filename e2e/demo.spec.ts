@@ -149,8 +149,21 @@ test("brand: accept, pay, receive the video, approve", async ({ page }) => {
   // the (simulated) creator hands in a video
   await expect.poll(async () => !!(await db(page)).applications.find(a => a.id === accepted.id)?.deliverable_url, { timeout: 25_000 }).toBe(true);
   await page.evaluate(() => { const s = document.querySelector(".page-enter"); if (s) s.scrollTop = s.scrollHeight; });
+  // Before approving: the video carries the PREVIEW watermark, there is nothing to download, and the button says what Yes does.
+  await expect(page.getByText("PREVIEW").first()).toBeVisible();
+  await expect(page.getByText("Download video", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("Tapping Yes releases the payment and lets you download the video without the watermark.")).toBeVisible();
   await page.getByText("Yes, I'm happy", { exact: true }).click();
   await expect.poll(async () => (await db(page)).applications.find(a => a.id === accepted.id)?.status, { timeout: 15_000 }).toBe("paid");
+
+  // After approving: no watermark, and the video can be saved as a file.
+  await expect(page.getByText("PREVIEW")).toHaveCount(0);
+  const [saved] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByText("Download video", { exact: true }).click(),
+  ]);
+  expect(saved.suggestedFilename()).toMatch(/\.mp4$/);
+  await expect(page.getByText("Your download has started.")).toBeVisible();
 
   expect(leaks, "nothing may reach the real backend").toEqual([]);
   expect(errors).toEqual([]);
