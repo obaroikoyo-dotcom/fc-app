@@ -32,7 +32,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
     <div style={{
       position: "fixed",
       top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.85)",
+      backgroundColor: "var(--a-0-0-0-0_85)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -41,8 +41,8 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
       fontFamily: "'TikTok Sans', sans-serif"
     }}>
       <div style={{
-        background: "#0a0a0a",
-        border: "1px solid #1a1a1a",
+        background: "var(--c-0a0a0a)",
+        border: "1px solid var(--c-1a1a1a)",
         borderRadius: "14px",
         width: "100%",
         maxWidth: "480px",
@@ -52,11 +52,11 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
         overflow: "hidden"
       }}>
         {/* Header */}
-        <div style={{ padding: "1.25rem", borderBottom: "1px solid #111" }}>
-          <h3 style={{ margin: 0, color: "#fff", fontSize: "16px", fontWeight: 600, fontFamily: "'TikTok Sans', sans-serif" }}>
+        <div style={{ padding: "1.25rem", borderBottom: "1px solid var(--c-111)" }}>
+          <h3 style={{ margin: 0, color: "var(--t-fff)", fontSize: "16px", fontWeight: 600, fontFamily: "'TikTok Sans', sans-serif" }}>
             Privacy Policy
           </h3>
-          <p style={{ margin: "4px 0 0 0", color: "#999", fontSize: "12px" }}>
+          <p style={{ margin: "4px 0 0 0", color: "var(--t-999)", fontSize: "12px" }}>
             How FlipCollab collects, uses, and protects your data.
           </p>
         </div>
@@ -70,7 +70,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             overflowY: "auto",
             flex: 1,
             minHeight: 0,
-            color: "#aaa",
+            color: "var(--t-aaa)",
             fontSize: "13px",
             lineHeight: "1.6",
             display: "flex",
@@ -78,17 +78,17 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
             gap: "1rem"
           }}
         >
-          <p style={{ marginTop: 0, color: "#999", fontSize: "11px" }}>Last updated: September 2026</p>
+          <p style={{ marginTop: 0, color: "var(--t-999)", fontSize: "11px" }}>Last updated: September 2026</p>
 
           <p>This Privacy Policy explains how FlipCollab ("we", "us", "our") collects, uses, and protects your personal data when you use our platform. FlipCollab is operated from the United Kingdom and complies with the UK GDPR and the Data Protection Act 2018.</p>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>1. Who We Are</span>
-            <span>FlipCollab is a creator collaboration marketplace connecting brands with content creators. If you have any questions about how we handle your data, reach us at <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>1. Who We Are</span>
+            <span>FlipCollab is a creator collaboration marketplace connecting brands with content creators. If you have any questions about how we handle your data, reach us at <strong style={{ color: "var(--t-fff)" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>2. Information We Collect</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>2. Information We Collect</span>
             <span>To run FlipCollab, we collect:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
               <li>Your name and email address</li>
@@ -103,7 +103,7 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>3. How We Use It</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>3. How We Use It</span>
             <span>We use this information to:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
               <li>Create and manage your account</li>
@@ -117,37 +117,37 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Our Legal Basis</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>4. Our Legal Basis</span>
             <span>We only process your data when we have a proper legal reason to - most commonly because it's necessary to provide the service you've signed up for, because it's in our legitimate interest to keep the platform safe, reliable and fraud-free, or because we're required to by law.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Trusted Partners We Work With</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>5. Trusted Partners We Work With</span>
             <span>FlipCollab runs on a small number of established, reputable service providers, each of which only receives the data they need to do their job:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <li><strong style={{ color: "#fff" }}>Supabase</strong>: our database and account sign-in</li>
-              <li><strong style={{ color: "#fff" }}>Stripe</strong>: payments and creator payouts, a global leader in payment security</li>
-              <li><strong style={{ color: "#fff" }}>Vercel</strong>: hosting the app</li>
-              <li><strong style={{ color: "#fff" }}>Cloudflare</strong>: storing the photos and videos you upload</li>
-              <li><strong style={{ color: "#fff" }}>OneSignal</strong>: push notifications</li>
-              <li><strong style={{ color: "#fff" }}>LocationIQ</strong>: location search and address checking</li>
-              <li><strong style={{ color: "#fff" }}>Sentry</strong>: error monitoring, so we can find and fix crashes</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>Supabase</strong>: our database and account sign-in</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>Stripe</strong>: payments and creator payouts, a global leader in payment security</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>Vercel</strong>: hosting the app</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>Cloudflare</strong>: storing the photos and videos you upload</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>OneSignal</strong>: push notifications</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>LocationIQ</strong>: location search and address checking</li>
+              <li><strong style={{ color: "var(--t-fff)" }}>Sentry</strong>: error monitoring, so we can find and fix crashes</li>
             </ul>
             <span style={{ display: "block", marginTop: "8px" }}>We don't sell your data to anyone, for any reason.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Social Sign-In & Linked Accounts</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>6. Social Sign-In & Linked Accounts</span>
             <span>You may sign in or verify your account using Google, TikTok, or Instagram. We only receive what the provider shares when you sign in, typically your name and email. We use this data solely to create and authenticate your account, never for advertising.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. How Long We Keep Your Data</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>7. How Long We Keep Your Data</span>
             <span>We keep your information for as long as your account is active. If you delete your account, your personal data is removed within 30 days - except records we're legally required to hold onto for longer, such as payment records, which UK law requires us to keep for 6 years. Deliverable videos, and any earlier version replaced after a revision request, are kept for as long as needed to resolve a dispute on that deal. Photos and videos exchanged during a deal aren't kept forever either: they're automatically cleared once a deal is complete or after a period of inactivity, though the conversation itself always stays so both sides have a record of what was agreed. If your account is deleted or restricted, everything - including media - is removed immediately.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>8. Your Rights</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>8. Your Rights</span>
             <span>Under UK GDPR you have the right to:</span>
             <ul style={{ paddingLeft: "1.25rem", marginTop: "8px", display: "flex", flexDirection: "column", gap: "4px" }}>
               <li>Access the personal data we hold about you</li>
@@ -157,48 +157,48 @@ export default function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <li>Data portability</li>
               <li>Lodge a complaint with the ICO (ico.org.uk)</li>
             </ul>
-            <span style={{ display: "block", marginTop: "8px" }}>To exercise any of these rights, email <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
+            <span style={{ display: "block", marginTop: "8px" }}>To exercise any of these rights, email <strong style={{ color: "var(--t-fff)" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>9. Cookies</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>9. Cookies</span>
             <span>FlipCollab uses essential cookies and local storage to keep you logged in and remember your preferences. We do not use tracking or advertising cookies.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Keeping Your Data Secure</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>10. Keeping Your Data Secure</span>
             <span>Security is something we take seriously, not an afterthought. Every connection to FlipCollab is encrypted, and all payments are handled by Stripe, which meets the highest global standard for payment security - we never see or store your card or bank details ourselves. No system is completely immune to risk, so if you ever notice anything suspicious on your account, let us know straight away. Only a FlipCollab administrator can read a conversation, and only when it is part of a dispute on a deal.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>11. Children</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>11. Children</span>
             <span>FlipCollab is not intended for users under 18. We do not knowingly collect data from minors. If we become aware of this, the account will be deleted immediately.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. Changes to This Policy</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>12. Changes to This Policy</span>
             <span>We may update this policy from time to time. We will notify you of significant changes via email or an in-app notice. Continued use of the platform after changes constitutes acceptance.</span>
           </div>
 
           <div>
-            <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>13. Contact</span>
-            <span>For any privacy-related questions email <strong style={{ color: "#fff" }}>hello@flipcollab.com</strong>.</span>
+            <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>13. Contact</span>
+            <span>For any privacy-related questions email <strong style={{ color: "var(--t-fff)" }}>hello@flipcollab.com</strong>.</span>
           </div>
 
-          <p style={{ color: "#777", fontSize: "11px", marginBottom: 0 }}>FlipCollab is operated in England and Wales. This policy is governed by UK law.</p>
+          <p style={{ color: "var(--t-777)", fontSize: "11px", marginBottom: 0 }}>FlipCollab is operated in England and Wales. This policy is governed by UK law.</p>
         </div>
 
         {/* Footer */}
-        <div style={{ padding: "1rem 1.25rem", borderTop: "1px solid #111" }}>
+        <div style={{ padding: "1rem 1.25rem", borderTop: "1px solid var(--c-111)" }}>
           <button
             onClick={onClose}
             style={{
               width: "100%",
               padding: "12px",
-              background: hasScrolledToBottom ? "#fff" : "#161616",
-              border: hasScrolledToBottom ? "1px solid #fff" : "1px solid #222",
+              background: hasScrolledToBottom ? "var(--c-fff)" : "var(--c-161616)",
+              border: hasScrolledToBottom ? "1px solid var(--c-fff)" : "1px solid var(--c-222)",
               borderRadius: "8px",
-              color: hasScrolledToBottom ? "#0a0a0a" : "#444",
+              color: hasScrolledToBottom ? "var(--t-0a0a0a)" : "var(--t-444)",
               fontSize: "12px",
               fontWeight: 600,
               cursor: "pointer",

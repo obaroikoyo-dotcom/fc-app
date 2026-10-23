@@ -86,16 +86,16 @@ const ChatBubbleIcon = () => (
 // speech bubble so it doesn't read as a message either side sent.
 function SystemEventCard({ icon, title, body, time }: { icon: React.ReactNode; title: string; body: string; time: string }) {
   return (
-    <div style={{ alignSelf: "center", maxWidth: "88%", display: "flex", gap: "11px", alignItems: "flex-start", background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", padding: "13px 15px", margin: "4px 0" }}>
-      <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", flexShrink: 0 }}>
+    <div style={{ alignSelf: "center", maxWidth: "88%", display: "flex", gap: "11px", alignItems: "flex-start", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", padding: "13px 15px", margin: "4px 0" }}>
+      <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "var(--a-255-255-255-0_06)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--t-ccc)", flexShrink: 0 }}>
         {icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "10px" }}>
-          <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{title}</p>
-          <p style={{ color: "#666", fontSize: "10px", flexShrink: 0 }}>{time}</p>
+          <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{title}</p>
+          <p style={{ color: "var(--t-666)", fontSize: "10px", flexShrink: 0 }}>{time}</p>
         </div>
-        <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{body}</p>
+        <p style={{ color: "var(--t-999)", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{body}</p>
       </div>
     </div>
   );
@@ -108,14 +108,14 @@ function SystemEventCard({ icon, title, body, time }: { icon: React.ReactNode; t
 // UGC packages) and "Instagram, pending Meta's App Review approval."
 function ComingSoonNotice({ title, pillLabel, body }: { title: string; pillLabel: string; body: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", color: "#777" }}>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", color: "var(--t-777)" }}>
       <ClockIcon />
       <div>
-        <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+        <p style={{ fontSize: "13px", color: "var(--t-fff)", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
           {title}
-          <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(255,255,255,0.06)", border: "1px solid #262626", color: "#999", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{pillLabel}</span>
+          <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "var(--a-255-255-255-0_06)", border: "1px solid var(--c-262626)", color: "var(--t-999)", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>{pillLabel}</span>
         </p>
-        <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>{body}</p>
+        <p style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "2px", lineHeight: 1.4 }}>{body}</p>
       </div>
     </div>
   );
@@ -410,60 +410,60 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   };
 
   return (
-    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "calc(90 * var(--vh))", overflowY: "auto", padding: "1.25rem", boxSizing: "border-box" }}>
-      <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
-      <p style={{ color: "#999", fontSize: "12px", marginBottom: "1rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
+    <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", width: "100%", maxWidth: "480px", maxHeight: "calc(90 * var(--vh))", overflowY: "auto", padding: "1.25rem", boxSizing: "border-box" }}>
+      <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>Confirm Deal & Pay</h3>
+      <p style={{ color: "var(--t-999)", fontSize: "12px", marginBottom: "1rem" }}>Locking in with {paymentApp.creator_name} for "{paymentApp.campaign_name}"</p>
 
-      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "0.85rem", marginBottom: "1rem" }}>
+      <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "0.85rem", marginBottom: "1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-          <span style={{ color: "#999", fontSize: "13px" }}>Creator Payout {isEnterprise ? "(100%)" : "(90%)"}</span>
-          <span style={{ color: "#fff", fontSize: "13px" }}>£{(creatorPayoutDisplay / 100).toFixed(2)}</span>
+          <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Creator Payout {isEnterprise ? "(100%)" : "(90%)"}</span>
+          <span style={{ color: "var(--t-fff)", fontSize: "13px" }}>£{(creatorPayoutDisplay / 100).toFixed(2)}</span>
         </div>
         {!isEnterprise && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-            <span style={{ color: "#999", fontSize: "13px" }}>Platform Fee (5%)</span>
-            <span style={{ color: "#fff", fontSize: "13px" }}>£{(brandFee / 100).toFixed(2)}</span>
+            <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Platform Fee (5%)</span>
+            <span style={{ color: "var(--t-fff)", fontSize: "13px" }}>£{(brandFee / 100).toFixed(2)}</span>
           </div>
         )}
         {isEnterprise && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-            <span style={{ color: "#999", fontSize: "13px" }}>Card processing fee (2.5% + 20p)</span>
-            <span style={{ color: "#fff", fontSize: "13px" }}>£{(processingFee / 100).toFixed(2)}</span>
+            <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Card processing fee (2.5% + 20p)</span>
+            <span style={{ color: "var(--t-fff)", fontSize: "13px" }}>£{(processingFee / 100).toFixed(2)}</span>
           </div>
         )}
-        <div style={{ borderTop: "1px solid #222", paddingTop: "6px", display: "flex", justifyContent: "space-between" }}>
-          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>Total</span>
-          <span style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>£{(totalCharge / 100).toFixed(2)}</span>
+        <div style={{ borderTop: "1px solid var(--c-222)", paddingTop: "6px", display: "flex", justifyContent: "space-between" }}>
+          <span style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: 600 }}>Total</span>
+          <span style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: 600 }}>£{(totalCharge / 100).toFixed(2)}</span>
         </div>
         {isEnterprise && (
-          <p style={{ color: "#777", fontSize: "11px", lineHeight: 1.5, marginTop: "8px" }}>
+          <p style={{ color: "var(--t-777)", fontSize: "11px", lineHeight: 1.5, marginTop: "8px" }}>
             No FlipCollab platform fee on Enterprise. The card processing fee covers Stripe's cost of taking your payment. The creator still gets the full amount.
           </p>
         )}
       </div>
 
       {isDemoMode() && (
-        <p style={{ color: "#777", fontSize: "11px", lineHeight: 1.5, marginBottom: "1rem" }}>
+        <p style={{ color: "var(--t-777)", fontSize: "11px", lineHeight: 1.5, marginBottom: "1rem" }}>
           Demo only. No card is charged, so there's no need to enter real card details.
         </p>
       )}
 
       {savedCard && (
         <div style={{ marginBottom: "0.75rem", display: "flex", flexDirection: "column", gap: "6px" }}>
-          <div onClick={() => setUseNewCard(false)} style={{ display: "flex", alignItems: "center", gap: "10px", background: !useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${!useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "9px 14px", cursor: "pointer" }}>
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${!useNewCard ? "#fff" : "#444"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {!useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />}
+          <div onClick={() => setUseNewCard(false)} style={{ display: "flex", alignItems: "center", gap: "10px", background: !useNewCard ? "var(--c-1a1a1a)" : "var(--c-111)", border: `1px solid ${!useNewCard ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "8px", padding: "9px 14px", cursor: "pointer" }}>
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${!useNewCard ? "var(--c-fff)" : "var(--c-444)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {!useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--c-fff)" }} />}
             </div>
             <div>
-              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{savedCard.brand.charAt(0).toUpperCase() + savedCard.brand.slice(1)} •••• {savedCard.last4}</p>
-              <p style={{ color: "#888", fontSize: "11px", marginTop: "2px" }}>Saved card</p>
+              <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{savedCard.brand.charAt(0).toUpperCase() + savedCard.brand.slice(1)} •••• {savedCard.last4}</p>
+              <p style={{ color: "var(--t-888)", fontSize: "11px", marginTop: "2px" }}>Saved card</p>
             </div>
           </div>
-          <div onClick={() => setUseNewCard(true)} style={{ display: "flex", alignItems: "center", gap: "10px", background: useNewCard ? "#1a1a1a" : "#111", border: `1px solid ${useNewCard ? "#fff" : "#222"}`, borderRadius: "8px", padding: "9px 14px", cursor: "pointer" }}>
-            <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${useNewCard ? "#fff" : "#444"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              {useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />}
+          <div onClick={() => setUseNewCard(true)} style={{ display: "flex", alignItems: "center", gap: "10px", background: useNewCard ? "var(--c-1a1a1a)" : "var(--c-111)", border: `1px solid ${useNewCard ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "8px", padding: "9px 14px", cursor: "pointer" }}>
+            <div style={{ width: "16px", height: "16px", borderRadius: "50%", border: `2px solid ${useNewCard ? "var(--c-fff)" : "var(--c-444)"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              {useNewCard && <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--c-fff)" }} />}
             </div>
-            <p style={{ color: useNewCard ? "#fff" : "#555", fontSize: "13px", fontWeight: 600 }}>Use a different card</p>
+            <p style={{ color: useNewCard ? "var(--t-fff)" : "var(--t-555)", fontSize: "13px", fontWeight: 600 }}>Use a different card</p>
           </div>
         </div>
       )}
@@ -471,31 +471,31 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       {useNewCard && (
         <div style={{ marginBottom: "0.85rem", display: "flex", flexDirection: "column", gap: "8px" }}>
           <div>
-            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Cardholder Name</label>
-            <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "9px 13px", color: "#fff", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
+            <label style={{ fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Cardholder Name</label>
+            <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder="Name on card" style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "9px 13px", color: "var(--t-fff)", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const }} />
           </div>
           <div>
-            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Card Details</label>
-            <div style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 13px" }}>
+            <label style={{ fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Card Details</label>
+            <div style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "11px 13px" }}>
               <CardElement options={CARD_ELEMENT_OPTIONS} />
             </div>
           </div>
           <div>
-            <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Billing Address</label>
+            <label style={{ fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Billing Address</label>
             <BillingAddressFields addr={addr} />
           </div>
         </div>
       )}
 
       {deliveryPlatform && (
-      <div onClick={() => setRequireGatedPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireGatedPost ? "#1a1a1a" : "#111", border: `1px solid ${requireGatedPost ? "#fff" : "#1a1a1a"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
-        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireGatedPost ? "#fff" : "#333"}`, background: requireGatedPost ? "#fff" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#0a0a0a", fontWeight: 700 }}>{requireGatedPost ? "✓" : ""}</div>
+      <div onClick={() => setRequireGatedPost(v => !v)} style={{ display: "flex", alignItems: "flex-start", gap: "10px", background: requireGatedPost ? "var(--c-1a1a1a)" : "var(--c-111)", border: `1px solid ${requireGatedPost ? "var(--c-fff)" : "var(--c-1a1a1a)"}`, borderRadius: "8px", padding: "10px 14px", marginBottom: "0.75rem", cursor: "pointer" }}>
+        <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `1px solid ${requireGatedPost ? "var(--c-fff)" : "var(--c-333)"}`, background: requireGatedPost ? "var(--c-fff)" : "transparent", flexShrink: 0, marginTop: "1px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "var(--t-0a0a0a)", fontWeight: 700 }}>{requireGatedPost ? "✓" : ""}</div>
         <div>
-          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+          <p style={{ fontSize: "13px", color: "var(--t-fff)", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
             Require a {paymentApp.platforms?.[0] || "platform"} post before releasing payout
-            <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "rgba(255,255,255,0.1)", color: "#ccc", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
+            <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: "4px", background: "var(--a-255-255-255-0_1)", color: "var(--t-ccc)", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" }}>Recommended</span>
           </p>
-          <p style={{ fontSize: "11px", color: "#999", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and tell us you're happy with the video once you have the file. The payment is released the same way.</p>
+          <p style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "2px", lineHeight: 1.4 }}>Your card is charged now, but funds stay held until the creator posts the deliverable and it's confirmed live. Taking the content to post on your own account instead? Leave this on and tell us you're happy with the video once you have the file. The payment is released the same way.</p>
         </div>
       </div>
       )}
@@ -515,14 +515,14 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
       )}
 
       {payoutsEnabled === false && (
-        <p style={{ fontSize: "11px", color: "#999", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet. Funds will be held in escrow until they do.</p>
+        <p style={{ fontSize: "11px", color: "var(--t-999)", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet. Funds will be held in escrow until they do.</p>
       )}
 
       {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: "10px" }}>
-        <div onClick={!processing ? onClose : undefined} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: processing ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const }}>Cancel</div>
-        <div onClick={!processing ? handlePay : undefined} style={{ flex: 2, padding: "12px", borderRadius: "8px", background: processing ? "#1a1a1a" : "#fff", color: processing ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const, transition: "all 0.2s" }}>
+        <div onClick={!processing ? onClose : undefined} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "transparent", border: "1px solid var(--c-222)", color: processing ? "var(--t-444)" : "var(--t-999)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const }}>Cancel</div>
+        <div onClick={!processing ? handlePay : undefined} style={{ flex: 2, padding: "12px", borderRadius: "8px", background: processing ? "var(--c-1a1a1a)" : "var(--c-fff)", color: processing ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const, transition: "all 0.2s" }}>
           {processing ? "Processing..." : `Pay £${(totalCharge / 100).toFixed(2)}`}
         </div>
       </div>
@@ -583,16 +583,16 @@ function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; waterm
         />
         {!playing && (
           <div onClick={toggle} style={{ position: "absolute", inset: "0 0 40px 0", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-            <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>
+            <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "var(--a-0-0-0-0_6)", border: "1px solid var(--a-255-255-255-0_4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--s-fff)"><path d="M8 5v14l11-7z" /></svg>
             </div>
           </div>
         )}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "40px", display: "flex", alignItems: "center", gap: "10px", padding: "0 10px", background: "rgba(0,0,0,0.75)" }}>
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "40px", display: "flex", alignItems: "center", gap: "10px", padding: "0 10px", background: "var(--a-0-0-0-0_75)" }}>
           <div onClick={toggle} style={{ width: "18px", display: "flex", justifyContent: "center", cursor: "pointer" }}>
             {playing
-              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
-              : <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z" /></svg>}
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--s-fff)"><path d="M6 5h4v14H6zM14 5h4v14h-4z" /></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--s-fff)"><path d="M8 5v14l11-7z" /></svg>}
           </div>
           <input
             type="range"
@@ -601,13 +601,13 @@ function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; waterm
             step="any"
             value={time}
             onChange={e => { const v = vref.current; if (v) v.currentTime = Number(e.target.value); }}
-            style={{ flex: 1, accentColor: "#fff", height: "3px" }}
+            style={{ flex: 1, accentColor: "var(--c-fff)", height: "3px" }}
           />
-          <span style={{ color: "#aaa", fontSize: "10px", flexShrink: 0 }}>{fmt(time)} / {fmt(duration)}</span>
+          <span style={{ color: "var(--t-aaa)", fontSize: "10px", flexShrink: 0 }}>{fmt(time)} / {fmt(duration)}</span>
           <div onClick={() => setExpanded(x => !x)} aria-label={expanded ? "Close expanded view" : "Expand"} style={{ width: "18px", display: "flex", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
             {expanded
-              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
-              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>}
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--s-fff)" strokeWidth="2.2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--s-fff)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>}
           </div>
         </div>
         <div style={{ position: "absolute", inset: "0 0 40px 0", pointerEvents: "none", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -615,14 +615,14 @@ function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; waterm
             {[0, 1, 2, 3].map(r => (
               <div key={r} style={{ display: "flex", gap: "34px", marginLeft: r % 2 ? "-60px" : 0 }}>
                 {[0, 1, 2].map(c => (
-                  <span key={c} style={{ color: "rgba(255,255,255,0.4)", fontSize: "26px", fontWeight: 800, letterSpacing: "0.12em", textShadow: "0 0 2px rgba(0,0,0,0.6)" }}>PREVIEW</span>
+                  <span key={c} style={{ color: "var(--a-255-255-255-0_4)", fontSize: "26px", fontWeight: 800, letterSpacing: "0.12em", textShadow: "0 0 2px var(--a-0-0-0-0_6)" }}>PREVIEW</span>
                 ))}
               </div>
             ))}
           </div>
         </div>
       </div>
-      <p style={{ fontSize: "10px", color: "#888", marginTop: "6px", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "10px", color: "var(--t-888)", marginTop: "6px", lineHeight: 1.5 }}>
         {note ?? "This is a preview. The clean video without the watermark appears once the payment is released, either when you tell us you're happy or when the review time ends."}
       </p>
     </div>
@@ -879,7 +879,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const canCreatorPost = role === "creator" && (applicationStatus === "funded" || applicationStatus === "paid");
 
   return (
-    <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
+    <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
       {/* This card only ever renders once application_status is "funded" or
           "paid" (see the parent's gate), so the deal's payment is always
           secured by the time it's showing - the actual "Payment Secured"
@@ -888,24 +888,24 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           "is my payment safe" and "what do I do next" are one card, not two.
           The parent no longer renders that message as a separate bubble. */}
       {paymentMessage && (
-        <div style={{ display: "flex", gap: "11px", alignItems: "flex-start", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #1a1a1a" }}>
-          <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", flexShrink: 0 }}>
+        <div style={{ display: "flex", gap: "11px", alignItems: "flex-start", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid var(--c-1a1a1a)" }}>
+          <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "var(--a-255-255-255-0_06)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--t-ccc)", flexShrink: 0 }}>
             <ShieldCheckIcon />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "10px" }}>
-              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Payment Secured</p>
-              <p style={{ color: "#666", fontSize: "10px", flexShrink: 0 }}>{parseUtc(paymentMessage.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+              <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>Payment Secured</p>
+              <p style={{ color: "var(--t-666)", fontSize: "10px", flexShrink: 0 }}>{parseUtc(paymentMessage.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
             </div>
-            <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{paymentMessage.text.slice(PAYMENT_CONFIRMED_PREFIX.length).trim()}</p>
+            <p style={{ color: "var(--t-999)", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{paymentMessage.text.slice(PAYMENT_CONFIRMED_PREFIX.length).trim()}</p>
           </div>
         </div>
       )}
 
-      <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
+      <p style={{ fontSize: "12px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
 
       {mediaDeleteAt && new Date(mediaDeleteAt).getTime() > Date.now() && (
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "7px", color: "#888", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "6px", padding: "8px 10px", marginBottom: "10px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "7px", color: "var(--t-888)", background: "var(--c-0d0d0d)", border: "1px solid var(--c-1a1a1a)", borderRadius: "6px", padding: "8px 10px", marginBottom: "10px" }}>
           <InfoIcon />
           <p style={{ fontSize: "10px", lineHeight: 1.5, margin: 0 }}>
             Videos/photos in this conversation will be removed on {new Date(mediaDeleteAt).toLocaleDateString([], { month: "short", day: "numeric" })} to save storage - the conversation itself stays.
@@ -914,39 +914,39 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {role === "creator" && !deliverableUrl && revisionNote && (
-        <div style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid #262626", background: "#111", marginBottom: "10px" }}>
-          <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "3px" }}>The brand asked for another video</p>
-          <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.5, margin: 0 }}>{revisionNote}</p>
+        <div style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--c-262626)", background: "var(--c-111)", marginBottom: "10px" }}>
+          <p style={{ fontSize: "12px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "3px" }}>The brand asked for another video</p>
+          <p style={{ fontSize: "12px", color: "var(--t-bbb)", lineHeight: 1.5, margin: 0 }}>{revisionNote}</p>
           {revisionRefundDate && (
-            <p style={{ fontSize: "10px", color: "#888", lineHeight: 1.5, margin: "6px 0 0" }}>
+            <p style={{ fontSize: "10px", color: "var(--t-888)", lineHeight: 1.5, margin: "6px 0 0" }}>
               Send the new video by {revisionRefundDate}. If it hasn't arrived by then, the deal is refunded to the brand.
             </p>
           )}
           {applicationStatus === "funded" && (
             showDisputeForm ? (
               <div style={{ marginTop: "10px" }}>
-                <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>Why is this request unreasonable?</p>
+                <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "6px" }}>Why is this request unreasonable?</p>
                 <textarea
                   value={disputeReason}
                   onChange={e => setDisputeReason(e.target.value)}
                   maxLength={1000}
                   placeholder="Explain what you delivered and why it already meets the brief. A FlipCollab admin reviews this and the chat before deciding."
-                  style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+                  style={{ width: "100%", minHeight: "70px", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "6px", padding: "10px", color: "var(--t-fff)", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
                 />
-                <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", lineHeight: 1.5 }}>
+                <p style={{ fontSize: "10px", color: "var(--t-666)", marginTop: "6px", lineHeight: 1.5 }}>
                   The money stays held while an admin reviews it, and the refund countdown pauses.
                 </p>
                 <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                  <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid #222", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+                  <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
                     Cancel
                   </div>
-                  <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing || !disputeReason.trim() ? "#1a1a1a" : "#fff", color: disputing || !disputeReason.trim() ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
+                  <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing || !disputeReason.trim() ? "var(--c-1a1a1a)" : "var(--c-fff)", color: disputing || !disputeReason.trim() ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
                     {disputing ? "Submitting..." : "Submit Dispute"}
                   </div>
                 </div>
               </div>
             ) : (
-              <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", fontSize: "11px", color: "#999", textDecoration: "underline", cursor: "pointer" }}>
+              <div onClick={() => setShowDisputeForm(true)} style={{ marginTop: "8px", fontSize: "11px", color: "var(--t-999)", textDecoration: "underline", cursor: "pointer" }}>
                 Dispute this request
               </div>
             )
@@ -955,7 +955,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {role === "brand" && !deliverableUrl && applicationStatus === "funded" && (
-        <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
+        <p style={{ fontSize: "12px", color: "var(--t-999)", lineHeight: 1.55, marginBottom: "10px" }}>
           {revisionNote
             ? `Waiting for the creator to send a new video.${revisionRefundDate ? ` If it hasn't arrived by ${revisionRefundDate}, your payment is refunded automatically.` : ""}`
             : `Waiting for the creator to send their deliverable. Once it arrives you'll have ${REVIEW_WINDOW_DAYS} days to check it.`}
@@ -964,11 +964,11 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {role === "creator" && !deliverableUrl && applicationStatus !== "disputed" && (
         <>
-          <p style={{ fontSize: "12px", color: "#bbb", lineHeight: 1.55, marginBottom: "10px" }}>
+          <p style={{ fontSize: "12px", color: "var(--t-bbb)", lineHeight: 1.55, marginBottom: "10px" }}>
             Send your deliverable here to get paid. Once it's uploaded, the brand has {REVIEW_WINDOW_DAYS} days to check it. If they say they're happy, or they don't answer in that time, your payment is released.
           </p>
           <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
-          <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed #333", textAlign: "center", fontSize: "12px", color: "#bbb", cursor: uploading ? "default" : "pointer" }}>
+          <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed var(--c-333)", textAlign: "center", fontSize: "12px", color: "var(--t-bbb)", cursor: uploading ? "default" : "pointer" }}>
             {uploading ? "Uploading..." : "Tap to upload your deliverable video"}
           </div>
         </>
@@ -976,8 +976,8 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {deliverableUrl && role === "brand" && applicationStatus === "funded" && (
         <div style={{ marginBottom: "10px" }}>
-          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>Are you happy with the content?</p>
-          <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55, margin: 0 }}>
+          <p style={{ fontSize: "13px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "4px" }}>Are you happy with the content?</p>
+          <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.55, margin: 0 }}>
             Watch the video below.{" "}
             {deliveryPlatform
               ? `If it's right, tap Yes, or wait for it to be confirmed live on ${platform} and the payment is released automatically.`
@@ -998,7 +998,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       {error && <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
 
       {role === "creator" && applicationStatus === "funded" && deliverableUrl && reviewEndMs !== null && (
-        <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55, marginBottom: "10px" }}>
+        <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.55, marginBottom: "10px" }}>
           {reviewMsLeft !== null && reviewMsLeft > 0
             ? `The brand has until ${formatReviewEnd(reviewEndMs)} to check your video. If they don't respond by then, your payment is released to your account automatically.`
             : "The brand's review time is up, so your payment is being released to your account."}
@@ -1012,9 +1012,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // release, or instant) - always show the confirmation rather
             // than re-deriving it from myPost, which can be null for
             // deals released a way that never touched TikTok at all.
-            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? ". The post is confirmed live." : "."}</p>
+            <p style={{ fontSize: "11px", color: "var(--t-ccc)", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? ". The post is confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
-            <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.5 }}>
               {!platform
                 ? `This campaign doesn't require a specific platform. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`
                 : socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
@@ -1022,15 +1022,15 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
                 : `${platform} doesn't support automatic post verification. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`}
             </p>
           ) : !socialConnected ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Connect {platform} from Settings → Connect Social Platforms to post this and get paid.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-999)" }}>Connect {platform} from Settings → Connect Social Platforms to post this and get paid.</p>
           ) : !myPost ? (
-            <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
+            <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "var(--c-1a1a1a)" : "var(--c-fff)", color: posting ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
               {posting ? "Posting..." : `Post to ${platform} & Get Paid`}
             </div>
           ) : myPost.status === "processing" ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Posting to {platform}... this can take a minute.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-999)" }}>Posting to {platform}... this can take a minute.</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted. Payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-ccc)", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted. Payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -1040,15 +1040,15 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       {canBrandPost && deliverableUrl && (
         <div>
           {!deliveryPlatform ? null : !socialConnected ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Connect your own {platform} from Settings to post this content.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-999)" }}>Connect your own {platform} from Settings to post this content.</p>
           ) : !myPost ? (
-            <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "#1a1a1a" : "#fff", color: posting ? "#555" : "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
+            <div onClick={!posting ? handlePost : undefined} style={{ padding: "12px", borderRadius: "8px", background: posting ? "var(--c-1a1a1a)" : "var(--c-fff)", color: posting ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: posting ? "default" : "pointer", textTransform: "uppercase" }}>
               {posting ? "Posting..." : `Post to Your ${platform}`}
             </div>
           ) : myPost.status === "processing" ? (
-            <p style={{ fontSize: "11px", color: "#999" }}>Posting to {platform}...</p>
+            <p style={{ fontSize: "11px", color: "var(--t-999)" }}>Posting to {platform}...</p>
           ) : myPost.status === "published" ? (
-            <p style={{ fontSize: "11px", color: "#ccc", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted to your {platform}.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-ccc)", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted to your {platform}.</p>
           ) : (
             <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
           )}
@@ -1062,11 +1062,11 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && (
         <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
           {!showDisputeForm && (
-            <div onClick={() => setShowDisputeForm(true)} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #222", background: "transparent", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+            <div onClick={() => setShowDisputeForm(true)} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid var(--c-222)", background: "transparent", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
               Report a Problem
             </div>
           )}
-          <div onClick={!releasing ? handleManualRelease : undefined} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid #fff", background: releasing ? "#1a1a1a" : "#fff", color: releasing ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
+          <div onClick={!releasing ? handleManualRelease : undefined} style={{ flex: 1, padding: "11px 6px", borderRadius: "8px", border: "1px solid var(--c-fff)", background: releasing ? "var(--c-1a1a1a)" : "var(--c-fff)", color: releasing ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: releasing ? "default" : "pointer", textTransform: "uppercase" }}>
             {releasing ? "Confirming..." : "Yes, I'm happy"}
           </div>
         </div>
@@ -1074,36 +1074,36 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount < 2 && !showDisputeForm && (
         showRevisionForm ? (
-          <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid #262626", background: "#111" }}>
-            <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>What should the creator change?</p>
+          <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid var(--c-262626)", background: "var(--c-111)" }}>
+            <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "6px" }}>What should the creator change?</p>
             <textarea
               value={revisionText}
               onChange={e => setRevisionText(e.target.value)}
               maxLength={500}
               placeholder="Be specific so they get it right the next time."
-              style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+              style={{ width: "100%", minHeight: "70px", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "6px", padding: "10px", color: "var(--t-fff)", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
             />
-            <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", lineHeight: 1.5 }}>
+            <p style={{ fontSize: "10px", color: "var(--t-666)", marginTop: "6px", lineHeight: 1.5 }}>
               The current video is sent back and the creator uploads a new one. You can do this {2 - revisionCount === 1 ? "one more time" : "up to 2 times"} per deal.
             </p>
             <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-              <div onClick={() => { setShowRevisionForm(false); setRevisionText(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid #222", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+              <div onClick={() => { setShowRevisionForm(false); setRevisionText(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
                 Cancel
               </div>
-              <div onClick={handleRequestRevision} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: requestingRevision || revisionText.trim().length < 3 ? "#1a1a1a" : "#fff", color: requestingRevision || revisionText.trim().length < 3 ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: requestingRevision ? "default" : "pointer", textTransform: "uppercase" }}>
+              <div onClick={handleRequestRevision} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: requestingRevision || revisionText.trim().length < 3 ? "var(--c-1a1a1a)" : "var(--c-fff)", color: requestingRevision || revisionText.trim().length < 3 ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: requestingRevision ? "default" : "pointer", textTransform: "uppercase" }}>
                 {requestingRevision ? "Sending..." : "Request Another Video"}
               </div>
             </div>
           </div>
         ) : (
-          <div onClick={() => setShowRevisionForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+          <div onClick={() => setShowRevisionForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
             Request Another Video{revisionCount > 0 ? " (1 left)" : ""}
           </div>
         )
       )}
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount >= 2 && (
-        <p style={{ fontSize: "10px", color: "#666", textAlign: "center", marginTop: "8px", lineHeight: 1.5 }}>
+        <p style={{ fontSize: "10px", color: "var(--t-666)", textAlign: "center", marginTop: "8px", lineHeight: 1.5 }}>
           You have used both video requests for this deal. Tell us you're happy, or report a problem.
         </p>
       )}
@@ -1111,18 +1111,18 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && showDisputeForm && (
         (
           <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,59,48,0.2)", background: "rgba(255,59,48,0.05)" }}>
-            <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>What's wrong with this delivery?</p>
+            <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "6px" }}>What's wrong with this delivery?</p>
             <textarea
               value={disputeReason}
               onChange={e => setDisputeReason(e.target.value)}
               placeholder="Explain the issue - an admin will review this and the chat history before deciding."
-              style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+              style={{ width: "100%", minHeight: "70px", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "6px", padding: "10px", color: "var(--t-fff)", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
             />
             <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-              <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid #222", color: "#999", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
+              <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
                 Cancel
               </div>
-              <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing ? "#3a1414" : "#ff3b30", color: "#fff", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
+              <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing ? "#3a1414" : "#ff3b30", color: "var(--t-fff)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
                 {disputing ? "Submitting..." : "Submit Dispute"}
               </div>
             </div>
@@ -1131,9 +1131,9 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
       )}
 
       {applicationStatus === "disputed" && (
-        <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid #262626", background: "#111" }}>
-          <p style={{ fontSize: "12px", color: "#ccc", fontWeight: 600 }}>Dispute under review</p>
-          <p style={{ fontSize: "11px", color: "#999", marginTop: "4px", lineHeight: 1.5 }}>
+        <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid var(--c-262626)", background: "var(--c-111)" }}>
+          <p style={{ fontSize: "12px", color: "var(--t-ccc)", fontWeight: 600 }}>Dispute under review</p>
+          <p style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "4px", lineHeight: 1.5 }}>
             {disputeInfo?.raised_by === "creator"
               ? (role === "creator"
                 ? "You've disputed the brand's request for another video - funds stay held while a FlipCollab admin reviews it. You'll be notified once it's resolved."
@@ -1144,18 +1144,18 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           </p>
           {role === "creator" && disputeInfo && disputeInfo.raised_by === "brand" && (
             disputeInfo.creator_response ? (
-              <p style={{ fontSize: "11px", color: "#888", marginTop: "8px", lineHeight: 1.5 }}>Your side has been sent to the admin.</p>
+              <p style={{ fontSize: "11px", color: "var(--t-888)", marginTop: "8px", lineHeight: 1.5 }}>Your side has been sent to the admin.</p>
             ) : (
               <div style={{ marginTop: "10px" }}>
-                <p style={{ fontSize: "11px", color: "#fff", fontWeight: 600, marginBottom: "6px" }}>Add your side</p>
+                <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "6px" }}>Add your side</p>
                 <textarea
                   value={creatorResponse}
                   onChange={e => setCreatorResponse(e.target.value)}
                   maxLength={1000}
                   placeholder="Tell the admin what happened. You can send this once."
-                  style={{ width: "100%", minHeight: "70px", background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px", color: "#fff", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
+                  style={{ width: "100%", minHeight: "70px", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "6px", padding: "10px", color: "var(--t-fff)", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
                 />
-                <div onClick={handleSendResponse} style={{ marginTop: "8px", padding: "9px", borderRadius: "6px", background: sendingResponse || creatorResponse.trim().length < 3 ? "#1a1a1a" : "#fff", color: sendingResponse || creatorResponse.trim().length < 3 ? "#555" : "#0a0a0a", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: sendingResponse ? "default" : "pointer", textTransform: "uppercase" }}>
+                <div onClick={handleSendResponse} style={{ marginTop: "8px", padding: "9px", borderRadius: "6px", background: sendingResponse || creatorResponse.trim().length < 3 ? "var(--c-1a1a1a)" : "var(--c-fff)", color: sendingResponse || creatorResponse.trim().length < 3 ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: sendingResponse ? "default" : "pointer", textTransform: "uppercase" }}>
                   {sendingResponse ? "Sending..." : "Send to Admin"}
                 </div>
               </div>
@@ -1216,10 +1216,10 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
   };
 
   return (
-    <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+    <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
       <div>
-        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Get a head start</p>
-        <p style={{ color: "#aaa", fontSize: "12px", lineHeight: 1.5 }}>
+        <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Get a head start</p>
+        <p style={{ color: "var(--t-aaa)", fontSize: "12px", lineHeight: 1.5 }}>
           {deliveryPlatform
             ? `You can upload your deliverable now, before the brand pays. If they require a ${platform} post for release, your payout goes out once it's confirmed live. If not, it's released when they say they're happy with it, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days of paying.`
             : !platform
@@ -1232,7 +1232,7 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
       ) : (
         <>
           <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
-          <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed #333", textAlign: "center", fontSize: "12px", color: "#bbb", cursor: uploading ? "default" : "pointer" }}>
+          <div onClick={() => !uploading && fileRef.current?.click()} style={{ padding: "12px", borderRadius: "8px", border: "1px dashed var(--c-333)", textAlign: "center", fontSize: "12px", color: "var(--t-bbb)", cursor: uploading ? "default" : "pointer" }}>
             {uploading ? "Uploading..." : "Tap to upload your deliverable video"}
           </div>
         </>
@@ -2210,21 +2210,21 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     else if (view === "app-detail") setView("campaign-apps");
   };
 return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
         @keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
-        .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #888; animation: typingBounce 1s ease-in-out infinite; }
+        .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--c-888); animation: typingBounce 1s ease-in-out infinite; }
       `}</style>
 
       {/* Sticky header group: header + brand tabs stack with zero gap since they share one fixed box */}
-      <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
         {/* Header Bar */}
-        <div style={{ padding: "1.25rem", paddingTop: "calc(1.25rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#0a0a0a" }}>
+        <div style={{ padding: "1.25rem", paddingTop: "calc(1.25rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid var(--c-111)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "var(--c-0a0a0a)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
           {view !== "list" && (
-            <div onClick={goBack} style={{ cursor: "pointer", color: "#fff", fontSize: "20px", paddingRight: "4px" }}>
+            <div onClick={goBack} style={{ cursor: "pointer", color: "var(--t-fff)", fontSize: "20px", paddingRight: "4px" }}>
               ←
             </div>
           )}
@@ -2240,16 +2240,16 @@ return (
       }}
       style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", minWidth: 0 }}
     >
-      <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
+      <div style={{ width: "32px", height: "32px", borderRadius: activeConvo.other_role === "creator" ? "50%" : "10px", border: "1px solid var(--c-222)", background: "var(--c-111)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "var(--t-777)" }}>
         {blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "◌" : <img src={avatarSrc(activeConvo.other_avatar, activeConvo.other_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
       </div>
-      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+      <h1 style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)", letterSpacing: "-0.02em" }}>
         <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{blockedByIds.includes(otherParticipantId(activeConvo) || "") ? "User unavailable" : activeConvo.other_name}</span>
         {!blockedByIds.includes(otherParticipantId(activeConvo) || "") && activeConvo.other_verified && <VerifiedBadge />}
       </h1>
     </div>
   ) : (
-    <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+    <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--t-fff)", letterSpacing: "-0.02em" }}>
       {getHeader()}
     </h1>
   )}
@@ -2261,7 +2261,7 @@ return (
               <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                 <span
                   onClick={() => { setChatReportOpen(o => !o); setChatReportSubmitted(false); }}
-                  style={{ ...headerAction, fontSize: "14px", color: "#aaa", cursor: "pointer", border: "1px solid #222", padding: "0", width: "38px" }}
+                  style={{ ...headerAction, fontSize: "14px", color: "var(--t-aaa)", cursor: "pointer", border: "1px solid var(--c-222)", padding: "0", width: "38px" }}
                 >
                   ⚑
                 </span>
@@ -2272,16 +2272,16 @@ return (
 
         {/* Chat actions (brand): their own row, big enough to hit, so the name above keeps its room */}
         {view === "chat" && activeConvo && role === "brand" && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
-          <div style={{ display: "flex", gap: "10px", padding: "10px 1.25rem", borderBottom: "1px solid #111", background: "#0a0a0a" }}>
+          <div style={{ display: "flex", gap: "10px", padding: "10px 1.25rem", borderBottom: "1px solid var(--c-111)", background: "var(--c-0a0a0a)" }}>
             <span
               onClick={handlePayButtonClick}
-              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "#0a0a0a" : "#444", background: payableApps.length > 0 ? "#fff" : "#161616", cursor: payableApps.length > 0 ? "pointer" : "default" }}
+              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "var(--t-0a0a0a)" : "var(--t-444)", background: payableApps.length > 0 ? "var(--c-fff)" : "var(--c-161616)", cursor: payableApps.length > 0 ? "pointer" : "default" }}
             >
               Pay
             </span>
             <span
               onClick={handleScreenOutButtonClick}
-              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "#ff3b30" : "#444", border: `1px solid ${payableApps.length > 0 ? "#3a1a1a" : "#222"}`, cursor: payableApps.length > 0 ? "pointer" : "default" }}
+              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "#ff3b30" : "var(--t-444)", border: `1px solid ${payableApps.length > 0 ? "#3a1a1a" : "var(--c-222)"}`, cursor: payableApps.length > 0 ? "pointer" : "default" }}
             >
               Screen Out
             </span>
@@ -2290,18 +2290,18 @@ return (
 
         {/* Chat report panel */}
         {view === "chat" && activeConvo && chatReportOpen && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
-          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
+          <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", background: "var(--c-0d0d0d)" }}>
             {chatReportSubmitted ? (
-              <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
+              <p className="fc-pop" style={{ fontSize: "13px", color: "var(--t-fff)" }}>Report submitted. Thanks, we'll review it.</p>
             ) : (
               <>
-                <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {activeConvo.other_name}</p>
+                <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {activeConvo.other_name}</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
                   {["Inappropriate video", "Offensive language", "Spam or scam", "Other"].map(r => (
                     <span
                       key={r}
                       onClick={() => setChatReportReason(r)}
-                      style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${chatReportReason === r ? "#fff" : "#222"}`, background: chatReportReason === r ? "#fff" : "transparent", color: chatReportReason === r ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
+                      style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${chatReportReason === r ? "var(--c-fff)" : "var(--c-222)"}`, background: chatReportReason === r ? "var(--c-fff)" : "transparent", color: chatReportReason === r ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
                     >
                       {r}
                     </span>
@@ -2312,12 +2312,12 @@ return (
                   onChange={e => setChatReportDetail(e.target.value)}
                   placeholder="Any extra detail (optional)"
                   rows={2}
-                  style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px", color: "#fff", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
+                  style={{ width: "100%", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px", color: "var(--t-fff)", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
                 />
                 <div style={{ display: "flex", gap: "10px" }}>
                   <div
                     onClick={() => !chatReportSubmitting && chatReportReason && handleSubmitChatReport()}
-                    style={{ flex: 1, padding: "11px", borderRadius: "8px", background: chatReportReason ? "#fff" : "#1a1a1a", color: chatReportReason ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: chatReportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                    style={{ flex: 1, padding: "11px", borderRadius: "8px", background: chatReportReason ? "var(--c-fff)" : "var(--c-1a1a1a)", color: chatReportReason ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: chatReportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
                   >
                     {chatReportSubmitting ? "Submitting..." : "Submit Report"}
                   </div>
@@ -2335,11 +2335,11 @@ return (
 
         {/* Brand Tabs Toggle */}
         {role === "brand" && view === "list" && (
-          <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
-            <div onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "#fff" : "#444", borderBottom: brandTab === "applications" ? "2px solid #fff" : "2px solid transparent" }}>
+          <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
+            <div onClick={() => setBrandTab("applications")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "applications" ? "var(--t-fff)" : "var(--t-444)", borderBottom: brandTab === "applications" ? "2px solid var(--c-fff)" : "2px solid transparent" }}>
               applications
             </div>
-            <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "#fff" : "#444", borderBottom: brandTab === "messages" ? "2px solid #fff" : "2px solid transparent", position: "relative" }}>
+            <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "var(--t-fff)" : "var(--t-444)", borderBottom: brandTab === "messages" ? "2px solid var(--c-fff)" : "2px solid transparent", position: "relative" }}>
               messages
               {unreadConvoIds.length > 0 && (
                 <span style={{ display: "inline-block", width: "6px", height: "6px", background: "#ff3b30", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
@@ -2354,8 +2354,8 @@ return (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
           {campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No campaigns yet</p>
-              <p style={{ fontSize: "13px", color: "#888" }}>Post a campaign to start receiving applications.</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "8px" }}>No campaigns yet</p>
+              <p style={{ fontSize: "13px", color: "var(--t-888)" }}>Post a campaign to start receiving applications.</p>
             </div>
           ) : (
             campaigns.map((camp, i) => (
@@ -2370,16 +2370,16 @@ return (
                     .eq("read", false);
                   if (onRead) onRead();
                 }
-              }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
+              }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", cursor: "pointer" }}>
                 <div>
-                  <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{camp.name}</p>
-                  <p style={{ color: "#888", fontSize: "12px" }}>{camp.applications.length} application{camp.applications.length !== 1 ? "s" : ""}</p>
+                  <p style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>{camp.name}</p>
+                  <p style={{ color: "var(--t-888)", fontSize: "12px" }}>{camp.applications.length} application{camp.applications.length !== 1 ? "s" : ""}</p>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   {camp.applications.filter(a => a.status === "pending").length > 0 && !seenCampaignIds.includes(camp.id) && (
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
                   )}
-                  <span style={{ color: "#888", fontSize: "16px" }}>›</span>
+                  <span style={{ color: "var(--t-888)", fontSize: "16px" }}>›</span>
                 </div>
               </div>
             ))
@@ -2392,23 +2392,23 @@ return (
         <div style={{ paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
           {activeCampaign.applications.length === 0 ? (
             <div style={{ textAlign: "center", padding: "4rem 2rem" }}>
-              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No applications yet</p>
-              <p style={{ fontSize: "13px", color: "#888" }}>Share your campaign to get more creators applying.</p>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "8px" }}>No applications yet</p>
+              <p style={{ fontSize: "13px", color: "var(--t-888)" }}>Share your campaign to get more creators applying.</p>
             </div>
           ) : (
             activeCampaign.applications.map((app, i) => (
-              <div key={app.id} onClick={() => { setActiveApplication(app); setView("app-detail"); }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "50%", border: "1px solid #222", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#777" }}>
+              <div key={app.id} onClick={() => { setActiveApplication(app); setView("app-detail"); }} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", cursor: "pointer" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "50%", border: "1px solid var(--c-222)", background: "var(--c-111)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "var(--t-777)" }}>
                   <img src={avatarSrc(app.creator_avatar, app.creator_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <p style={{ color: "#fff", fontSize: "14px", fontWeight: 600 }}>{app.creator_name}</p>
-                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${app.status === "chatting" || app.status === "accepted" ? "#fff" : app.status === "rejected" ? "#333" : "#555"}`, color: app.status === "chatting" || app.status === "accepted" ? "#fff" : app.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>
+                    <p style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: 600 }}>{app.creator_name}</p>
+                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${app.status === "chatting" || app.status === "accepted" ? "var(--c-fff)" : app.status === "rejected" ? "var(--c-333)" : "var(--c-555)"}`, color: app.status === "chatting" || app.status === "accepted" ? "var(--t-fff)" : app.status === "rejected" ? "var(--t-444)" : "var(--t-777)", textTransform: "uppercase" }}>
                       {app.status === "chatting" ? "chatting" : app.status}
                     </span>
                   </div>
-                  <p style={{ fontSize: "12px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{app.message}</p>
+                  <p style={{ fontSize: "12px", color: "var(--t-888)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{app.message}</p>
                 </div>
               </div>
             ))
@@ -2421,12 +2421,12 @@ return (
         <div style={{ padding: "1.5rem 1.25rem", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid #333", background: "#111", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#777" }}>
+              <div style={{ width: "60px", height: "60px", borderRadius: "50%", border: "1px solid var(--c-333)", background: "var(--c-111)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "var(--t-777)" }}>
                 <img src={avatarSrc(activeApplication.creator_avatar, activeApplication.creator_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
               <div>
-                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{activeApplication.creator_name}</p>
-                <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>Applied to {activeApplication.campaign_name}</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>{activeApplication.creator_name}</p>
+                <p style={{ fontSize: "12px", color: "var(--t-888)", marginTop: "2px" }}>Applied to {activeApplication.campaign_name}</p>
               </div>
             </div>
             {blockedIds.includes(activeApplication.creator_id) ? (
@@ -2434,7 +2434,7 @@ return (
             ) : (
               <span
                 onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
-                style={{ ...headerAction, color: "#aaa", cursor: "pointer", border: "1px solid #222" }}
+                style={{ ...headerAction, color: "var(--t-aaa)", cursor: "pointer", border: "1px solid var(--c-222)" }}
               >
                 ⚑ Report
               </span>
@@ -2442,18 +2442,18 @@ return (
           </div>
 
           {reportOpen && !blockedIds.includes(activeApplication.creator_id) && (
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
               {reportSubmitted ? (
-                <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
+                <p className="fc-pop" style={{ fontSize: "13px", color: "var(--t-fff)" }}>Report submitted. Thanks, we'll review it.</p>
               ) : (
                 <>
-                  <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report this application</p>
+                  <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report this application</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
                     {["Inappropriate video", "Offensive language", "Spam or scam", "Other"].map(r => (
                       <span
                         key={r}
                         onClick={() => setReportReason(r)}
-                        style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${reportReason === r ? "#fff" : "#222"}`, background: reportReason === r ? "#fff" : "transparent", color: reportReason === r ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
+                        style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${reportReason === r ? "var(--c-fff)" : "var(--c-222)"}`, background: reportReason === r ? "var(--c-fff)" : "transparent", color: reportReason === r ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
                       >
                         {r}
                       </span>
@@ -2464,12 +2464,12 @@ return (
                     onChange={e => setReportDetail(e.target.value)}
                     placeholder="Any extra detail (optional)"
                     rows={2}
-                    style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px", color: "#fff", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
+                    style={{ width: "100%", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px", color: "var(--t-fff)", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
                   />
                   <div style={{ display: "flex", gap: "10px" }}>
                     <div
                       onClick={() => !reportSubmitting && reportReason && handleSubmitReport(activeApplication)}
-                      style={{ flex: 1, padding: "11px", borderRadius: "8px", background: reportReason ? "#fff" : "#1a1a1a", color: reportReason ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: reportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                      style={{ flex: 1, padding: "11px", borderRadius: "8px", background: reportReason ? "var(--c-fff)" : "var(--c-1a1a1a)", color: reportReason ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: reportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
                     >
                       {reportSubmitting ? "Submitting..." : "Submit Report"}
                     </div>
@@ -2485,58 +2485,58 @@ return (
             </div>
           )}
 
-          <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
-            <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Their message</p>
-            <p style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.7 }}>{activeApplication.message}</p>
+          <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1rem", marginBottom: "1.5rem" }}>
+            <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Their message</p>
+            <p style={{ fontSize: "13px", color: "var(--t-ccc)", lineHeight: 1.7 }}>{activeApplication.message}</p>
           </div>
 {activeApplication.video_url && (
   <div style={{ marginBottom: "1.5rem" }}>
-    <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Video Pitch</p>
+    <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Video Pitch</p>
     <PreviewVideo src={activeApplication.video_url} watermark maxHeight="280px" note="This is a preview of their pitch." />
   </div>
 )}
           {activeApplication.platforms?.length > 0 && (
             <div style={{ marginBottom: "1.5rem" }}>
-              <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms</p>
+              <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>Platforms</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                 {activeApplication.platforms.map(p => (
-                  <span key={p} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{p}</span>
+                  <span key={p} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px" }}>{p}</span>
                 ))}
               </div>
             </div>
           )}
 
           {(activeApplication.status === "accepted" || activeApplication.status === "chatting") && (
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
-              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", color: "#ccc", margin: "0 auto 10px" }}>
+            <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--a-255-255-255-0_06)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--t-ccc)", margin: "0 auto 10px" }}>
                 <ChatBubbleIcon />
               </div>
-              <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>Chat open with creator</p>
-              <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Discuss deliverables in the chat tab. You can safely lock in the deal and process payments straight from the conversation bar anytime.</p>
+              <p style={{ fontSize: "14px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "4px" }}>Chat open with creator</p>
+              <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.6 }}>Discuss deliverables in the chat tab. You can safely lock in the deal and process payments straight from the conversation bar anytime.</p>
             </div>
           )}
 
           {activeApplication.status === "rejected" && (
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
-              <p style={{ fontSize: "13px", color: "#888", fontWeight: 600 }}>Application declined</p>
+            <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <p style={{ fontSize: "13px", color: "var(--t-888)", fontWeight: 600 }}>Application declined</p>
             </div>
           )}
 
           {activeApplication.status === "pending" && actionLoading !== activeApplication.id && (
             <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
-              <div onClick={() => handleAccept(activeApplication)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Accept & Chat</div>
-              <div onClick={() => handleReject(activeApplication)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", color: "#999", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Decline</div>
+              <div onClick={() => handleAccept(activeApplication)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Accept & Chat</div>
+              <div onClick={() => handleReject(activeApplication)} style={{ flex: 1, padding: "14px", borderRadius: "8px", background: "transparent", color: "var(--t-999)", border: "1px solid var(--c-222)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>Decline</div>
             </div>
           )}
 
           {activeApplication.status === "pending" && actionLoading === activeApplication.id && (
-            <div style={{ padding: "14px", borderRadius: "8px", background: "#1a1a1a", color: "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1rem" }}>
+            <div style={{ padding: "14px", borderRadius: "8px", background: "var(--c-1a1a1a)", color: "var(--t-999)", fontSize: "13px", fontWeight: 600, textAlign: "center", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "1rem" }}>
               <p>Opening Conversation...</p>
             </div>
           )}
 
           {(activeApplication.status === "accepted" || activeApplication.status === "chatting") && (
-            <div onClick={() => { setBrandTab("messages"); setView("list"); }} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            <div onClick={() => { setBrandTab("messages"); setView("list"); }} style={{ padding: "14px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               Go to Messages →
             </div>
           )}
@@ -2549,27 +2549,27 @@ return (
           {!hasLoadedOnce && showSkeleton ? (
   <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
     {[1, 2, 3, 4, 5].map(i => (
-      <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111" }}>
-        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#1a1a1a", flexShrink: 0, animation: "shimmer 1.5s ease-in-out infinite" }} />
+      <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)" }}>
+        <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "var(--c-1a1a1a)", flexShrink: 0, animation: "shimmer 1.5s ease-in-out infinite" }} />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
-          <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-          <div style={{ width: "200px", height: "11px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
+          <div style={{ width: "200px", height: "11px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
         </div>
-        <div style={{ width: "35px", height: "11px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+        <div style={{ width: "35px", height: "11px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
       </div>
     ))}
   </div>
 ) : !hasLoadedOnce && loading ? null : conversations.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "calc(60 * var(--vh))", textAlign: "center", padding: "2rem" }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "1rem" }}>
-                <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="#333" strokeWidth="2" strokeLinejoin="round"/>
+                <path d="M21 11.5C21 16.1944 16.9706 20 12 20C10.2832 20 8.68732 19.5586 7.33333 18.8L3 20L4.26667 16.2C3.46667 14.8333 3 13.2333 3 11.5C3 6.80558 7.02944 3 12 3C16.9706 3 21 6.80558 21 11.5Z" stroke="var(--s-333)" strokeWidth="2" strokeLinejoin="round"/>
               </svg>
-              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>No messages yet</p>
-              <p style={{ fontSize: "13px", color: "#888", lineHeight: 1.6 }}>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "8px" }}>No messages yet</p>
+              <p style={{ fontSize: "13px", color: "var(--t-888)", lineHeight: 1.6 }}>
                 {role === "creator" ? "Search for brands or creators to start a conversation." : "Accept applications to start conversations with creators."}
               </p>
               {role === "creator" && (
-                <div onClick={() => navigate("search-creator" as Page)} style={{ marginTop: "1.5rem", padding: "10px 20px", background: "#fff", color: "#0a0a0a", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
+                <div onClick={() => navigate("search-creator" as Page)} style={{ marginTop: "1.5rem", padding: "10px 20px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
                   Find People
                 </div>
               )}
@@ -2583,25 +2583,25 @@ return (
               const displayName = theyBlocked ? "User unavailable" : c.other_name;
               const previewText = iBlocked ? "Blocked" : theyBlocked ? "Unavailable" : (c.last_message || "Start a conversation");
               return (
-                <div key={c.id} onClick={() => openChat(c)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid #111", cursor: "pointer", background: isUnread ? "#11111144" : "transparent" }}>
-                  <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "#777", flexShrink: 0, overflow: "hidden", position: "relative" }}>
+                <div key={c.id} onClick={() => openChat(c)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", cursor: "pointer", background: isUnread ? "#11111144" : "transparent" }}>
+                  <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid var(--c-222)", background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "var(--t-777)", flexShrink: 0, overflow: "hidden", position: "relative" }}>
                     {theyBlocked ? "◌" : <img src={avatarSrc(c.other_avatar, c.other_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <p style={{ color: "#fff", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{displayName}</p>
+                        <p style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{displayName}</p>
                         {!theyBlocked && c.other_verified && <VerifiedBadge size={12} />}
                         {isUnread && !iBlocked && !theyBlocked && (
                           <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
                         )}
                       </div>
-                      <span style={{ fontSize: "11px", color: isUnread ? "#fff" : "#444", fontWeight: isUnread ? 600 : 400 }}>
+                      <span style={{ fontSize: "11px", color: isUnread ? "var(--t-fff)" : "var(--t-444)", fontWeight: isUnread ? 600 : 400 }}>
                         {parseUtc(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
-                    <p style={{ fontSize: "12px", color: (iBlocked || theyBlocked) ? "#ff4d4d" : isUnread ? "#eee" : "#444", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <p style={{ fontSize: "12px", color: (iBlocked || theyBlocked) ? "#ff4d4d" : isUnread ? "var(--t-eee)" : "var(--t-444)", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {previewText}
                     </p>
                   </div>
@@ -2617,10 +2617,10 @@ return (
         <>
           {/* IN-CHAT DEAL DESK WIDGET */}
           {activeConvo?.application_id && (
-            <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "12px 20px", paddingTop: stickyHeight ? `calc(${stickyHeight}px + 12px)` : "6rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: "var(--c-0d0d0d)", borderBottom: "1px solid var(--c-1a1a1a)", padding: "12px 20px", paddingTop: stickyHeight ? `calc(${stickyHeight}px + 12px)` : "6rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ minWidth: 0 }}>
-                <p style={{ textTransform: "uppercase", fontSize: "9px", color: "#888", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
-                <p style={{ color: "#ccc", fontSize: "13px", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "2px" }}>{activeConvo.campaign_name || "Active Brief"}</p>
+                <p style={{ textTransform: "uppercase", fontSize: "9px", color: "var(--t-888)", letterSpacing: "0.1em", fontWeight: 600 }}>Campaign Brief Trade</p>
+                <p style={{ color: "var(--t-ccc)", fontSize: "13px", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: "2px" }}>{activeConvo.campaign_name || "Active Brief"}</p>
               </div>
 
               {role === "brand" ? (
@@ -2628,28 +2628,28 @@ return (
                 // just a status readout once a decision's been made.
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", flexShrink: 0 }}>
                   {activeConvo.application_status === "paid" ? (
-                    <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#ccc", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "var(--t-ccc)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-262626)" }}>
                       <CheckIcon /> Deal Locked: Paid
                     </span>
                   ) : activeConvo.application_status === "funded" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
+                      <span style={{ fontSize: "11px", color: "var(--t-999)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-262626)" }}>
                         Funded: Awaiting Delivery
                       </span>
-                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-aaa)", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         Once the video is in, tell us if you're happy with it. You have 5 days - if you don't respond, the payment is released to the creator automatically.
                       </p>
                     </>
                   ) : activeConvo.application_status === "disputed" ? (
-                    <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626" }}>
+                    <span style={{ fontSize: "11px", color: "var(--t-999)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-262626)" }}>
                       Dispute Under Review
                     </span>
                   ) : activeConvo.application_status === "refunded" ? (
-                    <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
+                    <span style={{ fontSize: "11px", color: "var(--t-888)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-1a1a1a)" }}>
                       Refunded
                     </span>
                   ) : activeConvo.application_status === "rejected" ? (
-                    <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a" }}>
+                    <span style={{ fontSize: "11px", color: "var(--t-888)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-1a1a1a)" }}>
                       Folder Closed (Declined)
                     </span>
                   ) : null}
@@ -2659,19 +2659,19 @@ return (
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", alignItems: "flex-end", flexShrink: 0 }}>
                   {activeConvo.application_status === "rejected" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "var(--t-888)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-1a1a1a)", fontWeight: 500 }}>
                         Application Screened Out
                       </span>
-                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-aaa)", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         The brand decided to pass on this specific campaign brief. Keep your head up! Landing the right brand partnerships takes time. Keep refining your pitch and the right match will click.
                       </p>
                     </>
                   ) : activeConvo.application_status === "funded" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "var(--t-999)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-262626)", fontWeight: 500 }}>
                         Funded: Deliver to Get Paid
                       </span>
-                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-aaa)", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         {deliveryPlatformFor(activeConvo.campaign_platforms?.[0])
                           ? "Upload your deliverable and post it below - your payout releases automatically once it's confirmed live, or 5 days after delivery if the brand hasn't responded."
                           : "Upload your deliverable below - your payout is released once the brand confirms they're happy, or automatically 5 days after delivery if they don't respond."}
@@ -2679,37 +2679,37 @@ return (
                     </>
                   ) : activeConvo.application_status === "paid" ? (
                     <>
-                      <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "#ccc", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "11px", color: "var(--t-ccc)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-262626)", fontWeight: 500 }}>
                         <CheckIcon /> Payout Released
                       </span>
-                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-aaa)", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         This deal is complete - your payout has been sent to your connected account.
                       </p>
                     </>
                   ) : activeConvo.application_status === "disputed" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#999", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #262626", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "var(--t-999)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-262626)", fontWeight: 500 }}>
                         Dispute Under Review
                       </span>
-                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-aaa)", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         The brand has raised an issue with this delivery - a FlipCollab admin is reviewing it and will decide the outcome.
                       </p>
                     </>
                   ) : activeConvo.application_status === "refunded" ? (
                     <>
-                      <span style={{ fontSize: "11px", color: "#888", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "var(--t-888)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-1a1a1a)", fontWeight: 500 }}>
                         Refunded to Brand
                       </span>
-                      <p style={{ fontSize: "10px", color: "#aaa", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-aaa)", margin: 0, textAlign: "right", maxWidth: "260px", lineHeight: "1.4" }}>
                         After review, this payment was refunded to the brand and won't be released.
                       </p>
                     </>
                   ) : (
                     <>
-                      <span style={{ fontSize: "11px", color: "#aaa", background: "#111", padding: "4px 10px", borderRadius: "12px", border: "1px solid #1a1a1a", fontWeight: 500 }}>
+                      <span style={{ fontSize: "11px", color: "var(--t-aaa)", background: "var(--c-111)", padding: "4px 10px", borderRadius: "12px", border: "1px solid var(--c-1a1a1a)", fontWeight: 500 }}>
                         Pending Terms Review
                       </span>
-                      <p style={{ fontSize: "10px", color: "#888", margin: 0, textAlign: "right", maxWidth: "240px", lineHeight: "1.4" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-888)", margin: 0, textAlign: "right", maxWidth: "240px", lineHeight: "1.4" }}>
                         Brands can screen you out whenever they choose. Always sound professional even if you aren't their exact target.
                       </p>
                     </>
@@ -2722,7 +2722,7 @@ return (
           {/* CHAT MESSAGES STREAM */}
           <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `calc(${inputBarHeight + 65}px + env(safe-area-inset-bottom, 0px))` : "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
             {messages.length === 0 && (
-              <p style={{ color: "#777", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
+              <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
             {(() => {
               const chatOpenedIdx = messages.findIndex(m => m.text?.startsWith(CHAT_OPENED_PREFIX));
@@ -2776,12 +2776,12 @@ return (
               return (
                 <div key={m.id} style={{ display: "contents" }}>
                 {showPayCard && i === cardInsertAtIdx && (
-                  <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
                     <div>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Ready to lock in the deal?</p>
-                      <p style={{ color: "#aaa", fontSize: "12px" }}>Secure funds in escrow for "{activeConvo?.campaign_name || "this campaign"}" so {activeConvo?.other_name || "the creator"} can get started.</p>
+                      <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Ready to lock in the deal?</p>
+                      <p style={{ color: "var(--t-aaa)", fontSize: "12px" }}>Secure funds in escrow for "{activeConvo?.campaign_name || "this campaign"}" so {activeConvo?.other_name || "the creator"} can get started.</p>
                     </div>
-                    <div onClick={openPaymentModal} style={{ alignSelf: "flex-start", background: "#fff", color: "#0a0a0a", borderRadius: "6px", padding: "8px 14px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                    <div onClick={openPaymentModal} style={{ alignSelf: "flex-start", background: "var(--c-fff)", color: "var(--t-0a0a0a)", borderRadius: "6px", padding: "8px 14px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
                       Lock Deal & Pay
                     </div>
                   </div>
@@ -2792,9 +2792,9 @@ return (
                 )}
                 {showDivider && i === dividerAtIdx && (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
-                    <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
-                    <span style={{ fontSize: "9px", color: "#888", textTransform: "uppercase" as const, letterSpacing: "0.08em", flexShrink: 0 }}>After payment</span>
-                    <div style={{ flex: 1, height: "1px", background: "#1a1a1a" }} />
+                    <div style={{ flex: 1, height: "1px", background: "var(--c-1a1a1a)" }} />
+                    <span style={{ fontSize: "9px", color: "var(--t-888)", textTransform: "uppercase" as const, letterSpacing: "0.08em", flexShrink: 0 }}>After payment</span>
+                    <div style={{ flex: 1, height: "1px", background: "var(--c-1a1a1a)" }} />
                   </div>
                 )}
                 {isPaymentEvent && i === paymentIdx && deliveryCardShowsPayment && activeConvo?.application_id && currentUserId ? (
@@ -2834,7 +2834,7 @@ return (
                       onTouchStart={() => !m.deleted_at && handlePressStart(m)}
                       onTouchEnd={handlePressEnd}
                       onTouchMove={handlePressEnd}
-                      style={{ position: "relative", maxWidth: "75%", padding: (m.video_url || m.image_url) ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "#fff" : "#111", color: mine ? "#0a0a0a" : "#fff", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid #1a1a1a", cursor: "pointer", userSelect: "none" }}
+                      style={{ position: "relative", maxWidth: "75%", padding: (m.video_url || m.image_url) ? "8px" : "10px 14px", borderRadius: mine ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: mine ? "var(--c-fff)" : "var(--c-111)", color: mine ? "var(--t-0a0a0a)" : "var(--t-fff)", fontSize: "13px", lineHeight: 1.5, border: mine ? "none" : "1px solid var(--c-1a1a1a)", cursor: "pointer", userSelect: "none" }}
                     >
                       {m.deleted_at ? (
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "2px 0", opacity: 0.7 }}>
@@ -2877,7 +2877,7 @@ return (
                       )}
                       {m.text && !m.deleted_at && !m.media_expired_at && editingMessageId !== m.id && <p style={{ padding: (m.video_url || m.image_url) ? "8px 6px 0" : 0 }}>{m.text}</p>}
                       {!m.deleted_at && editingMessageId !== m.id && (
-                        <p style={{ fontSize: "10px", color: mine ? "#5a5a5a" : "#444", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
+                        <p style={{ fontSize: "10px", color: mine ? "var(--t-5a5a5a)" : "var(--t-444)", marginTop: "4px", textAlign: "right", padding: (m.video_url || m.image_url) ? "0 6px" : 0 }}>
                           {m.edited_at && <span style={{ fontStyle: "italic", marginRight: "4px" }}>edited</span>}
                           {parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                         </p>
@@ -2885,21 +2885,21 @@ return (
                       {uniqueEmoji.length > 0 && (
                         <div style={{ position: "absolute", bottom: "-10px", [mine ? "left" : "right"]: "-4px", display: "flex", gap: "2px" }}>
                           {uniqueEmoji.map(emoji => (
-                            <span key={emoji} style={{ fontSize: "12px", background: "#1a1a1a", border: "1px solid #333", borderRadius: "10px", padding: "1px 5px" }}>{emoji}</span>
+                            <span key={emoji} style={{ fontSize: "12px", background: "var(--c-1a1a1a)", border: "1px solid var(--c-333)", borderRadius: "10px", padding: "1px 5px" }}>{emoji}</span>
                           ))}
                         </div>
                       )}
                     </div>
                     <span
                       onClick={() => setReactionPickerFor(prev => prev === m.id ? null : m.id)}
-                      style={{ color: "#888", cursor: "pointer", padding: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}
+                      style={{ color: "var(--t-888)", cursor: "pointer", padding: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}
                     >
                       <AddReactionIcon />
                     </span>
                     {reactionPickerFor === m.id && (
                       <>
                         <div onClick={() => setReactionPickerFor(null)} style={{ position: "fixed", inset: 0, zIndex: 998 }} />
-                        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", [mine ? "right" : "left"]: 0, background: "#111", border: "1px solid #222", borderRadius: "20px", padding: "6px 8px", display: "flex", gap: "6px", zIndex: 999, boxShadow: "0 4px 16px rgba(0,0,0,0.4)" }}>
+                        <div style={{ position: "absolute", bottom: "calc(100% + 6px)", [mine ? "right" : "left"]: 0, background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "20px", padding: "6px 8px", display: "flex", gap: "6px", zIndex: 999, boxShadow: "0 4px 16px var(--a-0-0-0-0_4)" }}>
                           {REACTION_EMOJI.map(emoji => (
                             <span
                               key={emoji}
@@ -2914,7 +2914,7 @@ return (
                     )}
                   </div>
                   {showSeen && (
-                    <p style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>Seen</p>
+                    <p style={{ fontSize: "10px", color: "var(--t-999)", marginTop: "4px" }}>Seen</p>
                   )}
                 </div>
                 )}
@@ -2926,7 +2926,7 @@ return (
             })()}
             {otherIsTyping && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "#111", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", gap: "4px" }}>
+                <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", display: "flex", alignItems: "center", gap: "4px" }}>
                   <span className="typing-dot" style={{ animationDelay: "0ms" }} />
                   <span className="typing-dot" style={{ animationDelay: "160ms" }} />
                   <span className="typing-dot" style={{ animationDelay: "320ms" }} />
@@ -2936,17 +2936,17 @@ return (
           </div>
 
           {/* INPUT BAR CONTROLLER */}
-          <div ref={inputBarRef} style={{ position: "fixed", bottom: "var(--nav-h)", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
+          <div ref={inputBarRef} style={{ position: "fixed", bottom: "var(--nav-h)", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-111)", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <NoEntryIcon /> You've blocked this user. Unblock them in Settings to message
               </div>
             ) : blockedByIds.includes(otherParticipantId(activeConvo) || "") ? (
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#888", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "var(--t-888)", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <LockIcon /> You can't message this user
               </div>
             ) : activeConvo?.application_status === "rejected" ? (
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#888", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "var(--t-888)", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <LockIcon /> Messaging disabled (application finalized)
               </div>
             ) : (
@@ -2966,7 +2966,7 @@ return (
                 />
                 <div
                   onClick={() => !chatVideoUploading && chatVideoInputRef.current?.click()}
-                  style={{ width: "38px", height: "38px", borderRadius: "50%", background: "#111", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatVideoUploading ? "default" : "pointer", color: chatVideoUploading ? "#333" : "#888", flexShrink: 0 }}
+                  style={{ width: "38px", height: "38px", borderRadius: "50%", background: "var(--c-111)", border: "1px solid var(--c-222)", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatVideoUploading ? "default" : "pointer", color: chatVideoUploading ? "var(--t-333)" : "var(--t-888)", flexShrink: 0 }}
                 >
                   {chatVideoUploading ? (
                     <span style={{ fontSize: "16px" }}>…</span>
@@ -2977,13 +2977,13 @@ return (
                   )}
                 </div>
                 <input
-                  style={{ flex: 1, background: "#111", border: "1px solid #222", borderRadius: "24px", padding: "10px 16px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit" }}
+                  style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "24px", padding: "10px 16px", color: "var(--t-fff)", fontSize: "14px", outline: "none", fontFamily: "inherit" }}
                   placeholder="Message..."
                   value={input}
                   onChange={e => { setInput(e.target.value); notifyTyping(); }}
                   onKeyDown={e => e.key === "Enter" && send()}
                 />
-                <div onClick={send} style={{ width: "38px", height: "38px", borderRadius: "50%", background: input ? "#fff" : "#111", border: input ? "none" : "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", cursor: input ? "pointer" : "default", fontSize: "16px", color: input ? "#0a0a0a" : "#333", transition: "all 0.2s", flexShrink: 0 }}>
+                <div onClick={send} style={{ width: "38px", height: "38px", borderRadius: "50%", background: input ? "var(--c-fff)" : "var(--c-111)", border: input ? "none" : "1px solid var(--c-222)", display: "flex", alignItems: "center", justifyContent: "center", cursor: input ? "pointer" : "default", fontSize: "16px", color: input ? "var(--t-0a0a0a)" : "var(--t-333)", transition: "all 0.2s", flexShrink: 0 }}>
                   ↑
                 </div>
               </>
@@ -2993,11 +2993,11 @@ return (
       )}
 
       {paymentPopup && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={() => setPaymentPopup(null)}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "360px", padding: "1.5rem", textAlign: "center" }}>
-            <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "10px" }}>{paymentPopup.title}</p>
-            <p style={{ color: "#ccc", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>{paymentPopup.body}</p>
-            <div onClick={() => setPaymentPopup(null)} style={{ padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
+        <div style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }} onClick={() => setPaymentPopup(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", width: "100%", maxWidth: "360px", padding: "1.5rem", textAlign: "center" }}>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "17px", fontWeight: 800, marginBottom: "10px" }}>{paymentPopup.title}</p>
+            <p style={{ color: "var(--t-ccc)", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>{paymentPopup.body}</p>
+            <div onClick={() => setPaymentPopup(null)} style={{ padding: "12px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
               Got it
             </div>
           </div>
@@ -3005,9 +3005,9 @@ return (
       )}
 
       {actionSheetFor && (
-        <div onClick={() => setActionSheetFor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#111", border: "1px solid #222", borderTop: "1px solid #222", borderRadius: "16px 16px 0 0", width: "100%", maxWidth: "480px", padding: "0.5rem", paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom, 0px))" }}>
-            <div style={{ display: "flex", justifyContent: "space-around", padding: "10px 8px 14px", borderBottom: "1px solid #1a1a1a", marginBottom: "4px" }}>
+        <div onClick={() => setActionSheetFor(null)} style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_6)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderTop: "1px solid var(--c-222)", borderRadius: "16px 16px 0 0", width: "100%", maxWidth: "480px", padding: "0.5rem", paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom, 0px))" }}>
+            <div style={{ display: "flex", justifyContent: "space-around", padding: "10px 8px 14px", borderBottom: "1px solid var(--c-1a1a1a)", marginBottom: "4px" }}>
               {REACTION_EMOJI.map(emoji => (
                 <span
                   key={emoji}
@@ -3021,7 +3021,7 @@ return (
             {actionSheetFor.sender_id === currentUserId && !actionSheetFor.read_at && !actionSheetFor.video_url && !actionSheetFor.image_url && actionSheetFor.text && (
               <div
                 onClick={() => startEditMessage(actionSheetFor)}
-                style={{ padding: "14px 16px", fontSize: "14px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "14px" }}
+                style={{ padding: "14px 16px", fontSize: "14px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", gap: "14px" }}
               >
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                   <path d="M12 20h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -3032,7 +3032,7 @@ return (
             )}
             <div
               onClick={() => setActionSheetFor(null)}
-              style={{ padding: "14px 16px", fontSize: "14px", color: "#888", cursor: "pointer", textAlign: "center", borderTop: "1px solid #1a1a1a", marginTop: "4px" }}
+              style={{ padding: "14px 16px", fontSize: "14px", color: "var(--t-888)", cursor: "pointer", textAlign: "center", borderTop: "1px solid var(--c-1a1a1a)", marginTop: "4px" }}
             >
               Cancel
             </div>
@@ -3041,12 +3041,12 @@ return (
       )}
 
       {campaignPickerFor && (
-        <div onClick={() => setCampaignPickerFor(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem" }}>
-            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>
+        <div onClick={() => setCampaignPickerFor(null)} style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem" }}>
+            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>
               {campaignPickerFor === "pay" ? "Which campaign are you paying for?" : "Which campaign are you screening out?"}
             </h3>
-            <p style={{ color: "#999", fontSize: "12px", marginBottom: "1.25rem" }}>
+            <p style={{ color: "var(--t-999)", fontSize: "12px", marginBottom: "1.25rem" }}>
               You and {activeConvo?.other_name || "this creator"} have more than one open campaign together.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -3054,14 +3054,14 @@ return (
                 <div
                   key={app.id}
                   onClick={() => campaignPickerFor === "pay" ? openPaymentModalForApp(app) : screenOutApp(app)}
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", cursor: "pointer" }}
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px 14px", cursor: "pointer" }}
                 >
-                  <span style={{ color: "#fff", fontSize: "13px", fontWeight: 500 }}>{app.campaign_name}</span>
-                  {campaignPickerFor === "pay" && <span style={{ color: "#ccc", fontSize: "12px" }}>£{dealPriceOf(app).toFixed(2)}</span>}
+                  <span style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 500 }}>{app.campaign_name}</span>
+                  {campaignPickerFor === "pay" && <span style={{ color: "var(--t-ccc)", fontSize: "12px" }}>£{dealPriceOf(app).toFixed(2)}</span>}
                 </div>
               ))}
             </div>
-            <div onClick={() => setCampaignPickerFor(null)} style={{ marginTop: "1.25rem", padding: "12px", borderRadius: "8px", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
+            <div onClick={() => setCampaignPickerFor(null)} style={{ marginTop: "1.25rem", padding: "12px", borderRadius: "8px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
               Cancel
             </div>
           </div>
@@ -3069,7 +3069,7 @@ return (
       )}
 
       {showPayment && paymentApp && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1rem" }}>
+        <div style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "1rem" }}>
           <div style={{ margin: "auto 0", width: "100%", maxWidth: "480px" }}>
           <Elements stripe={stripePromise}>
             <PaymentModalContent

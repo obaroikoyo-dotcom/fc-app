@@ -124,26 +124,26 @@ export default function RoleChooser({ eyebrow, brand, creator, footer }: Props) 
         onMouseEnter={() => setHovered(role)}
         onMouseLeave={() => setHovered(null)}
         style={{
-          border: `1px solid ${isHovered ? "#fff" : "#222"}`,
+          border: `1px solid ${isHovered ? "var(--c-fff)" : "var(--c-222)"}`,
           borderRadius: "12px",
           cursor: "pointer",
           // Only the hover colours animate. If the size animated too, the
           // measuring above would read a half-way height.
           transition: "border-color 0.2s, background 0.2s",
-          background: isHovered ? "#111" : "transparent",
+          background: isHovered ? "var(--c-111)" : "transparent",
           flex: 1,
           minWidth: "200px",
         }}
       >
-        <div className="rs-icon" style={{ color: "#fff" }}>{icon}</div>
+        <div className="rs-icon" style={{ color: "var(--t-fff)" }}>{icon}</div>
         <div>
           <p className="rs-card-title" style={{
             fontFamily: "'TikTok Sans', sans-serif",
             fontSize: "18px",
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--t-fff)",
           }}>{option.title}</p>
-          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.5 }}>{option.sub}</p>
+          <p style={{ fontSize: "13px", color: "var(--t-999)", lineHeight: 1.5 }}>{option.sub}</p>
         </div>
       </div>
     );
@@ -155,11 +155,11 @@ export default function RoleChooser({ eyebrow, brand, creator, footer }: Props) 
       <div ref={contentRef} style={{ width: "100%", maxWidth: "480px" }}>
         {/* width and height are the file's own size, so the space is reserved before it loads */}
         <img src={logo} width={365} height={219} alt="" className="no-reinvert rs-logo" />
-        <p className="rs-name" style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", textAlign: "center" }}>FlipCollab</p>
+        <p className="rs-name" style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", textAlign: "center" }}>FlipCollab</p>
         <p className="rs-eyebrow" style={{
           textAlign: "center",
           fontSize: "13px",
-          color: "#888",
+          color: "var(--t-888)",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
         }}>{eyebrow}</p>

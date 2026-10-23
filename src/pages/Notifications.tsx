@@ -114,22 +114,22 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
   };
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Fixed Layout Typography: justifyValue -> justifyContent */}
-      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Notifications</span>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Notifications</span>
       </div>
 
       {/* Feed List */}
       <div style={{ flex: 1, overflowY: "auto", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))", paddingTop: "calc(57px + env(safe-area-inset-top, 0px))" }}>
         {showSkeleton && notifications.length === 0 ? (
-          <p style={{ color: "#888", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
+          <p style={{ color: "var(--t-888)", fontSize: "13px", textAlign: "center", marginTop: "3rem" }}>Loading activity feed...</p>
         ) : loading && notifications.length === 0 ? null : notifications.length === 0 ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "calc(60 * var(--vh))", textAlign: "center", padding: "2rem" }}>
-            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff", marginBottom: "8px" }}>All caught up</p>
-            <p style={{ fontSize: "13px", color: "#888" }}>When updates occur, they'll land right here.</p>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "8px" }}>All caught up</p>
+            <p style={{ fontSize: "13px", color: "var(--t-888)" }}>When updates occur, they'll land right here.</p>
           </div>
         ) : (
           notifications.map((n) => (
@@ -141,38 +141,38 @@ export default function Notifications({ navigate, navigateToMessages, userRole, 
                 alignItems: "flex-start", 
                 gap: "12px", 
                 padding: "1.1rem 1.25rem", 
-                borderBottom: "1px solid #111", 
-                background: n.read ? "transparent" : "rgba(255, 255, 255, 0.03)",
+                borderBottom: "1px solid var(--c-111)", 
+                background: n.read ? "transparent" : "var(--a-255-255-255-0_03)",
                 cursor: n.data ? "pointer" : "default",
                 position: "relative"
               }}
             >
               {/* Visible Unread Flag Indicator Dot */}
               {!n.read && (
-                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fff", position: "absolute", left: "6px", top: "50%", transform: "translateY(-50%)" }} />
+                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--c-fff)", position: "absolute", left: "6px", top: "50%", transform: "translateY(-50%)" }} />
               )}
 
               {/* Actor Profile Avatar Frame */}
-              <div style={{ width: "40px", height: "40px", borderRadius: n.type === "campaign_application" ? "50%" : "8px", border: "1px solid #222", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+              <div style={{ width: "40px", height: "40px", borderRadius: n.type === "campaign_application" ? "50%" : "8px", border: "1px solid var(--c-222)", background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
                 {n.actor_avatar ? (
                   <img src={n.actor_avatar} alt={n.actor_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
-                  <span style={{ fontSize: "14px", color: "#888" }}>◉</span>
+                  <span style={{ fontSize: "14px", color: "var(--t-888)" }}>◉</span>
                 )}
               </div>
 
               {/* Body Text Context Area */}
               <div style={{ flex: 1, minWidth: 0, paddingLeft: !n.read ? "4px" : "0px" }}>
-                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "3px" }}>{n.title}</p>
-                <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.4 }}>{n.body}</p>
-                <p style={{ color: "#777", fontSize: "10px", marginTop: "6px" }}>
+                <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "3px" }}>{n.title}</p>
+                <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.4 }}>{n.body}</p>
+                <p style={{ color: "var(--t-777)", fontSize: "10px", marginTop: "6px" }}>
                   {new Date(n.created_at).toLocaleDateString([], { month: "short", day: "numeric" })} at {new Date(n.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
 
               {/* Action Routing Indicator Arrow */}
               {n.data && (
-                <span style={{ color: "#777", fontSize: "14px", alignSelf: "center", paddingLeft: "8px" }}>&rarr;</span>
+                <span style={{ color: "var(--t-777)", fontSize: "14px", alignSelf: "center", paddingLeft: "8px" }}>&rarr;</span>
               )}
             </div>
           ))

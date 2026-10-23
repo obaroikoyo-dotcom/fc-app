@@ -22,26 +22,26 @@ export default function PrivacyPolicyPage() {
   }, []);
 
   return (
-    <div style={{ height: "100%", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
+    <div style={{ height: "100%", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       <div style={{ width: "100%", maxWidth: "640px", padding: "4rem 1.5rem 6rem" }}>
-        <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "0.5rem" }}>
+        <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "0.5rem" }}>
           Privacy Policy
         </h1>
-        <p style={{ color: "#999", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: October 2026</p>
-        <p style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6, marginBottom: "2rem" }}>
+        <p style={{ color: "var(--t-999)", fontSize: "11px", marginBottom: "1.5rem" }}>Last updated: October 2026</p>
+        <p style={{ fontSize: "13px", color: "var(--t-aaa)", lineHeight: 1.6, marginBottom: "2rem" }}>
           This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {SECTIONS.map(({ t, b }) => (
             <div key={t}>
-              <span style={{ color: "#fff", fontWeight: 600, fontSize: "13px", display: "block", marginBottom: "4px" }}>{t}</span>
-              <span style={{ color: "#aaa", fontSize: "13px", lineHeight: 1.6 }}>{b}</span>
+              <span style={{ color: "var(--t-fff)", fontWeight: 600, fontSize: "13px", display: "block", marginBottom: "4px" }}>{t}</span>
+              <span style={{ color: "var(--t-aaa)", fontSize: "13px", lineHeight: 1.6 }}>{b}</span>
             </div>
           ))}
         </div>
-        <p style={{ fontSize: "12px", color: "#888", marginTop: "2rem" }}>
-          See also our <a href="https://terms.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Terms of Service</a>.
+        <p style={{ fontSize: "12px", color: "var(--t-888)", marginTop: "2rem" }}>
+          See also our <a href="https://terms.flipcollab.com" style={{ color: "var(--t-fff)", textDecoration: "underline" }}>Terms of Service</a>.
         </p>
       </div>
     </div>

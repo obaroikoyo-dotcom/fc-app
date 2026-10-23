@@ -360,11 +360,11 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   };
 
   const inputStyle: React.CSSProperties = {
-    background: "#111",
-    border: "1px solid #222",
+    background: "var(--c-111)",
+    border: "1px solid var(--c-222)",
     borderRadius: "10px",
     padding: "13px 16px",
-    color: "#fff",
+    color: "var(--t-fff)",
     fontSize: "15px",
     outline: "none",
     width: "100%",
@@ -375,9 +375,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const chipStyle = (active: boolean): React.CSSProperties => ({
     padding: "10px 16px",
     borderRadius: "20px",
-    border: `1px solid ${active ? "#fff" : "#222"}`,
-    background: active ? "#fff" : "transparent",
-    color: active ? "#0a0a0a" : "#a3a3a3",
+    border: `1px solid ${active ? "var(--c-fff)" : "var(--c-222)"}`,
+    background: active ? "var(--c-fff)" : "transparent",
+    color: active ? "var(--t-0a0a0a)" : "var(--t-a3a3a3)",
     fontSize: "13px",
     fontWeight: 500,
     cursor: "pointer",
@@ -387,25 +387,25 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's set up your brand</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Tell us a little about your business so we can match you with the right creators.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.15, marginBottom: "1rem" }}>Let's set up your brand</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2.5rem" }}>Tell us a little about your business so we can match you with the right creators.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Business name</label>
+        <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Business name</label>
         <input style={inputStyle} placeholder="e.g. Glow Skincare" value={companyName} onChange={e => setCompanyName(e.target.value)} autoFocus />
       </div>
     </div>,
 
     // Screen 1 — Positioning
     <div key={1}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your industry</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What industry are you in?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Creators use this to find brands in their niche.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your industry</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>What industry are you in?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>Creators use this to find brands in their niche.</p>
       <div style={{ position: "relative", marginBottom: "1.5rem" }}>
   {selectedIndustries.length > 0 && (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
       {selectedIndustries.map(ind => (
-        <div key={ind} onClick={() => removeIndustry(ind)} style={{ padding: "6px 10px", borderRadius: "16px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+        <div key={ind} onClick={() => removeIndustry(ind)} style={{ padding: "6px 10px", borderRadius: "16px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
           {ind} <span>×</span>
         </div>
       ))}
@@ -423,11 +423,11 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   />
 
   {showIndustryDropdown && industryInput && (
-    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#111", border: "1px solid #222", borderRadius: "10px", maxHeight: "180px", overflowY: "auto", zIndex: 20 }}>
+    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "10px", maxHeight: "180px", overflowY: "auto", zIndex: 20 }}>
       {filteredIndustries.map(ind => (
-        <div key={ind} onMouseDown={() => addIndustry(ind)} style={{ padding: "10px 14px", fontSize: "13px", color: "#fff", cursor: "pointer" }}>{ind}</div>
+        <div key={ind} onMouseDown={() => addIndustry(ind)} style={{ padding: "10px 14px", fontSize: "13px", color: "var(--t-fff)", cursor: "pointer" }}>{ind}</div>
       ))}
-      <div onMouseDown={() => addIndustry(industryInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#999", cursor: "pointer", borderTop: filteredIndustries.length ? "1px solid #1a1a1a" : "none" }}>
+      <div onMouseDown={() => addIndustry(industryInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "var(--t-999)", cursor: "pointer", borderTop: filteredIndustries.length ? "1px solid var(--c-1a1a1a)" : "none" }}>
         Add "{industryInput}"
       </div>
     </div>
@@ -435,7 +435,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 </div>
 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
   <div>
-    <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Where are you based?</label>
+    <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Where are you based?</label>
     <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
   </div>
 </div>
@@ -443,16 +443,16 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 2 — Web Presence & Description
     <div key={2}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>About your brand</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Tell creators about your brand</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>A website and a short description help creators trust you. Both are optional.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>About your brand</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Tell creators about your brand</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>A website and a short description help creators trust you. Both are optional.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         <div>
-          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Website</label>
+          <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Website</label>
           <input style={inputStyle} placeholder="https://yourbrand.com" value={website} onChange={e => setWebsite(e.target.value)} />
         </div>
         <div>
-          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>What does your brand do?</label>
+          <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>What does your brand do?</label>
           <input style={inputStyle} placeholder="A sentence or two about your brand" value={bio} onChange={e => setBio(e.target.value)} />
         </div>
       </div>
@@ -460,9 +460,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 3 — Campaign & Activation Directives
     <div key={3}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content you want</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What kind of content do you need?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Pick everything that applies. You can change this later.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content you want</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>What kind of content do you need?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>Pick everything that applies. You can change this later.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {ACTIVATION_TYPES.map(act => (
           <div key={act} onClick={() => toggleContent(act)} style={chipStyle(contentTypes.includes(act))}>
@@ -471,16 +471,16 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
         ))}
       </div>
       <div>
-        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Who are you trying to reach?</label>
+        <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Who are you trying to reach?</label>
         <input style={inputStyle} placeholder="e.g. Gen Z skincare fans in the UK" value={targetAudience} onChange={e => setTargetAudience(e.target.value)} />
       </div>
     </div>,
 
     // Screen 4 — Strategic Alignment & Capital Allocation
     <div key={4}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Creator size</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What size of creator are you looking for?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>This helps us suggest the right creators for your brand.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Creator size</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>What size of creator are you looking for?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>This helps us suggest the right creators for your brand.</p>
       
       <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
         {CREATOR_TIERS.map(tier => (
@@ -496,8 +496,8 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
               gap: "4px"
             }}
           >
-            <span style={{ fontSize: "15px", fontWeight: 700, color: targetTier === tier.value ? "#0a0a0a" : "#fff" }}>{tier.label}</span>
-            <span style={{ fontSize: "12px", color: targetTier === tier.value ? "#444" : "#999" }}>{tier.sub}</span>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: targetTier === tier.value ? "var(--t-0a0a0a)" : "var(--t-fff)" }}>{tier.label}</span>
+            <span style={{ fontSize: "12px", color: targetTier === tier.value ? "var(--t-444)" : "var(--t-999)" }}>{tier.sub}</span>
           </div>
         ))}
       </div>
@@ -505,37 +505,37 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 5 — Access Credentials
     <div key={5}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Create your account</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your login</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>We'll email you a code to confirm your address.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Create your account</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your login</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>We'll email you a code to confirm your address.</p>
       {isOAuthUser ? (
-        <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
+        <div style={{ padding: "12px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "13px", color: "var(--t-fff)" }}>
           Continuing as <strong>{email}</strong> via Google
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
+            <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
             <input style={inputStyle} placeholder="hello@company.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
+            <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm password</label>
+            <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
-            <div style={{ flex: 1, height: "1px", background: "#222" }} />
-            <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
-            <div style={{ flex: 1, height: "1px", background: "#222" }} />
+            <div style={{ flex: 1, height: "1px", background: "var(--c-222)" }} />
+            <span style={{ fontSize: "11px", color: "var(--t-888)", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--c-222)" }} />
           </div>
 
           <GoogleSignInButton onCredential={handleGoogleCredential}>
             <div
-              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+              style={{ padding: "13px", borderRadius: "10px", border: "1px solid var(--c-222)", background: "transparent", color: "var(--t-fff)", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
             >
               {GoogleIcon} Continue with Google
             </div>
@@ -544,50 +544,50 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
       {!termsAccepted && (
-        <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "12px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Read & accept Terms and Conditions</span>
-          <span style={{ color: "#999" }}>Required →</span>
+          <span style={{ color: "var(--t-999)" }}>Required →</span>
         </div>
       )}
       {termsAccepted && (
-        <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
+        <p style={{ color: "var(--t-fff)", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
       )}
-      <div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "12px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
   <span>Read Privacy Policy</span>
-  <span style={{ color: "#999" }}>View →</span>
+  <span style={{ color: "var(--t-999)" }}>View →</span>
 </div>
     </div>,
 
     // Screen 6 — Connect socials
     <div key={6}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your socials</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Build Trust</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Connect your socials</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2rem" }}>
         Verified brands get more replies from creators. Connect TikTok or Instagram to show a verified account on your profile. We don't need posting access, it's just proof that it's really you.
       </p>
       {socialNotice && (
-        <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-          <span onClick={() => setSocialNotice("")} style={{ color: "#999", cursor: "pointer", fontSize: "14px" }}>✕</span>
+        <div style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: "12px", color: "var(--t-ccc)" }}>{socialNotice}</p>
+          <span onClick={() => setSocialNotice("")} style={{ color: "var(--t-999)", cursor: "pointer", fontSize: "14px" }}>✕</span>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {CONNECTABLE_SOCIALS.map(({ platform, label, icon }) => {
           const connection = socialConnections.find(c => c.platform === platform);
           return (
-            <div key={platform} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+            <div key={platform} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   {icon(22)}
                   <div>
-                    <p style={{ fontSize: "14px", color: "#fff", fontWeight: 600 }}>{label}</p>
-                    {connection && <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                    <p style={{ fontSize: "14px", color: "var(--t-fff)", fontWeight: 600 }}>{label}</p>
+                    {connection && <p style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                   </div>
                 </div>
                 {connection ? (
-                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#fff" }}>Connected ✓</span>
+                  <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "var(--t-fff)" }}>Connected ✓</span>
                 ) : (
-                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                     {connectingPlatform === platform ? "Connecting..." : "Connect"}
                   </span>
                 )}
@@ -596,9 +596,9 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           );
         })}
         {COMING_SOON_SOCIALS.map(platform => (
-          <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-            <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
-            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
+          <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
+            <p style={{ fontSize: "14px", color: "var(--t-999)", fontWeight: 500 }}>{platform}</p>
+            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
           </div>
         ))}
       </div>
@@ -606,17 +606,17 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
 
     // Screen 7 — Visual Branding Identification
     <div key={7}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your logo</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add your logo</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>A logo helps creators recognise you in the app. You can skip this and add it later.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your logo</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add your logo</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2rem" }}>A logo helps creators recognise you in the app. You can skip this and add it later.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-        <div onClick={() => logoRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "14px", border: `2px dashed ${brandLogo ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
+        <div onClick={() => logoRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "14px", border: `2px dashed ${brandLogo ? "var(--c-fff)" : "var(--c-333)"}`, background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
           {brandLogo
             ? <img src={brandLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: "32px", color: "#777" }}>+</span>}
+            : <span style={{ fontSize: "32px", color: "var(--t-777)" }}>+</span>}
         </div>
         <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogo} />
-        <p style={{ fontSize: "12px", color: "#888" }}>{brandLogo ? "Change logo" : "Add logo"}</p>
+        <p style={{ fontSize: "12px", color: "var(--t-888)" }}>{brandLogo ? "Change logo" : "Add logo"}</p>
       </div>
     </div>,
   ];
@@ -649,13 +649,13 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:-webkit-autofill {
-          -webkit-box-shadow: 0 0 0px 1000px #111 inset !important;
-          -webkit-text-fill-color: #fff !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--c-111) inset !important;
+          -webkit-text-fill-color: var(--c-fff) !important;
         }
         @keyframes slideInForward {
           from { transform: translateX(60px); opacity: 0; }
@@ -672,16 +672,16 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       `}</style>
 
       {/* Progress Bar */}
-      <div style={{ height: "4px", background: "#262626", borderRadius: "2px", position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 10px)", left: "1.25rem", right: "1.25rem", zIndex: 10, overflow: "hidden" }}>
-        <div style={{ height: "100%", borderRadius: "2px", background: "#fff", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
+      <div style={{ height: "4px", background: "var(--c-262626)", borderRadius: "2px", position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 10px)", left: "1.25rem", right: "1.25rem", zIndex: 10, overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: "2px", background: "var(--c-fff)", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
       </div>
 
       {/* Top Nav */}
       <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(22px + env(safe-area-inset-top, 0px))" }}>
         {screen > 0
-          ? <span onClick={back} style={{ fontSize: "18px", color: "#999", cursor: "pointer", padding: "4px" }}>←</span>
-          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer" }}>← Back</span>}
-        <span style={{ fontSize: "12px", color: "#777" }}>{screen + 1} / {TOTAL_SCREENS}</span>
+          ? <span onClick={back} style={{ fontSize: "18px", color: "var(--t-999)", cursor: "pointer", padding: "4px" }}>←</span>
+          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "var(--t-888)", cursor: "pointer" }}>← Back</span>}
+        <span style={{ fontSize: "12px", color: "var(--t-777)" }}>{screen + 1} / {TOTAL_SCREENS}</span>
       </div>
 
       {/* Screen Content */}
@@ -699,18 +699,18 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           without this it still silently intercepts taps on whatever content
           is scrolled underneath it. Only the actual button(s) re-enable
           pointer events. */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "0.5rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, #0a0a0a 60%, transparent)", pointerEvents: "none" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "0.5rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, var(--c-0a0a0a) 60%, transparent)", pointerEvents: "none" }}>
         {screen === 7 ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1, pointerEvents: "auto" }}
+              style={{ padding: "16px", borderRadius: "12px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1, pointerEvents: "auto" }}
             >
               {loading ? "Setting up your profile..." : "Finish setup →"}
             </div>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
+              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "var(--t-888)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
             >
               Skip for now
             </div>
@@ -719,7 +719,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           <div
             className="tap-btn"
             onClick={(!loading && canProceed()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : next) : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#888", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
+            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "var(--c-fff)" : "var(--c-1a1a1a)", color: canProceed() ? "var(--t-0a0a0a)" : "var(--t-888)", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid var(--c-222)", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
             {screen === 5 && loading ? "Sending code..." : buttonLabel()}
           </div>
@@ -739,14 +739,14 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
       <PrivacyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
 
       {showOtp && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-          <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "16px", width: "100%", maxWidth: "360px", padding: "2rem 1.75rem", textAlign: "center" }}>
+        <div style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "16px", width: "100%", maxWidth: "360px", padding: "2rem 1.75rem", textAlign: "center" }}>
             <img src="/icon-512.png" width="64" height="64" alt="FlipCollab" style={{ display: "block", width: "64px", height: "64px", borderRadius: "14px", margin: "0 auto 1.25rem auto" }} />
 
-            <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
-            <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
-            <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
-              We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
+            <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--t-888)", marginBottom: "0.75rem" }}>One more step</p>
+            <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
+            <p style={{ fontSize: "13px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "1.75rem" }}>
+              We sent a 6-digit code to <span style={{ color: "var(--t-fff)", fontWeight: 600 }}>{email}</span>
             </p>
 
             <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "1.25rem" }}>
@@ -760,17 +760,17 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
                   inputMode="numeric"
                   maxLength={1}
                   disabled={otpLoading}
-                  style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "#fff", background: "#111", border: `1px solid ${otpError ? "#ff3b30" : digit ? "#fff" : "#222"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
+                  style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "var(--t-fff)", background: "var(--c-111)", border: `1px solid ${otpError ? "#ff3b30" : digit ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
                 />
               ))}
             </div>
 
             {otpError && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{otpError}</p>}
-            {otpLoading && <p style={{ fontSize: "12px", color: "#999", marginBottom: "1rem" }}>Verifying...</p>}
+            {otpLoading && <p style={{ fontSize: "12px", color: "var(--t-999)", marginBottom: "1rem" }}>Verifying...</p>}
 
             <div
               onClick={otpResending ? undefined : handleOtpResend}
-              style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#fff" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+              style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid var(--c-222)", color: otpResent ? "var(--t-fff)" : "var(--t-fff)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               {otpResending ? "Sending..." : otpResent ? "Code resent" : "Resend code"}
             </div>

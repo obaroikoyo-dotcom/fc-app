@@ -241,32 +241,32 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
   const getStatusStyle = (status?: string): React.CSSProperties => {
     switch (status) {
       case "approved":
-      case "paid": return { color: "#fff" };
+      case "paid": return { color: "var(--t-fff)" };
       case "declined": return { color: "#ff3b30" };
       default: return { color: "#ff9500" };
     }
   };
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
       {/* Sticky header group: header + tabs + filters stack with zero gap since they share one fixed box */}
-      <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div ref={stickyRef} style={{ position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
         {/* Header */}
-        <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111" }}>
-          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Explore</span>
-          <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
+        <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--c-111)" }}>
+          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Explore</span>
+          <div onClick={() => navigate("creator-profile")} style={{ width: "34px", height: "34px", borderRadius: "50%", border: "1px solid var(--c-333)", background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}>
             {(myAvatar || myName) && <img src={avatarSrc(myAvatar, myName)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
           </div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: "flex", borderBottom: "1px solid #111", background: "#0d0d0d" }}>
-          <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "discover" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)", background: "var(--c-0d0d0d)" }}>
+          <button onClick={() => setFeedTab("discover")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "discover" ? "2px solid var(--c-fff)" : "2px solid transparent", color: feedTab === "discover" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
             Discover Deals
           </button>
-          <button onClick={() => setFeedTab("pitches")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "pitches" ? "2px solid #fff" : "2px solid transparent", color: feedTab === "pitches" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+          <button onClick={() => setFeedTab("pitches")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: feedTab === "pitches" ? "2px solid var(--c-fff)" : "2px solid transparent", color: feedTab === "pitches" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
             My Pitches ({applied.length})
           </button>
         </div>
@@ -314,35 +314,35 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3].map(i => (
-              <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem" }}>
-                <div style={{ height: "84px", margin: "-1rem -1rem 12px", borderRadius: "11px 11px 0 0", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+              <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1rem" }}>
+                <div style={{ height: "84px", margin: "-1rem -1rem 12px", borderRadius: "11px 11px 0 0", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ width: "100px", height: "12px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                    <div style={{ width: "60px", height: "10px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                    <div style={{ width: "100px", height: "12px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                    <div style={{ width: "60px", height: "10px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
                   </div>
                 </div>
-                <div style={{ width: "70%", height: "14px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "8px" }} />
-                <div style={{ width: "90%", height: "10px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "6px" }} />
-                <div style={{ width: "75%", height: "10px", borderRadius: "4px", background: "#1a1a1a", marginBottom: "16px" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #161616", paddingTop: "10px" }}>
-                  <div style={{ width: "60px", height: "20px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                  <div style={{ width: "70px", height: "28px", borderRadius: "6px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                <div style={{ width: "70%", height: "14px", borderRadius: "4px", background: "var(--c-1a1a1a)", marginBottom: "8px" }} />
+                <div style={{ width: "90%", height: "10px", borderRadius: "4px", background: "var(--c-1a1a1a)", marginBottom: "6px" }} />
+                <div style={{ width: "75%", height: "10px", borderRadius: "4px", background: "var(--c-1a1a1a)", marginBottom: "16px" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--c-161616)", paddingTop: "10px" }}>
+                  <div style={{ width: "60px", height: "20px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                  <div style={{ width: "70px", height: "28px", borderRadius: "6px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
                 </div>
               </div>
             ))}
           </div>
         ) : !hasLoadedOnce && loading ? null : feedList.length === 0 ? (
-          <div style={{ border: "1px dashed #222", borderRadius: "16px", padding: "2.75rem 1.75rem", textAlign: "center", marginTop: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+          <div style={{ border: "1px dashed var(--c-222)", borderRadius: "16px", padding: "2.75rem 1.75rem", textAlign: "center", marginTop: "1.5rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "6px" }}>
-              <circle cx="12" cy="12" r="9" stroke="#919191" strokeWidth="1.6" />
-              <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" stroke="#919191" strokeWidth="1.6" strokeLinejoin="round" />
+              <circle cx="12" cy="12" r="9" stroke="var(--s-919191)" strokeWidth="1.6" />
+              <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" stroke="var(--s-919191)" strokeWidth="1.6" strokeLinejoin="round" />
             </svg>
-            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>
+            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>
               {feedTab === "pitches" ? "No pitches yet" : selectedNiche || selectedPlatform ? "Nothing matches those filters" : "No campaigns right now"}
             </p>
-            <p style={{ margin: 0, fontSize: "14px", color: "#999", lineHeight: 1.5, maxWidth: "280px" }}>
+            <p style={{ margin: 0, fontSize: "14px", color: "var(--t-999)", lineHeight: 1.5, maxWidth: "280px" }}>
               {feedTab === "pitches"
                 ? "When you apply to a campaign, you can follow it here."
                 : selectedNiche || selectedPlatform
@@ -350,9 +350,9 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                   : "New campaigns from brands show up here as soon as they're posted."}
             </p>
             {feedTab === "pitches" ? (
-              <div onClick={() => setFeedTab("discover")} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Browse campaigns</div>
+              <div onClick={() => setFeedTab("discover")} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Browse campaigns</div>
             ) : (selectedNiche || selectedPlatform) ? (
-              <div onClick={() => { setSelectedNiche(""); setSelectedPlatform(""); }} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Clear filters</div>
+              <div onClick={() => { setSelectedNiche(""); setSelectedPlatform(""); }} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Clear filters</div>
             ) : null}
           </div>
         ) : (
@@ -372,7 +372,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
             const tag = bandTag(c, now);
 
             return (
-              <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1.1rem" }}>
+              <div key={c.id} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "16px", padding: "1.1rem" }}>
                 <CampaignTile niche={c.niche} height={84} bleed="1.1rem" tag={tag} photo={coverSrc(c.cover_url)} />
                 <div style={{ height: "14px" }} />
                 {/* Who is offering it */}
@@ -381,11 +381,11 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                     onClick={(e) => { e.stopPropagation(); navigateToProfile && navigateToProfile(c.brand_id); }}
                     style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", minWidth: 0 }}
                   >
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0 }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0 }}>
                       <img src={avatarSrc(c.brand_profiles?.avatar_url, c.brand_profiles?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 700, lineHeight: 1.2 }}>
+                      <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "5px", color: "var(--t-fff)", fontSize: "14px", fontWeight: 700, lineHeight: 1.2 }}>
                         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{brandName}</span>
                         {c.brand_profiles?.verified && <VerifiedBadge size={13} />}
                       </p>
@@ -396,20 +396,20 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                     onClick={(e) => { e.stopPropagation(); toggleBookmark(c.id); }}
                     style={{ cursor: "pointer", display: "flex", alignItems: "center", padding: "8px", margin: "-8px", flexShrink: 0 }}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "#fff" : "none"}>
-                      <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "#fff" : "#919191"} strokeWidth="2" strokeLinejoin="round" />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill={bookmarked.includes(c.id) ? "var(--s-fff)" : "none"}>
+                      <path d="M5 3H19C19.5523 3 20 3.44772 20 4V21L12 17L4 21V4C4 3.44772 4.44772 3 5 3Z" stroke={bookmarked.includes(c.id) ? "var(--s-fff)" : "var(--s-919191)"} strokeWidth="2" strokeLinejoin="round" />
                     </svg>
                   </div>
                 </div>
 
                 {/* What it is, and when */}
-                <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "19px", fontWeight: 800, lineHeight: 1.25, color: "#fff", marginBottom: "8px" }}>{c.name}</p>
-                <p style={{ margin: 0, fontSize: "13px", color: "#999", marginBottom: "12px" }}>
+                <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "19px", fontWeight: 800, lineHeight: 1.25, color: "var(--t-fff)", marginBottom: "8px" }}>{c.name}</p>
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--t-999)", marginBottom: "12px" }}>
                   Posted {formatRelativeTime(c.created_at, now)}
                   {c.deadline && (
                     <>
                       <span style={{ margin: "0 7px" }}>·</span>
-                      Due <span style={{ color: "#fff", fontWeight: 600 }}>{formatDeadline(c.deadline)}</span>
+                      Due <span style={{ color: "var(--t-fff)", fontWeight: 600 }}>{formatDeadline(c.deadline)}</span>
                     </>
                   )}
                 </p>
@@ -417,36 +417,36 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                 {c.platforms && c.platforms.length > 0 && (
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "14px" }}>
                     {c.platforms.map((p: string) => (
-                      <span key={p} style={{ fontSize: "12px", padding: "4px 10px", border: "1px solid #222", borderRadius: "20px", color: "#bbb", background: "#0d0d0d" }}>{p}</span>
+                      <span key={p} style={{ fontSize: "12px", padding: "4px 10px", border: "1px solid var(--c-222)", borderRadius: "20px", color: "var(--t-bbb)", background: "var(--c-0d0d0d)" }}>{p}</span>
                     ))}
                   </div>
                 )}
 
                 {/* What you get, and the way in */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderTop: "1px solid #1a1a1a", paddingTop: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderTop: "1px solid var(--c-1a1a1a)", paddingTop: "14px" }}>
                   <div>
                     {paid ? (
                       <>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#999", marginBottom: "2px" }}>You'd earn</p>
-                        <p style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{netCreatorPayout.toLocaleString()}</p>
-                        <p style={{ margin: 0, fontSize: "11px", color: "#999", marginTop: "3px" }}>{brandIsEnterprise ? "No platform fee" : "After the 10% platform fee"}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--t-999)", marginBottom: "2px" }}>You'd earn</p>
+                        <p style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{netCreatorPayout.toLocaleString()}</p>
+                        <p style={{ margin: 0, fontSize: "11px", color: "var(--t-999)", marginTop: "3px" }}>{brandIsEnterprise ? "No platform fee" : "After the 10% platform fee"}</p>
                       </>
                     ) : (
                       <>
-                        <p style={{ margin: 0, fontSize: "12px", color: "#999", marginBottom: "2px" }}>Reward</p>
-                        <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.2 }}>Gifted product</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--t-999)", marginBottom: "2px" }}>Reward</p>
+                        <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.2 }}>Gifted product</p>
                       </>
                     )}
                   </div>
 
                   {c.my_application ? (
-                    <div style={{ padding: "9px 14px", borderRadius: "10px", background: "#111", border: "1px solid #262626", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0, ...getStatusStyle(c.my_application.status) }}>
+                    <div style={{ padding: "9px 14px", borderRadius: "10px", background: "var(--c-111)", border: "1px solid var(--c-262626)", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0, ...getStatusStyle(c.my_application.status) }}>
                       {c.my_application.status}
                     </div>
                   ) : (
                     <div
                       onClick={() => navigateToApply && navigateToApply(c.id)}
-                      style={{ padding: "13px 26px", background: "#fff", color: "#0a0a0a", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
+                      style={{ padding: "13px 26px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
                     >
                       Apply
                     </div>

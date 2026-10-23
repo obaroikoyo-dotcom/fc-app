@@ -18,32 +18,32 @@ export default function AboutPage() {
   }, []);
 
   return (
-    <div style={{ height: "100%", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
+    <div style={{ height: "100%", overflowY: "auto", WebkitOverflowScrolling: "touch", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", justifyContent: "center" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
       <div style={{ width: "100%", maxWidth: "640px", padding: "4rem 1.5rem 6rem" }}>
-        <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", marginBottom: "2rem" }}>
+        <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "2rem" }}>
           About FlipCollab
         </h1>
         {PARAGRAPHS.map((p, i) => (
-          <p key={i} style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
+          <p key={i} style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.8, marginBottom: "1.25rem" }}>
             {p}
           </p>
         ))}
 
-        <h2 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
+        <h2 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginTop: "2.5rem", marginBottom: "1rem" }}>
           What FlipCollab does
         </h2>
-        <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
+        <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.8, marginBottom: "1.25rem" }}>
           FlipCollab is a creator collaboration marketplace. Brands create an account, post paid or gifted campaigns describing the content they need, and review creators who apply. Creators create a profile, browse open campaigns, and apply to the ones that fit their audience and niche. Once a brand accepts a creator, the two message each other directly inside FlipCollab to agree on deliverables and timelines. For paid campaigns, the brand's payment is held securely in escrow via Stripe and released to the creator once the agreed content is delivered.
         </p>
 
-        <h2 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginTop: "2.5rem", marginBottom: "1rem" }}>
+        <h2 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginTop: "2.5rem", marginBottom: "1rem" }}>
           Your data
         </h2>
-        <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.8, marginBottom: "1.25rem" }}>
+        <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.8, marginBottom: "1.25rem" }}>
           To provide this service, FlipCollab collects account information (such as your name and email), profile details you choose to add (bio, niche, social links), messages and campaign content exchanged on the platform, and payment information processed securely through Stripe. This data is used solely to operate your account, match brands with creators, process payments, and enable messaging between the two parties - it is never sold to third parties. Full details are available in our{" "}
-          <a href="https://privacy.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Privacy Policy</a> and{" "}
-          <a href="https://terms.flipcollab.com" style={{ color: "#fff", textDecoration: "underline" }}>Terms of Service</a>.
+          <a href="https://privacy.flipcollab.com" style={{ color: "var(--t-fff)", textDecoration: "underline" }}>Privacy Policy</a> and{" "}
+          <a href="https://terms.flipcollab.com" style={{ color: "var(--t-fff)", textDecoration: "underline" }}>Terms of Service</a>.
         </p>
       </div>
     </div>

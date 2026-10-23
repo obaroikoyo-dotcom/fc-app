@@ -65,12 +65,12 @@ function DateSelect({ value, onChange, options, placeholder }: {
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        style={{ width: "100%", appearance: "none", WebkitAppearance: "none", background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "13px 30px 13px 14px", color: value ? "#fff" : "#555", fontSize: "14px", fontFamily: "inherit", cursor: "pointer" }}
+        style={{ width: "100%", appearance: "none", WebkitAppearance: "none", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "10px", padding: "13px 30px 13px 14px", color: value ? "var(--t-fff)" : "var(--t-555)", fontSize: "14px", fontFamily: "inherit", cursor: "pointer" }}
       >
         <option value="" disabled>{placeholder}</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
-      <span style={{ position: "absolute", top: "50%", right: "14px", transform: "translateY(-50%)", color: "#888", fontSize: "10px", pointerEvents: "none" }}>▼</span>
+      <span style={{ position: "absolute", top: "50%", right: "14px", transform: "translateY(-50%)", color: "var(--t-888)", fontSize: "10px", pointerEvents: "none" }}>▼</span>
     </div>
   );
 }
@@ -445,11 +445,11 @@ const [showOtp, setShowOtp] = useState(false);
   };
 
   const inputStyle: React.CSSProperties = {
-    background: "#111",
-    border: "1px solid #222",
+    background: "var(--c-111)",
+    border: "1px solid var(--c-222)",
     borderRadius: "10px",
     padding: "13px 16px",
-    color: "#fff",
+    color: "var(--t-fff)",
     fontSize: "15px",
     outline: "none",
     width: "100%",
@@ -460,9 +460,9 @@ const [showOtp, setShowOtp] = useState(false);
   const chipStyle = (active: boolean): React.CSSProperties => ({
     padding: "10px 16px",
     borderRadius: "20px",
-    border: `1px solid ${active ? "#fff" : "#222"}`,
-    background: active ? "#fff" : "transparent",
-    color: active ? "#0a0a0a" : "#555",
+    border: `1px solid ${active ? "var(--c-fff)" : "var(--c-222)"}`,
+    background: active ? "var(--c-fff)" : "transparent",
+    color: active ? "var(--t-0a0a0a)" : "var(--t-555)",
     fontSize: "13px",
     fontWeight: 500,
     cursor: "pointer",
@@ -472,15 +472,15 @@ const [showOtp, setShowOtp] = useState(false);
   const screens = [
     // Screen 0 — Welcome
     <div key={0}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>Let's build your creator profile</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile helps brands find and connect with you for paid and gifted collabs.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Welcome to FlipCollab</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.15, marginBottom: "1rem" }}>Let's build your creator profile</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile helps brands find and connect with you for paid and gifted collabs.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
+        <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your full name</label>
         <input style={inputStyle} placeholder="e.g. Sofia Martinez" value={name} onChange={e => setName(e.target.value)} autoFocus />
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginTop: "1.5rem" }}>
-        <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
+        <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Date of birth</label>
         <div style={{ display: "flex", gap: "8px" }}>
           <DateSelect value={birthDay} onChange={updateBirthDay} options={DAY_OPTIONS} placeholder="Day" />
           <div style={{ flex: 1.6 }}><DateSelect value={birthMonth} onChange={updateBirthMonth} options={MONTHS} placeholder="Month" /></div>
@@ -496,17 +496,17 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 1 — Niche & Location
     <div key={1}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Space</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you create?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Brands search by niche to find the right creators.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Space</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you create?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>Brands search by niche to find the right creators.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div style={{ position: "relative" }}>
-  <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Niche</label>
+  <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Niche</label>
 
   {selectedNiches.length > 0 && (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "8px" }}>
       {selectedNiches.map(n => (
-        <div key={n} onClick={() => removeNiche(n)} style={{ padding: "6px 10px", borderRadius: "16px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
+        <div key={n} onClick={() => removeNiche(n)} style={{ padding: "6px 10px", borderRadius: "16px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}>
           {n} <span>×</span>
         </div>
       ))}
@@ -524,18 +524,18 @@ const [showOtp, setShowOtp] = useState(false);
   />
 
   {showNicheDropdown && nicheInput && (
-    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "#111", border: "1px solid #222", borderRadius: "10px", maxHeight: "180px", overflowY: "auto", zIndex: 20 }}>
+    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: "4px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "10px", maxHeight: "180px", overflowY: "auto", zIndex: 20 }}>
       {filteredNiches.map(n => (
-        <div key={n} onMouseDown={() => addNiche(n)} style={{ padding: "10px 14px", fontSize: "13px", color: "#fff", cursor: "pointer" }}>{n}</div>
+        <div key={n} onMouseDown={() => addNiche(n)} style={{ padding: "10px 14px", fontSize: "13px", color: "var(--t-fff)", cursor: "pointer" }}>{n}</div>
       ))}
-      <div onMouseDown={() => addNiche(nicheInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "#999", cursor: "pointer", borderTop: filteredNiches.length ? "1px solid #1a1a1a" : "none" }}>
+      <div onMouseDown={() => addNiche(nicheInput)} style={{ padding: "10px 14px", fontSize: "13px", color: "var(--t-999)", cursor: "pointer", borderTop: filteredNiches.length ? "1px solid var(--c-1a1a1a)" : "none" }}>
         Add "{nicheInput}"
       </div>
     </div>
   )}
 </div>
         <div>
-          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Location</label>
+          <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Location</label>
           <LocationInput inputStyle={inputStyle} value={location} onChange={setLocation} />
         </div>
       </div>
@@ -543,18 +543,18 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 2 — Platforms
     <div key={2}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Platforms</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Where do you post?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select all that apply. You can add more later.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Platforms</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Where do you post?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>Select all that apply. You can add more later.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "2rem" }}>
         {PLATFORMS.map(p => <div key={p} onClick={() => togglePlatform(p)} style={chipStyle(selectedPlatforms.includes(p))}>{p}</div>)}
       </div>
       {selectedPlatforms.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your handles & followers</label>
+          <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase" }}>Your handles & followers</label>
           {selectedPlatforms.map(p => (
-            <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-              <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "10px" }}>{p}</p>
+            <div key={p} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
+              <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "10px" }}>{p}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 <input style={inputStyle} placeholder={`${p} username`} value={socialLinks[p] || ""} onChange={e => setSocialLinks(prev => ({ ...prev, [p]: e.target.value }))} />
                 <input style={inputStyle} placeholder="Follower count" type="number" value={followerCounts[p] || ""} onChange={e => setFollowerCounts(prev => ({ ...prev, [p]: e.target.value }))} />
@@ -567,9 +567,9 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 3 — Content Types
     <div key={3}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you make?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Select everything you're comfortable creating.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Content</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you make?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>Select everything you're comfortable creating.</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
         {CONTENT_TYPES.map(c => <div key={c} onClick={() => toggleContent(c)} style={chipStyle(contentTypes.includes(c))}>{c}</div>)}
       </div>
@@ -577,9 +577,9 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 4 — Rate Card
     <div key={4}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you charge?</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "1.5rem" }}>Optional. What you'd charge a brand for each one. You can always update this later.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Your Rates</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>What do you charge?</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "1.5rem" }}>Optional. What you'd charge a brand for each one. You can always update this later.</p>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.85rem 0.75rem" }}>
         {[
           { key: "post", label: "Feed post for brand" },
@@ -589,9 +589,9 @@ const [showOtp, setShowOtp] = useState(false);
           { key: "ugc", label: "UGC only (you film, brand posts)" },
         ].map(({ key, label }, i, all) => (
           <div key={key} style={i === all.length - 1 ? { gridColumn: "1 / -1" } : undefined}>
-            <label style={{ fontSize: "12px", color: "#ccc", display: "block", marginBottom: "6px", lineHeight: 1.3 }}>{label}</label>
+            <label style={{ fontSize: "12px", color: "var(--t-ccc)", display: "block", marginBottom: "6px", lineHeight: 1.3 }}>{label}</label>
             <div style={{ position: "relative" }}>
-              <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#888", fontSize: "15px", pointerEvents: "none" }}>£</span>
+              <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "var(--t-888)", fontSize: "15px", pointerEvents: "none" }}>£</span>
               <input style={{ ...inputStyle, width: "100%", paddingLeft: "32px" }} placeholder="0" type="number" min="0" inputMode="decimal" value={rates[key as keyof typeof rates]} onChange={e => setRates(r => ({ ...r, [key]: e.target.value }))} />
             </div>
           </div>
@@ -601,37 +601,37 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 5 — Sign Up
     <div key={5}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your account</h1>
-      <p style={{ fontSize: "14px", color: "#999", marginBottom: "2rem" }}>Your details are safe and never shared with brands without your permission.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost There</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Create your account</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", marginBottom: "2rem" }}>Your details are safe and never shared with brands without your permission.</p>
       {isOAuthUser ? (
-        <div style={{ padding: "12px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "13px", color: "#fff" }}>
+        <div style={{ padding: "12px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "13px", color: "var(--t-fff)" }}>
           Continuing as <strong>{email}</strong> via Google
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
+            <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Email</label>
             <input style={inputStyle} placeholder="you@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
+            <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={password} onChange={e => setPassword(e.target.value)} />
           </div>
           <div>
-            <label style={{ fontSize: "11px", color: "#999", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
+            <label style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Confirm Password</label>
             <input style={inputStyle} placeholder="••••••••" type="password" value={confirm} onChange={e => setConfirm(e.target.value)} />
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
-            <div style={{ flex: 1, height: "1px", background: "#222" }} />
-            <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
-            <div style={{ flex: 1, height: "1px", background: "#222" }} />
+            <div style={{ flex: 1, height: "1px", background: "var(--c-222)" }} />
+            <span style={{ fontSize: "11px", color: "var(--t-888)", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--c-222)" }} />
           </div>
 
           <GoogleSignInButton onCredential={handleGoogleCredential}>
             <div
-              style={{ padding: "13px", borderRadius: "10px", border: "1px solid #222", background: "transparent", color: "#fff", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
+              style={{ padding: "13px", borderRadius: "10px", border: "1px solid var(--c-222)", background: "transparent", color: "var(--t-fff)", fontSize: "14px", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", cursor: "pointer" }}
             >
               {GoogleIcon} Continue with Google
             </div>
@@ -640,31 +640,31 @@ const [showOtp, setShowOtp] = useState(false);
       )}
       {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 {!termsAccepted && (
-  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+  <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "12px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
     <span>Read & accept Terms and Conditions</span>
-    <span style={{ color: "#999" }}>Required →</span>
+    <span style={{ color: "var(--t-999)" }}>Required →</span>
   </div>
 )}
 {termsAccepted && (
-  <p style={{ color: "#fff", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
+  <p style={{ color: "var(--t-fff)", fontSize: "12px", marginTop: "1rem" }}>✓ Terms accepted</p>
 )}
-<div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "#111", border: "1px solid #222", borderRadius: "8px", fontSize: "12px", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+<div onClick={() => setShowPrivacy(true)} style={{ marginTop: "8px", padding: "10px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "12px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
   <span>Read Privacy Policy</span>
-  <span style={{ color: "#999" }}>View →</span>
+  <span style={{ color: "var(--t-999)" }}>View →</span>
 </div>
     </div>,
 
     // Screen 6 — Verify Accounts
     <div key={6}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Prove It's You</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Verify your accounts</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2rem" }}>
         Connect Instagram, TikTok, or YouTube to prove these are really your accounts, and pick up to 5 of your own posts to feature on your public profile. The account you connect should match the username you entered earlier.
       </p>
       {socialNotice && (
-        <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-          <span onClick={() => setSocialNotice("")} style={{ color: "#999", cursor: "pointer", fontSize: "14px" }}>✕</span>
+        <div style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "10px", padding: "10px 14px", marginBottom: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: "12px", color: "var(--t-ccc)" }}>{socialNotice}</p>
+          <span onClick={() => setSocialNotice("")} style={{ color: "var(--t-999)", cursor: "pointer", fontSize: "14px" }}>✕</span>
         </div>
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -674,21 +674,21 @@ const [showOtp, setShowOtp] = useState(false);
           const typedUsername = socialLinks[label];
           const mismatch = !!connection && !!typedUsername && !usernamesMatch(typedUsername, connection.username);
           return (
-            <div key={platform} style={{ background: "#111", border: `1px solid ${mismatch ? "#ff3b30" : "#1a1a1a"}`, borderRadius: "10px", padding: "14px 16px" }}>
+            <div key={platform} style={{ background: "var(--c-111)", border: `1px solid ${mismatch ? "#ff3b30" : "var(--c-1a1a1a)"}`, borderRadius: "10px", padding: "14px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
-                  <p style={{ fontSize: "14px", color: platform === "youtube" ? "#999" : "#fff", fontWeight: platform === "youtube" ? 500 : 600 }}>{label}</p>
-                  {connection && <p style={{ fontSize: "11px", color: mismatch ? "#ff3b30" : "#555", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                  <p style={{ fontSize: "14px", color: platform === "youtube" ? "var(--t-999)" : "var(--t-fff)", fontWeight: platform === "youtube" ? 500 : 600 }}>{label}</p>
+                  {connection && <p style={{ fontSize: "11px", color: mismatch ? "#ff3b30" : "var(--t-555)", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
                 {connection ? (
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: "pointer" }}>Choose videos</span>
-                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "#333"}`, color: mismatch ? "#ff3b30" : "#fff" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
+                    <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: "pointer" }}>Choose videos</span>
+                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "var(--c-333)"}`, color: mismatch ? "#ff3b30" : "var(--t-fff)" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
                   </div>
                 ) : platform === "youtube" ? (
-                  <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
+                  <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
                 ) : (
-                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                  <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                     {connectingPlatform === platform ? "Connecting..." : "Connect"}
                   </span>
                 )}
@@ -698,7 +698,7 @@ const [showOtp, setShowOtp] = useState(false);
                   <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px", lineHeight: 1.5 }}>
                     This is @{connection!.username}, but you entered "{typedUsername}" earlier - it needs to match the connected account.
                   </p>
-                  <label style={{ fontSize: "10px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Change username</label>
+                  <label style={{ fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Change username</label>
                   <input
                     style={{ ...inputStyle, padding: "10px 12px", fontSize: "13px" }}
                     value={typedUsername}
@@ -710,9 +710,9 @@ const [showOtp, setShowOtp] = useState(false);
           );
         })}
         {UNAVAILABLE_PLATFORMS.map(platform => (
-          <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-            <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
-            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
+          <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
+            <p style={{ fontSize: "14px", color: "var(--t-999)", fontWeight: 500 }}>{platform}</p>
+            <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
           </div>
         ))}
       </div>
@@ -720,28 +720,28 @@ const [showOtp, setShowOtp] = useState(false);
 
     // Screen 7 — Profile Photo
     <div key={7}>
-      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "#999", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add a profile photo</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2rem" }}>Optional, but creators with a photo get <span style={{ color: "#fff", fontWeight: 600 }}>3x more brand reach-outs</span>. You can always add one later from your profile.</p>
+      <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "13px", fontWeight: 700, color: "var(--t-999)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "1.5rem" }}>Almost Done</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "28px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.5rem" }}>Add a profile photo</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2rem" }}>Optional, but creators with a photo get <span style={{ color: "var(--t-fff)", fontWeight: 600 }}>3x more brand reach-outs</span>. You can always add one later from your profile.</p>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-        <div onClick={() => picRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "50%", border: `2px dashed ${profilePic ? "#fff" : "#333"}`, background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
+        <div onClick={() => picRef.current?.click()} style={{ width: "110px", height: "110px", borderRadius: "50%", border: `2px dashed ${profilePic ? "var(--c-fff)" : "var(--c-333)"}`, background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", transition: "border-color 0.2s" }}>
           {profilePic
             ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: "32px", color: "#777" }}>+</span>}
+            : <span style={{ fontSize: "32px", color: "var(--t-777)" }}>+</span>}
         </div>
         <input ref={picRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePic} />
-        <p style={{ fontSize: "12px", color: "#888" }}>{profilePic ? "Tap to change" : "Tap to upload"}</p>
+        <p style={{ fontSize: "12px", color: "var(--t-888)" }}>{profilePic ? "Tap to change" : "Tap to upload"}</p>
       </div>
     </div>,
 
     // Screen 8 — Done
     <div key={8} style={{ textAlign: "center" }}>
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", margin: "0 auto 1.5rem" }}>
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--s-fff)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block", margin: "0 auto 1.5rem" }}>
         <circle cx="12" cy="12" r="9" />
         <path d="m8.4 12.4 2.5 2.5 4.8-5.2" />
       </svg>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
-      <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "32px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.15, marginBottom: "1rem" }}>You're all set!</h1>
+      <p style={{ fontSize: "14px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "2.5rem" }}>Your profile is live. Start exploring brand campaigns and apply to the ones that fit your style.</p>
     </div>,
   ];
 
@@ -773,13 +773,13 @@ const buttonLabel = () => {
   const progress = ((screen + 1) / TOTAL_SCREENS) * 100;
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:-webkit-autofill {
-          -webkit-box-shadow: 0 0 0px 1000px #111 inset !important;
-          -webkit-text-fill-color: #fff !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--c-111) inset !important;
+          -webkit-text-fill-color: var(--c-fff) !important;
         }
         @keyframes slideInForward {
           from { transform: translateX(60px); opacity: 0; }
@@ -796,16 +796,16 @@ const buttonLabel = () => {
       `}</style>
 
       {/* Progress Bar */}
-      <div style={{ height: "4px", background: "#262626", borderRadius: "2px", position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 10px)", left: "1.25rem", right: "1.25rem", zIndex: 10, overflow: "hidden" }}>
-        <div style={{ height: "100%", borderRadius: "2px", background: "#fff", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
+      <div style={{ height: "4px", background: "var(--c-262626)", borderRadius: "2px", position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 10px)", left: "1.25rem", right: "1.25rem", zIndex: 10, overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: "2px", background: "var(--c-fff)", width: `${progress}%`, transition: "width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }} />
       </div>
 
       {/* Top Nav */}
       <div style={{ padding: "1.25rem 1.25rem 0", display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "calc(22px + env(safe-area-inset-top, 0px))" }}>
         {screen > 0
-          ? <span onClick={back} style={{ fontSize: "18px", color: "#999", cursor: "pointer", padding: "4px" }}>←</span>
-          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer" }}>← Back</span>}
-        <span style={{ fontSize: "12px", color: "#777" }}>{screen + 1} / {TOTAL_SCREENS}</span>
+          ? <span onClick={back} style={{ fontSize: "18px", color: "var(--t-999)", cursor: "pointer", padding: "4px" }}>←</span>
+          : <span onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "var(--t-888)", cursor: "pointer" }}>← Back</span>}
+        <span style={{ fontSize: "12px", color: "var(--t-777)" }}>{screen + 1} / {TOTAL_SCREENS}</span>
       </div>
 
       {/* Screen Content */}
@@ -823,11 +823,11 @@ const buttonLabel = () => {
           without this it still silently intercepts taps on whatever content
           is scrolled underneath it. Only the actual button(s) re-enable
           pointer events. */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "0.5rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, #0a0a0a 60%, transparent)", pointerEvents: "none" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "0.5rem 1.5rem calc(0.75rem + env(safe-area-inset-bottom, 0px))", background: "linear-gradient(to top, var(--c-0a0a0a) 60%, transparent)", pointerEvents: "none" }}>
         {isLastScreen ? (
           <div
             onClick={() => navigate("explore")}
-            style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: "auto" }}
+            style={{ padding: "16px", borderRadius: "12px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: "auto" }}
           >
             Start Exploring →
           </div>
@@ -835,13 +835,13 @@ const buttonLabel = () => {
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "16px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1, pointerEvents: "auto" }}
+              style={{ padding: "16px", borderRadius: "12px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: loading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", opacity: loading ? 0.7 : 1, pointerEvents: "auto" }}
             >
               {loading ? "Creating account..." : "Finish & Go Explore →"}
             </div>
             <div
               onClick={loading ? undefined : handleFinish}
-              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "#888", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
+              style={{ padding: "14px", borderRadius: "12px", background: "transparent", color: "var(--t-888)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", pointerEvents: "auto" }}
             >
               Skip for now
             </div>
@@ -850,7 +850,7 @@ const buttonLabel = () => {
           <div
             className="tap-btn"
             onClick={(!loading && canProceed()) ? (screen === 5 ? (isOAuthUser ? next : handleSignup) : screen === 0 ? handleContinueFromWelcome : next) : undefined}
-            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "#fff" : "#1a1a1a", color: canProceed() ? "#0a0a0a" : "#333", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid #222", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
+            style={{ padding: "16px", borderRadius: "12px", background: canProceed() ? "var(--c-fff)" : "var(--c-1a1a1a)", color: canProceed() ? "var(--t-0a0a0a)" : "var(--t-333)", fontSize: "14px", fontWeight: 700, textAlign: "center", cursor: (!loading && canProceed()) ? "pointer" : "default", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s", border: canProceed() ? "none" : "1px solid var(--c-222)", opacity: (screen === 5 && loading) ? 0.6 : 1, pointerEvents: (screen === 5 && loading) ? "none" : "auto" }}
           >
             {screen === 5 && loading ? "Sending code..." : buttonLabel()}
           </div>
@@ -865,14 +865,14 @@ const buttonLabel = () => {
 <PrivacyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
 
 {showOtp && (
-  <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-    <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "16px", width: "100%", maxWidth: "360px", padding: "2rem 1.75rem", textAlign: "center" }}>
+  <div style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+    <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "16px", width: "100%", maxWidth: "360px", padding: "2rem 1.75rem", textAlign: "center" }}>
       <img src="/icon-512.png" width="64" height="64" alt="FlipCollab" style={{ display: "block", width: "64px", height: "64px", borderRadius: "14px", margin: "0 auto 1.25rem auto" }} />
 
-      <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888", marginBottom: "0.75rem" }}>One more step</p>
-      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
-      <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, marginBottom: "1.75rem" }}>
-        We sent a 6-digit code to <span style={{ color: "#fff", fontWeight: 600 }}>{email}</span>
+      <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--t-888)", marginBottom: "0.75rem" }}>One more step</p>
+      <h1 style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.2, marginBottom: "0.75rem" }}>Enter your code</h1>
+      <p style={{ fontSize: "13px", color: "var(--t-999)", lineHeight: 1.7, marginBottom: "1.75rem" }}>
+        We sent a 6-digit code to <span style={{ color: "var(--t-fff)", fontWeight: 600 }}>{email}</span>
       </p>
 
       <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "1.25rem" }}>
@@ -886,18 +886,18 @@ const buttonLabel = () => {
             inputMode="numeric"
             maxLength={1}
             disabled={otpLoading}
-            style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "#fff", background: "#111", border: `1px solid ${otpError ? "#ff3b30" : digit ? "#fff" : "#222"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
+            style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "var(--t-fff)", background: "var(--c-111)", border: `1px solid ${otpError ? "#ff3b30" : digit ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
           />
         ))}
       </div>
 
       {otpError && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{otpError}</p>}
-      {otpLoading && <p style={{ fontSize: "12px", color: "#999", marginBottom: "1rem" }}>Verifying...</p>}
+      {otpLoading && <p style={{ fontSize: "12px", color: "var(--t-999)", marginBottom: "1rem" }}>Verifying...</p>}
 
       <div
         className="tap-btn"
         onClick={otpResending ? undefined : handleOtpResend}
-        style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: otpResent ? "#fff" : "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: otpResending ? "none" : "auto" }}
+        style={{ padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid var(--c-222)", color: otpResent ? "var(--t-fff)" : "var(--t-fff)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: otpResending ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", pointerEvents: otpResending ? "none" : "auto" }}
       >
         {otpResending ? "Sending..." : otpResent ? "Code resent" : "Resend code"}
       </div>
@@ -905,17 +905,17 @@ const buttonLabel = () => {
   </div>
 )}
 {pickerPlatform && (
-  <div style={{ position: "fixed", inset: 0, background: "#0a0a0a", zIndex: 9999, display: "flex", flexDirection: "column" }}>
-    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111" }}>
-      <span onClick={() => setPickerPlatform(null)} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Choose {pickerPlatform ? PLATFORM_LABEL[pickerPlatform] : ""} videos</span>
+  <div style={{ position: "fixed", inset: 0, background: "var(--c-0a0a0a)", zIndex: 9999, display: "flex", flexDirection: "column" }}>
+    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid var(--c-111)" }}>
+      <span onClick={() => setPickerPlatform(null)} style={{ fontSize: "20px", color: "var(--t-fff)", cursor: "pointer" }}>←</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Choose {pickerPlatform ? PLATFORM_LABEL[pickerPlatform] : ""} videos</span>
     </div>
     <div style={{ flex: 1, overflowY: "auto", padding: "1.25rem", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
-      <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
+      <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.6, marginBottom: "1rem" }}>
         Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected). You can change this anytime from Settings.
       </p>
       {postOptions.length === 0 ? (
-        <p style={{ fontSize: "13px", color: "#999" }}>No posts found yet.</p>
+        <p style={{ fontSize: "13px", color: "var(--t-999)" }}>No posts found yet.</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
           {postOptions.map(post => {
@@ -924,13 +924,13 @@ const buttonLabel = () => {
               <div
                 key={post.post_id}
                 onClick={() => togglePostSelection(post.post_id)}
-                style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid #fff" : "1px solid #1a1a1a", cursor: "pointer" }}
+                style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid var(--c-fff)" : "1px solid var(--c-1a1a1a)", cursor: "pointer" }}
               >
                 {post.thumbnail_url && (
                   <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 )}
                 {selected && (
-                  <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
+                  <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "var(--c-fff)", color: "var(--t-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
                 )}
               </div>
             );
@@ -938,10 +938,10 @@ const buttonLabel = () => {
         </div>
       )}
     </div>
-    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px))", background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
+    <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, padding: "1rem 1.25rem calc(1rem + env(safe-area-inset-bottom, 0px))", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-1a1a1a)" }}>
       <div
         onClick={() => !savingSelection && savePostSelection()}
-        style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+        style={{ padding: "13px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
       >
         {savingSelection ? "Saving..." : "Save Selection"}
       </div>

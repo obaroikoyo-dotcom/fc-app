@@ -207,25 +207,25 @@ function NotificationPermissionPrompt({ onEnable, onDismiss }: { onEnable: () =>
       right: "1rem",
       bottom: "calc(var(--nav-h) + 2.45rem)",
       zIndex: 9998,
-      background: "#111",
-      border: "1px solid #1a1a1a",
+      background: "var(--c-111)",
+      border: "1px solid var(--c-1a1a1a)",
       borderRadius: "12px",
       padding: "1rem",
       display: "flex",
       flexDirection: "column",
       gap: "0.75rem",
       fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
-      boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+      boxShadow: "0 8px 24px var(--a-0-0-0-0_5)",
     }}>
       <div>
-        <div style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Turn on notifications?</div>
-        <div style={{ color: "#999", fontSize: "12px", lineHeight: 1.5 }}>Get notified about new messages, applications, and deals as they happen.</div>
+        <div style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>Turn on notifications?</div>
+        <div style={{ color: "var(--t-999)", fontSize: "12px", lineHeight: 1.5 }}>Get notified about new messages, applications, and deals as they happen.</div>
       </div>
       <div style={{ display: "flex", gap: "0.5rem" }}>
-        <div onClick={onDismiss} style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#1a1a1a", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div onClick={onDismiss} style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "var(--c-1a1a1a)", color: "var(--t-999)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           Not Now
         </div>
-        <div onClick={onEnable} style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div onClick={onEnable} style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           Enable
         </div>
       </div>
@@ -611,25 +611,25 @@ export default function App() {
 
   if (loading && page !== "splash") {
     return (
-      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "#777", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Loading...</p>
+      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "var(--t-777)", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Loading...</p>
       </div>
     );
   }
 
   if (accountBlocked) {
     return (
-      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "#0a0a0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
-        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "0.75rem" }}>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "0.75rem" }}>
           {accountBlocked.status === "banned" ? "Account banned" : "Account suspended"}
         </p>
-        <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
+        <p style={{ fontSize: "13px", color: "var(--t-999)", lineHeight: 1.7, maxWidth: "320px", marginBottom: "1.5rem" }}>
           {accountBlocked.reason || `Your account has been ${accountBlocked.status} by FlipCollab. If you think this is a mistake, contact hello@flipcollab.com.`}
         </p>
         <div
           onClick={forceSignOut}
-          style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid #222", color: "#ccc", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+          style={{ padding: "12px 24px", borderRadius: "8px", border: "1px solid var(--c-222)", color: "var(--t-ccc)", fontSize: "13px", fontWeight: 600, cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
         >
           Sign Out
         </div>

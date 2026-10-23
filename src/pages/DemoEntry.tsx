@@ -27,12 +27,12 @@ export default function DemoEntry() {
       }}
       footer={
         <>
-          <p className="rs-foot" style={{ textAlign: "center", fontSize: "13px", color: "#888", lineHeight: 1.6 }}>
+          <p className="rs-foot" style={{ textAlign: "center", fontSize: "13px", color: "var(--t-888)", lineHeight: 1.6 }}>
             You get a made-up profile with sample campaigns, chats and payments. Nothing is saved, no one else can see it, and no money moves.
           </p>
-          <p className="rs-foot-2" style={{ textAlign: "center", fontSize: "13px", color: "#888" }}>
+          <p className="rs-foot-2" style={{ textAlign: "center", fontSize: "13px", color: "var(--t-888)" }}>
             Ready for the real thing?{" "}
-            <a href="/" style={{ color: "#fff", textDecoration: "underline" }}>Create an account</a>
+            <a href="/" style={{ color: "var(--t-fff)", textDecoration: "underline" }}>Create an account</a>
           </p>
         </>
       }

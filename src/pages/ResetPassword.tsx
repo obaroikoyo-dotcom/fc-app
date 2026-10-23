@@ -40,18 +40,18 @@ export default function ResetPassword({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px" }}>Set a new password</p>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "4px" }}>Set a new password</p>
 
         {done ? (
           <>
-            <p style={{ fontSize: "13px", color: "#bbb", marginBottom: "2rem", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "13px", color: "var(--t-bbb)", marginBottom: "2rem", lineHeight: 1.6 }}>
               Your password has been updated. You can now log in with it.
             </p>
             <Button onClick={() => navigate("login")}>Continue to Log In</Button>
           </>
         ) : (
           <>
-            <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem" }}>Choose a new password for your account.</p>
+            <p style={{ fontSize: "13px", color: "var(--t-888)", marginBottom: "2rem" }}>Choose a new password for your account.</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <Input label="New Password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} autoFocus />

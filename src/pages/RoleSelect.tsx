@@ -18,11 +18,11 @@ export default function RoleSelect({ navigate }: Props) {
         onChoose: () => navigate("creator-onboarding"),
       }}
       footer={
-        <p className="rs-foot" style={{ textAlign: "center", fontSize: "13px", color: "#888" }}>
+        <p className="rs-foot" style={{ textAlign: "center", fontSize: "13px", color: "var(--t-888)" }}>
           Already have an account?{" "}
           <span
             onClick={() => navigate("login")}
-            style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}
+            style={{ color: "var(--t-fff)", cursor: "pointer", textDecoration: "underline" }}
           >
             Log in
           </span>

@@ -98,8 +98,8 @@ export default function Login({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Welcome back</p>
-        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Log in to your FlipCollab account.</p>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "4px", textAlign: "center" }}>Welcome back</p>
+        <p style={{ fontSize: "13px", color: "var(--t-888)", marginBottom: "2rem", textAlign: "center" }}>Log in to your FlipCollab account.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input label="Email" type="email" placeholder="you@email.com" value={form.email} onChange={set("email")} />
@@ -107,7 +107,7 @@ export default function Login({ navigate }: Props) {
         </div>
 
         <p style={{ textAlign: "right", marginTop: "10px", fontSize: "12px" }}>
-          <span onClick={() => navigate("forgot-password")} style={{ color: "#bbb", cursor: "pointer", textDecoration: "underline" }}>Forgot password?</span>
+          <span onClick={() => navigate("forgot-password")} style={{ color: "var(--t-bbb)", cursor: "pointer", textDecoration: "underline" }}>Forgot password?</span>
         </p>
 
         {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
@@ -117,9 +117,9 @@ export default function Login({ navigate }: Props) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "1.5rem 0" }}>
-          <div style={{ flex: 1, height: "1px", background: "#222" }} />
-          <span style={{ fontSize: "11px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
-          <div style={{ flex: 1, height: "1px", background: "#222" }} />
+          <div style={{ flex: 1, height: "1px", background: "var(--c-222)" }} />
+          <span style={{ fontSize: "11px", color: "var(--t-888)", letterSpacing: "0.08em", textTransform: "uppercase" }}>or</span>
+          <div style={{ flex: 1, height: "1px", background: "var(--c-222)" }} />
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -131,9 +131,9 @@ export default function Login({ navigate }: Props) {
 
         </div>
 
-        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#888" }}>
+        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "var(--t-888)" }}>
           Don't have an account?{" "}
-          <span onClick={() => navigate("role-select")} style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}>Sign up</span>
+          <span onClick={() => navigate("role-select")} style={{ color: "var(--t-fff)", cursor: "pointer", textDecoration: "underline" }}>Sign up</span>
         </p>
       </div>
     </AuthLayout>

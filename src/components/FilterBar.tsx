@@ -14,7 +14,7 @@ export function FilterToggle({ open, count, onToggle }: { open: boolean; count: 
       aria-expanded={open}
       onClick={onToggle}
       onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onToggle(); } }}
-      style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 4px", fontSize: "13px", fontWeight: 600, color: open || count > 0 ? "#fff" : "#999", cursor: "pointer" }}
+      style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 4px", fontSize: "13px", fontWeight: 600, color: open || count > 0 ? "var(--t-fff)" : "var(--t-999)", cursor: "pointer" }}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
         <path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
@@ -34,7 +34,7 @@ export interface FilterSpec {
   placeholder: string;
 }
 
-const ROW = { padding: "10px 14px", fontSize: "13px", cursor: "pointer", borderBottom: "1px solid #1a1a1a" } as const;
+const ROW = { padding: "10px 14px", fontSize: "13px", cursor: "pointer", borderBottom: "1px solid var(--c-1a1a1a)" } as const;
 
 // The row of menus. Only one is open at a time. Tapping anywhere else closes
 // it without also pressing whatever was underneath. A long list scrolls inside
@@ -76,10 +76,10 @@ export function FilterPanel({ filters }: { filters: FilterSpec[] }) {
               aria-expanded={open}
               onClick={() => setOpenKey(open ? null : f.key)}
               onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpenKey(open ? null : f.key); } }}
-              style={{ background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: f.value ? "#fff" : "#555", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px" }}
+              style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px 14px", color: f.value ? "var(--t-fff)" : "var(--t-555)", fontSize: "13px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px" }}
             >
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.value || f.placeholder}</span>
-              <span style={{ color: "#888", fontSize: "10px", flexShrink: 0 }}>{open ? "▲" : "▼"}</span>
+              <span style={{ color: "var(--t-888)", fontSize: "10px", flexShrink: 0 }}>{open ? "▲" : "▼"}</span>
             </div>
             {open && (
               <div
@@ -89,14 +89,14 @@ export function FilterPanel({ filters }: { filters: FilterSpec[] }) {
                   position: "absolute", top: "calc(100% + 6px)", ...(last ? { right: 0 } : { left: 0 }),
                   minWidth: "100%", width: "max-content", maxWidth: "min(240px, 70vw)",
                   maxHeight: "280px", overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch",
-                  background: "#111", border: "1px solid #222", borderRadius: "8px", zIndex: 100,
+                  background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", zIndex: 100,
                 }}
               >
                 <div
                   role="option"
                   aria-selected={!f.value}
                   onClick={() => { f.onChange(""); setOpenKey(null); }}
-                  style={{ ...ROW, color: !f.value ? "#fff" : "#555", background: !f.value ? "#1a1a1a" : "transparent" }}
+                  style={{ ...ROW, color: !f.value ? "var(--t-fff)" : "var(--t-555)", background: !f.value ? "var(--c-1a1a1a)" : "transparent" }}
                 >
                   {f.placeholder}
                 </div>
@@ -106,7 +106,7 @@ export function FilterPanel({ filters }: { filters: FilterSpec[] }) {
                     role="option"
                     aria-selected={f.value === o}
                     onClick={() => { f.onChange(o); setOpenKey(null); }}
-                    style={{ ...ROW, color: f.value === o ? "#fff" : "#555", background: f.value === o ? "#1a1a1a" : "transparent" }}
+                    style={{ ...ROW, color: f.value === o ? "var(--t-fff)" : "var(--t-555)", background: f.value === o ? "var(--c-1a1a1a)" : "transparent" }}
                   >
                     {o}
                   </div>

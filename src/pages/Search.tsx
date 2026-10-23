@@ -35,8 +35,8 @@ function startingRate(cp: Profile["creator_profiles"]): number | null {
 }
 
 const UI = {
-  input: { background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "10px 14px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", width: "100%" },
-  chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "#fff" : "#222"}`, background: act ? "#fff" : "transparent", color: act ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" })
+  input: { background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px 14px", color: "var(--t-fff)", fontSize: "14px", outline: "none", fontFamily: "inherit", width: "100%" },
+  chip: (act: boolean): React.CSSProperties => ({ padding: "7px 14px", borderRadius: "20px", border: `1px solid ${act ? "var(--c-fff)" : "var(--c-222)"}`, background: act ? "var(--c-fff)" : "transparent", color: act ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 500, cursor: "pointer" })
 };
 
 export default function Search({ navigateToProfile, navigateToBrandProfile, navigateToMessages }: Props) {
@@ -145,11 +145,11 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
   useEffect(() => { setVisibleCount(10); }, [query, filter, niche, followers, sortBy]);
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", display: "flex", flexDirection: "column" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap'); @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
 
-      <div ref={headerRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Discovery Hub</span>
+      <div ref={headerRef} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Discovery Hub</span>
         <div style={{ marginTop: "1rem" }}>
           <input style={UI.input} placeholder={filter === "creators" ? "Search creators..." : "Search brands..."} value={query} onChange={e => setQuery(e.target.value)} />
         </div>
@@ -186,49 +186,49 @@ export default function Search({ navigateToProfile, navigateToBrandProfile, navi
         {!hasLoadedOnce && showSkeleton ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#1a1a1a", flexShrink: 0 }} />
+              <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "var(--c-1a1a1a)", flexShrink: 0 }} />
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
-                  <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
-                  <div style={{ width: "80px", height: "11px", borderRadius: "4px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                  <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                  <div style={{ width: "80px", height: "11px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
                 </div>
-                <div style={{ width: "48px", height: "30px", borderRadius: "6px", background: "#1a1a1a", animation: "shimmer 1.5s ease-in-out infinite" }} />
+                <div style={{ width: "48px", height: "30px", borderRadius: "6px", background: "var(--c-1a1a1a)", animation: "shimmer 1.5s ease-in-out infinite" }} />
               </div>
             ))}
           </div>
         ) : !hasLoadedOnce && loading ? null : filtered.length === 0 ? (
           <div style={{ textAlign: "center", marginTop: "3rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ marginBottom: "6px" }}>
-              <circle cx="11" cy="11" r="7" stroke="#919191" strokeWidth="1.6" />
-              <path d="m16.5 16.5 4 4" stroke="#919191" strokeWidth="1.6" strokeLinecap="round" />
+              <circle cx="11" cy="11" r="7" stroke="var(--s-919191)" strokeWidth="1.6" />
+              <path d="m16.5 16.5 4 4" stroke="var(--s-919191)" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
-            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>No one matches that</p>
-            <p style={{ margin: 0, fontSize: "14px", color: "#999", lineHeight: 1.5, maxWidth: "260px" }}>Try a different name or niche, or clear what you've set.</p>
-            <div onClick={clearFilters} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Clear search</div>
+            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>No one matches that</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "var(--t-999)", lineHeight: 1.5, maxWidth: "260px" }}>Try a different name or niche, or clear what you've set.</p>
+            <div onClick={clearFilters} style={{ marginTop: "10px", padding: "11px 22px", borderRadius: "10px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>Clear search</div>
           </div>
         ) : (
           filtered.map((p, i) => {
             const isC = p.role === "creator", cp = p.creator_profiles, bp = p.brand_profiles;
             return (
-              <div key={p.id} onClick={() => isC ? navigateToProfile(p.id) : navigateToBrandProfile(p.id)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid #222", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              <div key={p.id} onClick={() => isC ? navigateToProfile(p.id) : navigateToBrandProfile(p.id)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1rem", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: isC ? "50%" : "12px", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                   <img src={avatarSrc(cp?.avatar_url || bp?.avatar_url, cp?.name || bp?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ display: "flex", alignItems: "center", gap: "5px", color: "#fff", fontSize: "14px", fontWeight: 600 }}>
+                  <p style={{ display: "flex", alignItems: "center", gap: "5px", color: "var(--t-fff)", fontSize: "14px", fontWeight: 600 }}>
                     {cp?.name || bp?.name || "FlipCollab User"}
                     {!isC && bp?.verified && <VerifiedBadge size={13} />}
                   </p>
-                  <p style={{ fontSize: "12px", color: "#888", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}</p>
-                  {isC && startingRate(cp) != null && <p style={{ fontSize: "11px", color: "#fff", fontWeight: 500, marginTop: "2px" }}>From £{startingRate(cp)}</p>}
+                  <p style={{ fontSize: "12px", color: "var(--t-888)", marginTop: "2px" }}>{cp?.niche || bp?.niche || "General"}</p>
+                  {isC && startingRate(cp) != null && <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 500, marginTop: "2px" }}>From £{startingRate(cp)}</p>}
                 </div>
-                <div onClick={e => { e.stopPropagation(); startDM(p.id); }} style={{ padding: "7px 14px", border: "1px solid #333", borderRadius: "6px", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer" }}>DM</div>
+                <div onClick={e => { e.stopPropagation(); startDM(p.id); }} style={{ padding: "7px 14px", border: "1px solid var(--c-333)", borderRadius: "6px", fontSize: "12px", fontWeight: 600, color: "var(--t-fff)", cursor: "pointer" }}>DM</div>
               </div>
             );
           })
         )}
         {filtered.length > 0 && filteredAll.length > filtered.length && (
-          <div onClick={() => setVisibleCount(c => c + 10)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #222", textAlign: "center", fontSize: "12px", fontWeight: 600, color: "#fff", cursor: "pointer", marginTop: "4px" }}>
+          <div onClick={() => setVisibleCount(c => c + 10)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--c-222)", textAlign: "center", fontSize: "12px", fontWeight: 600, color: "var(--t-fff)", cursor: "pointer", marginTop: "4px" }}>
             Load More ({filteredAll.length - filtered.length} more)
           </div>
         )}

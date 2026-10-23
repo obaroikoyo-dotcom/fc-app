@@ -10,7 +10,7 @@ export default function StarRating({ rating, size = 14, interactive = false, onC
         <span
           key={i}
           onClick={interactive ? () => onChange?.(i) : undefined}
-          style={{ fontSize: size, color: i <= Math.round(rating) ? "#ffb800" : "#2c2c2c", cursor: interactive ? "pointer" : "default", lineHeight: 1 }}
+          style={{ fontSize: size, color: i <= Math.round(rating) ? "#ffb800" : "var(--t-2c2c2c)", cursor: interactive ? "pointer" : "default", lineHeight: 1 }}
         >★</span>
       ))}
     </div>

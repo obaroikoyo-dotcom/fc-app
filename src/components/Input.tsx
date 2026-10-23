@@ -14,7 +14,7 @@ export default function Input({ label, type, ...props }: InputProps) {
         fontWeight: 500,
         letterSpacing: "0.12em",
         textTransform: "uppercase",
-        color: focused ? "#fff" : "#555",
+        color: focused ? "var(--t-fff)" : "var(--t-555)",
         transition: "color 0.2s",
       }}>{label}</label>
       <input
@@ -22,11 +22,11 @@ export default function Input({ label, type, ...props }: InputProps) {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={{
-          background: "#111",
-          border: `1px solid ${focused ? "#fff" : "#222"}`,
+          background: "var(--c-111)",
+          border: `1px solid ${focused ? "var(--c-fff)" : "var(--c-222)"}`,
           borderRadius: "8px",
           padding: "12px 14px",
-          color: "#fff",
+          color: "var(--t-fff)",
           fontSize: "14px",
           outline: "none",
           transition: "border-color 0.2s",

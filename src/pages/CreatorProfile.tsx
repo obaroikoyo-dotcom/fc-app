@@ -42,7 +42,7 @@ const PLATFORM_ICON: Record<string, (size: number) => React.ReactNode> = {
 };
 const PlayGlyph = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="#fff" />
+    <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="var(--s-fff)" />
   </svg>
 );
 const CONTENT_TYPES = ["Photos", "Reels", "UGC Videos", "Stories", "Reviews", "Unboxings", "Tutorials", "Vlogs", "Hauls", "GRWM", "Comparisons", "Skits", "Livestreams", "Carousels", "Podcasts", "Testimonials"];
@@ -570,53 +570,53 @@ setTimeout(() => setSaved(false), 2000);
   };
 
   const inputStyle: React.CSSProperties = {
-    background: "#111", border: "1px solid #222", borderRadius: "8px",
-    padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none",
+    background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px",
+    padding: "11px 14px", color: "var(--t-fff)", fontSize: "14px", outline: "none",
     width: "100%", fontFamily: "inherit", boxSizing: "border-box",
   };
   const labelStyle: React.CSSProperties = {
     fontSize: "11px", fontWeight: 500, letterSpacing: "0.1em",
-    textTransform: "uppercase", color: "#999", marginBottom: "6px", display: "block",
+    textTransform: "uppercase", color: "var(--t-999)", marginBottom: "6px", display: "block",
   };
   const chipStyle = (active: boolean): React.CSSProperties => ({
     padding: "8px 14px", borderRadius: "20px",
-    border: `1px solid ${active ? "#fff" : "#222"}`,
-    background: active ? "#fff" : "transparent",
-    color: active ? "#0a0a0a" : "#555",
+    border: `1px solid ${active ? "var(--c-fff)" : "var(--c-222)"}`,
+    background: active ? "var(--c-fff)" : "transparent",
+    color: active ? "var(--t-0a0a0a)" : "var(--t-555)",
     fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
   });
   const settingsRow = (label: string, sub: string, onClick: () => void, icon?: string, isLast = false): React.ReactNode => (
-    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid #1a1a1a", cursor: "pointer" }}>
-      {icon && <SettingsIcon name={icon} color="#999" size={18} />}
+    <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid var(--c-1a1a1a)", cursor: "pointer" }}>
+      {icon && <SettingsIcon name={icon} color="var(--t-999)" size={18} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "#fff", fontWeight: 500 }}>{label}</p>
-        {sub && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "#888", marginTop: "2px" }}>{sub}</p>}
+        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "var(--t-fff)", fontWeight: 500 }}>{label}</p>
+        {sub && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "var(--t-888)", marginTop: "2px" }}>{sub}</p>}
       </div>
       <ChevronIcon />
     </div>
   );
   const sectionCard = (rows: React.ReactNode) => (
-    <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
+    <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", overflow: "hidden" }}>{rows}</div>
   );
   const sectionHeader = (title: string, first = false) => (
-    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "#888", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
+    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "11px", color: "var(--t-888)", letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600, marginTop: first ? "10px" : "26px", padding: "0 2px 10px" }}>{title}</p>
   );
 
   // ─── PUBLIC PROFILE VIEW ─────────────────────────────────────────────────
   const renderProfile = () => {
     if (profileLoading && !hasProfileLoadedOnce && !showProfileSkeleton) {
-      return <div style={{ minHeight: "100%", background: "#0a0a0a" }} />;
+      return <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)" }} />;
     }
 
     if (profileLoading && !hasProfileLoadedOnce) {
       const pulse = "pulse 1.5s ease-in-out infinite";
       const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
-        <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+        <div style={{ width: w, height: h, borderRadius: "4px", background: "var(--c-1a1a1a)", animation: pulse, ...extra }} />
       );
       return (
-        <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+        <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
           <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
-          <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+          <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
             {bar("90px", "18px")}
             {bar("36px", "36px", { borderRadius: "8px" })}
           </div>
@@ -641,7 +641,7 @@ setTimeout(() => setSaved(false), 2000);
               {[70, 90, 60].map((w, i) => <div key={i}>{bar(`${w}px`, "26px", { borderRadius: "20px" })}</div>)}
             </div>
 
-            <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
+            <div style={{ borderTop: "1px solid var(--c-1a1a1a)", marginBottom: "1.5rem" }} />
 
             {/* Platforms/content sections */}
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -658,51 +658,51 @@ setTimeout(() => setSaved(false), 2000);
     }
 
     return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
-      <div ref={setProfileHeaderEl} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
-        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>My Profile</span>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+      <div ref={setProfileHeaderEl} style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>My Profile</span>
         <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
-          <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
-          <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
-          <div style={{ width: "18px", height: "2px", background: "#fff", borderRadius: "1px" }} />
+          <div style={{ width: "18px", height: "2px", background: "var(--c-fff)", borderRadius: "1px" }} />
+          <div style={{ width: "18px", height: "2px", background: "var(--c-fff)", borderRadius: "1px" }} />
+          <div style={{ width: "18px", height: "2px", background: "var(--c-fff)", borderRadius: "1px" }} />
         </div>
       </div>
 
       <div style={{ padding: "1.5rem 1.25rem", paddingTop: `${profileHeaderHeight + 8}px` }}>
         {/* Avatar + name */}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-          <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777" }}>
+          <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid var(--c-333)", background: "var(--c-111)", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "var(--t-777)" }}>
             {(profilePic || name) && <img src={avatarSrc(profilePic, name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
           </div>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff" }}>{name || "Your Name"}</p>
-              {available && <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>}
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "20px", fontWeight: 800, color: "var(--t-fff)" }}>{name || "Your Name"}</p>
+              {available && <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)" }}>Open to collabs</span>}
             </div>
-            <p style={{ fontSize: "13px", color: "#999" }}>{niche}{location ? ` · ${location}` : ""}</p>
+            <p style={{ fontSize: "13px", color: "var(--t-999)" }}>{niche}{location ? ` · ${location}` : ""}</p>
           </div>
         </div>
 
         {/* Bio */}
-        {bio && <p style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.7, marginBottom: "1.5rem" }}>{bio}</p>}
+        {bio && <p style={{ fontSize: "13px", color: "var(--t-bbb)", lineHeight: 1.7, marginBottom: "1.5rem" }}>{bio}</p>}
 
         {/* Niche tags */}
         {niche && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "1.5rem" }}>
             {niche.split(",").map(n => n.trim()).filter(Boolean).map(n => (
-              <span key={n} style={{ padding: "5px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{n}</span>
+              <span key={n} style={{ padding: "5px 12px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px" }}>{n}</span>
             ))}
           </div>
         )}
 
-        <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
+        <div style={{ borderTop: "1px solid var(--c-1a1a1a)", marginBottom: "1.5rem" }} />
 
         {/* Content types */}
         {contentTypes.length > 0 && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Content I Create</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {contentTypes.map(c => <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{c}</span>)}
+              {contentTypes.map(c => <span key={c} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px" }}>{c}</span>)}
             </div>
           </div>
         )}
@@ -712,7 +712,7 @@ setTimeout(() => setSaved(false), 2000);
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Languages</label>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {languages.map(l => <span key={l} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid #222", color: "#999", fontSize: "12px" }}>{l}</span>)}
+              {languages.map(l => <span key={l} style={{ padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px" }}>{l}</span>)}
             </div>
           </div>
         )}
@@ -737,18 +737,18 @@ setTimeout(() => setSaved(false), 2000);
               const followers = connection?.follower_count ?? null;
               const platformPosts = connectedPlatform ? featuredPosts.filter(post => post.platform === connectedPlatform).slice(0, 5) : [];
               return (
-              <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
+              <div key={p} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "16px", overflow: "hidden" }}>
                 <div style={{ padding: "14px 16px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     {PLATFORM_ICON[p]?.(18)}
-                    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
+                    <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-fff)", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                   </div>
-                  {connection?.username && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{connection.username}</p>}
+                  {connection?.username && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-999)", fontSize: "12px", marginTop: "3px" }}>@{connection.username}</p>}
                   {followers != null && (
                     <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
                       <div>
-                        <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
+                        <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                        <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-777)", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
                       </div>
                     </div>
                   )}
@@ -758,15 +758,15 @@ setTimeout(() => setSaved(false), 2000);
                       until the poll above finds them and this quietly disappears. */}
                   {syncingPlatform === connectedPlatform && platformPosts.length === 0 && (
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px" }}>
-                      <span className="spin" style={{ width: "12px", height: "12px", border: "2px solid #333", borderTopColor: "#999", borderRadius: "50%", display: "inline-block" }} />
-                      <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px" }}>Syncing your videos…</p>
+                      <span className="spin" style={{ width: "12px", height: "12px", border: "2px solid var(--c-333)", borderTopColor: "var(--c-999)", borderRadius: "50%", display: "inline-block" }} />
+                      <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-999)", fontSize: "12px" }}>Syncing your videos…</p>
                     </div>
                   )}
                 </div>
                 {platformPosts.length > 0 && (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid #1a1a1a" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid var(--c-1a1a1a)" }}>
                     {platformPosts.map(post => (
-                      <a key={`${post.platform}-${post.post_id}`} href={safeHttpUrl(post.post_url)} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
+                      <a key={`${post.platform}-${post.post_id}`} href={safeHttpUrl(post.post_url)} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "var(--c-0a0a0a)" }}>
                         {/* Some platforms (TikTok in particular) hand back a short-lived
                             signed thumbnail URL that can expire before this cached copy
                             is ever shown - hide the broken-image glyph rather than show it. */}
@@ -778,7 +778,7 @@ setTimeout(() => setSaved(false), 2000);
                         {post.thumbnail_url && (
                           <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         )}
-                        <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" }}>
+                        <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px var(--a-0-0-0-0_7))" }}>
                           <PlayGlyph />
                         </div>
                       </a>
@@ -793,13 +793,13 @@ setTimeout(() => setSaved(false), 2000);
           );
         })()}
 
-        <div style={{ borderTop: "1px solid #1a1a1a", marginBottom: "1.5rem" }} />
+        <div style={{ borderTop: "1px solid var(--c-1a1a1a)", marginBottom: "1.5rem" }} />
 
         {/* Audience */}
         {(audienceAgeRanges.length > 0 || audienceLocation) && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Audience</label>
-            <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "#999", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "var(--t-999)", flexWrap: "wrap" }}>
               {audienceAgeRanges.length > 0 && <span>Age: {audienceAgeRanges.join(", ")}</span>}
               {audienceLocation && <span>{audienceLocation}</span>}
             </div>
@@ -810,12 +810,12 @@ setTimeout(() => setSaved(false), 2000);
         {Object.values(rates).some(v => v) && (
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Rate Card</label>
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
-              {rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Post</span><span style={{ color: "#fff" }}>£{rates.post}</span></div>}
-              {rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Story</span><span style={{ color: "#fff" }}>£{rates.story}</span></div>}
-              {rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Reel</span><span style={{ color: "#fff" }}>£{rates.reel}</span></div>}
-              {rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Video</span><span style={{ color: "#fff" }}>£{rates.video}</span></div>}
-              {rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>UGC Only</span><span style={{ color: "#fff" }}>£{rates.ugc}</span></div>}
+            <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
+              {rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Post</span><span style={{ color: "var(--t-fff)" }}>£{rates.post}</span></div>}
+              {rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Story</span><span style={{ color: "var(--t-fff)" }}>£{rates.story}</span></div>}
+              {rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Reel</span><span style={{ color: "var(--t-fff)" }}>£{rates.reel}</span></div>}
+              {rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Video</span><span style={{ color: "var(--t-fff)" }}>£{rates.video}</span></div>}
+              {rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>UGC Only</span><span style={{ color: "var(--t-fff)" }}>£{rates.ugc}</span></div>}
             </div>
           </div>
         )}
@@ -826,9 +826,9 @@ setTimeout(() => setSaved(false), 2000);
             <label style={labelStyle}>Past Collabs</label>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {collabs.filter(c => c.brand).map((c, i) => (
-                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{c.brand}</p>
-                  <p style={{ color: "#999", fontSize: "12px" }}>{c.description}</p>
+                <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
+                  <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{c.brand}</p>
+                  <p style={{ color: "var(--t-999)", fontSize: "12px" }}>{c.description}</p>
                 </div>
               ))}
             </div>
@@ -840,43 +840,43 @@ setTimeout(() => setSaved(false), 2000);
           <div style={{ marginBottom: "1.5rem" }}>
             <label style={labelStyle}>Track Record</label>
             <div style={{ display: "flex", gap: "10px", marginBottom: "1rem" }}>
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
-                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Completed</p>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "var(--t-fff)", fontSize: "18px", fontWeight: 700 }}>{trackRecord.completedCampaigns}</p>
+                <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "2px" }}>Completed</p>
               </div>
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
                 {trackRecord.avgRating != null ? (
                   <>
                     <StarRating rating={trackRecord.avgRating} size={13} />
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                    <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "6px" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                   </>
                 ) : (
                   <>
-                    <p style={{ color: "#999", fontSize: "13px" }}>—</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
+                    <p style={{ color: "var(--t-999)", fontSize: "13px" }}>—</p>
+                    <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "6px" }}>No ratings yet</p>
                   </>
                 )}
               </div>
-              <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
-                <p style={{ color: "#999", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "var(--t-fff)", fontSize: "18px", fontWeight: 700 }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
+                <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "2px" }}>Avg. turnaround</p>
               </div>
             </div>
             {reviews.length > 0 && (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {reviews.map(r => (
-                  <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                  <div key={r.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
+                        <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "var(--t-777)" }}>
                           <img src={avatarSrc(r.brand_avatar, r.brand_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         </div>
-                        <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
+                        <p style={{ color: "var(--t-fff)", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
                       </div>
                       <StarRating rating={r.rating} size={11} />
                     </div>
-                    {r.comment && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
-                    <p style={{ color: "#777", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                    {r.comment && <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                    <p style={{ color: "var(--t-777)", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
@@ -887,9 +887,9 @@ setTimeout(() => setSaved(false), 2000);
         {/* Empty state — only covers platforms/content/languages/audience/rates/collabs, not bio/niche/location */}
         {!selectedPlatforms.length && !contentTypes.length && !languages.length && !audienceAgeRanges.length && !audienceLocation && !Object.values(rates).some(v => v) && !collabs.filter(c => c.brand).length && !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0)) && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "3rem 2rem", marginTop: "0.5rem" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
-            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
-            <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
+            <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid var(--c-222)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "var(--t-777)", marginBottom: "1rem" }}>◉</div>
+            <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+            <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.7, textAlign: "center", maxWidth: "260px" }}>You haven't added any platforms, rates, or collab history yet. Fill these out from Edit Profile so brands know what you offer.</p>
           </div>
         )}
       </div>
@@ -899,28 +899,28 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── SETTINGS SHELL ───────────────────────────────────────────────────────
   const renderSettingsHeader = (title: string, onBack: () => void) => (
-    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
-      <span onClick={onBack} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{title}</span>
+    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid var(--c-111)", background: "var(--c-0a0a0a)", position: "sticky", top: 0, zIndex: 10 }}>
+      <span onClick={onBack} style={{ fontSize: "20px", color: "var(--t-fff)", cursor: "pointer" }}>←</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>{title}</span>
     </div>
   );
 
   // ─── SETTINGS MAIN MENU ───────────────────────────────────────────────────
   const renderSettingsMain = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
-      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
-        <span onClick={() => setView("profile")} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Settings</span>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid var(--c-111)", background: "var(--c-0a0a0a)", position: "sticky", top: 0, zIndex: 10 }}>
+        <span onClick={() => setView("profile")} style={{ fontSize: "20px", color: "var(--t-fff)", cursor: "pointer" }}>←</span>
+        <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Settings</span>
       </div>
 
       {/* Theme toggle at top */}
-      <div style={{ margin: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
+      <div style={{ margin: "1rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px 16px" }}>
         <div>
-          <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Dark mode</p>
-          <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>Switch between light and dark</p>
+          <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>Dark mode</p>
+          <p style={{ color: "var(--t-888)", fontSize: "12px", marginTop: "2px" }}>Switch between light and dark</p>
         </div>
-        <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: !isInverted ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-          <div style={{ position: "absolute", top: "3px", left: !isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: !isInverted ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+        <div onClick={toggleTheme} style={{ width: "44px", height: "24px", borderRadius: "12px", background: !isInverted ? "var(--c-fff)" : "var(--c-222)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+          <div style={{ position: "absolute", top: "3px", left: !isInverted ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: !isInverted ? "var(--c-0a0a0a)" : "var(--c-555)", transition: "left 0.2s" }} />
         </div>
       </div>
 
@@ -963,7 +963,7 @@ setTimeout(() => setSaved(false), 2000);
         </>)}
 
         <div style={{ marginTop: "2rem", display: "flex", flexDirection: "column", gap: "10px", paddingBottom: "2rem" }}>
-          <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid #222", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid var(--c-222)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "var(--t-999)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Sign Out
           </div>
           <div onClick={() => setShowDeleteConfirm(true)} style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}>
@@ -973,14 +973,14 @@ setTimeout(() => setSaved(false), 2000);
       </div>
 
       {showDeleteConfirm && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-          <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem", boxSizing: "border-box" }}>
-            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>Delete your account?</h3>
-            <p style={{ color: "#999", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+        <div style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+          <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem", boxSizing: "border-box" }}>
+            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "18px", fontWeight: 800, marginBottom: "6px" }}>Delete your account?</h3>
+            <p style={{ color: "var(--t-999)", fontSize: "13px", lineHeight: 1.6, marginBottom: "1.5rem" }}>
               This deletes your profile, campaign history, messages and any pending balance. It can't be undone.
             </p>
             <div style={{ display: "flex", gap: "10px" }}>
-              <div onClick={() => { if (!deletingAccount) { setShowDeleteConfirm(false); setDeleteError(""); } }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid #222", color: deletingAccount ? "#444" : "#999", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              <div onClick={() => { if (!deletingAccount) { setShowDeleteConfirm(false); setDeleteError(""); } }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid var(--c-222)", color: deletingAccount ? "var(--t-444)" : "var(--t-999)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 Cancel
               </div>
               <div onClick={async () => {
@@ -1016,27 +1016,27 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── EDIT PROFILE ─────────────────────────────────────────────────────────
   const renderEditProfile = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Edit Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
         {/* Avatar */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "1rem" }}>
-          <div onClick={() => picRef.current?.click()} style={{ width: "80px", height: "80px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", marginBottom: "8px" }}>
-            {profilePic ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "24px", color: "#777" }}>+</span>}
+          <div onClick={() => picRef.current?.click()} style={{ width: "80px", height: "80px", borderRadius: "50%", border: "1px solid var(--c-333)", background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", marginBottom: "8px" }}>
+            {profilePic ? <img src={profilePic} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: "24px", color: "var(--t-777)" }}>+</span>}
           </div>
-          <span style={{ fontSize: "12px", color: "#888" }}>Tap to change photo</span>
+          <span style={{ fontSize: "12px", color: "var(--t-888)" }}>Tap to change photo</span>
           <input ref={picRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handlePic} />
         </div>
 
         {/* Availability */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px 16px" }}>
           <div>
-            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>Open to Collabs</p>
-            <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>Brands can see you're available</p>
+            <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>Open to Collabs</p>
+            <p style={{ color: "var(--t-888)", fontSize: "12px", marginTop: "2px" }}>Brands can see you're available</p>
           </div>
-          <div onClick={() => setAvailable(p => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: available ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-            <div style={{ position: "absolute", top: "3px", left: available ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: available ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+          <div onClick={() => setAvailable(p => !p)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: available ? "var(--c-fff)" : "var(--c-222)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div style={{ position: "absolute", top: "3px", left: available ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: available ? "var(--c-0a0a0a)" : "var(--c-555)", transition: "left 0.2s" }} />
           </div>
         </div>
 
@@ -1055,14 +1055,14 @@ setTimeout(() => setSaved(false), 2000);
         </div>
         <div><label style={labelStyle}>Bio</label><textarea style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }} placeholder="Tell brands about yourself..." value={bio} onChange={e => setBio(e.target.value)} /></div>
 
-        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "1rem" }}>
+        <div style={{ borderTop: "1px solid var(--c-1a1a1a)", paddingTop: "1rem" }}>
           <label style={labelStyle}>Preferred Posting Platforms</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {PLATFORMS.map(p => <div key={p} onClick={() => togglePlatform(p)} style={chipStyle(selectedPlatforms.includes(p))}>{p}</div>)}
           </div>
         </div>
 
-        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "1rem" }}>
+        <div style={{ borderTop: "1px solid var(--c-1a1a1a)", paddingTop: "1rem" }}>
           <label style={labelStyle}>Content I Create</label>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {CONTENT_TYPES.map(c => <div key={c} onClick={() => toggleContent(c)} style={chipStyle(contentTypes.includes(c))}>{c}</div>)}
@@ -1078,7 +1078,7 @@ setTimeout(() => setSaved(false), 2000);
       </div>
 
       <div style={{ padding: "2rem 1.25rem 3rem" }}>
-        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#fff" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
+        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "var(--c-1a1a1a)" : "var(--c-fff)", color: saved ? "var(--t-fff)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save Profile"}
         </div>
       </div>
@@ -1087,10 +1087,10 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── NICHE SELECTION ──────────────────────────────────────────────────────
   const renderNicheSelection = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Niche Selection", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Select all niches that describe your content. This helps brands find you in search.</p>
+        <p style={{ fontSize: "13px", color: "var(--t-999)", marginBottom: "1.5rem", lineHeight: 1.6 }}>Select all niches that describe your content. This helps brands find you in search.</p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {NICHES.map(n => {
             const active = niche.split(",").map(x => x.trim()).includes(n);
@@ -1108,8 +1108,8 @@ setTimeout(() => setSaved(false), 2000);
           <input style={inputStyle} placeholder="e.g. Beauty, Fitness, Lifestyle" value={niche} onChange={e => setNiche(e.target.value)} />
         </div>
       </div>
-      <div style={{ position: "sticky", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
-        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      <div style={{ position: "sticky", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-111)" }}>
+        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
       </div>
@@ -1118,14 +1118,14 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── MANAGE ACCOUNTS ──────────────────────────────────────────────────────
   const renderPostPicker = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader(`Choose ${pickerPlatform ? SOCIAL_PLATFORM_LABEL[pickerPlatform] : ""} videos`, () => setPickerPlatform(null))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
+        <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.6, marginBottom: "1rem" }}>
           Pick up to {MAX_FEATURED_POSTS} to feature on your public profile ({selectedPostIds.length}/{MAX_FEATURED_POSTS} selected).
         </p>
         {postOptions.length === 0 ? (
-          <p style={{ fontSize: "13px", color: "#999" }}>No posts found yet.</p>
+          <p style={{ fontSize: "13px", color: "var(--t-999)" }}>No posts found yet.</p>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
             {postOptions.map(post => {
@@ -1134,13 +1134,13 @@ setTimeout(() => setSaved(false), 2000);
                 <div
                   key={post.post_id}
                   onClick={() => togglePostSelection(post.post_id)}
-                  style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid #fff" : "1px solid #1a1a1a", cursor: "pointer" }}
+                  style={{ position: "relative", aspectRatio: "1", borderRadius: "8px", overflow: "hidden", border: selected ? "2px solid var(--c-fff)" : "1px solid var(--c-1a1a1a)", cursor: "pointer" }}
                 >
                   {post.thumbnail_url && (
                     <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   )}
                   {selected && (
-                    <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
+                    <div style={{ position: "absolute", top: "6px", right: "6px", width: "20px", height: "20px", borderRadius: "50%", background: "var(--c-fff)", color: "var(--t-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700 }}>✓</div>
                   )}
                 </div>
               );
@@ -1148,10 +1148,10 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
       </div>
-      <div style={{ position: "fixed", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #1a1a1a", zIndex: 200 }}>
+      <div style={{ position: "fixed", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-1a1a1a)", zIndex: 200 }}>
         <div
           onClick={() => !savingSelection && savePostSelection()}
-          style={{ padding: "13px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+          style={{ padding: "13px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
         >
           {savingSelection ? "Saving..." : "Save Selection"}
         </div>
@@ -1166,16 +1166,16 @@ setTimeout(() => setSaved(false), 2000);
     const findConnection = (p: SocialPlatform) => socialConnections.find(c => c.platform === p);
 
     return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Connect Social Platforms", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {socialNotice && (
-          <div style={{ background: "#111", border: "1px solid #222", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <p style={{ fontSize: "12px", color: "#ccc" }}>{socialNotice}</p>
-            <span onClick={() => setSocialNotice("")} style={{ color: "#999", cursor: "pointer", fontSize: "14px" }}>✕</span>
+          <div style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "10px", padding: "12px 14px", marginBottom: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <p style={{ fontSize: "12px", color: "var(--t-ccc)" }}>{socialNotice}</p>
+            <span onClick={() => setSocialNotice("")} style={{ color: "var(--t-999)", cursor: "pointer", fontSize: "14px" }}>✕</span>
           </div>
         )}
-        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6, marginBottom: "1rem" }}>
+        <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.6, marginBottom: "1rem" }}>
           Connect Instagram, TikTok, or YouTube, then choose up to {MAX_FEATURED_POSTS} of your own posts to feature on your public profile.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -1183,21 +1183,21 @@ setTimeout(() => setSaved(false), 2000);
             const connection = findConnection(platform);
             const label = SOCIAL_PLATFORM_LABEL[platform];
             return (
-              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+              <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
                 <div>
-                  <p style={{ fontSize: "14px", color: platform === "youtube" ? "#999" : "#fff", fontWeight: platform === "youtube" ? 500 : 600 }}>{label}</p>
-                  {connection && <p style={{ fontSize: "11px", color: "#999", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                  <p style={{ fontSize: "14px", color: platform === "youtube" ? "var(--t-999)" : "var(--t-fff)", fontWeight: platform === "youtube" ? 500 : 600 }}>{label}</p>
+                  {connection && <p style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
                 <div style={{ display: "flex", gap: "8px" }}>
                   {connectedPlatforms.has(platform) ? (
                     <>
-                      <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: "pointer" }}>Choose videos</span>
-                      <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #333", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
+                      <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: "pointer" }}>Choose videos</span>
+                      <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
                     </>
                   ) : platform === "youtube" ? (
-                    <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
+                    <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
                   ) : (
-                    <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
+                    <span onClick={() => handleConnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: connectingPlatform ? "default" : "pointer", opacity: connectingPlatform && connectingPlatform !== platform ? 0.4 : 1 }}>
                       {connectingPlatform === platform ? "Connecting..." : "Connect"}
                     </span>
                   )}
@@ -1206,9 +1206,9 @@ setTimeout(() => setSaved(false), 2000);
             );
           })}
           {["Twitter/X", "Facebook"].map(platform => (
-            <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
-              <p style={{ fontSize: "14px", color: "#999", fontWeight: 500 }}>{platform}</p>
-              <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid #222", color: "#777" }}>Coming soon</span>
+            <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
+              <p style={{ fontSize: "14px", color: "var(--t-999)", fontWeight: 500 }}>{platform}</p>
+              <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
             </div>
           ))}
         </div>
@@ -1219,13 +1219,13 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── PAYOUTS ──────────────────────────────────────────────────────────────
   const renderPayouts = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Payouts", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", overflow: "hidden" }}>
-          <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a" }}>
+        <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", overflow: "hidden" }}>
+          <div style={{ display: "flex", borderBottom: "1px solid var(--c-1a1a1a)" }}>
             {(["balance", "method", "history"] as const).map(t => (
-  <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: walletTab === t ? "#fff" : "#444", borderBottom: walletTab === t ? "1px solid #fff" : "1px solid transparent" }}>{t}</div>
+  <div key={t} onClick={() => setWalletTab(t)} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "11px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: walletTab === t ? "var(--t-fff)" : "var(--t-444)", borderBottom: walletTab === t ? "1px solid var(--c-fff)" : "1px solid transparent" }}>{t}</div>
 ))}
           </div>
           {walletTab === "balance" && (
@@ -1235,44 +1235,44 @@ setTimeout(() => setSaved(false), 2000);
                 overflow: "hidden",
                 borderRadius: "20px",
                 padding: "1.5rem 1.75rem 1.75rem",
-                background: "rgba(255,255,255,0.045)",
+                background: "var(--a-255-255-255-0_045)",
                 backdropFilter: "blur(28px)",
                 WebkitBackdropFilter: "blur(28px)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                boxShadow: "0 16px 32px -16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.09)",
+                border: "1px solid var(--a-255-255-255-0_1)",
+                boxShadow: "0 16px 32px -16px var(--a-0-0-0-0_6), inset 0 1px 0 var(--a-255-255-255-0_09)",
               }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-                  <p style={{ fontSize: "11px", color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                  <p style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                     Your balance
                   </p>
                   <p aria-hidden="true" style={{
                     fontFamily: "'TikTok Sans', sans-serif", fontWeight: 800,
                     fontSize: "10px", letterSpacing: "0.16em",
-                    color: "rgba(255,255,255,0.32)",
+                    color: "var(--a-255-255-255-0_32)",
                   }}>FLIPCOLLAB</p>
                 </div>
 
-                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "38px", fontWeight: 800, color: "#fff", lineHeight: 1, marginTop: "10px", fontVariantNumeric: "tabular-nums" }}>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "38px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1, marginTop: "10px", fontVariantNumeric: "tabular-nums" }}>
                   £{((walletBalance + pendingBalance) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
 
                 {pendingBalance > 0 && (
-                  <div style={{ display: "flex", gap: "28px", marginTop: "18px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div style={{ display: "flex", gap: "28px", marginTop: "18px", paddingTop: "14px", borderTop: "1px solid var(--a-255-255-255-0_08)" }}>
                     <div>
-                      <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>Available</p>
-                      <p style={{ fontSize: "15px", color: "#fff", fontWeight: 600, marginTop: "3px", fontVariantNumeric: "tabular-nums" }}>
+                      <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Available</p>
+                      <p style={{ fontSize: "15px", color: "var(--t-fff)", fontWeight: 600, marginTop: "3px", fontVariantNumeric: "tabular-nums" }}>
                         £{(walletBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
                     <div>
-                      <p style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", color: "#888", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                      <p style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                           <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
                           <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         Pending
                       </p>
-                      <p style={{ fontSize: "15px", color: "#ccc", fontWeight: 600, marginTop: "3px", fontVariantNumeric: "tabular-nums" }}>
+                      <p style={{ fontSize: "15px", color: "var(--t-ccc)", fontWeight: 600, marginTop: "3px", fontVariantNumeric: "tabular-nums" }}>
                         £{(pendingBalance / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                     </div>
@@ -1280,17 +1280,17 @@ setTimeout(() => setSaved(false), 2000);
                 )}
               </div>
 
-              <p style={{ fontSize: "11px", color: "#888", marginTop: "14px", textAlign: "center" }}>Any platform fee is already deducted from these amounts.</p>
-              <p style={{ fontSize: "10px", color: "#666", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
+              <p style={{ fontSize: "11px", color: "var(--t-888)", marginTop: "14px", textAlign: "center" }}>Any platform fee is already deducted from these amounts.</p>
+              <p style={{ fontSize: "10px", color: "var(--t-666)", marginTop: "6px", textAlign: "center" }}>Released amounts have been sent to your connected account - they follow Stripe's own payout schedule (typically a few business days) before landing in your bank.</p>
               {pendingBalance > 0 && (
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "9px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "11px 13px", marginTop: "16px" }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px", color: "#888" }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "9px", background: "var(--c-0d0d0d)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "11px 13px", marginTop: "16px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: "1px", color: "var(--t-888)" }}>
                     <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                     <path d="M12 7v5l3 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <p style={{ fontSize: "11px", color: "#999", lineHeight: 1.55 }}>
+                  <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.55 }}>
                     Pending funds are held safely in escrow and release once the brand confirms they're happy with your work, or automatically 5 days after you upload if they don't respond.{" "}
-                    <span onClick={() => setSettingsSection("help")} style={{ color: "#bbb", textDecoration: "underline", cursor: "pointer" }}>Why is it still pending?</span>
+                    <span onClick={() => setSettingsSection("help")} style={{ color: "var(--t-bbb)", textDecoration: "underline", cursor: "pointer" }}>Why is it still pending?</span>
                   </p>
                 </div>
               )}
@@ -1301,15 +1301,15 @@ setTimeout(() => setSaved(false), 2000);
     {connectStatus?.payouts_enabled ? (
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem" }}>
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#fff" }} />
-          <p style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>Payouts active</p>
+          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--c-fff)" }} />
+          <p style={{ fontSize: "13px", color: "var(--t-fff)", fontWeight: 600 }}>Payouts active</p>
         </div>
         {connectInstance ? (
           <ConnectComponentsProvider connectInstance={connectInstance}>
             <ConnectPayouts onLoadError={() => setConnectError("Couldn't load payout details.")} />
           </ConnectComponentsProvider>
         ) : (
-          <span onClick={() => !connectingPayouts && handleConnectPayouts()} style={{ fontSize: "11px", padding: "8px 16px", borderRadius: "20px", border: "1px solid #fff", color: "#fff", cursor: connectingPayouts ? "default" : "pointer" }}>
+          <span onClick={() => !connectingPayouts && handleConnectPayouts()} style={{ fontSize: "11px", padding: "8px 16px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: connectingPayouts ? "default" : "pointer" }}>
             {connectingPayouts ? "Loading..." : "Manage payout details"}
           </span>
         )}
@@ -1331,7 +1331,7 @@ setTimeout(() => setSaved(false), 2000);
       </ConnectComponentsProvider>
     ) : (
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>Set up payouts to receive funds directly to your bank account. Just your name, date of birth, address, and bank details - takes about a minute. Verified securely by Stripe; FlipCollab never sees or stores them.</p>
+        <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.6 }}>Set up payouts to receive funds directly to your bank account. Just your name, date of birth, address, and bank details - takes about a minute. Verified securely by Stripe; FlipCollab never sees or stores them.</p>
         {!connectStatus?.connected && (
           <div>
             <label style={labelStyle}>Country</label>
@@ -1341,7 +1341,7 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         )}
         {connectError && <p style={{ fontSize: "12px", color: "#ff4444", margin: 0 }}>{connectError}</p>}
-        <div onClick={!connectingPayouts ? handleConnectPayouts : undefined} style={{ padding: "13px", borderRadius: "8px", background: connectingPayouts ? "#1a1a1a" : "#fff", color: connectingPayouts ? "#555" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: connectingPayouts ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+        <div onClick={!connectingPayouts ? handleConnectPayouts : undefined} style={{ padding: "13px", borderRadius: "8px", background: connectingPayouts ? "var(--c-1a1a1a)" : "var(--c-fff)", color: connectingPayouts ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: connectingPayouts ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {connectingPayouts ? "Loading..." : connectStatus?.connected ? "Continue Setup" : "Set Up Payouts"}
         </div>
       </div>
@@ -1356,14 +1356,14 @@ setTimeout(() => setSaved(false), 2000);
                   creator who's actually been paid never sees an empty
                   "No withdrawal requests yet" that looks like they weren't. */}
               {transactions.filter(t => t.payout_released_at).length === 0 ? (
-                <p style={{ fontSize: "12px", color: "#888", textAlign: "center", padding: "2rem" }}>No payouts released yet</p>
+                <p style={{ fontSize: "12px", color: "var(--t-888)", textAlign: "center", padding: "2rem" }}>No payouts released yet</p>
               ) : transactions.filter(t => t.payout_released_at).map((t, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "#0a0a0a", borderRadius: "8px", border: "1px solid #1a1a1a" }}>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "var(--c-0a0a0a)", borderRadius: "8px", border: "1px solid var(--c-1a1a1a)" }}>
                   <div>
-                    <p style={{ fontSize: "12px", color: "#fff", fontWeight: 600, marginBottom: "4px" }}>{(t as any).campaigns?.name || "Campaign"}</p>
-                    <p style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.06em" }}>{new Date(t.payout_released_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p style={{ fontSize: "12px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "4px" }}>{(t as any).campaigns?.name || "Campaign"}</p>
+                    <p style={{ fontSize: "10px", color: "var(--t-888)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{new Date(t.payout_released_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
                   </div>
-                  <p style={{ fontSize: "13px", color: "#ccc", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  <p style={{ fontSize: "13px", color: "var(--t-ccc)", fontWeight: 600 }}>+£{(t.creator_payout / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                 </div>
               ))}
             </div>
@@ -1393,16 +1393,16 @@ setTimeout(() => setSaved(false), 2000);
   };
 
   const renderNotifications = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Notifications", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
           <div>
-            <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Push Notifications</p>
-            <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>New messages, applications, and deals</p>
+            <p style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: 500 }}>Push Notifications</p>
+            <p style={{ color: "var(--t-888)", fontSize: "12px", marginTop: "2px" }}>New messages, applications, and deals</p>
           </div>
-          <div onClick={toggleNotifications} style={{ width: "44px", height: "24px", borderRadius: "12px", background: notificationsEnabled ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-            <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+          <div onClick={toggleNotifications} style={{ width: "44px", height: "24px", borderRadius: "12px", background: notificationsEnabled ? "var(--c-fff)" : "var(--c-222)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+            <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "var(--c-0a0a0a)" : "var(--c-555)", transition: "left 0.2s" }} />
           </div>
         </div>
         {notifError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
@@ -1422,19 +1422,19 @@ setTimeout(() => setSaved(false), 2000);
     if (userId) await supabase.from("creator_profiles").update({ [field]: newVal }).eq("id", userId);
   };
   const renderVisibility = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Visibility", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
         {[
           { label: "Public Profile", sub: "Brands can find and view your profile", val: profileVisible, field: "profile_visible", setter: setProfileVisible },
         ].map(({ label, sub, val, field, setter }) => (
-          <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px" }}>
+          <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px" }}>
             <div>
-              <p style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>{label}</p>
-              <p style={{ color: "#888", fontSize: "12px", marginTop: "2px" }}>{sub}</p>
+              <p style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: 500 }}>{label}</p>
+              <p style={{ color: "var(--t-888)", fontSize: "12px", marginTop: "2px" }}>{sub}</p>
             </div>
-            <div onClick={() => toggleVisibilityField(field, val, setter)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: val ? "#fff" : "#222", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-              <div style={{ position: "absolute", top: "3px", left: val ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: val ? "#0a0a0a" : "#555", transition: "left 0.2s" }} />
+            <div onClick={() => toggleVisibilityField(field, val, setter)} style={{ width: "44px", height: "24px", borderRadius: "12px", background: val ? "var(--c-fff)" : "var(--c-222)", position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
+              <div style={{ position: "absolute", top: "3px", left: val ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: val ? "var(--c-0a0a0a)" : "var(--c-555)", transition: "left 0.2s" }} />
             </div>
           </div>
         ))}
@@ -1444,13 +1444,13 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── SHARE PROFILE ────────────────────────────────────────────────────────
   const renderShareProfile = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Share Profile", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "13px", color: "#999", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share your FlipCollab profile link with brands or on your socials.</p>
-        <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "1rem" }}>
-          <p style={{ fontSize: "12px", color: "#999", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{shareLink}</p>
-          <div onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }} style={{ padding: "7px 14px", background: linkCopied ? "#1a1a1a" : "#fff", color: linkCopied ? "#555" : "#0a0a0a", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}>
+        <p style={{ fontSize: "13px", color: "var(--t-999)", marginBottom: "1.5rem", lineHeight: 1.6 }}>Share your FlipCollab profile link with brands or on your socials.</p>
+        <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "1rem" }}>
+          <p style={{ fontSize: "12px", color: "var(--t-999)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{shareLink}</p>
+          <div onClick={() => { navigator.clipboard.writeText(shareLink); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000); }} style={{ padding: "7px 14px", background: linkCopied ? "var(--c-1a1a1a)" : "var(--c-fff)", color: linkCopied ? "var(--t-555)" : "var(--t-0a0a0a)", borderRadius: "6px", fontSize: "12px", fontWeight: 600, cursor: "pointer", flexShrink: 0, transition: "all 0.2s" }}>
             {linkCopied ? "Copied ✓" : "Copy"}
           </div>
         </div>
@@ -1460,17 +1460,17 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── FAVOURITES ───────────────────────────────────────────────────────────
   const renderFavourites = () => (
-  <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+  <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
     {renderSettingsHeader("Favourites", () => setSettingsSection("main"))}
-    <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
+    <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
       {(["campaigns", "creators"] as const).map(t => (
-        <div key={t} onClick={() => setFavTab(t)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: favTab === t ? "#fff" : "#444", borderBottom: favTab === t ? "2px solid #fff" : "2px solid transparent" }}>{t}</div>
+        <div key={t} onClick={() => setFavTab(t)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: favTab === t ? "var(--t-fff)" : "var(--t-444)", borderBottom: favTab === t ? "2px solid var(--c-fff)" : "2px solid transparent" }}>{t}</div>
       ))}
     </div>
     <div style={{ padding: "1.25rem" }}>
       {favTab === "campaigns" && (
         campaignFavourites.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#777", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No campaigns saved yet</p>
+          <p style={{ fontSize: "12px", color: "var(--t-777)", textAlign: "center", padding: "1rem", border: "1px dashed var(--c-1a1a1a)", borderRadius: "10px" }}>No campaigns saved yet</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {campaignFavourites.map((f, i) => {
@@ -1478,12 +1478,12 @@ setTimeout(() => setSaved(false), 2000);
               const baseBudget = parseInt(camp?.budget, 10) || 0;
               const campIsEnterprise = camp?.brand_profiles?.is_enterprise;
               return (
-                <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{camp?.name || "Campaign"}</p>
-                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #333", color: "#999", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * (campIsEnterprise ? 1 : 0.9)).toLocaleString()}` : ""}</span>
+                    <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{camp?.name || "Campaign"}</p>
+                    <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "var(--t-999)", textTransform: "uppercase" }}>{camp?.type}{camp?.type === "paid" && baseBudget ? ` · £${(baseBudget * (campIsEnterprise ? 1 : 0.9)).toLocaleString()}` : ""}</span>
                   </div>
-                  <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#888" }}>
+                  <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--t-888)" }}>
                     {camp?.brand_profiles?.name || "Brand"}
                     {camp?.brand_profiles?.verified && <VerifiedBadge size={11} />}
                   </p>
@@ -1495,17 +1495,17 @@ setTimeout(() => setSaved(false), 2000);
       )}
       {favTab === "creators" && (
         favourites.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#777", textAlign: "center", padding: "1rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No creators favourited yet</p>
+          <p style={{ fontSize: "12px", color: "var(--t-777)", textAlign: "center", padding: "1rem", border: "1px dashed var(--c-1a1a1a)", borderRadius: "10px" }}>No creators favourited yet</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {favourites.map((f, i) => (
-              <div key={i} onClick={() => navigateToProfile(f.creator_id)} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div key={i} onClick={() => navigateToProfile(f.creator_id)} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <img src={avatarSrc((f as any).display?.avatar_url, (f as any).display?.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{(f as any).display?.name || "Creator"}</p>
-<p style={{ color: "#888", fontSize: "11px", marginTop: "2px" }}>{(f as any).display?.niche || ""}</p>
+                  <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{(f as any).display?.name || "Creator"}</p>
+<p style={{ color: "var(--t-888)", fontSize: "11px", marginTop: "2px" }}>{(f as any).display?.niche || ""}</p>
                 </div>
               </div>
             ))}
@@ -1520,29 +1520,29 @@ setTimeout(() => setSaved(false), 2000);
   const renderApplications = () => {
     const filtered = appFilter === "all" ? appliedCampaigns : appFilter === "accepted" ? appliedCampaigns.filter(a => a.status === "accepted" || a.status === "paid") : appliedCampaigns.filter(a => a.status === appFilter);
     return (
-      <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+      <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
         {renderSettingsHeader("Applications", () => setSettingsSection("main"))}
-        <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
           {(["all", "pending", "accepted", "rejected"] as const).map(f => (
-            <div key={f} onClick={() => setAppFilter(f)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: appFilter === f ? "#fff" : "#444", borderBottom: appFilter === f ? "2px solid #fff" : "2px solid transparent" }}>{f}</div>
+            <div key={f} onClick={() => setAppFilter(f)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: "pointer", fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: appFilter === f ? "var(--t-fff)" : "var(--t-444)", borderBottom: appFilter === f ? "2px solid var(--c-fff)" : "2px solid transparent" }}>{f}</div>
           ))}
         </div>
         <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
           {filtered.length === 0 ? (
-            <p style={{ fontSize: "12px", color: "#777", textAlign: "center", padding: "2rem", border: "1px dashed #1a1a1a", borderRadius: "10px" }}>No {appFilter === "all" ? "" : appFilter} applications yet</p>
+            <p style={{ fontSize: "12px", color: "var(--t-777)", textAlign: "center", padding: "2rem", border: "1px dashed var(--c-1a1a1a)", borderRadius: "10px" }}>No {appFilter === "all" ? "" : appFilter} applications yet</p>
           ) : filtered.map((a, i) => {
             const campaignData = a.campaigns as any;
             const brandData = campaignData?.brand_profiles as any;
             const baseBudget = parseInt(campaignData?.budget, 10) || 0;
             const brandIsEnterprise = brandData?.is_enterprise;
             return (
-              <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+              <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
-                  <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "paid" ? "#fff" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#333" : "#555"}`, color: a.status === "paid" ? "#fff" : a.status === "accepted" ? "#fff" : a.status === "rejected" ? "#444" : "#777", textTransform: "uppercase" }}>{a.status === "paid" ? "paid out" : a.status}</span>
+                  <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{campaignData?.name || "Campaign"}</p>
+                  <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: `1px solid ${a.status === "paid" ? "var(--c-fff)" : a.status === "accepted" ? "var(--c-fff)" : a.status === "rejected" ? "var(--c-333)" : "var(--c-555)"}`, color: a.status === "paid" ? "var(--t-fff)" : a.status === "accepted" ? "var(--t-fff)" : a.status === "rejected" ? "var(--t-444)" : "var(--t-777)", textTransform: "uppercase" }}>{a.status === "paid" ? "paid out" : a.status}</span>
                 </div>
-                {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "#fff", marginBottom: "4px" }}>Take-home: £{(baseBudget * (brandIsEnterprise ? 1 : 0.9)).toLocaleString()}</p>}
-                <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "#888" }}>
+                {campaignData?.type === "paid" && baseBudget > 0 && <p style={{ fontSize: "11px", color: "var(--t-fff)", marginBottom: "4px" }}>Take-home: £{(baseBudget * (brandIsEnterprise ? 1 : 0.9)).toLocaleString()}</p>}
+                <p style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", color: "var(--t-888)" }}>
                   {brandData?.name || "Brand"}
                   {brandData?.verified && <VerifiedBadge size={11} />}
                 </p>
@@ -1556,12 +1556,12 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── AUDIENCE & RATES ─────────────────────────────────────────────────────
   const renderAudienceData = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Audience & Rates", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         <div>
           <label style={labelStyle}>Audience Age Ranges</label>
-          <p style={{ fontSize: "12px", color: "#888", marginBottom: "10px" }}>Select all that apply to your audience</p>
+          <p style={{ fontSize: "12px", color: "var(--t-888)", marginBottom: "10px" }}>Select all that apply to your audience</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {AGE_RANGES.map(a => <div key={a} onClick={() => toggleAgeRange(a)} style={chipStyle(audienceAgeRanges.includes(a))}>{a}</div>)}
           </div>
@@ -1570,7 +1570,7 @@ setTimeout(() => setSaved(false), 2000);
           <label style={labelStyle}>Audience Location</label>
           <input style={inputStyle} placeholder="e.g. Mostly UK, US" value={audienceLocation} onChange={e => setAudienceLocation(e.target.value)} />
         </div>
-        <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "1rem" }}>
+        <div style={{ borderTop: "1px solid var(--c-1a1a1a)", paddingTop: "1rem" }}>
           <label style={labelStyle}>Rate Card (£)</label>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {[
@@ -1588,8 +1588,8 @@ setTimeout(() => setSaved(false), 2000);
           </div>
         </div>
       </div>
-      <div style={{ position: "sticky", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
-        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#fff" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      <div style={{ position: "sticky", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-111)" }}>
+        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "var(--c-1a1a1a)" : "var(--c-fff)", color: saved ? "var(--t-fff)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
       </div>
@@ -1598,21 +1598,21 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── PAST COLLABS ─────────────────────────────────────────────────────────
   const renderPastCollabs = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Past Collaborations", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {collabs.map((c, i) => (
-            <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
               <input style={inputStyle} placeholder="Brand name" value={c.brand} onChange={e => updateCollab(i, "brand", e.target.value)} />
               <input style={inputStyle} placeholder="What did you create?" value={c.description} onChange={e => updateCollab(i, "description", e.target.value)} />
             </div>
           ))}
-          <span onClick={() => setCollabs(prev => [...prev, { brand: "", description: "" }])} style={{ fontSize: "12px", color: "#999", cursor: "pointer", textAlign: "center", padding: "10px", border: "1px dashed #222", borderRadius: "8px" }}>+ Add collab</span>
+          <span onClick={() => setCollabs(prev => [...prev, { brand: "", description: "" }])} style={{ fontSize: "12px", color: "var(--t-999)", cursor: "pointer", textAlign: "center", padding: "10px", border: "1px dashed var(--c-222)", borderRadius: "8px" }}>+ Add collab</span>
         </div>
       </div>
-      <div style={{ position: "sticky", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "#0a0a0a", borderTop: "1px solid #111" }}>
-        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "#1a1a1a" : "#fff", color: saved ? "#fff" : "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+      <div style={{ position: "sticky", bottom: "var(--nav-h)", left: 0, right: 0, padding: "1rem 1.25rem", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-111)" }}>
+        <div onClick={saveProfile} style={{ padding: "14px", borderRadius: "8px", background: saved ? "var(--c-1a1a1a)" : "var(--c-fff)", color: saved ? "var(--t-fff)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {saving ? "Saving..." : saved ? "Saved ✓" : "Save"}
         </div>
       </div>
@@ -1621,7 +1621,7 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── HELP ─────────────────────────────────────────────────────────────────
   const renderHelp = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Help Centre", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
         {[
@@ -1637,14 +1637,14 @@ setTimeout(() => setSaved(false), 2000);
           { q: "Can I message brands directly?", a: "Yes. Use the Search tab to find brands and tap DM to start a conversation." },
           { q: "How do I delete my account?", a: "Go to Settings and scroll to the bottom. Tap Delete Account. This is permanent and cannot be undone." },
         ].map(({ q, a }, i) => (
-          <div key={i} style={{ marginBottom: "1rem", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-            <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>{q}</p>
-            <p style={{ color: "#999", fontSize: "12px", lineHeight: 1.6 }}>{a}</p>
+          <div key={i} style={{ marginBottom: "1rem", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
+            <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>{q}</p>
+            <p style={{ color: "var(--t-999)", fontSize: "12px", lineHeight: 1.6 }}>{a}</p>
           </div>
         ))}
-        <div style={{ marginTop: "1rem", padding: "1rem", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", textAlign: "center" }}>
-          <p style={{ color: "#999", fontSize: "12px" }}>Still need help? Email us at</p>
-          <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginTop: "4px" }}>hello@flipcollab.com</p>
+        <div style={{ marginTop: "1rem", padding: "1rem", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", textAlign: "center" }}>
+          <p style={{ color: "var(--t-999)", fontSize: "12px" }}>Still need help? Email us at</p>
+          <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginTop: "4px" }}>hello@flipcollab.com</p>
         </div>
       </div>
     </div>
@@ -1652,10 +1652,10 @@ setTimeout(() => setSaved(false), 2000);
 
   // ─── PRIVACY POLICY / TERMS ───────────────────────────────────────────────
 const renderPrivacyPolicy = () => (
-  <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+  <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
     {renderSettingsHeader("Privacy Policy", () => setSettingsSection("main"))}
-    <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
+    <div style={{ padding: "1.25rem", color: "var(--t-aaa)", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ color: "var(--t-999)", fontSize: "11px" }}>Last updated: January 2026</p>
       <p>This Privacy Policy explains how FlipCollab collects, uses, and protects your personal data. We comply with UK GDPR and the Data Protection Act 2018.</p>
       {[
         { t: "1. Who We Are", b: "FlipCollab is a creator collaboration marketplace. Contact: hello@flipcollab.com" },
@@ -1672,7 +1672,7 @@ const renderPrivacyPolicy = () => (
         { t: "12. Contact", b: "hello@flipcollab.com" },
       ].map(({ t, b }) => (
         <div key={t}>
-          <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
+          <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
           <span>{b}</span>
         </div>
       ))}
@@ -1681,10 +1681,10 @@ const renderPrivacyPolicy = () => (
 );
 
 const renderTerms = () => (
-  <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+  <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
     {renderSettingsHeader("Terms of Service", () => setSettingsSection("main"))}
-    <div style={{ padding: "1.25rem", color: "#aaa", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <p style={{ color: "#999", fontSize: "11px" }}>Last updated: January 2026</p>
+    <div style={{ padding: "1.25rem", color: "var(--t-aaa)", fontSize: "13px", lineHeight: "1.6", display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <p style={{ color: "var(--t-999)", fontSize: "11px" }}>Last updated: January 2026</p>
       <p>By using FlipCollab you agree to these Terms. You must be at least 18 years old.</p>
       {[
         { t: "1. About FlipCollab", b: "A creator collaboration marketplace connecting brands with content creators for paid and gifted campaigns." },
@@ -1703,7 +1703,7 @@ const renderTerms = () => (
         { t: "14. Contact", b: "hello@flipcollab.com" },
       ].map(({ t, b }) => (
         <div key={t}>
-          <span style={{ color: "#fff", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
+          <span style={{ color: "var(--t-fff)", fontWeight: 600, display: "block", marginBottom: "4px" }}>{t}</span>
           <span>{b}</span>
         </div>
       ))}
@@ -1713,26 +1713,26 @@ const renderTerms = () => (
 
   // ─── REPORTED & BLOCKED ───────────────────────────────────────────────────
   const renderReportsBlocked = () => (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       {renderSettingsHeader("Reported & Blocked", () => setSettingsSection("main"))}
       <div style={{ padding: "1.25rem" }}>
-        <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
+        <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Blocked Users</p>
         {blockedUsers.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#888", marginBottom: "2rem" }}>You haven't blocked anyone.</p>
+          <p style={{ fontSize: "12px", color: "var(--t-888)", marginBottom: "2rem" }}>You haven't blocked anyone.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "2rem" }}>
             {blockedUsers.map(b => (
-              <div key={b.blockRowId} style={{ display: "flex", alignItems: "center", gap: "12px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: b.role === "creator" ? "50%" : "10px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
+              <div key={b.blockRowId} style={{ display: "flex", alignItems: "center", gap: "12px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
+                <div style={{ width: "36px", height: "36px", borderRadius: b.role === "creator" ? "50%" : "10px", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "var(--t-777)" }}>
                   <img src={avatarSrc(b.avatar, b.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{b.name}</p>
-                  <p style={{ fontSize: "11px", color: "#888", textTransform: "capitalize" }}>{b.role}</p>
+                  <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{b.name}</p>
+                  <p style={{ fontSize: "11px", color: "var(--t-888)", textTransform: "capitalize" }}>{b.role}</p>
                 </div>
                 <div
                   onClick={() => unblockLoading !== b.blockRowId && handleUnblock(b.blockRowId, b.id)}
-                  style={{ fontSize: "11px", color: "#ccc", cursor: "pointer", fontWeight: 500, background: "rgba(255,255,255,0.06)", padding: "6px 11px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.12)", flexShrink: 0 }}
+                  style={{ fontSize: "11px", color: "var(--t-ccc)", cursor: "pointer", fontWeight: 500, background: "var(--a-255-255-255-0_06)", padding: "6px 11px", borderRadius: "6px", border: "1px solid var(--a-255-255-255-0_12)", flexShrink: 0 }}
                 >
                   {unblockLoading === b.blockRowId ? "..." : "Unblock"}
                 </div>
@@ -1741,16 +1741,16 @@ const renderTerms = () => (
           </div>
         )}
 
-        <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Reports You've Filed</p>
+        <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Reports You've Filed</p>
         {myReports.length === 0 ? (
-          <p style={{ fontSize: "12px", color: "#888" }}>You haven't reported anyone.</p>
+          <p style={{ fontSize: "12px", color: "var(--t-888)" }}>You haven't reported anyone.</p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {myReports.map(r => (
-              <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.name}</p>
-                <p style={{ fontSize: "12px", color: "#ccc", marginBottom: "6px" }}>{r.reason}</p>
-                <p style={{ fontSize: "10px", color: "#888" }}>{new Date(r.created_at).toLocaleDateString()}</p>
+              <div key={r.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
+                <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.name}</p>
+                <p style={{ fontSize: "12px", color: "var(--t-ccc)", marginBottom: "6px" }}>{r.reason}</p>
+                <p style={{ fontSize: "10px", color: "var(--t-888)" }}>{new Date(r.created_at).toLocaleDateString()}</p>
               </div>
             ))}
           </div>

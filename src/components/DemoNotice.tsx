@@ -21,19 +21,19 @@ export default function DemoNotice() {
   return (
     <div style={{
       position: "fixed", left: "1rem", right: "1rem", bottom: "calc(var(--nav-h) + 2.45rem)", zIndex: 9998,
-      background: "#111", border: "1px solid #1a1a1a", borderRadius: "12px", padding: "1rem",
+      background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "12px", padding: "1rem",
       display: "flex", flexDirection: "column", gap: "0.75rem",
-      fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+      fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", boxShadow: "0 8px 24px var(--a-0-0-0-0_5)",
     }}>
       <div>
-        <div style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>You're looking at a demo</div>
-        <div style={{ color: "#999", fontSize: "12px", lineHeight: 1.5 }}>
+        <div style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>You're looking at a demo</div>
+        <div style={{ color: "var(--t-999)", fontSize: "12px", lineHeight: 1.5 }}>
           Everything here is made up. Nothing is saved, no one else can see it, and payments are switched off.
         </div>
       </div>
       <div style={{ display: "flex", gap: "0.5rem" }}>
-        <a href="/" style={{ ...button, background: "#1a1a1a", color: "#999" }}>Create account</a>
-        <div onClick={close} style={{ ...button, background: "#fff", color: "#0a0a0a" }}>Got it</div>
+        <a href="/" style={{ ...button, background: "var(--c-1a1a1a)", color: "var(--t-999)" }}>Create account</a>
+        <div onClick={close} style={{ ...button, background: "var(--c-fff)", color: "var(--t-0a0a0a)" }}>Got it</div>
       </div>
     </div>
   );

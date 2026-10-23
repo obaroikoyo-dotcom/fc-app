@@ -65,7 +65,7 @@ export default function DemoInstallSheet() {
   const showSteps = !canInstall && !added;
 
   const primary: React.CSSProperties = {
-    width: "100%", padding: "17px", borderRadius: "12px", background: "#fff", color: "#0a0a0a", fontSize: "15px",
+    width: "100%", padding: "17px", borderRadius: "12px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "15px",
     fontWeight: 700, textAlign: "center", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em", border: "none",
     fontFamily: "inherit",
   };
@@ -77,14 +77,14 @@ export default function DemoInstallSheet() {
       aria-modal="true"
       aria-labelledby="demo-install-title"
       style={{
-        position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.82)",
+        position: "fixed", inset: 0, zIndex: 10000, background: "var(--a-0-0-0-0_82)",
         display: "flex", alignItems: "flex-end", justifyContent: "center",
         fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
       }}
     >
       <div style={{
         width: "100%", maxWidth: "480px", maxHeight: "calc(92 * var(--vh))", overflowY: "auto", boxSizing: "border-box",
-        background: "#0a0a0a", border: "1px solid #1a1a1a", borderBottom: "none", borderRadius: "20px 20px 0 0",
+        background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderBottom: "none", borderRadius: "20px 20px 0 0",
         padding: "1.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px))",
         display: "flex", flexDirection: "column", gap: "1.25rem",
       }}>
@@ -93,21 +93,21 @@ export default function DemoInstallSheet() {
         {added ? (
           <>
             <div>
-              <h2 id="demo-install-title" style={{ color: "#fff", fontSize: "24px", fontWeight: 800, lineHeight: 1.2, margin: 0 }}>FlipCollab is on your home screen</h2>
-              <p style={{ color: "#999", fontSize: "15px", lineHeight: 1.55, margin: "10px 0 0" }}>Open it from the new icon whenever you're ready to start for real. You can keep looking around here for now.</p>
+              <h2 id="demo-install-title" style={{ color: "var(--t-fff)", fontSize: "24px", fontWeight: 800, lineHeight: 1.2, margin: 0 }}>FlipCollab is on your home screen</h2>
+              <p style={{ color: "var(--t-999)", fontSize: "15px", lineHeight: 1.55, margin: "10px 0 0" }}>Open it from the new icon whenever you're ready to start for real. You can keep looking around here for now.</p>
             </div>
             <button type="button" onClick={close} style={primary}>Keep looking around</button>
           </>
         ) : (
           <>
             <div>
-              <h2 id="demo-install-title" style={{ color: "#fff", fontSize: "24px", fontWeight: 800, lineHeight: 1.2, margin: 0 }}>Add FlipCollab to your home screen</h2>
-              <p style={{ color: "#999", fontSize: "15px", lineHeight: 1.55, margin: "10px 0 0" }}>It opens full screen like a normal app, with its own icon. It takes a few seconds.</p>
+              <h2 id="demo-install-title" style={{ color: "var(--t-fff)", fontSize: "24px", fontWeight: 800, lineHeight: 1.2, margin: 0 }}>Add FlipCollab to your home screen</h2>
+              <p style={{ color: "var(--t-999)", fontSize: "15px", lineHeight: 1.55, margin: "10px 0 0" }}>It opens full screen like a normal app, with its own icon. It takes a few seconds.</p>
             </div>
 
             {isIOSOtherBrowser && (
-              <p style={{ color: "#ccc", fontSize: "14px", lineHeight: 1.5, margin: 0 }}>
-                You're not in Safari. Open <strong style={{ color: "#fff" }}>{window.location.host}</strong> in Safari first, then follow these steps.
+              <p style={{ color: "var(--t-ccc)", fontSize: "14px", lineHeight: 1.5, margin: 0 }}>
+                You're not in Safari. Open <strong style={{ color: "var(--t-fff)" }}>{window.location.host}</strong> in Safari first, then follow these steps.
               </p>
             )}
 
@@ -115,13 +115,13 @@ export default function DemoInstallSheet() {
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 {steps.map((step, i) => (
                   <div key={step.title} style={{ display: "flex", gap: "14px", alignItems: "flex-start" }}>
-                    <span style={{ width: "28px", height: "28px", borderRadius: "50%", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                    <span style={{ width: "28px", height: "28px", borderRadius: "50%", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
                     <div>
-                      <div style={{ color: "#fff", fontSize: "16px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div style={{ color: "var(--t-fff)", fontSize: "16px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
                         {step.title}
-                        {step.icon && <span style={{ color: "#ccc", display: "inline-flex" }}><ShareIcon /></span>}
+                        {step.icon && <span style={{ color: "var(--t-ccc)", display: "inline-flex" }}><ShareIcon /></span>}
                       </div>
-                      <div style={{ color: "#888", fontSize: "13px", lineHeight: 1.5, marginTop: "2px" }}>{step.body}</div>
+                      <div style={{ color: "var(--t-888)", fontSize: "13px", lineHeight: 1.5, marginTop: "2px" }}>{step.body}</div>
                     </div>
                   </div>
                 ))}
@@ -137,7 +137,7 @@ export default function DemoInstallSheet() {
             <button
               type="button"
               onClick={close}
-              style={{ background: "transparent", border: "none", color: "#999", fontSize: "14px", padding: "6px", cursor: "pointer", fontFamily: "inherit", alignSelf: "center" }}
+              style={{ background: "transparent", border: "none", color: "var(--t-999)", fontSize: "14px", padding: "6px", cursor: "pointer", fontFamily: "inherit", alignSelf: "center" }}
             >
               {showSteps ? "Continue in browser" : "Not now"}
             </button>

@@ -55,11 +55,11 @@ const OBJECTIVES = [
 ];
 
 const inp: React.CSSProperties = {
-  background: "#0a0a0a",
-  border: "1px solid #1e1e1e",
+  background: "var(--c-0a0a0a)",
+  border: "1px solid var(--c-1e1e1e)",
   borderRadius: "6px",
   padding: "10px 12px",
-  color: "#fff",
+  color: "var(--t-fff)",
   fontSize: "13px",
   outline: "none",
   width: "100%",
@@ -72,14 +72,14 @@ const lbl: React.CSSProperties = {
   fontWeight: 500,
   letterSpacing: "0.12em",
   textTransform: "uppercase",
-  color: "#888",
+  color: "var(--t-888)",
   marginBottom: "5px",
   display: "block",
 };
 
 const card: React.CSSProperties = {
-  background: "#0f0f0f",
-  border: "1px solid #1a1a1a",
+  background: "var(--c-0f0f0f)",
+  border: "1px solid var(--c-1a1a1a)",
   borderRadius: "10px",
   padding: "1rem",
   marginBottom: "8px",
@@ -89,9 +89,9 @@ const coverButton: React.CSSProperties = {
   flex: 1,
   padding: "9px 0",
   borderRadius: "6px",
-  border: "1px solid #1e1e1e",
+  border: "1px solid var(--c-1e1e1e)",
   background: "transparent",
-  color: "#999",
+  color: "var(--t-999)",
   fontSize: "12px",
   fontWeight: 500,
   cursor: "pointer",
@@ -99,9 +99,9 @@ const coverButton: React.CSSProperties = {
 };
 
 const sectionTitle = (label: string, sub: string) => (
-  <div style={{ marginBottom: "1rem", paddingBottom: "10px", borderBottom: "1px solid #161616" }}>
-    <p style={{ fontSize: "12px", fontWeight: 600, color: "#ccc", margin: 0, letterSpacing: "0.02em" }}>{label}</p>
-    <p style={{ fontSize: "11px", color: "#777", margin: "2px 0 0 0" }}>{sub}</p>
+  <div style={{ marginBottom: "1rem", paddingBottom: "10px", borderBottom: "1px solid var(--c-161616)" }}>
+    <p style={{ fontSize: "12px", fontWeight: 600, color: "var(--t-ccc)", margin: 0, letterSpacing: "0.02em" }}>{label}</p>
+    <p style={{ fontSize: "11px", color: "var(--t-777)", margin: "2px 0 0 0" }}>{sub}</p>
   </div>
 );
 
@@ -392,9 +392,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       style={{
         flex: 1, textAlign: "center", padding: "9px 0", borderRadius: "6px", cursor: "pointer",
         fontSize: "12px", fontWeight: 500, transition: "all 0.15s",
-        background: campaignType === t ? "#fff" : "transparent",
-        color: campaignType === t ? "#0a0a0a" : "#444",
-        border: `1px solid ${campaignType === t ? "#fff" : "#1e1e1e"}`,
+        background: campaignType === t ? "var(--c-fff)" : "transparent",
+        color: campaignType === t ? "var(--t-0a0a0a)" : "var(--t-444)",
+        border: `1px solid ${campaignType === t ? "var(--c-fff)" : "var(--c-1e1e1e)"}`,
       }}
     >
       {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -410,9 +410,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
         style={{
           padding: "6px 11px", borderRadius: "4px", cursor: "pointer",
           fontSize: "11px", fontWeight: 500, transition: "all 0.15s",
-          border: `1px solid ${active ? "#333" : "#1a1a1a"}`,
-          background: active ? "#1a1a1a" : "transparent",
-          color: active ? "#fff" : "#444",
+          border: `1px solid ${active ? "var(--c-333)" : "var(--c-1a1a1a)"}`,
+          background: active ? "var(--c-1a1a1a)" : "transparent",
+          color: active ? "var(--t-fff)" : "var(--t-444)",
         }}
       >
         {label}
@@ -432,9 +432,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           <div key={i} style={{ display: "flex", gap: "6px", alignItems: "center" }}>
             <input style={inp} type="text" placeholder={placeholder} value={item} onChange={e => onUpdate(i, e.target.value)} />
             {items.length > 1 && (
-              <span onClick={() => onRemove(i)} style={{ color: "#777", cursor: "pointer", fontSize: "16px", lineHeight: 1, flexShrink: 0, padding: "0 4px", transition: "color 0.1s" }}
+              <span onClick={() => onRemove(i)} style={{ color: "var(--t-777)", cursor: "pointer", fontSize: "16px", lineHeight: 1, flexShrink: 0, padding: "0 4px", transition: "color 0.1s" }}
                 onMouseEnter={e => (e.currentTarget.style.color = "#ff4d4d")}
-                onMouseLeave={e => (e.currentTarget.style.color = "#2a2a2a")}
+                onMouseLeave={e => (e.currentTarget.style.color = "var(--t-2a2a2a)")}
               >×</span>
             )}
           </div>
@@ -442,9 +442,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       </div>
       <div
         onClick={onAdd}
-        style={{ marginTop: "6px", border: "1px dashed #1a1a1a", borderRadius: "6px", padding: "7px", color: "#777", fontSize: "11px", textAlign: "center", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.05em" }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = "#333"; e.currentTarget.style.color = "#666"; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = "#1a1a1a"; e.currentTarget.style.color = "#2a2a2a"; }}
+        style={{ marginTop: "6px", border: "1px dashed var(--c-1a1a1a)", borderRadius: "6px", padding: "7px", color: "var(--t-777)", fontSize: "11px", textAlign: "center", cursor: "pointer", transition: "all 0.15s", letterSpacing: "0.05em" }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--c-333)"; e.currentTarget.style.color = "var(--t-666)"; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--c-1a1a1a)"; e.currentTarget.style.color = "var(--t-2a2a2a)"; }}
       >
         + {addLabel}
       </div>
@@ -461,20 +461,20 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
     <div style={{ flex: "1 1 calc(50% - 6px)", minWidth: 0 }}>
       <div
         onClick={() => ref.current?.click()}
-        style={{ border: "1px dashed #1a1a1a", borderRadius: "6px", padding: "14px 10px", textAlign: "center", cursor: "pointer", transition: "border-color 0.15s", background: "#0a0a0a" }}
-        onMouseEnter={e => (e.currentTarget.style.borderColor = "#333")}
-        onMouseLeave={e => (e.currentTarget.style.borderColor = "#1a1a1a")}
+        style={{ border: "1px dashed var(--c-1a1a1a)", borderRadius: "6px", padding: "14px 10px", textAlign: "center", cursor: "pointer", transition: "border-color 0.15s", background: "var(--c-0a0a0a)" }}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = "var(--c-333)")}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--c-1a1a1a)")}
       >
         <input type="file" ref={ref} accept={accept} multiple style={{ display: "none" }} onChange={e => handleFiles(e, setter)} />
-        <p style={{ fontSize: "12px", color: "#999", margin: "0 0 2px 0", fontWeight: 500 }}>{label}</p>
-        <p style={{ fontSize: "10px", color: "#777", margin: 0, letterSpacing: "0.04em" }}>{sub}</p>
+        <p style={{ fontSize: "12px", color: "var(--t-999)", margin: "0 0 2px 0", fontWeight: 500 }}>{label}</p>
+        <p style={{ fontSize: "10px", color: "var(--t-777)", margin: 0, letterSpacing: "0.04em" }}>{sub}</p>
       </div>
       {files.length > 0 && (
         <div style={{ marginTop: "6px", display: "flex", flexDirection: "column", gap: "3px" }}>
           {files.map(f => (
-            <div key={f.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0a0a0a", border: "1px solid #161616", borderRadius: "4px", padding: "4px 8px" }}>
-              <span style={{ fontSize: "10px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "85%" }}>{f.file.name}</span>
-              <span onClick={() => removeAsset(f.id, setter)} style={{ fontSize: "13px", color: "#777", cursor: "pointer", flexShrink: 0, marginLeft: "6px" }}>×</span>
+            <div key={f.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--c-0a0a0a)", border: "1px solid var(--c-161616)", borderRadius: "4px", padding: "4px 8px" }}>
+              <span style={{ fontSize: "10px", color: "var(--t-888)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "85%" }}>{f.file.name}</span>
+              <span onClick={() => removeAsset(f.id, setter)} style={{ fontSize: "13px", color: "var(--t-777)", cursor: "pointer", flexShrink: 0, marginLeft: "6px" }}>×</span>
             </div>
           ))}
         </div>
@@ -501,10 +501,10 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           <button
             type="button"
             onClick={() => coverRef.current?.click()}
-            style={{ display: "block", width: "100%", border: "1px dashed #1a1a1a", borderRadius: "6px", padding: "18px 10px", textAlign: "center", cursor: "pointer", background: "#0a0a0a", fontFamily: "inherit" }}
+            style={{ display: "block", width: "100%", border: "1px dashed var(--c-1a1a1a)", borderRadius: "6px", padding: "18px 10px", textAlign: "center", cursor: "pointer", background: "var(--c-0a0a0a)", fontFamily: "inherit" }}
           >
-            <span style={{ display: "block", fontSize: "12px", color: "#999", fontWeight: 500, marginBottom: "2px" }}>Add a cover photo</span>
-            <span style={{ display: "block", fontSize: "10px", color: "#777", letterSpacing: "0.04em" }}>JPG, PNG or WebP. Without one, the card shows a colour for your niche.</span>
+            <span style={{ display: "block", fontSize: "12px", color: "var(--t-999)", fontWeight: 500, marginBottom: "2px" }}>Add a cover photo</span>
+            <span style={{ display: "block", fontSize: "10px", color: "var(--t-777)", letterSpacing: "0.04em" }}>JPG, PNG or WebP. Without one, the card shows a colour for your niche.</span>
           </button>
         )}
         {coverError && <p style={{ color: "#ff4d4d", fontSize: "12px", margin: "8px 0 0" }}>{coverError}</p>}
@@ -548,48 +548,48 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             <label style={lbl}>Base budget (£)</label>
             <input style={inp} type="number" placeholder="500" value={budget} onChange={e => setBudget(e.target.value)} />
             {numericBudget > 0 && (
-              <div style={{ background: "#0a0a0a", border: "1px solid #161616", borderRadius: "6px", padding: "10px 12px", marginTop: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
+              <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-161616)", borderRadius: "6px", padding: "10px 12px", marginTop: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--t-888)", marginBottom: "4px" }}>
                   <span>Base budget</span><span>£{numericBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--t-888)", marginBottom: "4px" }}>
                   <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
-                  <span style={{ color: isEnterprise ? "#fff" : "#444" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span style={{ color: isEnterprise ? "var(--t-fff)" : "var(--t-444)" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {isEnterprise && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#888", marginBottom: "4px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--t-888)", marginBottom: "4px" }}>
                     <span>Card processing fee (2.5% + 20p)</span>
-                    <span style={{ color: "#aaa" }}>£{processingFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span style={{ color: "var(--t-aaa)" }}>£{processingFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                 )}
-                <hr style={{ border: "0", borderTop: "1px solid #161616", margin: "6px 0" }} />
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
-                  <span>Total</span><span style={{ color: "#fff" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <hr style={{ border: "0", borderTop: "1px solid var(--c-161616)", margin: "6px 0" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "var(--t-fff)" }}>
+                  <span>Total</span><span style={{ color: "var(--t-fff)" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#777", marginTop: "4px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--t-777)", marginTop: "4px" }}>
                   <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
                   <span>£{creatorPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {isEnterprise && (
-                  <p style={{ fontSize: "11px", color: "#777", lineHeight: 1.5, margin: "10px 0 0" }}>
+                  <p style={{ fontSize: "11px", color: "var(--t-777)", lineHeight: 1.5, margin: "10px 0 0" }}>
                     No FlipCollab platform fee, and your creator keeps 100%. The card processing fee covers Stripe's cost of taking your payment. You'll see it before you pay.
                   </p>
                 )}
                 {!isEnterprise && (
-                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #161616", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: "11px", color: "#777" }}>Bypass platform fees by upgrading to{" "}</span>
+                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid var(--c-161616)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "11px", color: "var(--t-777)" }}>Bypass platform fees by upgrading to{" "}</span>
                     <span
                       onClick={() => onNavigateEnterprise?.()}
-                      style={{ fontSize: "11px", color: "#aaa", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em", borderBottom: "1px solid #2a2a2a", paddingBottom: "1px", transition: "color 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
-                      onMouseLeave={e => (e.currentTarget.style.color = "#666")}
+                      style={{ fontSize: "11px", color: "var(--t-aaa)", fontWeight: 600, cursor: "pointer", letterSpacing: "0.04em", borderBottom: "1px solid var(--c-2a2a2a)", paddingBottom: "1px", transition: "color 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.color = "var(--t-fff)")}
+                      onMouseLeave={e => (e.currentTarget.style.color = "var(--t-666)")}
                     >
                       FlipCollab Enterprise
                     </span>
                   </div>
                 )}
                 {!isEnterprise && (
-                  <p style={{ fontSize: "10px", color: "#666", lineHeight: 1.5, margin: "6px 0 0" }}>
+                  <p style={{ fontSize: "10px", color: "var(--t-666)", lineHeight: 1.5, margin: "6px 0 0" }}>
                     Enterprise replaces the 5% brand and 10% creator platform fees with a card processing fee of 2.5% + 20p.
                   </p>
                 )}
@@ -619,12 +619,12 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "6px", border: "1px solid #161616", background: "#0a0a0a" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "6px", border: "1px solid var(--c-161616)", background: "var(--c-0a0a0a)" }}>
           <input type="checkbox" id="videoReq" checked={videoRequired} onChange={e => setVideoRequired(e.target.checked)}
-            style={{ width: "14px", height: "14px", cursor: "pointer", accentColor: "#fff", margin: 0, flexShrink: 0 }} />
+            style={{ width: "14px", height: "14px", cursor: "pointer", accentColor: "var(--c-fff)", margin: 0, flexShrink: 0 }} />
           <div>
-            <label htmlFor="videoReq" style={{ color: "#aaa", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "block" }}>Require video pitch</label>
-            <p style={{ fontSize: "11px", color: "#777", margin: 0 }}>Creators must upload a video to apply.</p>
+            <label htmlFor="videoReq" style={{ color: "var(--t-aaa)", fontSize: "12px", fontWeight: 500, cursor: "pointer", display: "block" }}>Require video pitch</label>
+            <p style={{ fontSize: "11px", color: "var(--t-777)", margin: 0 }}>Creators must upload a video to apply.</p>
           </div>
         </div>
       </div>
@@ -692,8 +692,8 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           style={{
             flex: 1, padding: "13px", borderRadius: "6px",
             background: "transparent",
-            color: posting ? "#444" : "#999",
-            border: "1px solid #1e1e1e",
+            color: posting ? "var(--t-444)" : "var(--t-999)",
+            border: "1px solid var(--c-1e1e1e)",
             fontSize: "12px", fontWeight: 600, textAlign: "center",
             cursor: posting ? "default" : "pointer",
             letterSpacing: "0.08em", textTransform: "uppercase",
@@ -706,9 +706,9 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
           className={posted ? "fc-pop" : undefined}
           style={{
             flex: 2, padding: "13px", borderRadius: "6px",
-            background: posted ? "#0f0f0f" : posting ? "#0f0f0f" : "#fff",
-            color: posted ? "#fff" : posting ? "#444" : "#0a0a0a",
-            border: posted ? "1px solid #1a1a1a" : posting ? "1px solid #1e1e1e" : "1px solid #fff",
+            background: posted ? "var(--c-0f0f0f)" : posting ? "var(--c-0f0f0f)" : "var(--c-fff)",
+            color: posted ? "var(--t-fff)" : posting ? "var(--t-444)" : "var(--t-0a0a0a)",
+            border: posted ? "1px solid var(--c-1a1a1a)" : posting ? "1px solid var(--c-1e1e1e)" : "1px solid var(--c-fff)",
             fontSize: "12px", fontWeight: 600, textAlign: "center",
             cursor: posting ? "default" : "pointer",
             letterSpacing: "0.1em", textTransform: "uppercase",

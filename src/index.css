@@ -128,22 +128,10 @@ p { text-wrap: pretty; }
    come out nearly white. They all become one comfortable mid grey. Only the
    text colour is touched (the selectors anchor on "color:" so a background
    or border of the same grey is left alone). */
-[style^="color: rgb(51, 51, 51)"],
-[style*="; color: rgb(51, 51, 51)"],
-[style^="color: rgb(68, 68, 68)"],
-[style*="; color: rgb(68, 68, 68)"],
-[style^="color: rgb(85, 85, 85)"],
-[style*="; color: rgb(85, 85, 85)"],
-[style^="color: rgb(102, 102, 102)"],
-[style*="; color: rgb(102, 102, 102)"],
-[style^="color: rgb(119, 119, 119)"],
-[style*="; color: rgb(119, 119, 119)"],
-[style^="color: rgb(136, 136, 136)"],
-[style*="; color: rgb(136, 136, 136)"] {
-  color: #919191 !important;
-}
-[stroke="#333"], [stroke="#444"], [stroke="#555"], [stroke="#666"], [stroke="#777"], [stroke="#888"] { stroke: #919191; }
-[fill="#333"], [fill="#444"], [fill="#555"], [fill="#666"], [fill="#777"], [fill="#888"] { fill: #919191; }
+/* This used to be rules that matched the grey values written into each element.
+   The colours are now named (see the colour block at the end of this file) and the
+   floor is part of the names: --t-333 and --t-444 are #919191, --t-555 to --t-888
+   are #999, and icon strokes and fills --s-333 to --s-888 are #919191. */
 
 /* ---- Light look: colours the filter would wash out ----------------------
    The light look is the dark palette run through a colour filter. Greens,
@@ -184,12 +172,6 @@ p { text-wrap: pretty; }
    - Text under 12px is raised: 9px to 11px, 10px and 11px to 12px.
    The bottom bar labels (.nav-label) set their own size, and tiny numbers
    inside badges keep to what fits (see .keep-size). */
-[style^="color: rgb(85, 85, 85)"], [style*="; color: rgb(85, 85, 85)"],
-[style^="color: rgb(102, 102, 102)"], [style*="; color: rgb(102, 102, 102)"],
-[style^="color: rgb(119, 119, 119)"], [style*="; color: rgb(119, 119, 119)"],
-[style^="color: rgb(136, 136, 136)"], [style*="; color: rgb(136, 136, 136)"] {
-  color: #999 !important;
-}
 [style*="font-size: 9px"]:not(.nav-label):not(.keep-size) { font-size: 11px !important; }
 [style*="font-size: 10px"]:not(.nav-label):not(.keep-size),
 [style*="font-size: 11px"]:not(.nav-label):not(.keep-size) { font-size: 12px !important; }
@@ -213,3 +195,72 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   .fc-pop, .fc-tick path { animation: none; }
   button:not(:disabled):active, [role="button"]:active { transform: none; }
 }
+
+/* colours:start */
+/* Named colours, written by scripts/tokenize-colours.cjs. The values here are the dark look.
+   --c-*: any colour, --t-*: text colours and --s-*: icon strokes and fills (both with the readability
+   floors the old stylesheet rules applied), --a-*: see-through black and white. */
+:root {
+  --c-0a0a0a: #0a0a0a;
+  --c-0d0d0d: #0d0d0d;
+  --c-0f0f0f: #0f0f0f;
+  --c-111: #111111;
+  --c-141414: #141414;
+  --c-161616: #161616;
+  --c-1a1a1a: #1a1a1a;
+  --c-1c1c1c: #1c1c1c;
+  --c-1e1e1e: #1e1e1e;
+  --c-222: #222222;
+  --c-262626: #262626;
+  --c-2a2a2a: #2a2a2a;
+  --c-333: #333333;
+  --c-3a3a3a: #3a3a3a;
+  --c-444: #444444;
+  --c-555: #555555;
+  --c-666: #666666;
+  --c-888: #888888;
+  --c-999: #999999;
+  --c-e0e0e0: #e0e0e0;
+  --c-fff: #ffffff;
+  --t-0a0a0a: #0a0a0a;
+  --t-2a2a2a: #2a2a2a;
+  --t-2c2c2c: #2c2c2c;
+  --t-333: #919191;
+  --t-444: #919191;
+  --t-555: #999999;
+  --t-5a5a5a: #5a5a5a;
+  --t-666: #999999;
+  --t-777: #999999;
+  --t-888: #999999;
+  --t-999: #999999;
+  --t-a3a3a3: #a3a3a3;
+  --t-aaa: #aaaaaa;
+  --t-bbb: #bbbbbb;
+  --t-ccc: #cccccc;
+  --t-ddd: #dddddd;
+  --t-eee: #eeeeee;
+  --t-fff: #ffffff;
+  --s-0a0a0a: #0a0a0a;
+  --s-333: #919191;
+  --s-919191: #919191;
+  --s-fff: #ffffff;
+  --a-0-0-0-0_4: rgba(0, 0, 0, 0.4);
+  --a-0-0-0-0_5: rgba(0, 0, 0, 0.5);
+  --a-0-0-0-0_6: rgba(0, 0, 0, 0.6);
+  --a-0-0-0-0_7: rgba(0, 0, 0, 0.7);
+  --a-0-0-0-0_75: rgba(0, 0, 0, 0.75);
+  --a-0-0-0-0_82: rgba(0, 0, 0, 0.82);
+  --a-0-0-0-0_85: rgba(0, 0, 0, 0.85);
+  --a-255-255-255-0_03: rgba(255, 255, 255, 0.03);
+  --a-255-255-255-0_045: rgba(255, 255, 255, 0.045);
+  --a-255-255-255-0_05: rgba(255, 255, 255, 0.05);
+  --a-255-255-255-0_06: rgba(255, 255, 255, 0.06);
+  --a-255-255-255-0_08: rgba(255, 255, 255, 0.08);
+  --a-255-255-255-0_09: rgba(255, 255, 255, 0.09);
+  --a-255-255-255-0_1: rgba(255, 255, 255, 0.1);
+  --a-255-255-255-0_12: rgba(255, 255, 255, 0.12);
+  --a-255-255-255-0_32: rgba(255, 255, 255, 0.32);
+  --a-255-255-255-0_4: rgba(255, 255, 255, 0.4);
+  --a-255-255-255-0_6: rgba(255, 255, 255, 0.6);
+}
+/* colours:end */

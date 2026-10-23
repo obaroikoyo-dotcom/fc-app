@@ -8,7 +8,7 @@ export default function Logo() {
         fontFamily: "'TikTok Sans', sans-serif",
         fontSize: "22px",
         fontWeight: 800,
-        color: "#fff",
+        color: "var(--t-fff)",
         letterSpacing: "-0.02em",
         margin: 0,
       }}>

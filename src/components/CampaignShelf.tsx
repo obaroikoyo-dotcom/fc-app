@@ -28,9 +28,9 @@ export interface ShelfCard {
 export function ShelfHeading({ title, count, actionLabel, onAction, trailing }: { title: string; count: number; actionLabel?: string; onAction?: () => void; trailing?: ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "12px" }}>
-      <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff" }}>
+      <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "var(--t-fff)" }}>
         {title}
-        <span style={{ color: "#999", fontWeight: 500, fontSize: "13px", marginLeft: "8px" }}>{count}</span>
+        <span style={{ color: "var(--t-999)", fontWeight: 500, fontSize: "13px", marginLeft: "8px" }}>{count}</span>
       </p>
       <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
         {trailing}
@@ -40,7 +40,7 @@ export function ShelfHeading({ title, count, actionLabel, onAction, trailing }: 
             tabIndex={0}
             onClick={onAction}
             onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onAction?.(); } }}
-            style={{ fontSize: "13px", fontWeight: 600, color: "#999", cursor: "pointer", padding: "4px 0", flexShrink: 0 }}
+            style={{ fontSize: "13px", fontWeight: 600, color: "var(--t-999)", cursor: "pointer", padding: "4px 0", flexShrink: 0 }}
           >
             {actionLabel}
           </span>
@@ -108,8 +108,8 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, g
         .shelf-scroll::-webkit-scrollbar { display: none; }
         .shelf-arrows { display: none; }
         @media (hover: hover) and (pointer: fine) { .shelf-arrows { display: flex; } }
-        .shelf-arrow { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid #2a2a2a; background: transparent; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .shelf-arrow:hover:not(:disabled) { background: #1a1a1a; border-color: #3a3a3a; }
+        .shelf-arrow { width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid var(--c-2a2a2a); background: transparent; color: var(--c-fff); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .shelf-arrow:hover:not(:disabled) { background: var(--c-1a1a1a); border-color: var(--c-3a3a3a); }
         .shelf-arrow:disabled { opacity: 0.3; cursor: default; }
       `}</style>
       <ShelfHeading title={title} count={total} actionLabel="See all" onAction={onSeeAll} trailing={arrows} />
@@ -126,34 +126,34 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, g
             tabIndex={0}
             onClick={() => onOpen(c.id)}
             onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(c.id); } }}
-            style={{ flex: "0 0 auto", width: "min(250px, 72%)", minHeight: "200px", scrollSnapAlign: "start", background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px", cursor: "pointer" }}
+            style={{ flex: "0 0 auto", width: "min(250px, 72%)", minHeight: "200px", scrollSnapAlign: "start", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "16px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px", cursor: "pointer" }}
           >
             <CampaignTile niche={c.niche} height={52} bleed="1rem" photo={c.photo} ratio={rowHasPhoto ? PHOTO_RATIO : undefined} />
             <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
-              <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ width: "28px", height: "28px", borderRadius: "8px", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0 }}>
                 <img src={c.brandAvatar} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
-              <span style={{ color: "#fff", fontSize: "13px", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.brandName}</span>
+              <span style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.brandName}</span>
               {c.verified && <span style={{ display: "flex", flexShrink: 0 }}><VerifiedBadge size={12} /></span>}
             </div>
 
-            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, lineHeight: 1.25, color: "#fff", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.name}</p>
+            <p style={{ margin: 0, fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, lineHeight: 1.25, color: "var(--t-fff)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{c.name}</p>
 
             <div style={{ marginTop: "auto", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "10px" }}>
               <div style={{ minWidth: 0 }}>
                 {c.paid ? (
                   <>
-                    <p style={{ margin: 0, fontSize: "11px", color: "#999" }}>{c.figureLabel ?? "You'd earn"}</p>
-                    <p style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>{c.figure}</p>
+                    <p style={{ margin: 0, fontSize: "11px", color: "var(--t-999)" }}>{c.figureLabel ?? "You'd earn"}</p>
+                    <p style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>{c.figure}</p>
                   </>
                 ) : (
                   <>
-                    <p style={{ margin: 0, fontSize: "11px", color: "#999" }}>Reward</p>
-                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#fff", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.3 }}>Gifted product</p>
+                    <p style={{ margin: 0, fontSize: "11px", color: "var(--t-999)" }}>Reward</p>
+                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.3 }}>Gifted product</p>
                   </>
                 )}
               </div>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: c.urgent ? "#ff9500" : "#999", textAlign: "right", flexShrink: 0 }}>{c.note}</span>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: c.urgent ? "#ff9500" : "var(--t-999)", textAlign: "right", flexShrink: 0 }}>{c.note}</span>
             </div>
           </div>
         ))}

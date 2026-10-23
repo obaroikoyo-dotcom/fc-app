@@ -26,7 +26,7 @@ export default function SplashScreen() {
     <div style={{
       position: "relative", width: "100%", height: "100%",
       padding: "env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px)",
-      background: "#0a0a0a",
+      background: "var(--c-0a0a0a)",
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       fontFamily: "'TikTok Sans', sans-serif",
       overflow: "hidden",
@@ -75,8 +75,8 @@ export default function SplashScreen() {
         }
 
         .logo-path {
-          fill: #ffffff; fill-opacity: 0;
-          stroke: #ffffff; stroke-width: 3; stroke-opacity: 1;
+          fill: var(--c-fff); fill-opacity: 0;
+          stroke: var(--c-fff); stroke-width: 3; stroke-opacity: 1;
           stroke-linecap: round; stroke-linejoin: round;
           stroke-dasharray: 100; stroke-dashoffset: 100;
           animation:
@@ -109,7 +109,7 @@ export default function SplashScreen() {
       {/* Ambient glow */}
       <div className="bg-glow" style={{
         position: "absolute", width: "480px", height: "480px", borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 68%)",
+        background: "radial-gradient(circle, var(--a-255-255-255-0_05) 0%, transparent 68%)",
         pointerEvents: "none",
       }} />
 
@@ -125,14 +125,14 @@ export default function SplashScreen() {
       {/* Accent line */}
       <div className={`accent-line${phase === "out" ? " out" : ""}`} style={{
         height: "1px",
-        background: "linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent)",
+        background: "linear-gradient(to right, transparent, var(--a-255-255-255-0_6), transparent)",
         marginBottom: "18px",
       }} />
 
       {/* Brand name */}
       <p className={`brand-text${phase === "out" ? " out" : ""}`} style={{
         fontFamily: "'TikTok Sans', sans-serif",
-        fontSize: "13px", fontWeight: 800, color: "#fff",
+        fontSize: "13px", fontWeight: 800, color: "var(--t-fff)",
         letterSpacing: "0.25em", textTransform: "uppercase", margin: 0,
       }}>
         FlipCollab

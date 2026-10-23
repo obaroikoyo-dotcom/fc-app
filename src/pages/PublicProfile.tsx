@@ -24,7 +24,7 @@ const PLATFORM_ICON: Record<string, (size: number) => React.ReactNode> = {
 };
 const PlayGlyph = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-    <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="#fff" />
+    <path d="M7 4.5v15l13-7.5-13-7.5Z" fill="var(--s-fff)" />
   </svg>
 );
 
@@ -270,9 +270,9 @@ const startDM = async () => {
   const chipStyle: React.CSSProperties = {
     padding: "7px 14px",
     borderRadius: "20px",
-    border: "1px solid #222",
+    border: "1px solid var(--c-222)",
     background: "transparent",
-    color: "#999",
+    color: "var(--t-999)",
     fontSize: "12px",
     fontWeight: 500,
   };
@@ -282,27 +282,27 @@ const startDM = async () => {
     fontWeight: 500,
     letterSpacing: "0.1em",
     textTransform: "uppercase",
-    color: "#999",
+    color: "var(--t-999)",
     marginBottom: "6px",
     display: "block",
   };
 
   const sectionStyle: React.CSSProperties = { marginBottom: "2rem" };
-  const dividerStyle: React.CSSProperties = { borderTop: "1px solid #1a1a1a", marginBottom: "2rem" };
+  const dividerStyle: React.CSSProperties = { borderTop: "1px solid var(--c-1a1a1a)", marginBottom: "2rem" };
 
   if (loading && !hasLoadedOnce && !showSkeleton) {
-    return <div style={{ minHeight: "100%", background: "#0a0a0a" }} />;
+    return <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)" }} />;
   }
 
   if (loading && !hasLoadedOnce) {
     const pulse = "pulse 1.5s ease-in-out infinite";
     const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
-      <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+      <div style={{ width: w, height: h, borderRadius: "4px", background: "var(--c-1a1a1a)", animation: pulse, ...extra }} />
     );
     return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', sans-serif" }}>
       <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
-      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
         {bar("20px", "20px")}
         {bar("120px", "18px")}
       </div>
@@ -337,7 +337,7 @@ const startDM = async () => {
           <div style={sectionStyle}>
             {bar("90px", "11px", { marginBottom: "10px" })}
             {[0, 1].map(i => (
-              <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
+              <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", marginBottom: "10px" }}>
                 {bar("100px", "14px", { marginBottom: "10px" })}
                 <div style={{ display: "flex", gap: "1rem" }}>
                   {bar("90px", "12px")}
@@ -369,7 +369,7 @@ const startDM = async () => {
           {/* Rate Card */}
           <div style={sectionStyle}>
             {bar("80px", "11px", { marginBottom: "10px" })}
-            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "12px" }}>
               {[0, 1, 2].map(i => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between" }}>
                   {bar("50px", "13px")}
@@ -386,8 +386,8 @@ const startDM = async () => {
   }
 
   if (!creator) return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <p style={{ color: "#777", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Profile not found.</p>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <p style={{ color: "var(--t-777)", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Profile not found.</p>
     </div>
   );
 
@@ -397,19 +397,19 @@ const startDM = async () => {
   const isPrivate = creator.profile_visible === false && !isOwner;
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
 
       {/* Top Nav */}
-      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid #111", position: "fixed", top: 0, left: 0, right: 0, background: "#0a0a0a", zIndex: 100 }}>
+      <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
-          <span onClick={goBack} style={{ fontSize: "18px", color: "#999", cursor: "pointer" }}>←</span>
-          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{blockedMe ? "User unavailable" : (creator.name || "Creator")}</span>
+          <span onClick={goBack} style={{ fontSize: "18px", color: "var(--t-999)", cursor: "pointer" }}>←</span>
+          <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>{blockedMe ? "User unavailable" : (creator.name || "Creator")}</span>
         </div>
         {currentUserId && currentUserId !== profileId && !blockedByMe && (
           <span
             onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
-            style={{ fontSize: "11px", color: "#aaa", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid #222" }}
+            style={{ fontSize: "11px", color: "var(--t-aaa)", cursor: "pointer", flexShrink: 0, padding: "4px 9px", borderRadius: "6px", border: "1px solid var(--c-222)" }}
           >
             ⚑
           </span>
@@ -418,28 +418,28 @@ const startDM = async () => {
 
       {(blockedByMe || blockedMe) ? (
         <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "10px" }}>
             {blockedByMe ? "You've blocked this profile" : "User unavailable"}
           </p>
-          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>
+          <p style={{ fontSize: "13px", color: "var(--t-999)", lineHeight: 1.7, maxWidth: "300px" }}>
             {blockedByMe
               ? "You can't see their content or message them. Unblock from Settings → Reported & Blocked to restore this."
               : "This profile isn't available."}
           </p>
         </div>
       ) : reportOpen && (
-        <div style={{ position: "fixed", top: "calc(57px + env(safe-area-inset-top, 0px))", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid #111", background: "#0d0d0d", zIndex: 99 }}>
+        <div style={{ position: "fixed", top: "calc(57px + env(safe-area-inset-top, 0px))", left: 0, right: 0, padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", background: "var(--c-0d0d0d)", zIndex: 99 }}>
           {reportSubmitted ? (
-            <p className="fc-pop" style={{ fontSize: "13px", color: "#fff" }}>Report submitted. Thanks, we'll review it.</p>
+            <p className="fc-pop" style={{ fontSize: "13px", color: "var(--t-fff)" }}>Report submitted. Thanks, we'll review it.</p>
           ) : (
             <>
-              <p style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {creator.name || "this profile"}</p>
+              <p style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "10px" }}>Report {creator.name || "this profile"}</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "10px" }}>
                 {["Inappropriate content", "Offensive language", "Spam or scam", "Other"].map(r => (
                   <span
                     key={r}
                     onClick={() => setReportReason(r)}
-                    style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${reportReason === r ? "#fff" : "#222"}`, background: reportReason === r ? "#fff" : "transparent", color: reportReason === r ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
+                    style={{ padding: "7px 12px", borderRadius: "20px", border: `1px solid ${reportReason === r ? "var(--c-fff)" : "var(--c-222)"}`, background: reportReason === r ? "var(--c-fff)" : "transparent", color: reportReason === r ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 500, cursor: "pointer" }}
                   >
                     {r}
                   </span>
@@ -450,12 +450,12 @@ const startDM = async () => {
                 onChange={e => setReportDetail(e.target.value)}
                 placeholder="Any extra detail (optional)"
                 rows={2}
-                style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px", color: "#fff", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
+                style={{ width: "100%", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px", color: "var(--t-fff)", fontSize: "13px", outline: "none", resize: "vertical", fontFamily: "inherit", marginBottom: "10px" }}
               />
               <div style={{ display: "flex", gap: "10px" }}>
                 <div
                   onClick={() => !reportSubmitting && reportReason && handleSubmitReport()}
-                  style={{ flex: 1, padding: "11px", borderRadius: "8px", background: reportReason ? "#fff" : "#1a1a1a", color: reportReason ? "#0a0a0a" : "#555", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: reportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                  style={{ flex: 1, padding: "11px", borderRadius: "8px", background: reportReason ? "var(--c-fff)" : "var(--c-1a1a1a)", color: reportReason ? "var(--t-0a0a0a)" : "var(--t-555)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: reportReason ? "pointer" : "default", letterSpacing: "0.05em", textTransform: "uppercase" }}
                 >
                   {reportSubmitting ? "Submitting..." : "Submit Report"}
                 </div>
@@ -473,8 +473,8 @@ const startDM = async () => {
 
       {!blockedByMe && !blockedMe && isPrivate && (
         <div style={{ padding: "2rem", paddingTop: "calc(6rem + env(safe-area-inset-top, 0px))", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>This profile is private</p>
-          <p style={{ fontSize: "13px", color: "#999", lineHeight: 1.7, maxWidth: "300px" }}>{creator.name || "This creator"} has turned off public visibility for their profile.</p>
+          <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "17px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "10px" }}>This profile is private</p>
+          <p style={{ fontSize: "13px", color: "var(--t-999)", lineHeight: 1.7, maxWidth: "300px" }}>{creator.name || "This creator"} has turned off public visibility for their profile.</p>
         </div>
       )}
 
@@ -484,18 +484,18 @@ const startDM = async () => {
 
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "1.5rem" }}>
-           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid #333", background: "#111", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "#777", flexShrink: 0, overflow: "hidden" }}>
+           <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "1px solid var(--c-333)", background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", color: "var(--t-777)", flexShrink: 0, overflow: "hidden" }}>
   <img src={avatarSrc(creator.avatar_url, creator.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
 </div>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>{creator.name}</p>
+                <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>{creator.name}</p>
                 {creator.available && (
-                  <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid #fff", color: "#fff" }}>Open to collabs</span>
+                  <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)" }}>Open to collabs</span>
                 )}
               </div>
-              <p style={{ fontSize: "10px", color: "#666", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2px" }}>{isBrand ? "Brand" : "Creator"}</p>
-              <p style={{ fontSize: "13px", color: "#999" }}>{creator.niche}{creator.location ? ` · ${creator.location}` : ""}</p>
+              <p style={{ fontSize: "10px", color: "var(--t-666)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "2px" }}>{isBrand ? "Brand" : "Creator"}</p>
+              <p style={{ fontSize: "13px", color: "var(--t-999)" }}>{creator.niche}{creator.location ? ` · ${creator.location}` : ""}</p>
             </div>
           </div>
 
@@ -503,14 +503,14 @@ const startDM = async () => {
           <div style={{ display: "flex", gap: "10px", marginBottom: "2rem" }}>
             <div
               onClick={() => currentUserId ? startDM() : setShowReadOnlyNotice(true)}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}
             >
               Message
             </div>
             {!isOwner && (
             <div
               onClick={() => currentUserId ? toggleFavourite() : setShowReadOnlyNotice(true)}
-              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: favourited ? "#1a1a1a" : "transparent", color: favourited ? "#555" : "#fff", border: favourited ? "1px solid #222" : "1px solid #fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
+              style={{ flex: 1, padding: "12px", borderRadius: "8px", background: favourited ? "var(--c-1a1a1a)" : "transparent", color: favourited ? "var(--t-555)" : "var(--t-fff)", border: favourited ? "1px solid var(--c-222)" : "1px solid var(--c-fff)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}
             >
               {favourited ? "Favourited ✓" : "Favourite"}
             </div>
@@ -518,9 +518,9 @@ const startDM = async () => {
           </div>
 
           {showReadOnlyNotice && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px 14px", marginBottom: "2rem" }}>
-              <p style={{ fontSize: "12px", color: "#999", lineHeight: 1.5 }}>This is a read-only view. Sign up to message or favourite creators.</p>
-              <div onClick={() => navigate("role-select")} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: "6px", background: "#fff", color: "#0a0a0a", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px 14px", marginBottom: "2rem" }}>
+              <p style={{ fontSize: "12px", color: "var(--t-999)", lineHeight: 1.5 }}>This is a read-only view. Sign up to message or favourite creators.</p>
+              <div onClick={() => navigate("role-select")} style={{ flexShrink: 0, padding: "8px 14px", borderRadius: "6px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 Sign Up
               </div>
             </div>
@@ -529,7 +529,7 @@ const startDM = async () => {
           {/* Bio */}
           {creator.bio && (
             <div style={sectionStyle}>
-              <p style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.7 }}>{creator.bio}</p>
+              <p style={{ fontSize: "13px", color: "var(--t-bbb)", lineHeight: 1.7 }}>{creator.bio}</p>
             </div>
           )}
 
@@ -574,26 +574,26 @@ const startDM = async () => {
                 const followers = verified?.follower_count ?? null;
                 const platformPosts = socialPosts.filter(post => SOCIAL_PLATFORM_LABEL[post.platform] === p).slice(0, 5);
                 return (
-                <div key={p} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "16px", overflow: "hidden" }}>
+                <div key={p} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "16px", overflow: "hidden" }}>
                   <div style={{ padding: "14px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       {PLATFORM_ICON[p]?.(18)}
-                      <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#fff", fontSize: "14px", fontWeight: 600 }}>{p}</p>
+                      <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-fff)", fontSize: "14px", fontWeight: 600 }}>{p}</p>
                     </div>
-                    {verified?.username && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#999", fontSize: "12px", marginTop: "3px" }}>@{verified.username}</p>}
+                    {verified?.username && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-999)", fontSize: "12px", marginTop: "3px" }}>@{verified.username}</p>}
                     {followers != null && (
                       <div style={{ display: "flex", gap: "1.5rem", marginTop: "12px" }}>
                         <div>
-                          <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "#fff", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
-                          <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "#777", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
+                          <p style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "17px", fontWeight: 800, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{followers.toLocaleString()}</p>
+                          <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", color: "var(--t-777)", fontSize: "9px", letterSpacing: "0.08em", textTransform: "uppercase", marginTop: "5px" }}>Followers</p>
                         </div>
                       </div>
                     )}
                   </div>
                   {platformPosts.length > 0 && (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid #1a1a1a" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "3px", borderTop: "1px solid var(--c-1a1a1a)" }}>
                       {platformPosts.map(post => (
-                        <a key={`${post.platform}-${post.post_id}`} href={safeHttpUrl(post.post_url)} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "#0a0a0a" }}>
+                        <a key={`${post.platform}-${post.post_id}`} href={safeHttpUrl(post.post_url)} target="_blank" rel="noopener noreferrer" style={{ position: "relative", display: "block", aspectRatio: "9 / 16", overflow: "hidden", background: "var(--c-0a0a0a)" }}>
                           {/* Some platforms (TikTok in particular) hand back a short-lived
                               signed thumbnail URL that can expire before this cached copy
                               is ever shown - hide the broken-image glyph rather than show it. */}
@@ -605,7 +605,7 @@ const startDM = async () => {
                           {post.thumbnail_url && (
                             <img src={post.thumbnail_url} alt={post.caption || ""} onError={(e) => { e.currentTarget.style.display = "none"; }} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           )}
-                          <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))" }}>
+                          <div style={{ position: "absolute", top: "5px", right: "5px", filter: "drop-shadow(0 1px 2px var(--a-0-0-0-0_7))" }}>
                             <PlayGlyph />
                           </div>
                         </a>
@@ -626,7 +626,7 @@ const startDM = async () => {
           {(creator.audience_age_range || creator.audience_location) && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Audience</label>
-              <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "#999" }}>
+              <div style={{ display: "flex", gap: "1rem", fontSize: "13px", color: "var(--t-999)" }}>
                 {creator.audience_age_range && <span>Age {creator.audience_age_range}</span>}
                 {creator.audience_location && <span>{creator.audience_location}</span>}
               </div>
@@ -637,12 +637,12 @@ const startDM = async () => {
           {creator.rates && Object.values(creator.rates).some(v => v) && (
             <div style={sectionStyle}>
               <label style={labelStyle}>Rate Card</label>
-              <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
-                {creator.rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Post</span><span style={{ color: "#fff" }}>£{creator.rates.post}</span></div>}
-                {creator.rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Story</span><span style={{ color: "#fff" }}>£{creator.rates.story}</span></div>}
-                {creator.rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Reel</span><span style={{ color: "#fff" }}>£{creator.rates.reel}</span></div>}
-                {creator.rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>Video</span><span style={{ color: "#fff" }}>£{creator.rates.video}</span></div>}
-                {creator.rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "#999" }}>UGC Only</span><span style={{ color: "#fff" }}>£{creator.rates.ugc}</span></div>}
+              <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", display: "flex", flexDirection: "column", gap: "8px" }}>
+                {creator.rates.post && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Post</span><span style={{ color: "var(--t-fff)" }}>£{creator.rates.post}</span></div>}
+                {creator.rates.story && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Story</span><span style={{ color: "var(--t-fff)" }}>£{creator.rates.story}</span></div>}
+                {creator.rates.reel && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Reel</span><span style={{ color: "var(--t-fff)" }}>£{creator.rates.reel}</span></div>}
+                {creator.rates.video && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>Video</span><span style={{ color: "var(--t-fff)" }}>£{creator.rates.video}</span></div>}
+                {creator.rates.ugc && <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}><span style={{ color: "var(--t-999)" }}>UGC Only</span><span style={{ color: "var(--t-fff)" }}>£{creator.rates.ugc}</span></div>}
               </div>
             </div>
           )}
@@ -655,9 +655,9 @@ const startDM = async () => {
               <label style={labelStyle}>Past Collabs</label>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {creator.collabs.filter(c => c.brand).map((c, i) => (
-                  <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                    <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{c.brand}</p>
-                    <p style={{ color: "#999", fontSize: "12px" }}>{c.description}</p>
+                  <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
+                    <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{c.brand}</p>
+                    <p style={{ color: "var(--t-999)", fontSize: "12px" }}>{c.description}</p>
                   </div>
                 ))}
               </div>
@@ -671,42 +671,42 @@ const startDM = async () => {
               <div style={sectionStyle}>
                 <label style={labelStyle}>Track Record</label>
                 <div style={{ display: "flex", gap: "10px", marginBottom: "1.25rem" }}>
-                  <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
+                  <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
+                    <p style={{ color: "var(--t-fff)", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.completedCampaigns}</p>
+                    <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Completed</p>
                   </div>
-                  <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
+                  <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
                     {trackRecord.avgRating != null ? (
                       <>
                         <StarRating rating={trackRecord.avgRating} size={13} />
-                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
+                        <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{trackRecord.avgRating.toFixed(1)} ({trackRecord.reviewCount})</p>
                       </>
                     ) : (
                       <>
-                        <p style={{ color: "#999", fontSize: "13px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>—</p>
-                        <p style={{ color: "#999", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
+                        <p style={{ color: "var(--t-999)", fontSize: "13px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>—</p>
+                        <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "6px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>No ratings yet</p>
                       </>
                     )}
                   </div>
-                  <div style={{ flex: 1, background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "12px" }}>
-                    <p style={{ color: "#fff", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
-                    <p style={{ color: "#999", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Avg. turnaround</p>
+                  <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px" }}>
+                    <p style={{ color: "var(--t-fff)", fontSize: "18px", fontWeight: 700, fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>{formatTurnaroundTime(trackRecord.avgTurnaroundHours) || "—"}</p>
+                    <p style={{ color: "var(--t-999)", fontSize: "11px", marginTop: "2px", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>Avg. turnaround</p>
                   </div>
                 </div>
 
                 {reviewableCampaigns.length > 0 && (
                   <div style={{ marginBottom: "1.25rem" }}>
                     {!showReviewForm ? (
-                      <div onClick={() => setShowReviewForm(true)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid #fff", color: "#fff", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}>
+                      <div onClick={() => setShowReviewForm(true)} style={{ padding: "12px", borderRadius: "8px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em" }}>
                         Leave a review
                       </div>
                     ) : (
-                      <div style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                      <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                         {reviewableCampaigns.length > 1 && (
                           <select
                             value={reviewCampaignId}
                             onChange={e => setReviewCampaignId(e.target.value)}
-                            style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px", color: "#fff", fontSize: "13px", marginBottom: "10px", fontFamily: "inherit" }}
+                            style={{ width: "100%", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px 12px", color: "var(--t-fff)", fontSize: "13px", marginBottom: "10px", fontFamily: "inherit" }}
                           >
                             {reviewableCampaigns.map(c => <option key={c.campaign_id} value={c.campaign_id}>{c.campaign_name}</option>)}
                           </select>
@@ -719,16 +719,16 @@ const startDM = async () => {
                           onChange={e => setReviewComment(e.target.value)}
                           placeholder="How was working with this creator? (optional)"
                           rows={3}
-                          style={{ width: "100%", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px", color: "#fff", fontSize: "13px", fontFamily: "inherit", resize: "vertical", marginBottom: "10px" }}
+                          style={{ width: "100%", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "10px 12px", color: "var(--t-fff)", fontSize: "13px", fontFamily: "inherit", resize: "vertical", marginBottom: "10px" }}
                         />
                         <div style={{ display: "flex", gap: "8px" }}>
                           <div
                             onClick={submittingReview ? undefined : handleSubmitReview}
-                            style={{ flex: 1, padding: "11px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: submittingReview ? "default" : "pointer", opacity: submittingReview ? 0.6 : 1 }}
+                            style={{ flex: 1, padding: "11px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: submittingReview ? "default" : "pointer", opacity: submittingReview ? 0.6 : 1 }}
                           >
                             {submittingReview ? "Submitting..." : "Submit Review"}
                           </div>
-                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid #222", color: "#999", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
+                          <div onClick={() => setShowReviewForm(false)} style={{ padding: "11px 16px", borderRadius: "8px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer" }}>
                             Cancel
                           </div>
                         </div>
@@ -740,18 +740,18 @@ const startDM = async () => {
                 {reviews.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {reviews.map(r => (
-                      <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                      <div key={r.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "6px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#777" }}>
+                            <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "var(--t-777)" }}>
                               <img src={avatarSrc(r.brand_avatar, r.brand_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                             </div>
-                            <p style={{ color: "#fff", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
+                            <p style={{ color: "var(--t-fff)", fontSize: "12px", fontWeight: 600 }}>{r.brand_name || "Brand"}</p>
                           </div>
                           <StarRating rating={r.rating} size={11} />
                         </div>
-                        {r.comment && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
-                        <p style={{ color: "#777", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
+                        {r.comment && <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, marginBottom: "4px" }}>{r.comment}</p>}
+                        <p style={{ color: "var(--t-777)", fontSize: "10px" }}>{r.campaign_name ? `${r.campaign_name} · ` : ""}{new Date(r.created_at).toLocaleDateString()}</p>
                       </div>
                     ))}
                   </div>
@@ -764,9 +764,9 @@ const startDM = async () => {
           {!creator.platforms?.length && !creator.content_types?.length && !creator.languages?.length && !creator.audience_age_range && !creator.audience_location && !creator.rates?.post && !creator.rates?.reel && !creator.rates?.story && !creator.rates?.video && !creator.rates?.ugc && !creator.collabs?.filter(c => c.brand).length &&
             !(trackRecord && (trackRecord.completedCampaigns > 0 || trackRecord.reviewCount > 0 || reviewableCampaigns.length > 0)) && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "4rem 2rem", marginTop: "1rem" }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid #222", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "#777", marginBottom: "1rem" }}>◉</div>
-              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "#fff", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
-              <p style={{ fontSize: "12px", color: "#888", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
+              <div style={{ width: "48px", height: "48px", borderRadius: "50%", border: "1px solid var(--c-222)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", color: "var(--t-777)", marginBottom: "1rem" }}>◉</div>
+              <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "16px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "8px", textAlign: "center" }}>No content yet</p>
+              <p style={{ fontSize: "12px", color: "var(--t-888)", lineHeight: 1.7, textAlign: "center", maxWidth: "240px" }}>This brand hasn't filled out their profile yet. Message them to find out more.</p>
             </div>
           )}
 

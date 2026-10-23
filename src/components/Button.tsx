@@ -19,20 +19,20 @@ export default function Button({ children, variant = "primary", style, ...props 
         cursor: "pointer",
         transition: "all 0.15s",
         fontFamily: "inherit",
-        background: variant === "primary" ? "#fff" : "transparent",
-        color: variant === "primary" ? "#0a0a0a" : "#fff",
-        border: variant === "primary" ? "1px solid #fff" : "1px solid #333",
+        background: variant === "primary" ? "var(--c-fff)" : "transparent",
+        color: variant === "primary" ? "var(--t-0a0a0a)" : "var(--t-fff)",
+        border: variant === "primary" ? "1px solid var(--c-fff)" : "1px solid var(--c-333)",
         ...style,
       }}
       onMouseEnter={e => {
         const el = e.currentTarget;
-        if (variant === "primary") { el.style.background = "#e0e0e0"; }
-        else { el.style.borderColor = "#fff"; }
+        if (variant === "primary") { el.style.background = "var(--c-e0e0e0)"; }
+        else { el.style.borderColor = "var(--c-fff)"; }
       }}
       onMouseLeave={e => {
         const el = e.currentTarget;
-        if (variant === "primary") { el.style.background = "#fff"; }
-        else { el.style.borderColor = "#333"; }
+        if (variant === "primary") { el.style.background = "var(--c-fff)"; }
+        else { el.style.borderColor = "var(--c-333)"; }
       }}
       {...props}
     >

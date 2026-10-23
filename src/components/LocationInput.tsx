@@ -77,8 +77,8 @@ export default function LocationInput({ value, onChange, placeholder, inputStyle
           top: "100%",
           left: 0,
           right: 0,
-          background: "#111",
-          border: "1px solid #222",
+          background: "var(--c-111)",
+          border: "1px solid var(--c-222)",
           borderRadius: "8px",
           marginTop: "4px",
           zIndex: 9999,
@@ -95,14 +95,14 @@ export default function LocationInput({ value, onChange, placeholder, inputStyle
                 style={{
                   padding: "10px 14px",
                   cursor: "pointer",
-                  borderBottom: i < suggestions.length - 1 ? "1px solid #1a1a1a" : "none",
+                  borderBottom: i < suggestions.length - 1 ? "1px solid var(--c-1a1a1a)" : "none",
                   transition: "background 0.1s",
                 }}
-                onMouseEnter={e => (e.currentTarget.style.background = "#1a1a1a")}
+                onMouseEnter={e => (e.currentTarget.style.background = "var(--c-1a1a1a)")}
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
-                <p style={{ color: "#fff", fontSize: "13px", fontWeight: 500, margin: 0 }}>{main}</p>
-                {sub && <p style={{ color: "#999", fontSize: "11px", margin: "2px 0 0 0" }}>{sub}</p>}
+                <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 500, margin: 0 }}>{main}</p>
+                {sub && <p style={{ color: "var(--t-999)", fontSize: "11px", margin: "2px 0 0 0" }}>{sub}</p>}
               </div>
             );
           })}

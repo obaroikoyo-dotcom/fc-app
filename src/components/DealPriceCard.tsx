@@ -14,10 +14,10 @@ const pounds = (n: number) => `£${n.toLocaleString()}`;
 
 const button: CSSProperties = {
   borderRadius: "6px", padding: "8px 14px", fontSize: "11px", fontWeight: 600, cursor: "pointer",
-  textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "inherit", border: "1px solid #2a2a2a",
-  background: "transparent", color: "#ddd",
+  textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "inherit", border: "1px solid var(--c-2a2a2a)",
+  background: "transparent", color: "var(--t-ddd)",
 };
-const primary: CSSProperties = { ...button, background: "#fff", color: "#0a0a0a", border: "1px solid #fff" };
+const primary: CSSProperties = { ...button, background: "var(--c-fff)", color: "var(--t-0a0a0a)", border: "1px solid var(--c-fff)" };
 
 export default function DealPriceCard({ applicationId, role, currentUserId, otherName, baseBudget, offers, brandIsEnterprise, onChanged }: {
   applicationId: string;
@@ -65,23 +65,23 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
   const mine = open?.proposed_by === currentUserId;
 
   return (
-    <div data-testid="deal-price-card" style={{ alignSelf: "flex-start", width: "100%", maxWidth: "92%", background: "#111", border: "1px solid #222", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+    <div data-testid="deal-price-card" style={{ alignSelf: "flex-start", width: "100%", maxWidth: "92%", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
       <div>
-        <p style={{ margin: 0, fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase" }}>{agreed ? "Agreed price" : "Price"}</p>
-        <p style={{ margin: "2px 0 0", fontFamily: "'TikTok Sans', sans-serif", fontSize: "24px", fontWeight: 800, color: "#fff", lineHeight: 1.15 }}>{pounds(price)}</p>
-        <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#aaa" }}>{meaning(price)}</p>
+        <p style={{ margin: 0, fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase" }}>{agreed ? "Agreed price" : "Price"}</p>
+        <p style={{ margin: "2px 0 0", fontFamily: "'TikTok Sans', sans-serif", fontSize: "24px", fontWeight: 800, color: "var(--t-fff)", lineHeight: 1.15 }}>{pounds(price)}</p>
+        <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--t-aaa)" }}>{meaning(price)}</p>
       </div>
 
       {open && (
-        <div className="fc-pop" style={{ borderTop: "1px solid #1c1c1c", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <p style={{ margin: 0, fontSize: "13px", color: "#fff", fontWeight: 600 }}>
+        <div className="fc-pop" style={{ borderTop: "1px solid var(--c-1c1c1c)", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--t-fff)", fontWeight: 600 }}>
             {mine ? `You offered ${pounds(open.amount)}` : `${otherName} offered ${pounds(open.amount)}`}
           </p>
-          <p style={{ margin: 0, fontSize: "12px", color: "#aaa" }}>{meaning(open.amount)}</p>
+          <p style={{ margin: 0, fontSize: "12px", color: "var(--t-aaa)" }}>{meaning(open.amount)}</p>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {mine ? (
               <>
-                <span style={{ fontSize: "12px", color: "#888", alignSelf: "center" }}>Waiting for {otherName}</span>
+                <span style={{ fontSize: "12px", color: "var(--t-888)", alignSelf: "center" }}>Waiting for {otherName}</span>
                 <button type="button" disabled={busy} style={button} onClick={() => run(() => answerDealPrice(open.id, "withdraw"))}>Withdraw</button>
               </>
             ) : (
@@ -95,8 +95,8 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
       )}
 
       {editing ? (
-        <div style={{ borderTop: "1px solid #1c1c1c", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <label htmlFor="deal-price-input" style={{ fontSize: "10px", color: "#888", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        <div style={{ borderTop: "1px solid var(--c-1c1c1c)", paddingTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <label htmlFor="deal-price-input" style={{ fontSize: "10px", color: "var(--t-888)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
             {open && !mine ? "Counter with a different price (£)" : "Your price (£)"}
           </label>
           <input
@@ -107,9 +107,9 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
             onChange={e => { setValue(e.target.value); setError(null); }}
             onKeyDown={e => { if (e.key === "Enter") sendOffer(); }}
             placeholder={String(price)}
-            style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", padding: "10px 12px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", width: "100%", boxSizing: "border-box" }}
+            style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "6px", padding: "10px 12px", color: "var(--t-fff)", fontSize: "14px", outline: "none", fontFamily: "inherit", width: "100%", boxSizing: "border-box" }}
           />
-          {validTyped && typed !== price && <p style={{ margin: 0, fontSize: "12px", color: "#aaa" }}>{meaning(typed)}</p>}
+          {validTyped && typed !== price && <p style={{ margin: 0, fontSize: "12px", color: "var(--t-aaa)" }}>{meaning(typed)}</p>}
           <div style={{ display: "flex", gap: "8px" }}>
             <button type="button" disabled={busy} style={primary} onClick={sendOffer}>{busy ? "Sending..." : "Send offer"}</button>
             <button type="button" disabled={busy} style={button} onClick={() => { setEditing(false); setValue(""); setError(null); }}>Cancel</button>
@@ -124,7 +124,7 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
       )}
 
       {error && <p role="alert" style={{ margin: 0, fontSize: "12px", color: "#ff4d4d" }}>{error}</p>}
-      <p style={{ margin: 0, fontSize: "11px", color: "#777", lineHeight: 1.5 }}>
+      <p style={{ margin: 0, fontSize: "11px", color: "var(--t-777)", lineHeight: 1.5 }}>
         Only this deal changes, once {otherName} agrees. The campaign keeps its own price for everyone else.
       </p>
     </div>

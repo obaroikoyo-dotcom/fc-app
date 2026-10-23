@@ -45,9 +45,9 @@ export default function BrandSignup({ navigate }: Props) {
     <AuthLayout>
       <div style={{ width: "100%", maxWidth: "420px" }}>
         <Logo />
-        <p onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "#888", cursor: "pointer", marginBottom: "1.5rem" }}>← Back</p>
-        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "4px", textAlign: "center" }}>Brand sign up</p>
-        <p style={{ fontSize: "13px", color: "#888", marginBottom: "2rem", textAlign: "center" }}>Post campaigns and connect with creators.</p>
+        <p onClick={() => navigate("role-select")} style={{ fontSize: "12px", color: "var(--t-888)", cursor: "pointer", marginBottom: "1.5rem" }}>← Back</p>
+        <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "4px", textAlign: "center" }}>Brand sign up</p>
+        <p style={{ fontSize: "13px", color: "var(--t-888)", marginBottom: "2rem", textAlign: "center" }}>Post campaigns and connect with creators.</p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <Input label="Company Name" type="text" placeholder="Your company name" value={form.company} onChange={set("company")} />
@@ -63,9 +63,9 @@ export default function BrandSignup({ navigate }: Props) {
           <Button onClick={handleSignup}>{loading ? "Creating account..." : "Create Brand Account"}</Button>
         </div>
 
-        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "#888" }}>
+        <p style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "13px", color: "var(--t-888)" }}>
           Already have an account?{" "}
-          <span onClick={() => navigate("login")} style={{ color: "#fff", cursor: "pointer", textDecoration: "underline" }}>Log in</span>
+          <span onClick={() => navigate("login")} style={{ color: "var(--t-fff)", cursor: "pointer", textDecoration: "underline" }}>Log in</span>
         </p>
       </div>
     </AuthLayout>

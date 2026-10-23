@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div data-auth-layout style={{
       minHeight: "100%",
-      background: "#0a0a0a",
+      background: "var(--c-0a0a0a)",
       display: "flex",
       flexDirection: "column",
       padding: "calc(2rem + env(safe-area-inset-top, 0px)) 1rem calc(2rem + env(safe-area-inset-bottom, 0px))",
@@ -24,8 +24,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         @import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         input:-webkit-autofill {
-          -webkit-box-shadow: 0 0 0px 1000px #111 inset !important;
-          -webkit-text-fill-color: #fff !important;
+          -webkit-box-shadow: 0 0 0px 1000px var(--c-111) inset !important;
+          -webkit-text-fill-color: var(--c-fff) !important;
         }
       `}</style>
       {/* margin: auto centres the content both ways when it fits, and when it

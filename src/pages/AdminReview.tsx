@@ -225,33 +225,33 @@ export default function AdminReview({ goBack }: Props) {
   };
 
   const header = (
-    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid #111", background: "#0a0a0a", position: "sticky", top: 0, zIndex: 10 }}>
-      <span onClick={goBack} style={{ fontSize: "20px", color: "#fff", cursor: "pointer" }}>←</span>
-      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "#fff" }}>Admin Review</span>
+    <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", gap: "12px", borderBottom: "1px solid var(--c-111)", background: "var(--c-0a0a0a)", position: "sticky", top: 0, zIndex: 10 }}>
+      <span onClick={goBack} style={{ fontSize: "20px", color: "var(--t-fff)", cursor: "pointer" }}>←</span>
+      <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Admin Review</span>
     </div>
   );
 
   if (loading && !hasLoadedOnce && !showSkeleton) {
-    return <div style={{ minHeight: "100%", background: "#0a0a0a" }}>{header}</div>;
+    return <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)" }}>{header}</div>;
   }
 
   if (loading && !hasLoadedOnce) {
     const pulse = "pulse 1.5s ease-in-out infinite";
     const bar = (w: string, h: string, extra: React.CSSProperties = {}) => (
-      <div style={{ width: w, height: h, borderRadius: "4px", background: "#1a1a1a", animation: pulse, ...extra }} />
+      <div style={{ width: w, height: h, borderRadius: "4px", background: "var(--c-1a1a1a)", animation: pulse, ...extra }} />
     );
     return (
-      <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
         {header}
-        <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
+        <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{ flex: 1, padding: "14px", display: "flex", justifyContent: "center" }}>{bar("60px", "12px")}</div>
           ))}
         </div>
         <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "10px" }}>
           {[1, 2, 3].map(i => (
-            <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+            <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                 {bar("32px", "32px", { borderRadius: "8px" })}
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
@@ -269,28 +269,28 @@ export default function AdminReview({ goBack }: Props) {
 
   if (!authorized) {
     return (
-      <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', sans-serif" }}>
+      <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', sans-serif" }}>
         {header}
-        <p style={{ padding: "2rem", color: "#999", fontSize: "13px", textAlign: "center" }}>Not authorized.</p>
+        <p style={{ padding: "2rem", color: "var(--t-999)", fontSize: "13px", textAlign: "center" }}>Not authorized.</p>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: "100%", background: "#0a0a0a", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}>
+    <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(4rem + env(safe-area-inset-bottom, 0px))" }}>
       {header}
 
-      <div style={{ display: "flex", borderBottom: "1px solid #111" }}>
-        <button onClick={() => setTab("verification")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "verification" ? "2px solid #fff" : "2px solid transparent", color: tab === "verification" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+      <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
+        <button onClick={() => setTab("verification")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "verification" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "verification" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Verification ({requests.length})
         </button>
-        <button onClick={() => setTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid #fff" : "2px solid transparent", color: tab === "reports" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+        <button onClick={() => setTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "reports" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Reports ({reports.length})
         </button>
-        <button onClick={() => setTab("disputes")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "disputes" ? "2px solid #fff" : "2px solid transparent", color: tab === "disputes" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+        <button onClick={() => setTab("disputes")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "disputes" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "disputes" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Disputes ({disputes.length})
         </button>
-        <button onClick={() => setTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid #fff" : "2px solid transparent", color: tab === "accounts" ? "#fff" : "#444", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+        <button onClick={() => setTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "accounts" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Accounts
         </button>
       </div>
@@ -298,25 +298,25 @@ export default function AdminReview({ goBack }: Props) {
       <div style={{ padding: "1.25rem" }}>
         {tab === "verification" && (
           requests.length === 0 ? (
-            <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No pending verification requests.</p>
+            <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No pending verification requests.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {requests.map(r => (
-                <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                <div key={r.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "var(--t-777)" }}>
                       <img src={avatarSrc(r.brand_logo, r.brand_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
                     <div>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{r.brand_name}</p>
-                      <p style={{ color: "#888", fontSize: "10px" }}>{new Date(r.requested_at).toLocaleString()}</p>
+                      <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{r.brand_name}</p>
+                      <p style={{ color: "var(--t-888)", fontSize: "10px" }}>{new Date(r.requested_at).toLocaleString()}</p>
                     </div>
                   </div>
-                  {r.note && <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{r.note}</p>}
+                  {r.note && <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{r.note}</p>}
                   <div style={{ display: "flex", gap: "8px" }}>
                     <div
                       onClick={() => actioningId ? undefined : handleApprove(r.id)}
-                      style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}
+                      style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}
                     >
                       {actioningId === r.id ? "..." : "Approve"}
                     </div>
@@ -335,17 +335,17 @@ export default function AdminReview({ goBack }: Props) {
 
         {tab === "reports" && (
           reports.length === 0 ? (
-            <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open reports.</p>
+            <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open reports.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {reports.map(r => (
-                <div key={r.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
-                  <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.reporter_name} reported {r.reported_name}</p>
-                  <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "6px" }}>{r.reason}</p>
-                  <p style={{ color: "#888", fontSize: "10px", marginBottom: "10px" }}>{new Date(r.created_at).toLocaleString()}</p>
+                <div key={r.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
+                  <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{r.reporter_name} reported {r.reported_name}</p>
+                  <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, marginBottom: "6px" }}>{r.reason}</p>
+                  <p style={{ color: "var(--t-888)", fontSize: "10px", marginBottom: "10px" }}>{new Date(r.created_at).toLocaleString()}</p>
                   <div
                     onClick={() => actioningId ? undefined : handleResolveReport(r.id)}
-                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid #222", color: "#ccc", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}
+                    style={{ padding: "10px", borderRadius: "8px", border: "1px solid var(--c-222)", color: "var(--t-ccc)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}
                   >
                     {actioningId === r.id ? "..." : "Mark Resolved"}
                   </div>
@@ -357,60 +357,60 @@ export default function AdminReview({ goBack }: Props) {
 
         {tab === "disputes" && (
           disputes.length === 0 ? (
-            <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open disputes.</p>
+            <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", padding: "2rem" }}>No open disputes.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {disputes.map(d => {
                 const daysOpen = Math.floor((Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60 * 24));
                 return (
-                  <div key={d.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                  <div key={d.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
-                      <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{d.brand_name} vs {d.creator_name}</p>
-                      <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: daysOpen >= 3 ? "rgba(255,59,48,0.1)" : "#1a1a1a", border: `1px solid ${daysOpen >= 3 ? "rgba(255,59,48,0.3)" : "#222"}`, color: daysOpen >= 3 ? "#ff4d4d" : "#888", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", flexShrink: 0 }}>
+                      <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{d.brand_name} vs {d.creator_name}</p>
+                      <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: daysOpen >= 3 ? "rgba(255,59,48,0.1)" : "var(--c-1a1a1a)", border: `1px solid ${daysOpen >= 3 ? "rgba(255,59,48,0.3)" : "var(--c-222)"}`, color: daysOpen >= 3 ? "#ff4d4d" : "var(--t-888)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", flexShrink: 0 }}>
                         {daysOpen === 0 ? "Today" : `${daysOpen}d open`}
                       </span>
                     </div>
-                    <p style={{ color: "#888", fontSize: "10px", marginBottom: "8px" }}>{d.campaign_name} · {new Date(d.created_at).toLocaleString()}</p>
-                    <p style={{ color: "#888", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
+                    <p style={{ color: "var(--t-888)", fontSize: "10px", marginBottom: "8px" }}>{d.campaign_name} · {new Date(d.created_at).toLocaleString()}</p>
+                    <p style={{ color: "var(--t-888)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
                       {d.raised_by === "creator" ? "Raised by the creator (disputing a video request)" : "Raised by the brand"}
                     </p>
-                    <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{d.reason}</p>
+                    <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{d.reason}</p>
                     {d.creator_response && (
-                      <div style={{ borderLeft: "2px solid #333", paddingLeft: "10px", marginBottom: "10px" }}>
-                        <p style={{ color: "#888", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "3px" }}>Creator's response</p>
-                        <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{d.creator_response}</p>
+                      <div style={{ borderLeft: "2px solid var(--c-333)", paddingLeft: "10px", marginBottom: "10px" }}>
+                        <p style={{ color: "var(--t-888)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "3px" }}>Creator's response</p>
+                        <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, margin: 0 }}>{d.creator_response}</p>
                       </div>
                     )}
                     {d.revision_count > 0 && (
-                      <p style={{ color: "#888", fontSize: "11px", lineHeight: 1.5, marginBottom: "10px" }}>
+                      <p style={{ color: "var(--t-888)", fontSize: "11px", lineHeight: 1.5, marginBottom: "10px" }}>
                         Revision requests used: {d.revision_count}/2{d.revision_note ? ` · last note: "${d.revision_note}"` : ""}
                       </p>
                     )}
                     <div style={{ display: "flex", gap: "14px", marginBottom: "12px" }}>
-                      {d.deliverable_url && <a href={safeHttpUrl(d.deliverable_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#fff", fontSize: "11px", textDecoration: "underline" }}>Watch delivery</a>}
-                      {d.previous_deliverable_url && <a href={safeHttpUrl(d.previous_deliverable_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#888", fontSize: "11px", textDecoration: "underline" }}>Watch earlier version</a>}
-                      <span onClick={() => toggleDisputeChat(d.application_id)} style={{ color: "#fff", fontSize: "11px", textDecoration: "underline", cursor: "pointer" }}>
+                      {d.deliverable_url && <a href={safeHttpUrl(d.deliverable_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--t-fff)", fontSize: "11px", textDecoration: "underline" }}>Watch delivery</a>}
+                      {d.previous_deliverable_url && <a href={safeHttpUrl(d.previous_deliverable_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--t-888)", fontSize: "11px", textDecoration: "underline" }}>Watch earlier version</a>}
+                      <span onClick={() => toggleDisputeChat(d.application_id)} style={{ color: "var(--t-fff)", fontSize: "11px", textDecoration: "underline", cursor: "pointer" }}>
                         {chatOpenFor === d.application_id ? "Hide chat" : "Read chat"}
                       </span>
                     </div>
                     {chatOpenFor === d.application_id && (
-                      <div style={{ background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "8px", padding: "10px", marginBottom: "12px", maxHeight: "260px", overflowY: "auto" }}>
+                      <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "10px", marginBottom: "12px", maxHeight: "260px", overflowY: "auto" }}>
                         {chatLoading ? (
-                          <p style={{ color: "#777", fontSize: "11px", margin: 0 }}>Loading chat...</p>
+                          <p style={{ color: "var(--t-777)", fontSize: "11px", margin: 0 }}>Loading chat...</p>
                         ) : chatError ? (
                           <p style={{ color: "#ff4d4d", fontSize: "11px", margin: 0 }}>{chatError}</p>
                         ) : chatMessages.length === 0 ? (
-                          <p style={{ color: "#777", fontSize: "11px", margin: 0 }}>No messages between these two.</p>
+                          <p style={{ color: "var(--t-777)", fontSize: "11px", margin: 0 }}>No messages between these two.</p>
                         ) : (
                           chatMessages.map(m => (
                             <div key={m.id} style={{ marginBottom: "8px" }}>
-                              <p style={{ color: m.sender_role === "brand" ? "#fff" : "#888", fontSize: "10px", fontWeight: 600, margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                              <p style={{ color: m.sender_role === "brand" ? "var(--t-fff)" : "var(--t-888)", fontSize: "10px", fontWeight: 600, margin: "0 0 2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                                 {m.sender_role === "brand" ? d.brand_name : m.sender_role === "creator" ? d.creator_name : "Unknown"} · {new Date(m.created_at).toLocaleString()}
                               </p>
-                              <p style={{ color: "#bbb", fontSize: "12px", lineHeight: 1.5, margin: 0, wordBreak: "break-word" }}>
+                              <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.5, margin: 0, wordBreak: "break-word" }}>
                                 {m.deleted ? "[deleted message] " : ""}{m.text}
-                                {m.video_url && <> <a href={safeHttpUrl(m.video_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[video]</a></>}
-                                {m.image_url && <> <a href={safeHttpUrl(m.image_url)} target="_blank" rel="noopener noreferrer" style={{ color: "#fff" }}>[image]</a></>}
+                                {m.video_url && <> <a href={safeHttpUrl(m.video_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--t-fff)" }}>[video]</a></>}
+                                {m.image_url && <> <a href={safeHttpUrl(m.image_url)} target="_blank" rel="noopener noreferrer" style={{ color: "var(--t-fff)" }}>[image]</a></>}
                               </p>
                             </div>
                           ))
@@ -426,7 +426,7 @@ export default function AdminReview({ goBack }: Props) {
                       </div>
                       <div
                         onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "release")}
-                        style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
+                        style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
                       >
                         Release to Creator
                       </div>
@@ -444,39 +444,39 @@ export default function AdminReview({ goBack }: Props) {
               value={userQuery}
               onChange={e => setUserQuery(e.target.value)}
               placeholder="Search by name or email..."
-              style={{ width: "100%", background: "#111", border: "1px solid #222", borderRadius: "8px", padding: "11px 14px", color: "#fff", fontSize: "14px", outline: "none", fontFamily: "inherit", marginBottom: "1rem", boxSizing: "border-box" as const }}
+              style={{ width: "100%", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "11px 14px", color: "var(--t-fff)", fontSize: "14px", outline: "none", fontFamily: "inherit", marginBottom: "1rem", boxSizing: "border-box" as const }}
             />
             {!usersLoaded ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }`}</style>
                 {[1, 2, 3].map(i => (
-                  <div key={i} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#1a1a1a", animation: "pulse 1.5s ease-in-out infinite", flexShrink: 0 }} />
+                  <div key={i} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "var(--c-1a1a1a)", animation: "pulse 1.5s ease-in-out infinite", flexShrink: 0 }} />
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px", flex: 1 }}>
-                      <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "#1a1a1a", animation: "pulse 1.5s ease-in-out infinite" }} />
-                      <div style={{ width: "160px", height: "10px", borderRadius: "4px", background: "#1a1a1a", animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ width: "120px", height: "13px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                      <div style={{ width: "160px", height: "10px", borderRadius: "4px", background: "var(--c-1a1a1a)", animation: "pulse 1.5s ease-in-out infinite" }} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filteredUsers.length === 0 ? (
-              <p style={{ color: "#777", fontSize: "12px", textAlign: "center", padding: "2rem" }}>{userQuery ? "No matching accounts." : "No accounts found."}</p>
+              <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", padding: "2rem" }}>{userQuery ? "No matching accounts." : "No accounts found."}</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {filteredUsers.slice(0, 30).map(u => (
-                  <div key={u.id} style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: "10px", padding: "1rem" }}>
+                  <div key={u.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
-                      <div style={{ width: "32px", height: "32px", borderRadius: u.role === "creator" ? "50%" : "8px", border: "1px solid #222", background: "#0a0a0a", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#777" }}>
+                      <div style={{ width: "32px", height: "32px", borderRadius: u.role === "creator" ? "50%" : "8px", border: "1px solid var(--c-222)", background: "var(--c-0a0a0a)", overflow: "hidden", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "var(--t-777)" }}>
                         <img src={avatarSrc(u.avatar_url, u.name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ color: "#fff", fontSize: "13px", fontWeight: 600 }}>{u.name}</p>
-                        <p style={{ color: "#888", fontSize: "10px", textTransform: "capitalize" }}>{u.role} · {u.email}</p>
+                        <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{u.name}</p>
+                        <p style={{ color: "var(--t-888)", fontSize: "10px", textTransform: "capitalize" }}>{u.role} · {u.email}</p>
                       </div>
                       <span style={{
                         fontSize: "10px", padding: "3px 9px", borderRadius: "20px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em", flexShrink: 0,
-                        border: `1px solid ${u.account_status === "active" ? "#333" : u.account_status === "suspended" ? "rgba(255,149,0,0.4)" : "rgba(255,77,77,0.4)"}`,
-                        color: u.account_status === "active" ? "#888" : u.account_status === "suspended" ? "#ff9500" : "#ff4d4d",
+                        border: `1px solid ${u.account_status === "active" ? "var(--c-333)" : u.account_status === "suspended" ? "rgba(255,149,0,0.4)" : "rgba(255,77,77,0.4)"}`,
+                        color: u.account_status === "active" ? "var(--t-888)" : u.account_status === "suspended" ? "#ff9500" : "#ff4d4d",
                       }}>
                         {u.account_status}
                       </span>
@@ -485,7 +485,7 @@ export default function AdminReview({ goBack }: Props) {
                       {u.account_status !== "active" ? (
                         <div
                           onClick={() => actioningId ? undefined : handleSetStatus(u.id, "active")}
-                          style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "#fff", color: "#0a0a0a", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
+                          style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
                         >
                           {actioningId === u.id ? "..." : "Reactivate"}
                         </div>
