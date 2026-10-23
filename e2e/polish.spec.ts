@@ -22,6 +22,7 @@ interface Finding { what: string; where: string }
 async function audit(page: Page): Promise<Finding[]> {
   return page.evaluate(() => {
     const out: { what: string; where: string }[] = [];
+    const light = document.documentElement.classList.contains("theme-light");
     const parse = (c: string) => {
       const m = /rgba?\((\d+), ?(\d+), ?(\d+)(?:, ?([\d.]+))?\)/.exec(c);
       return m ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : +m[4] } : null;
@@ -43,8 +44,11 @@ async function audit(page: Page): Promise<Finding[]> {
         const size = parseFloat(cs.fontSize);
         if (size < 11) out.push({ what: `text ${size}px`, where: label(el) });
         const c = parse(cs.color);
-        // a dark-look grey fainter than #999 (the page's colours are the dark look's, flipped for light)
-        if (c && c.r === c.g && c.g === c.b && c.r >= 85 && c.r <= 136) out.push({ what: `faint text rgb(${c.r})`, where: label(el) });
+        // A grey too faint to read: on white anything lighter than about #767676 (4.5:1) up to the
+        // disabled greys (#bbb and lighter, left alone); on dark anything darker than #999 down to the
+        // disabled greys (#444 and darker, left alone).
+        const grey = !!c && c.r === c.g && c.g === c.b;
+        if (grey && (light ? c!.r > 118 && c!.r < 190 : c!.r >= 85 && c!.r <= 136)) out.push({ what: `faint text rgb(${c!.r})`, where: label(el) });
       }
     }
     return out;
@@ -124,3 +128,57 @@ test("an applicant's page: the Report button holds its label and is easy to tap"
   expect(fits, "the label sits inside the button").toBe(true);
   expect(box.x + box.width, "stays on the screen").toBeLessThanOrEqual(390);
 });
+
+// A cover photo must show exactly its own colours, in the light look and the dark
+// look alike. (Light mode used to be the dark look run through a colour filter, which
+// turned a strong red into a dull maroon.) Checked on the real pixels on screen.
+for (const theme of ["light", "dark"] as const) {
+  test(`a cover photo shows its own colours, ${theme} look`, async ({ page }) => {
+    await page.addInitScript(t => localStorage.setItem("fc_theme", t), theme);
+    await openDemo(page, "creator");
+
+    // Give the open campaigns a photo made of known colours: red, green, blue, skin and sky.
+    const swatches: Array<[string, number[]]> = [
+      ["red", [195, 2, 19]], ["green", [30, 160, 60]], ["blue", [20, 60, 200]], ["skin", [224, 172, 105]], ["sky", [135, 206, 235]],
+    ];
+    const dataUrl = await page.evaluate(sw => {
+      const c = document.createElement("canvas");
+      c.width = 500; c.height = 200;
+      const g = c.getContext("2d")!;
+      sw.forEach(([, rgb], i) => { g.fillStyle = `rgb(${rgb.join(",")})`; g.fillRect(i * 100, 0, 100, 200); });
+      return c.toDataURL("image/png");
+    }, swatches);
+    await page.evaluate(url => {
+      const db = JSON.parse(sessionStorage.getItem("fc_demo_db") || "null");
+      for (const c of db.tables.campaigns as Array<{ is_draft?: boolean; cover_url?: string }>) if (!c.is_draft) c.cover_url = url;
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(db));
+    }, dataUrl);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.addStyleTag({ content: "*, *::before, *::after { animation: none !important; transition: none !important; }" });
+
+    const photo = page.locator(".campaign-tile img").first();
+    await photo.scrollIntoViewIfNeeded();
+    await expect.poll(() => photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+
+    // nothing between the picture and the page may recolour it
+    const filters = await photo.evaluate(img => {
+      const found: string[] = [];
+      for (let el: Element | null = img; el; el = el.parentElement) { const f = getComputedStyle(el).filter; if (f && f !== "none") found.push(f); }
+      return found;
+    });
+    expect(filters, "no colour filter above the photo").toEqual([]);
+
+    // and the pixels on screen are the picture's own colours
+    const { createRequire } = await import("node:module");
+    const { PNG } = createRequire(import.meta.url)("playwright-core/lib/utilsBundle");
+    const png = PNG.sync.read(await photo.screenshot());
+    const stripe = png.width / swatches.length;
+    for (const [i, [name, rgb]] of swatches.entries()) {
+      const x = Math.round(stripe * i + stripe / 2), y = Math.round(png.height * 0.3); // above the niche label
+      const at = (png.width * y + x) * 4;
+      const got = [png.data[at], png.data[at + 1], png.data[at + 2]];
+      for (let k = 0; k < 3; k++) expect(Math.abs(got[k] - rgb[k]), `${name} channel ${k} is ${got} not ${rgb}`).toBeLessThanOrEqual(3);
+    }
+  });
+}

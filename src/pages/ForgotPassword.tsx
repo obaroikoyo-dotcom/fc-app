@@ -57,7 +57,7 @@ export default function ForgotPassword({ navigate }: Props) {
 
             <Input label="Email" type="email" placeholder="you@email.com" value={email} onChange={e => setEmail(e.target.value)} autoFocus />
 
-            {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+            {error && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 
             <div style={{ marginTop: "1.5rem" }}>
               <Button onClick={handleSend}>{loading ? "Sending..." : "Send Reset Link"}</Button>

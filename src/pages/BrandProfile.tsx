@@ -665,7 +665,7 @@ const loadFavourites = async () => {
 ) : (
   <div
     onClick={() => setShowCancelModal(true)}
-    style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid rgba(99,102,241,0.4)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#6366f1", letterSpacing: "0.08em", textTransform: "uppercase" }}
+    style={{ padding: "12px 16px", borderRadius: "10px", border: "1px solid var(--a-99-102-241-0_4)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "var(--t-6366f1)", letterSpacing: "0.08em", textTransform: "uppercase" }}
   >
     Manage Subscription
   </div>
@@ -678,11 +678,11 @@ const loadFavourites = async () => {
                   <p style={{ fontSize: "13px", color: "var(--t-999)", marginBottom: "1.5rem", lineHeight: 1.6 }}>Switch billing periods or cancel your Enterprise subscription. Changes take effect immediately.</p>
 
                   <p style={{ fontSize: "12px", color: "var(--t-999)", marginBottom: "10px", lineHeight: 1.6 }}>To cancel your Enterprise subscription and revert to standard platform fees, tap below. This cannot be undone.</p>
-                  <div onClick={!cancelLoading ? handleCancelSubscription : undefined} style={{ padding: "13px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: cancelLoading ? "default" : "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
+                  <div onClick={!cancelLoading ? handleCancelSubscription : undefined} style={{ padding: "13px", borderRadius: "8px", border: "1px solid var(--a-255-68-68-0_3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: cancelLoading ? "default" : "pointer", color: "var(--t-ff4444)", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
                     {cancelLoading ? "Processing..." : "Cancel Subscription"}
                   </div>
 
-                  {cancelError && <p style={{ fontSize: "12px", color: "#ff4444", marginTop: "10px", textAlign: "center" }}>{cancelError}</p>}
+                  {cancelError && <p style={{ fontSize: "12px", color: "var(--t-ff4444)", marginTop: "10px", textAlign: "center" }}>{cancelError}</p>}
                 </div>
               </div>
             )}
@@ -741,7 +741,7 @@ const loadFavourites = async () => {
           </div>
           <div
             onClick={() => setShowDeleteConfirm(true)}
-            style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}
+            style={{ padding: "14px", borderRadius: "8px", border: "1px solid var(--a-255-68-68-0_3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "var(--t-ff4444)", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
             Delete Account
           </div>
@@ -779,11 +779,11 @@ const loadFavourites = async () => {
                 // The account is gone. This clears the profile row if the database didn't already.
                 await supabase.from("profiles").delete().eq("id", userId);
                 await forceSignOut();
-              }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid rgba(255,68,68,0.3)", color: "#ff4444", opacity: deletingAccount ? 0.5 : 1, fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid var(--a-255-68-68-0_3)", color: "var(--t-ff4444)", opacity: deletingAccount ? 0.5 : 1, fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 {deletingAccount ? "Deleting..." : "Delete"}
               </div>
             </div>
-            {deleteError && <p style={{ color: "#ff4444", fontSize: "12px", lineHeight: 1.5, marginTop: "12px" }}>{deleteError}</p>}
+            {deleteError && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", lineHeight: 1.5, marginTop: "12px" }}>{deleteError}</p>}
           </div>
         </div>
       )}
@@ -932,7 +932,7 @@ const loadFavourites = async () => {
             <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "var(--c-0a0a0a)" : "var(--c-555)", transition: "left 0.2s" }} />
           </div>
         </div>
-        {notifError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
+        {notifError && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
       </div>
     </div>
   );
@@ -1029,7 +1029,7 @@ const loadFavourites = async () => {
                   {connection && <p style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
                 {connectedPlatforms.has(platform) ? (
-                  <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
+                  <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "var(--t-ff4444)", cursor: "pointer" }}>Disconnect</span>
                 ) : platform === "youtube" ? (
                   <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
                 ) : (
@@ -1083,7 +1083,7 @@ const loadFavourites = async () => {
             />
             <span
               onClick={submittingVerification ? undefined : handleRequestVerification}
-              style={{ display: "block", textAlign: "center", background: "var(--c-fff)", color: "#000", fontSize: "13px", fontWeight: 600, borderRadius: "10px", padding: "14px", cursor: submittingVerification ? "default" : "pointer", opacity: submittingVerification ? 0.6 : 1 }}
+              style={{ display: "block", textAlign: "center", background: "var(--c-fff)", color: "var(--t-000)", fontSize: "13px", fontWeight: 600, borderRadius: "10px", padding: "14px", cursor: submittingVerification ? "default" : "pointer", opacity: submittingVerification ? 0.6 : 1 }}
             >
               {submittingVerification ? "Submitting..." : "Request Verification"}
             </span>

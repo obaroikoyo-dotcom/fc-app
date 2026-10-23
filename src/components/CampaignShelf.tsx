@@ -153,7 +153,7 @@ export default function CampaignShelf({ title, total, cards, onOpen, onSeeAll, g
                   </>
                 )}
               </div>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: c.urgent ? "#ff9500" : "var(--t-999)", textAlign: "right", flexShrink: 0 }}>{c.note}</span>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: c.urgent ? "var(--t-ff9500)" : "var(--t-999)", textAlign: "right", flexShrink: 0 }}>{c.note}</span>
             </div>
           </div>
         ))}

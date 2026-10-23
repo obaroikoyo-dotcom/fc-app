@@ -423,7 +423,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
         {/* Video */}
         <div>
           <p style={{ fontSize: "11px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: "8px" }}>
-            Video Pitch {campaign.video_required ? <span style={{ color: "#ff3b30", fontWeight: 600 }}>* (Required)</span> : <span style={{ color: "var(--t-888)" }}>(Optional)</span>}
+            Video Pitch {campaign.video_required ? <span style={{ color: "var(--t-ff3b30)", fontWeight: 600 }}>* (Required)</span> : <span style={{ color: "var(--t-888)" }}>(Optional)</span>}
           </p>
           <input type="file" disabled={submitting} accept="video/*" onChange={handleVideoFileChange}
             style={{ ...UI.input, background: "var(--c-111)", border: "1px dashed var(--c-222)", cursor: submitting ? "not-allowed" : "pointer", opacity: submitting ? 0.5 : 1 }} />
@@ -444,7 +444,7 @@ export default function ApplyCampaign({ navigate, campaignId, goBack }: Props) {
 
         {/* Error */}
         {formError && (
-          <p role="alert" style={{ color: "#ff6b60", fontSize: "13px", margin: 0, lineHeight: 1.4 }}>{formError}</p>
+          <p role="alert" style={{ color: "var(--t-ff6b60)", fontSize: "13px", margin: 0, lineHeight: 1.4 }}>{formError}</p>
         )}
 
         {/* Submit */}

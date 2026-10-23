@@ -433,7 +433,7 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         )}
                         {isOwn && feedTab === "yours" && (c as any).is_draft && (
                           <span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px", color: "var(--t-999)", fontWeight: 500, letterSpacing: "0.04em" }}>
-                            <span className="true-color" style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ff9500", flexShrink: 0 }} />
+                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--b-ff9500)", flexShrink: 0 }} />
                             Draft
                           </span>
                         )}
@@ -454,12 +454,11 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                               </span>
                             )}
                             <span
-                              className="true-color"
                               onClick={(e) => { e.stopPropagation(); deleteCampaign(c.id); }}
                               title="Delete"
-                              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "26px", height: "26px", color: "#ff4d4d", cursor: "pointer" }}
-                              onMouseEnter={e => (e.currentTarget.style.color = "#ff7a70")}
-                              onMouseLeave={e => (e.currentTarget.style.color = "#ff4d4d")}
+                              style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "26px", height: "26px", color: "var(--t-ff4d4d)", cursor: "pointer" }}
+                              onMouseEnter={e => (e.currentTarget.style.color = "var(--t-ff7a70)")}
+                              onMouseLeave={e => (e.currentTarget.style.color = "var(--t-ff4d4d)")}
                             >
                               <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
                                 <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

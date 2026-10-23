@@ -21,6 +21,7 @@ import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 import { dealBreakdown } from "../lib/fees";
 import DealPriceCard from "../components/DealPriceCard";
+import { cardElementOptions } from "../lib/stripeTheme";
 import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
 import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
 import { isDemoMode } from "../lib/demo/mode";
@@ -214,13 +215,6 @@ const REACTION_EMOJI = ["❤️", "😂", "😮", "😢", "👍"];
 const CHAT_OPENED_PREFIX = "Chat Opened!";
 const PAYMENT_CONFIRMED_PREFIX = "Payment secured!";
 
-const CARD_ELEMENT_OPTIONS = {
-  hidePostalCode: true,
-  style: {
-    base: { fontSize: "14px", color: "#fff", fontFamily: "'TikTok Sans', sans-serif", "::placeholder": { color: "#999" } },
-    invalid: { color: "#ff3b30" },
-  },
-};
 
 interface PaymentModalProps {
   paymentApp: Application;
@@ -477,7 +471,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
           <div>
             <label style={{ fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>Card Details</label>
             <div style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "11px 13px" }}>
-              <CardElement options={CARD_ELEMENT_OPTIONS} />
+              <CardElement options={cardElementOptions()} />
             </div>
           </div>
           <div>
@@ -518,7 +512,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
         <p style={{ fontSize: "11px", color: "var(--t-999)", marginBottom: "8px", lineHeight: 1.4 }}>This creator hasn't finished setting up payouts yet. Funds will be held in escrow until they do.</p>
       )}
 
-      {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
+      {error && <p style={{ fontSize: "12px", color: "var(--t-ff3b30)", marginBottom: "8px" }}>{error}</p>}
 
       <div style={{ display: "flex", gap: "10px" }}>
         <div onClick={!processing ? onClose : undefined} style={{ flex: 1, padding: "12px", borderRadius: "8px", background: "transparent", border: "1px solid var(--c-222)", color: processing ? "var(--t-444)" : "var(--t-999)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: processing ? "default" : "pointer", textTransform: "uppercase" as const }}>Cancel</div>
@@ -558,9 +552,9 @@ function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; waterm
           : { position: "relative", overflow: "hidden", borderRadius: "8px", background: "#000", isolation: "isolate" }}
         onContextMenu={e => e.preventDefault()}
       >
-        {/* The light theme flips colours, which would turn this black backdrop
-            white wherever the video doesn't fill the box. true-color flips it back. */}
-        <div className="true-color" aria-hidden style={{ position: "absolute", inset: 0, zIndex: -1, background: "#000", pointerEvents: "none" }} />
+        {/* A black backdrop, so wherever the video doesn't fill the box it is black
+            in both looks. */}
+        <div aria-hidden style={{ position: "absolute", inset: 0, zIndex: -1, background: "#000", pointerEvents: "none" }} />
         {/* No native controls on purpose: every browser's built-in control
             bar has its own fullscreen button (iOS Safari/Firefox ignore
             controlsList), and native fullscreen drops the watermark overlay.
@@ -995,7 +989,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         <PreviewVideo src={deliverableUrl} watermark={role === "brand" && applicationStatus !== "paid"} maxHeight="220px" />
       )}
 
-      {error && <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px" }}>{error}</p>}
+      {error && <p style={{ fontSize: "11px", color: "var(--t-ff3b30)", marginBottom: "8px" }}>{error}</p>}
 
       {role === "creator" && applicationStatus === "funded" && deliverableUrl && reviewEndMs !== null && (
         <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.55, marginBottom: "10px" }}>
@@ -1032,7 +1026,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           ) : myPost.status === "published" ? (
             <p style={{ fontSize: "11px", color: "var(--t-ccc)", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted. Payout pending. Finish setting up payouts in Settings → Payouts to receive your funds.</p>
           ) : (
-            <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-ff3b30)" }}>Post failed - try again.</p>
           )}
         </div>
       )}
@@ -1050,7 +1044,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           ) : myPost.status === "published" ? (
             <p style={{ fontSize: "11px", color: "var(--t-ccc)", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Posted to your {platform}.</p>
           ) : (
-            <p style={{ fontSize: "11px", color: "#ff3b30" }}>Post failed - try again.</p>
+            <p style={{ fontSize: "11px", color: "var(--t-ff3b30)" }}>Post failed - try again.</p>
           )}
         </div>
       )}
@@ -1110,7 +1104,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {role === "brand" && applicationStatus === "funded" && deliverableUrl && showDisputeForm && (
         (
-          <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid rgba(255,59,48,0.2)", background: "rgba(255,59,48,0.05)" }}>
+          <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid var(--a-255-59-48-0_2)", background: "var(--a-255-59-48-0_05)" }}>
             <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "6px" }}>What's wrong with this delivery?</p>
             <textarea
               value={disputeReason}
@@ -1122,7 +1116,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               <div onClick={() => { setShowDisputeForm(false); setDisputeReason(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
                 Cancel
               </div>
-              <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing ? "#3a1414" : "#ff3b30", color: "var(--t-fff)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
+              <div onClick={!disputing ? handleRaiseDispute : undefined} style={{ flex: 2, padding: "9px", borderRadius: "6px", background: disputing ? "var(--b-3a1414)" : "var(--b-ff3b30)", color: "var(--t-fff)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: disputing ? "default" : "pointer", textTransform: "uppercase" }}>
                 {disputing ? "Submitting..." : "Submit Dispute"}
               </div>
             </div>
@@ -1237,7 +1231,7 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
           </div>
         </>
       )}
-      {error && <p style={{ fontSize: "11px", color: "#ff3b30" }}>{error}</p>}
+      {error && <p style={{ fontSize: "11px", color: "var(--t-ff3b30)" }}>{error}</p>}
     </div>
   );
 }
@@ -2256,7 +2250,7 @@ return (
           </div>
           {view === "chat" && activeConvo && (
             blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
-              <span style={{ fontSize: "9px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 8px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
+              <span style={{ fontSize: "9px", color: "var(--t-ff4d4d)", border: "1px solid var(--a-255-77-77-0_25)", background: "var(--a-255-77-77-0_08)", padding: "4px 8px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
             ) : (
               <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                 <span
@@ -2281,7 +2275,7 @@ return (
             </span>
             <span
               onClick={handleScreenOutButtonClick}
-              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "#ff3b30" : "var(--t-444)", border: `1px solid ${payableApps.length > 0 ? "#3a1a1a" : "var(--c-222)"}`, cursor: payableApps.length > 0 ? "pointer" : "default" }}
+              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "var(--t-ff3b30)" : "var(--t-444)", border: `1px solid ${payableApps.length > 0 ? "var(--c-3a1a1a)" : "var(--c-222)"}`, cursor: payableApps.length > 0 ? "pointer" : "default" }}
             >
               Screen Out
             </span>
@@ -2323,7 +2317,7 @@ return (
                   </div>
                   <div
                     onClick={() => !blockLoading && handleBlockFromChat()}
-                    style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                    style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_25)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
                   >
                     {blockLoading ? "Blocking..." : "Block"}
                   </div>
@@ -2342,7 +2336,7 @@ return (
             <div onClick={() => setBrandTab("messages")} style={{ flex: 1, padding: "12px", textAlign: "center", cursor: "pointer", fontSize: "12px", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: brandTab === "messages" ? "var(--t-fff)" : "var(--t-444)", borderBottom: brandTab === "messages" ? "2px solid var(--c-fff)" : "2px solid transparent", position: "relative" }}>
               messages
               {unreadConvoIds.length > 0 && (
-                <span style={{ display: "inline-block", width: "6px", height: "6px", background: "#ff3b30", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
+                <span style={{ display: "inline-block", width: "6px", height: "6px", background: "var(--b-ff3b30)", borderRadius: "50%", marginLeft: "4px", verticalAlign: "middle" }} />
               )}
             </div>
           </div>
@@ -2377,7 +2371,7 @@ return (
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   {camp.applications.filter(a => a.status === "pending").length > 0 && !seenCampaignIds.includes(camp.id) && (
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)" }} />
                   )}
                   <span style={{ color: "var(--t-888)", fontSize: "16px" }}>›</span>
                 </div>
@@ -2430,7 +2424,7 @@ return (
               </div>
             </div>
             {blockedIds.includes(activeApplication.creator_id) ? (
-              <span style={{ fontSize: "10px", color: "#ff4d4d", border: "1px solid rgba(255,77,77,0.25)", background: "rgba(255,77,77,0.08)", padding: "4px 9px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
+              <span style={{ fontSize: "10px", color: "var(--t-ff4d4d)", border: "1px solid var(--a-255-77-77-0_25)", background: "var(--a-255-77-77-0_08)", padding: "4px 9px", borderRadius: "6px", flexShrink: 0, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</span>
             ) : (
               <span
                 onClick={() => { setReportOpen(o => !o); setReportSubmitted(false); }}
@@ -2475,7 +2469,7 @@ return (
                     </div>
                     <div
                       onClick={() => !blockLoading && handleBlockCreator(activeApplication)}
-                      style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                      style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_25)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
                     >
                       {blockLoading ? "Blocking..." : "Block Creator"}
                     </div>
@@ -2583,7 +2577,7 @@ return (
               const displayName = theyBlocked ? "User unavailable" : c.other_name;
               const previewText = iBlocked ? "Blocked" : theyBlocked ? "Unavailable" : (c.last_message || "Start a conversation");
               return (
-                <div key={c.id} onClick={() => openChat(c)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", cursor: "pointer", background: isUnread ? "#11111144" : "transparent" }}>
+                <div key={c.id} onClick={() => openChat(c)} className="item-enter" style={{ animationDelay: `${Math.min(i, 10) * 40}ms`, display: "flex", alignItems: "center", gap: "12px", padding: "1rem 1.25rem", borderBottom: "1px solid var(--c-111)", cursor: "pointer", background: isUnread ? "var(--unread-bg)" : "transparent" }}>
                   <div style={{ width: "44px", height: "44px", borderRadius: c.other_role === "creator" ? "50%" : "12px", border: "1px solid var(--c-222)", background: "var(--c-111)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", color: "var(--t-777)", flexShrink: 0, overflow: "hidden", position: "relative" }}>
                     {theyBlocked ? "◌" : <img src={avatarSrc(c.other_avatar, c.other_name)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
                   </div>
@@ -2594,14 +2588,14 @@ return (
                         <p style={{ color: "var(--t-fff)", fontSize: "14px", fontWeight: isUnread ? 700 : 600 }}>{displayName}</p>
                         {!theyBlocked && c.other_verified && <VerifiedBadge size={12} />}
                         {isUnread && !iBlocked && !theyBlocked && (
-                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30" }} />
+                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)" }} />
                         )}
                       </div>
                       <span style={{ fontSize: "11px", color: isUnread ? "var(--t-fff)" : "var(--t-444)", fontWeight: isUnread ? 600 : 400 }}>
                         {parseUtc(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
-                    <p style={{ fontSize: "12px", color: (iBlocked || theyBlocked) ? "#ff4d4d" : isUnread ? "var(--t-eee)" : "var(--t-444)", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    <p style={{ fontSize: "12px", color: (iBlocked || theyBlocked) ? "var(--t-ff4d4d)" : isUnread ? "var(--t-eee)" : "var(--t-444)", fontWeight: isUnread ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {previewText}
                     </p>
                   </div>
@@ -2938,7 +2932,7 @@ return (
           {/* INPUT BAR CONTROLLER */}
           <div ref={inputBarRef} style={{ position: "fixed", bottom: "var(--nav-h)", left: 0, right: 0, padding: "0.75rem 1.25rem", background: "var(--c-0a0a0a)", borderTop: "1px solid var(--c-111)", display: "flex", gap: "10px", alignItems: "center", zIndex: 100 }}>
             {blockedIds.includes(otherParticipantId(activeConvo) || "") ? (
-              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "#ff4d4d", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
+              <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "var(--t-ff4d4d)", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <NoEntryIcon /> You've blocked this user. Unblock them in Settings to message
               </div>
             ) : blockedByIds.includes(otherParticipantId(activeConvo) || "") ? (

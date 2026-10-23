@@ -542,7 +542,7 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
           </GoogleSignInButton>
         </div>
       )}
-      {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+      {error && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
       {!termsAccepted && (
         <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "12px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span>Read & accept Terms and Conditions</span>
@@ -760,12 +760,12 @@ const filteredIndustries = INDUSTRIES.filter(ind =>
                   inputMode="numeric"
                   maxLength={1}
                   disabled={otpLoading}
-                  style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "var(--t-fff)", background: "var(--c-111)", border: `1px solid ${otpError ? "#ff3b30" : digit ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
+                  style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "var(--t-fff)", background: "var(--c-111)", border: `1px solid ${otpError ? "var(--c-ff3b30)" : digit ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
                 />
               ))}
             </div>
 
-            {otpError && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{otpError}</p>}
+            {otpError && <p style={{ fontSize: "12px", color: "var(--t-ff3b30)", marginBottom: "1rem" }}>{otpError}</p>}
             {otpLoading && <p style={{ fontSize: "12px", color: "var(--t-999)", marginBottom: "1rem" }}>Verifying...</p>}
 
             <div

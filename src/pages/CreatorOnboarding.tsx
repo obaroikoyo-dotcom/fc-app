@@ -487,7 +487,7 @@ const [showOtp, setShowOtp] = useState(false);
           <DateSelect value={birthYear} onChange={updateBirthYear} options={YEAR_OPTIONS} placeholder="Year" />
         </div>
         {showAgeWarning && (
-          <p style={{ fontSize: "12px", color: "#ff9500", lineHeight: 1.5 }}>
+          <p style={{ fontSize: "12px", color: "var(--t-ff9500)", lineHeight: 1.5 }}>
             {computedAge === null ? "Please enter your date of birth to continue." : "You're too young for FlipCollab right now."}
           </p>
         )}
@@ -638,7 +638,7 @@ const [showOtp, setShowOtp] = useState(false);
           </GoogleSignInButton>
         </div>
       )}
-      {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+      {error && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 {!termsAccepted && (
   <div onClick={() => setShowTerms(true)} style={{ marginTop: "1rem", padding: "10px 14px", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", fontSize: "12px", color: "var(--t-fff)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
     <span>Read & accept Terms and Conditions</span>
@@ -674,16 +674,16 @@ const [showOtp, setShowOtp] = useState(false);
           const typedUsername = socialLinks[label];
           const mismatch = !!connection && !!typedUsername && !usernamesMatch(typedUsername, connection.username);
           return (
-            <div key={platform} style={{ background: "var(--c-111)", border: `1px solid ${mismatch ? "#ff3b30" : "var(--c-1a1a1a)"}`, borderRadius: "10px", padding: "14px 16px" }}>
+            <div key={platform} style={{ background: "var(--c-111)", border: `1px solid ${mismatch ? "var(--c-ff3b30)" : "var(--c-1a1a1a)"}`, borderRadius: "10px", padding: "14px 16px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                   <p style={{ fontSize: "14px", color: platform === "youtube" ? "var(--t-999)" : "var(--t-fff)", fontWeight: platform === "youtube" ? 500 : 600 }}>{label}</p>
-                  {connection && <p style={{ fontSize: "11px", color: mismatch ? "#ff3b30" : "var(--t-555)", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
+                  {connection && <p style={{ fontSize: "11px", color: mismatch ? "var(--t-ff3b30)" : "var(--t-555)", marginTop: "2px" }}>{connection.username ? `@${connection.username}` : "Connected"}</p>}
                 </div>
                 {connection ? (
                   <div style={{ display: "flex", gap: "8px" }}>
                     <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: "pointer" }}>Choose videos</span>
-                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "#ff3b30" : "var(--c-333)"}`, color: mismatch ? "#ff3b30" : "var(--t-fff)" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
+                    <span style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: `1px solid ${mismatch ? "var(--c-ff3b30)" : "var(--c-333)"}`, color: mismatch ? "var(--t-ff3b30)" : "var(--t-fff)" }}>{mismatch ? "Mismatch" : "Connected ✓"}</span>
                   </div>
                 ) : platform === "youtube" ? (
                   <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
@@ -695,7 +695,7 @@ const [showOtp, setShowOtp] = useState(false);
               </div>
               {mismatch && (
                 <div style={{ marginTop: "10px" }}>
-                  <p style={{ fontSize: "11px", color: "#ff3b30", marginBottom: "8px", lineHeight: 1.5 }}>
+                  <p style={{ fontSize: "11px", color: "var(--t-ff3b30)", marginBottom: "8px", lineHeight: 1.5 }}>
                     This is @{connection!.username}, but you entered "{typedUsername}" earlier - it needs to match the connected account.
                   </p>
                   <label style={{ fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Change username</label>
@@ -886,12 +886,12 @@ const buttonLabel = () => {
             inputMode="numeric"
             maxLength={1}
             disabled={otpLoading}
-            style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "var(--t-fff)", background: "var(--c-111)", border: `1px solid ${otpError ? "#ff3b30" : digit ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
+            style={{ width: "36px", height: "44px", textAlign: "center", fontSize: "17px", fontWeight: 700, color: "var(--t-fff)", background: "var(--c-111)", border: `1px solid ${otpError ? "var(--c-ff3b30)" : digit ? "var(--c-fff)" : "var(--c-222)"}`, borderRadius: "10px", outline: "none", fontFamily: "inherit" }}
           />
         ))}
       </div>
 
-      {otpError && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{otpError}</p>}
+      {otpError && <p style={{ fontSize: "12px", color: "var(--t-ff3b30)", marginBottom: "1rem" }}>{otpError}</p>}
       {otpLoading && <p style={{ fontSize: "12px", color: "var(--t-999)", marginBottom: "1rem" }}>Verifying...</p>}
 
       <div

@@ -34,7 +34,7 @@ import { peekGoogleLoginIntent, clearGoogleLoginIntent, peekAppleLoginIntent, cl
 import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal";
 import { autoRequestPush, subscribeToPush, isPushEnabled, isIOSDevice } from "./lib/push";
 import { isDemoMode } from "./lib/demo/mode";
-import { isLightTheme, saveLightTheme, LIGHT_FILTER, UNDO_LIGHT_FILTER } from "./lib/theme";
+import { isLightTheme, saveLightTheme, applyTheme } from "./lib/theme";
 import DemoNotice from "./components/DemoNotice";
 
 
@@ -86,7 +86,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 calc(2px + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 calc(2px + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => navigate("explore")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="9" stroke={page === "explore" ? activeColor : inactiveColor} strokeWidth="2"/>
@@ -109,7 +109,7 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
               stroke={page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
           </svg>
           {unreadCount > 0 && (
-            <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30", border: `2px solid ${bgColor}` }} />
+            <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", border: `2px solid ${bgColor}` }} />
           )}
         </div>
         <span className="nav-label" style={{ fontSize: "11px", color: page === "messages-creator" || page === "notifications-creator" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Messages</span>
@@ -148,7 +148,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
 
   return (
     <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", zIndex: 100 }}>
-    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 calc(2px + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, filter: isInverted ? "invert(1) hue-rotate(180deg)" : "none", touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
+    <div style={{ borderTop: `1px solid ${borderColor}`, display: "flex", padding: "0.4rem 0 calc(2px + env(safe-area-inset-bottom, 0px)) 0", background: bgColor, touchAction: "manipulation", transition: "background 0.2s ease, border-color 0.2s ease" }}>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-dashboard"); setTab("campaigns"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <rect x="3" y="3" width="7" height="7" rx="1" stroke={campaignsActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
@@ -173,7 +173,7 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
               stroke={messagesActive ? activeColor : inactiveColor} strokeWidth="2" strokeLinejoin="round"/>
           </svg>
           {unreadCount > 0 && (
-            <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff3b30", border: `2px solid ${bgColor}` }} />
+            <div style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", border: `2px solid ${bgColor}` }} />
           )}
         </div>
         <span className="nav-label" style={{ fontSize: "11px", color: messagesActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Messages</span>
@@ -302,16 +302,13 @@ export default function App() {
     });
   };
 
-  // The app's own root div is filtered to invert (rather than every
-  // component having real light-theme styles), but that filter only
-  // covers the root div's own rendered pixels - it doesn't touch the
-  // actual <body> behind it. If the root div's height falls even
-  // slightly short of the true viewport (safe-area/dynamic-toolbar
-  // rounding), the sliver that peeks through is body's own background,
-  // which is hardcoded dark and never gets inverted. Keep it in sync
-  // with the theme so that sliver matches instead of showing through
-  // as a stray black band.
+  // The theme is a class on <html> (see lib/theme.ts); every colour in the app is a
+  // named colour that has a dark and a light value. The page behind the app (<body>)
+  // also follows it: if the root div falls slightly short of the viewport
+  // (safe-area/dynamic-toolbar rounding), the sliver that shows is the body's own
+  // background, which must match instead of showing through as a stray band.
   useEffect(() => {
+    applyTheme(isInverted);
     document.getElementById("theme-boot")?.remove();
     document.body.style.background = isInverted ? "#ffffff" : "#0a0a0a";
     document.documentElement.style.background = isInverted ? "#ffffff" : "#0a0a0a";
@@ -611,7 +608,7 @@ export default function App() {
 
   if (loading && page !== "splash") {
     return (
-      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div className="app-shell" style={{ minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ color: "var(--t-777)", fontSize: "13px", fontFamily: "'TikTok Sans', sans-serif" }}>Loading...</p>
       </div>
     );
@@ -619,7 +616,7 @@ export default function App() {
 
   if (accountBlocked) {
     return (
-      <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
+      <div className="app-shell" style={{ minHeight: "100%", background: "var(--c-0a0a0a)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif" }}>
         <style>{`@import url('https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap');`}</style>
         <p style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", marginBottom: "0.75rem" }}>
           {accountBlocked.status === "banned" ? "Account banned" : "Account suspended"}
@@ -708,9 +705,8 @@ case "brand-campaign-preview":
   };
 
   return (
-    <div className={isInverted ? "app-shell theme-light" : "app-shell"} style={{ filter: isInverted ? LIGHT_FILTER : "none", transition: "filter 0.2s ease", overflow: "hidden" }}>
+    <div className="app-shell" style={{ overflow: "hidden" }}>
       <style>{`
-  ${isInverted ? `img, video, [style*="background-image"] { filter: ${UNDO_LIGHT_FILTER}; } video:fullscreen { filter: none; } video:-webkit-full-screen { filter: none; } img.no-reinvert { filter: none; } svg.verified-badge, svg.google-icon, svg.tiktok-icon, svg.instagram-icon, .true-color { filter: ${UNDO_LIGHT_FILTER}; }` : ""}
   @keyframes pageEnter {
   from { opacity: 0; transform: translateX(18px); }
   to { opacity: 1; transform: translateX(0); }

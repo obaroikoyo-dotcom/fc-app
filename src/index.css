@@ -99,19 +99,6 @@ html, body {
   }
 }
 
-/* --- Dynamic Theme Inversion Filter Rules --- */
-.inverted-theme {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-/* Safeguard media layers from turning into negative layouts */
-.inverted-theme img,
-.inverted-theme video,
-.inverted-theme svg:not([stroke]),
-.inverted-theme [style*="background-image"] {
-  filter: invert(1) hue-rotate(180deg);
-}
-
 /* Text rendering and wrapping, app-wide. Grayscale smoothing keeps light text
    on dark from looking heavy on Apple screens, balance stops a heading from
    ending on one lonely word, and pretty does the same for paragraphs. */
@@ -132,34 +119,6 @@ p { text-wrap: pretty; }
    The colours are now named (see the colour block at the end of this file) and the
    floor is part of the names: --t-333 and --t-444 are #919191, --t-555 to --t-888
    are #999, and icon strokes and fills --s-333 to --s-888 are #919191. */
-
-/* ---- Light look: colours the filter would wash out ----------------------
-   The light look is the dark palette run through a colour filter. Greens,
-   oranges and blues come out well, but a red comes out salmon and a gold
-   comes out brown. Reds are passed through the filter's exact opposite first
-   so they land as a clear red; gold uses the base colour that the filter
-   turns into the nearest amber it can reach. */
-.theme-light [style^="color: rgb(255, 59, 48)"],
-.theme-light [style*="; color: rgb(255, 59, 48)"],
-.theme-light [style^="color: rgb(255, 68, 68)"],
-.theme-light [style*="; color: rgb(255, 68, 68)"],
-.theme-light [style^="color: rgb(255, 77, 77)"],
-.theme-light [style*="; color: rgb(255, 77, 77)"] {
-  color: #e5322d !important;
-  filter: brightness(0.957) hue-rotate(180deg) invert(1);
-}
-.theme-light [style^="background: rgb(255, 59, 48)"],
-.theme-light [style*="; background: rgb(255, 59, 48)"],
-.theme-light [style^="background: rgb(255, 68, 68)"],
-.theme-light [style*="; background: rgb(255, 68, 68)"],
-.theme-light [style^="background: rgb(255, 77, 77)"],
-.theme-light [style*="; background: rgb(255, 77, 77)"] {
-  filter: brightness(0.957) hue-rotate(180deg) invert(1);
-}
-.theme-light [style^="color: rgb(255, 184, 0)"],
-.theme-light [style*="; color: rgb(255, 184, 0)"] {
-  color: #be6e00 !important;
-}
 
 /* --- Readability --------------------------------------------------------------
    Much of the app's secondary text was set in very faint greys at 9 to 11px:
@@ -197,10 +156,11 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
 }
 
 /* colours:start */
-/* Named colours, written by scripts/tokenize-colours.cjs. The values here are the dark look.
-   --c-*: any colour, --t-*: text colours and --s-*: icon strokes and fills (both with the readability
-   floors the old stylesheet rules applied), --a-*: see-through black and white. */
+/* Named colours, written by scripts/tokenize-colours.cjs.
+   --c-*: any colour, --t-*: text, --s-*: icon strokes and fills, --b-*: status backgrounds,
+   --a-*: see-through black and white. Text and icon names carry the readability floors. */
 :root {
+  color-scheme: dark;
   --c-0a0a0a: #0a0a0a;
   --c-0d0d0d: #0d0d0d;
   --c-0f0f0f: #0f0f0f;
@@ -214,6 +174,7 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   --c-262626: #262626;
   --c-2a2a2a: #2a2a2a;
   --c-333: #333333;
+  --c-3a1a1a: #3a1a1a;
   --c-3a3a3a: #3a3a3a;
   --c-444: #444444;
   --c-555: #555555;
@@ -221,7 +182,9 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   --c-888: #888888;
   --c-999: #999999;
   --c-e0e0e0: #e0e0e0;
+  --c-ff3b30: #ff3b30;
   --c-fff: #ffffff;
+  --t-000: #000000;
   --t-0a0a0a: #0a0a0a;
   --t-2a2a2a: #2a2a2a;
   --t-2c2c2c: #2c2c2c;
@@ -229,6 +192,7 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   --t-444: #919191;
   --t-555: #999999;
   --t-5a5a5a: #5a5a5a;
+  --t-6366f1: #6366f1;
   --t-666: #999999;
   --t-777: #999999;
   --t-888: #999999;
@@ -239,11 +203,21 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   --t-ccc: #cccccc;
   --t-ddd: #dddddd;
   --t-eee: #eeeeee;
+  --t-ff3b30: #ff3b30;
+  --t-ff4444: #ff4444;
+  --t-ff4d4d: #ff4d4d;
+  --t-ff6b60: #ff6b60;
+  --t-ff7a70: #ff7a70;
+  --t-ff9500: #ff9500;
+  --t-ffb800: #ffb800;
   --t-fff: #ffffff;
   --s-0a0a0a: #0a0a0a;
   --s-333: #919191;
   --s-919191: #919191;
   --s-fff: #ffffff;
+  --b-3a1414: #3a1414;
+  --b-ff3b30: #ff3b30;
+  --b-ff9500: #ff9500;
   --a-0-0-0-0_4: rgba(0, 0, 0, 0.4);
   --a-0-0-0-0_5: rgba(0, 0, 0, 0.5);
   --a-0-0-0-0_6: rgba(0, 0, 0, 0.6);
@@ -251,6 +225,8 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   --a-0-0-0-0_75: rgba(0, 0, 0, 0.75);
   --a-0-0-0-0_82: rgba(0, 0, 0, 0.82);
   --a-0-0-0-0_85: rgba(0, 0, 0, 0.85);
+  --a-255-149-0-0_35: rgba(255, 149, 0, 0.35);
+  --a-255-149-0-0_4: rgba(255, 149, 0, 0.4);
   --a-255-255-255-0_03: rgba(255, 255, 255, 0.03);
   --a-255-255-255-0_045: rgba(255, 255, 255, 0.045);
   --a-255-255-255-0_05: rgba(255, 255, 255, 0.05);
@@ -262,5 +238,118 @@ button:not(:disabled):active, [role="button"]:active { transform: scale(0.97); }
   --a-255-255-255-0_32: rgba(255, 255, 255, 0.32);
   --a-255-255-255-0_4: rgba(255, 255, 255, 0.4);
   --a-255-255-255-0_6: rgba(255, 255, 255, 0.6);
+  --a-255-59-48-0_05: rgba(255, 59, 48, 0.05);
+  --a-255-59-48-0_07: rgba(255, 59, 48, 0.07);
+  --a-255-59-48-0_1: rgba(255, 59, 48, 0.1);
+  --a-255-59-48-0_15: rgba(255, 59, 48, 0.15);
+  --a-255-59-48-0_2: rgba(255, 59, 48, 0.2);
+  --a-255-59-48-0_3: rgba(255, 59, 48, 0.3);
+  --a-255-68-68-0_3: rgba(255, 68, 68, 0.3);
+  --a-255-77-77-0_08: rgba(255, 77, 77, 0.08);
+  --a-255-77-77-0_25: rgba(255, 77, 77, 0.25);
+  --a-255-77-77-0_3: rgba(255, 77, 77, 0.3);
+  --a-255-77-77-0_35: rgba(255, 77, 77, 0.35);
+  --a-255-77-77-0_4: rgba(255, 77, 77, 0.4);
+  --a-99-102-241-0_4: rgba(99, 102, 241, 0.4);
+}
+html.theme-light {
+  color-scheme: light;
+  --c-0a0a0a: #ffffff;
+  --c-0d0d0d: #fdfdfd;
+  --c-0f0f0f: #fbfbfb;
+  --c-111: #f9f9f9;
+  --c-141414: #f6f6f6;
+  --c-161616: #f3f3f3;
+  --c-1a1a1a: #efefef;
+  --c-1c1c1c: #ededed;
+  --c-1e1e1e: #ebebeb;
+  --c-222: #e7e7e7;
+  --c-262626: #e3e3e3;
+  --c-2a2a2a: #dfdfdf;
+  --c-333: #d5d5d5;
+  --c-3a1a1a: #ffe1e1;
+  --c-3a3a3a: #cecece;
+  --c-444: #c3c3c3;
+  --c-555: #b2b2b2;
+  --c-666: #a0a0a0;
+  --c-888: #7c7c7c;
+  --c-999: #6b6b6b;
+  --c-e0e0e0: #202020;
+  --c-ff3b30: #e5322d;
+  --c-fff: #000000;
+  --t-000: #ffffff;
+  --t-0a0a0a: #ffffff;
+  --t-2a2a2a: #dfdfdf;
+  --t-2c2c2c: #dcdcdc;
+  --t-333: #737373;
+  --t-444: #737373;
+  --t-555: #6b6b6b;
+  --t-5a5a5a: #acacac;
+  --t-6366f1: #898cff;
+  --t-666: #6b6b6b;
+  --t-777: #6b6b6b;
+  --t-888: #6b6b6b;
+  --t-999: #6b6b6b;
+  --t-a3a3a3: #606060;
+  --t-aaa: #595959;
+  --t-bbb: #474747;
+  --t-ccc: #353535;
+  --t-ddd: #242424;
+  --t-eee: #121212;
+  --t-ff3b30: #e5322d;
+  --t-ff4444: #e5322d;
+  --t-ff4d4d: #e5322d;
+  --t-ff6b60: #c4251f;
+  --t-ff7a70: #c4251f;
+  --t-ff9500: #c55600;
+  --t-ffb800: #be6e00;
+  --t-fff: #000000;
+  --s-0a0a0a: #ffffff;
+  --s-333: #737373;
+  --s-919191: #737373;
+  --s-fff: #000000;
+  --b-3a1414: #ffe5e5;
+  --b-ff3b30: #ff3b30;
+  --b-ff9500: #ff9500;
+  --a-0-0-0-0_4: rgba(255, 255, 255, 0.4);
+  --a-0-0-0-0_5: rgba(255, 255, 255, 0.5);
+  --a-0-0-0-0_6: rgba(255, 255, 255, 0.6);
+  --a-0-0-0-0_7: rgba(255, 255, 255, 0.7);
+  --a-0-0-0-0_75: rgba(255, 255, 255, 0.75);
+  --a-0-0-0-0_82: rgba(255, 255, 255, 0.82);
+  --a-0-0-0-0_85: rgba(255, 255, 255, 0.85);
+  --a-255-149-0-0_35: rgba(197, 86, 0, 0.35);
+  --a-255-149-0-0_4: rgba(197, 86, 0, 0.4);
+  --a-255-255-255-0_03: rgba(0, 0, 0, 0.03);
+  --a-255-255-255-0_045: rgba(0, 0, 0, 0.045);
+  --a-255-255-255-0_05: rgba(0, 0, 0, 0.05);
+  --a-255-255-255-0_06: rgba(0, 0, 0, 0.06);
+  --a-255-255-255-0_08: rgba(0, 0, 0, 0.08);
+  --a-255-255-255-0_09: rgba(0, 0, 0, 0.09);
+  --a-255-255-255-0_1: rgba(0, 0, 0, 0.1);
+  --a-255-255-255-0_12: rgba(0, 0, 0, 0.12);
+  --a-255-255-255-0_32: rgba(0, 0, 0, 0.32);
+  --a-255-255-255-0_4: rgba(0, 0, 0, 0.4);
+  --a-255-255-255-0_6: rgba(0, 0, 0, 0.6);
+  --a-255-59-48-0_05: rgba(229, 50, 45, 0.05);
+  --a-255-59-48-0_07: rgba(229, 50, 45, 0.07);
+  --a-255-59-48-0_1: rgba(229, 50, 45, 0.1);
+  --a-255-59-48-0_15: rgba(229, 50, 45, 0.15);
+  --a-255-59-48-0_2: rgba(229, 50, 45, 0.2);
+  --a-255-59-48-0_3: rgba(229, 50, 45, 0.3);
+  --a-255-68-68-0_3: rgba(229, 50, 45, 0.3);
+  --a-255-77-77-0_08: rgba(229, 50, 45, 0.08);
+  --a-255-77-77-0_25: rgba(229, 50, 45, 0.25);
+  --a-255-77-77-0_3: rgba(229, 50, 45, 0.3);
+  --a-255-77-77-0_35: rgba(229, 50, 45, 0.35);
+  --a-255-77-77-0_4: rgba(229, 50, 45, 0.4);
+  --a-99-102-241-0_4: rgba(137, 140, 255, 0.4);
 }
 /* colours:end */
+
+/* The tint behind a conversation with something new in it (see-through, so not part of the generated block above). */
+:root { --unread-bg: rgba(17, 17, 17, 0.267); }
+html.theme-light { --unread-bg: rgba(238, 238, 238, 0.267); }
+
+/* The logo is drawn white for the dark look; the light look wants it black. */
+html.theme-light .theme-logo { filter: invert(1); }

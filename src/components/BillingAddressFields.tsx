@@ -73,7 +73,7 @@ export default function BillingAddressFields({ addr }: { addr: BillingAddress })
           </select>
         </div>
       </div>
-      {addr.verifyError && <p style={{ fontSize: "11px", color: "#ff3b30", lineHeight: 1.5 }}>{addr.verifyError}</p>}
+      {addr.verifyError && <p style={{ fontSize: "11px", color: "var(--t-ff3b30)", lineHeight: 1.5 }}>{addr.verifyError}</p>}
     </div>
   );
 }

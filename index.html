@@ -41,6 +41,7 @@
           var s = document.createElement("style");
           s.id = "theme-boot";
           s.textContent = "html,body{background:#ffffff !important}";
+          document.documentElement.classList.add("theme-light");
           document.head.appendChild(s);
           var m = document.querySelector('meta[name="theme-color"]');
           if (m) m.setAttribute("content", "#ffffff");

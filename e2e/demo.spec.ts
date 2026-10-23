@@ -192,7 +192,7 @@ test("brand: an applicant's pitch video is a watermarked preview", async ({ page
   await expect(page.locator("video[controls]")).toHaveCount(0);
 });
 
-test("the light theme does not flip a video's colours in full screen", async ({ page }) => {
+test("a video is never recoloured by the look, in the page or in full screen", async ({ page }) => {
   await openDemo(page, "creator");
   await page.evaluate(() => {
     const v = document.createElement("video");
@@ -202,12 +202,12 @@ test("the light theme does not flip a video's colours in full screen", async ({ 
     document.querySelector(".app-shell")!.appendChild(v);
   });
   const video = page.locator(".app-shell > video").last();
-  const inPage = await video.evaluate(v => getComputedStyle(v).filter);
-  expect(inPage, "in the page the video is flipped back to true colour").not.toBe("none");
+  // Light mode is real colours now, so nothing above the video recolours it and its backdrop stays black.
+  expect(await video.evaluate(v => { for (let el: Element | null = v; el; el = el.parentElement) { const f = getComputedStyle(el).filter; if (f && f !== "none") return f; } return "none"; })).toBe("none");
+  expect(await video.evaluate(v => getComputedStyle(v).backgroundColor)).toBe("rgb(0, 0, 0)");
   await video.click({ position: { x: 150, y: 60 } }); // a real click, so full screen is allowed
   await video.evaluate(v => v.requestFullscreen());
   await expect.poll(() => page.evaluate(() => document.fullscreenElement?.tagName)).toBe("VIDEO");
-  // full screen leaves the flipped page, so the flip-back must go too
   expect(await page.evaluate(() => getComputedStyle(document.fullscreenElement!).filter)).toBe("none");
   await page.evaluate(() => document.exitFullscreen());
 });
@@ -425,7 +425,7 @@ test.describe("explore shelves", () => {
     const applied = new Set(t.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
     const discover = t.campaigns.filter(c => !c.is_draft && !applied.has(c.id));
 
-    const bands = await page.locator(".item-enter > .true-color").evaluateAll(els => els.map(el => ({
+    const bands = await page.locator(".item-enter > .campaign-tile").evaluateAll(els => els.map(el => ({
       niche: el.querySelector("span")?.textContent || "",
       colour: getComputedStyle(el).backgroundColor,
     })));
@@ -437,9 +437,9 @@ test.describe("explore shelves", () => {
       else seen.set(b.niche, b.colour);
     }
     // the shelf cards carry a (shorter) band too
-    expect(await page.locator("section[aria-label] .shelf-scroll > [role='button'] > .true-color").count()).toBeGreaterThan(0);
+    expect(await page.locator("section[aria-label] .shelf-scroll > [role='button'] > .campaign-tile").count()).toBeGreaterThan(0);
     // a campaign posted within a day or due within three days says so on its band
-    await expect(page.locator(".item-enter > .true-color").getByText(/^(New|Closing soon)$/).first()).toBeVisible();
+    await expect(page.locator(".item-enter > .campaign-tile").getByText(/^(New|Closing soon)$/).first()).toBeVisible();
   });
 
   test("brand Market tab: the same rows and colour bands, tapping opens a preview or a profile, no rows on Your Campaigns", async ({ page }) => {
@@ -452,14 +452,14 @@ test.describe("explore shelves", () => {
     // Your Campaigns: bands on the cards, no rows
     await expect(page.locator("section[aria-label]")).toHaveCount(0);
     const mine = t.campaigns.filter(c => c.brand_id === uid);
-    await expect(page.locator(".item-enter > .true-color")).toHaveCount(mine.length);
+    await expect(page.locator(".item-enter > .campaign-tile")).toHaveCount(mine.length);
 
     // Market: the three rows, money shown as a budget, and a band on every card
     await page.getByText("Market", { exact: true }).click();
     for (const title of ["Closing soon", "Top paying", "New today"]) await expect(shelf(page, title)).toBeVisible();
     await expect(shelf(page, "Top paying").getByText("Budget").first()).toBeVisible();
     await expect(page.locator(".item-enter")).toHaveCount(market.length);
-    await expect(page.locator(".item-enter > .true-color")).toHaveCount(market.length);
+    await expect(page.locator(".item-enter > .campaign-tile")).toHaveCount(market.length);
     expect(await shelf(page, "Top paying").locator(".shelf-scroll").evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true);
 
     // another brand's card opens their profile
@@ -667,11 +667,11 @@ test.describe("campaign cover photos", () => {
     // something that is not a photo is refused, with a reason
     await input.setInputFiles({ name: "notes.txt", mimeType: "text/plain", buffer: Buffer.from("hello") });
     await expect(page.getByText("Choose a JPG, PNG or WebP photo.")).toBeVisible();
-    await expect(page.locator("img.no-reinvert")).toHaveCount(0);
+    await expect(page.locator(".campaign-tile img")).toHaveCount(0);
 
     // a real photo shows as a preview of the card's band
     await input.setInputFiles({ name: "shop.png", mimeType: "image/png", buffer: PNG });
-    await expect(page.locator("img.no-reinvert")).toHaveCount(1);
+    await expect(page.locator(".campaign-tile img")).toHaveCount(1);
     await expect(page.getByText("Choose a JPG, PNG or WebP photo.")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Replace photo" })).toBeVisible();
 
@@ -687,29 +687,29 @@ test.describe("campaign cover photos", () => {
 
     // Your Campaigns shows it in place of the colour band
     const card = page.locator(".item-enter").filter({ hasText: "Cover photo check" });
-    await expect(card.locator("img.no-reinvert")).toHaveCount(1);
-    await expect.poll(() => card.locator("img.no-reinvert").evaluate((img: HTMLImageElement) => img.naturalWidth), "the picture actually loads").toBeGreaterThan(0);
+    await expect(card.locator(".campaign-tile img")).toHaveCount(1);
+    await expect.poll(() => card.locator(".campaign-tile img").evaluate((img: HTMLImageElement) => img.naturalWidth), "the picture actually loads").toBeGreaterThan(0);
     // a wide banner (5:2, not tall enough to fill the screen), and nothing laid over it to dim it: only the
     // picture and the small label and tag sit in it
-    const tile = card.locator(".true-color").first();
+    const tile = card.locator(".campaign-tile").first();
     const box = (await tile.boundingBox())!;
     expect(Math.abs(box.height / box.width - 2 / 5), "5:2").toBeLessThan(0.02);
     await expect(tile.locator(":scope > div"), "no dark layer over the photo").toHaveCount(0);
 
     // and so does the Market tab (the same card for everyone else)
     await page.getByText("Market", { exact: true }).click();
-    await expect(page.locator(".item-enter").filter({ hasText: "Cover photo check" }).locator("img.no-reinvert")).toHaveCount(1);
+    await expect(page.locator(".item-enter").filter({ hasText: "Cover photo check" }).locator(".campaign-tile img")).toHaveCount(1);
 
     // editing it: the saved photo is there to see, and Remove puts the colour band back
     await page.getByText("Your Campaigns", { exact: true }).click();
     await page.locator(".item-enter").filter({ hasText: "Cover photo check" }).getByTitle("Edit").click();
-    await expect(page.locator("img.no-reinvert")).toHaveCount(1);
+    await expect(page.locator(".campaign-tile img")).toHaveCount(1);
     await page.getByRole("button", { name: "Remove" }).click();
     await expect(page.getByText("Add a cover photo")).toBeVisible();
     await page.getByText("Save Changes", { exact: true }).last().click();
     await expect(page.getByText("Campaigns", { exact: true }).first()).toBeVisible({ timeout: 15_000 });
     expect((await db(page)).campaigns.find(c => c.name === "Cover photo check")?.cover_url ?? null).toBeNull();
-    await expect(page.locator(".item-enter").filter({ hasText: "Cover photo check" }).locator("img.no-reinvert")).toHaveCount(0);
+    await expect(page.locator(".item-enter").filter({ hasText: "Cover photo check" }).locator(".campaign-tile img")).toHaveCount(0);
 
     expect(leaks, "nothing may reach the real backend").toEqual([]);
     expect(errors).toEqual([]);

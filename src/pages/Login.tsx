@@ -110,7 +110,7 @@ export default function Login({ navigate }: Props) {
           <span onClick={() => navigate("forgot-password")} style={{ color: "var(--t-bbb)", cursor: "pointer", textDecoration: "underline" }}>Forgot password?</span>
         </p>
 
-        {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+        {error && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 
         <div style={{ marginTop: "1.5rem" }}>
           <Button onClick={handleLogin}>{loading ? "Logging in..." : "Log In"}</Button>

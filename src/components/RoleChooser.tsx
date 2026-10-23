@@ -154,7 +154,7 @@ export default function RoleChooser({ eyebrow, brand, creator, footer }: Props) 
       <style>{SPACING}</style>
       <div ref={contentRef} style={{ width: "100%", maxWidth: "480px" }}>
         {/* width and height are the file's own size, so the space is reserved before it loads */}
-        <img src={logo} width={365} height={219} alt="" className="no-reinvert rs-logo" />
+        <img src={logo} width={365} height={219} alt="" className="theme-logo rs-logo" />
         <p className="rs-name" style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "22px", fontWeight: 800, color: "var(--t-fff)", textAlign: "center" }}>FlipCollab</p>
         <p className="rs-eyebrow" style={{
           textAlign: "center",

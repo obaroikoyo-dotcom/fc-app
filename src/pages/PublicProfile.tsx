@@ -461,7 +461,7 @@ const startDM = async () => {
                 </div>
                 <div
                   onClick={() => !blockLoading && handleBlock()}
-                  style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.25)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+                  style={{ flex: 1, padding: "11px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_25)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
                 >
                   {blockLoading ? "..." : "Block"}
                 </div>

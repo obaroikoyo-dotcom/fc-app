@@ -433,7 +433,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             <input style={inp} type="text" placeholder={placeholder} value={item} onChange={e => onUpdate(i, e.target.value)} />
             {items.length > 1 && (
               <span onClick={() => onRemove(i)} style={{ color: "var(--t-777)", cursor: "pointer", fontSize: "16px", lineHeight: 1, flexShrink: 0, padding: "0 4px", transition: "color 0.1s" }}
-                onMouseEnter={e => (e.currentTarget.style.color = "#ff4d4d")}
+                onMouseEnter={e => (e.currentTarget.style.color = "var(--t-ff4d4d)")}
                 onMouseLeave={e => (e.currentTarget.style.color = "var(--t-2a2a2a)")}
               >×</span>
             )}
@@ -507,7 +507,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             <span style={{ display: "block", fontSize: "10px", color: "var(--t-777)", letterSpacing: "0.04em" }}>JPG, PNG or WebP. Without one, the card shows a colour for your niche.</span>
           </button>
         )}
-        {coverError && <p style={{ color: "#ff4d4d", fontSize: "12px", margin: "8px 0 0" }}>{coverError}</p>}
+        {coverError && <p style={{ color: "var(--t-ff4d4d)", fontSize: "12px", margin: "8px 0 0" }}>{coverError}</p>}
       </div>
 
       {/* Section 1 — Mechanics */}
@@ -681,8 +681,8 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
       </div>
 
       {error && (
-        <div style={{ background: "rgba(255,59,48,0.07)", border: "1px solid rgba(255,59,48,0.15)", borderRadius: "6px", padding: "10px 12px", marginBottom: "8px" }}>
-          <p style={{ color: "#ff4d4d", fontSize: "12px", margin: 0 }}>{error}</p>
+        <div style={{ background: "var(--a-255-59-48-0_07)", border: "1px solid var(--a-255-59-48-0_15)", borderRadius: "6px", padding: "10px 12px", marginBottom: "8px" }}>
+          <p style={{ color: "var(--t-ff4d4d)", fontSize: "12px", margin: 0 }}>{error}</p>
         </div>
       )}
 

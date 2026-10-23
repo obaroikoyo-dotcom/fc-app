@@ -16,9 +16,9 @@ export const PHOTO_RATIO = "5 / 2";
 // reads on any picture.
 //
 // It sits at the very top of a card and runs to the card's edges, so the card's
-// padding is passed in (`bleed`) and cancelled. true-color keeps the colours as
-// they are in the light look, where the page's colours are flipped; the photo opts
-// out of the flip-back that images normally get, or it would be flipped twice.
+// padding is passed in (`bleed`) and cancelled. Nothing here is themed: the tone,
+// the photo and the label look the same in the light and the dark look, and a photo
+// shows in exactly its own colours.
 // `ratio` makes a band the same shape as a photo (a row where some cards have
 // photos and some don't, so they line up).
 export default function CampaignTile({ niche, height, bleed, tag, photo, radius = "15px 15px 0 0", ratio }: {
@@ -35,12 +35,11 @@ export default function CampaignTile({ niche, height, bleed, tag, photo, radius 
   const shape = ratio ?? (showPhoto ? PHOTO_RATIO : undefined);
   return (
     <div
-      className="true-color"
+      className="campaign-tile"
       style={{ position: "relative", flexShrink: 0, ...(shape ? { aspectRatio: shape } : { height: `${height}px` }), margin: `calc(-1 * ${bleed}) calc(-1 * ${bleed}) 0`, background: toneOf(niche), overflow: "hidden", borderRadius: radius }}
     >
       {showPhoto ? (
         <img
-          className="no-reinvert"
           src={photo}
           alt=""
           loading="lazy"

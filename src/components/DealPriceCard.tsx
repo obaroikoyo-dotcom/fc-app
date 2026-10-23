@@ -123,7 +123,7 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
         </div>
       )}
 
-      {error && <p role="alert" style={{ margin: 0, fontSize: "12px", color: "#ff4d4d" }}>{error}</p>}
+      {error && <p role="alert" style={{ margin: 0, fontSize: "12px", color: "var(--t-ff4d4d)" }}>{error}</p>}
       <p style={{ margin: 0, fontSize: "11px", color: "var(--t-777)", lineHeight: 1.5 }}>
         Only this deal changes, once {otherName} agrees. The campaign keeps its own price for everyone else.
       </p>

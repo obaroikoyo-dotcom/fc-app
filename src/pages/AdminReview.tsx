@@ -322,7 +322,7 @@ export default function AdminReview({ goBack }: Props) {
                     </div>
                     <div
                       onClick={() => actioningId ? undefined : handleReject(r.id)}
-                      style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.3)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}
+                      style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_3)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === r.id ? 0.6 : 1 }}
                     >
                       Reject
                     </div>
@@ -366,7 +366,7 @@ export default function AdminReview({ goBack }: Props) {
                   <div key={d.id} style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "6px" }}>
                       <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>{d.brand_name} vs {d.creator_name}</p>
-                      <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: daysOpen >= 3 ? "rgba(255,59,48,0.1)" : "var(--c-1a1a1a)", border: `1px solid ${daysOpen >= 3 ? "rgba(255,59,48,0.3)" : "var(--c-222)"}`, color: daysOpen >= 3 ? "#ff4d4d" : "var(--t-888)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", flexShrink: 0 }}>
+                      <span style={{ fontSize: "9px", padding: "2px 7px", borderRadius: "4px", background: daysOpen >= 3 ? "var(--a-255-59-48-0_1)" : "var(--c-1a1a1a)", border: `1px solid ${daysOpen >= 3 ? "var(--a-255-59-48-0_3)" : "var(--c-222)"}`, color: daysOpen >= 3 ? "var(--t-ff4d4d)" : "var(--t-888)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", flexShrink: 0 }}>
                         {daysOpen === 0 ? "Today" : `${daysOpen}d open`}
                       </span>
                     </div>
@@ -398,7 +398,7 @@ export default function AdminReview({ goBack }: Props) {
                         {chatLoading ? (
                           <p style={{ color: "var(--t-777)", fontSize: "11px", margin: 0 }}>Loading chat...</p>
                         ) : chatError ? (
-                          <p style={{ color: "#ff4d4d", fontSize: "11px", margin: 0 }}>{chatError}</p>
+                          <p style={{ color: "var(--t-ff4d4d)", fontSize: "11px", margin: 0 }}>{chatError}</p>
                         ) : chatMessages.length === 0 ? (
                           <p style={{ color: "var(--t-777)", fontSize: "11px", margin: 0 }}>No messages between these two.</p>
                         ) : (
@@ -420,7 +420,7 @@ export default function AdminReview({ goBack }: Props) {
                     <div style={{ display: "flex", gap: "8px" }}>
                       <div
                         onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "refund")}
-                        style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.3)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
+                        style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_3)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
                       >
                         {resolvingId === d.id ? "..." : "Refund Brand"}
                       </div>
@@ -475,8 +475,8 @@ export default function AdminReview({ goBack }: Props) {
                       </div>
                       <span style={{
                         fontSize: "10px", padding: "3px 9px", borderRadius: "20px", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.04em", flexShrink: 0,
-                        border: `1px solid ${u.account_status === "active" ? "var(--c-333)" : u.account_status === "suspended" ? "rgba(255,149,0,0.4)" : "rgba(255,77,77,0.4)"}`,
-                        color: u.account_status === "active" ? "var(--t-888)" : u.account_status === "suspended" ? "#ff9500" : "#ff4d4d",
+                        border: `1px solid ${u.account_status === "active" ? "var(--c-333)" : u.account_status === "suspended" ? "var(--a-255-149-0-0_4)" : "var(--a-255-77-77-0_4)"}`,
+                        color: u.account_status === "active" ? "var(--t-888)" : u.account_status === "suspended" ? "var(--t-ff9500)" : "var(--t-ff4d4d)",
                       }}>
                         {u.account_status}
                       </span>
@@ -493,13 +493,13 @@ export default function AdminReview({ goBack }: Props) {
                         <>
                           <div
                             onClick={() => actioningId ? undefined : handleSetStatus(u.id, "suspended")}
-                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,149,0,0.35)", color: "#ff9500", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
+                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--a-255-149-0-0_35)", color: "var(--t-ff9500)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
                           >
                             Suspend
                           </div>
                           <div
                             onClick={() => actioningId ? undefined : handleSetStatus(u.id, "banned")}
-                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.35)", color: "#ff4d4d", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
+                            style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_35)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: actioningId ? "default" : "pointer", opacity: actioningId === u.id ? 0.6 : 1 }}
                           >
                             Ban
                           </div>

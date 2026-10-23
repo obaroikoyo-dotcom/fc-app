@@ -5,8 +5,9 @@ import { test, expect, type Page } from "@playwright/test";
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-const backgroundOf = (page: Page) =>
-  page.evaluate(() => getComputedStyle(document.querySelector(".app-shell") as Element).filter);
+const isLightLook = (page: Page) => page.evaluate(() => document.documentElement.classList.contains("theme-light"));
+// No colour filter anywhere: light is real colours, not the dark look run through a filter.
+const shellFilter = (page: Page) => page.evaluate(() => getComputedStyle(document.querySelector(".app-shell") as Element).filter);
 
 async function openLogin(page: Page) {
   await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -21,7 +22,8 @@ test("opens on light, even if an old version saved dark", async ({ page }) => {
   // What the previous version wrote when someone toggled the theme.
   await page.addInitScript(() => localStorage.setItem("theme", "normal"));
   await openLogin(page);
-  expect(await backgroundOf(page)).toContain("invert(1)");
+  expect(await isLightLook(page)).toBe(true);
+  expect(await shellFilter(page)).toBe("none");
   // The page behind it is white, not the dark base colour.
   expect(await page.evaluate(() => document.body.style.background)).toMatch(/rgb\(255, 255, 255\)|#fff/);
 });
@@ -29,5 +31,6 @@ test("opens on light, even if an old version saved dark", async ({ page }) => {
 test("stays dark once dark has been chosen", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("fc_theme", "dark"));
   await openLogin(page);
-  expect(await backgroundOf(page)).toBe("none");
+  expect(await isLightLook(page)).toBe(false);
+  expect(await shellFilter(page)).toBe("none");
 });

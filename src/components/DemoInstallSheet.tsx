@@ -88,7 +88,7 @@ export default function DemoInstallSheet() {
         padding: "1.75rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px))",
         display: "flex", flexDirection: "column", gap: "1.25rem",
       }}>
-        <img src={logo} className="no-reinvert" alt="" style={{ width: "64px", height: "64px", objectFit: "contain", alignSelf: "flex-start" }} />
+        <img src={logo} className="theme-logo" alt="" style={{ width: "64px", height: "64px", objectFit: "contain", alignSelf: "flex-start" }} />
 
         {added ? (
           <>

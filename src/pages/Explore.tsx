@@ -242,8 +242,8 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
     switch (status) {
       case "approved":
       case "paid": return { color: "var(--t-fff)" };
-      case "declined": return { color: "#ff3b30" };
-      default: return { color: "#ff9500" };
+      case "declined": return { color: "var(--t-ff3b30)" };
+      default: return { color: "var(--t-ff9500)" };
     }
   };
 

@@ -8,6 +8,10 @@ import { logEvent } from "./lib/debugLog";
 import "./lib/pwaInstall";
 import { initErrorTracking, reactRootErrorHandlers, AppErrorBoundary } from "./lib/errorTracking";
 import ErrorFallback from "./components/ErrorFallback";
+import { applyTheme, isLightTheme } from "./lib/theme";
+
+// The look is in place before anything draws.
+applyTheme(isLightTheme());
 
 // Start error reporting before anything else runs, so even a crash while the
 // app boots is caught. Does nothing until a Sentry key is set in errorTracking.ts.

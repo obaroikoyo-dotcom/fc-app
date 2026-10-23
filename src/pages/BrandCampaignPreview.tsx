@@ -285,7 +285,7 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
 
         {campaign.video_required && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", borderRadius: "8px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)" }}>
-            <span style={{ color: "#ff3b30", fontSize: "13px" }}>●</span>
+            <span style={{ color: "var(--t-ff3b30)", fontSize: "13px" }}>●</span>
             <p style={{ fontSize: "12px", color: "var(--t-aaa)", margin: 0 }}>Creators must submit a video pitch to apply.</p>
           </div>
         )}

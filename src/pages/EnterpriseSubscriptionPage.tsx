@@ -7,19 +7,8 @@ import { Elements, CardElement, useStripe, useElements } from "@stripe/react-str
 import { stripePromise } from "../lib/stripe";
 import { useBillingAddress } from "../lib/useBillingAddress";
 import BillingAddressFields from "../components/BillingAddressFields";
+import { cardElementOptions } from "../lib/stripeTheme";
 
-const CARD_ELEMENT_OPTIONS = {
-  hidePostalCode: true,
-  style: {
-    base: {
-      fontSize: "14px",
-      color: "var(--t-fff)",
-      fontFamily: "'TikTok Sans', sans-serif",
-      "::placeholder": { color: "#999" },
-    },
-    invalid: { color: "#ff3b30" },
-  },
-};
 
 const fieldLabel: React.CSSProperties = { fontSize: "10px", color: "var(--t-999)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginBottom: "6px" };
 const fieldInput: React.CSSProperties = { background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "11px 14px", color: "var(--t-fff)", fontSize: "14px", outline: "none", width: "100%", fontFamily: "inherit", boxSizing: "border-box" as const };
@@ -146,7 +135,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
         <div>
           <label style={fieldLabel}>Card Details</label>
           <div style={{ background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "13px 14px" }}>
-            <CardElement options={CARD_ELEMENT_OPTIONS} />
+            <CardElement options={cardElementOptions()} />
           </div>
         </div>
 
@@ -155,7 +144,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
           onClick={toggleBilling}
           style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: "8px", border: "1px solid var(--c-222)", background: "transparent", cursor: "pointer" }}
         >
-          <span style={{ fontSize: "12px", color: "var(--t-aaa)", fontWeight: 500 }}>Billing address <span style={{ color: "#ff3b30" }}>*</span></span>
+          <span style={{ fontSize: "12px", color: "var(--t-aaa)", fontWeight: 500 }}>Billing address <span style={{ color: "var(--t-ff3b30)" }}>*</span></span>
           <span style={{ fontSize: "11px", color: "var(--t-999)", transform: billingOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s ease" }}>▼</span>
         </div>
 
@@ -165,7 +154,7 @@ function SubscriptionForm({ selectedPlan, onSuccess, onLoadingChange, onError, p
           </div>
         )}
       </div>
-      {paymentError && <p style={{ fontSize: "12px", color: "#ff4444", marginBottom: "10px" }}>{paymentError}</p>}
+      {paymentError && <p style={{ fontSize: "12px", color: "var(--t-ff4444)", marginBottom: "10px" }}>{paymentError}</p>}
       <div className="tap-btn" onClick={!paymentLoading ? handlePayment : undefined} style={{ padding: "14px", borderRadius: "8px", background: paymentLoading ? "var(--c-1a1a1a)" : "var(--c-fff)", color: paymentLoading ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: paymentLoading ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase", transition: "all 0.2s" }}>
         {paymentLoading ? "Processing..." : `Confirm ${selectedPlan === "monthly" ? "£97/mo" : "£984/yr"}`}
       </div>

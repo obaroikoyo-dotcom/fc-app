@@ -58,7 +58,7 @@ export default function ResetPassword({ navigate }: Props) {
               <Input label="Confirm Password" type="password" placeholder="••••••••" value={confirm} onChange={e => setConfirm(e.target.value)} />
             </div>
 
-            {error && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
+            {error && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "1rem" }}>{error}</p>}
 
             <div style={{ marginTop: "1.5rem" }}>
               <Button onClick={handleReset}>{loading ? "Updating..." : "Reset Password"}</Button>

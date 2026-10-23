@@ -173,7 +173,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
                   fontWeight: 700,
                   color: "var(--t-fff)",
                   background: "var(--c-0a0a0a)",
-                  border: `1px solid ${error ? "#ff3b30" : digit ? "var(--c-fff)" : "var(--c-222)"}`,
+                  border: `1px solid ${error ? "var(--c-ff3b30)" : digit ? "var(--c-fff)" : "var(--c-222)"}`,
                   borderRadius: "10px",
                   outline: "none",
                   fontFamily: "inherit",
@@ -183,7 +183,7 @@ export default function VerifyEmail({ navigate, email }: Props) {
             ))}
           </div>
 
-          {error && <p style={{ fontSize: "12px", color: "#ff3b30", marginBottom: "1rem" }}>{error}</p>}
+          {error && <p style={{ fontSize: "12px", color: "var(--t-ff3b30)", marginBottom: "1rem" }}>{error}</p>}
 
           {loading && <p style={{ fontSize: "12px", color: "var(--t-999)", marginBottom: "1rem" }}>Verifying...</p>}
 

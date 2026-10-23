@@ -23,6 +23,7 @@ import { loadConnectAndInitialize, type StripeConnectInstance } from "@stripe/co
 import { ConnectComponentsProvider, ConnectAccountOnboarding, ConnectPayouts } from "@stripe/react-connect-js";
 import { uploadToR2 } from "../lib/r2Upload";
 import { NICHES } from "../lib/niches";
+import { connectAppearance } from "../lib/stripeTheme";
 
 interface Props {
   navigate: (p: Page) => void;
@@ -340,21 +341,7 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
         // loaded on our own page - without this, `fontFamily` below silently
         // falls back to a generic system font instead of actually using TikTok Sans.
         fonts: [{ cssSrc: "https://fonts.googleapis.com/css2?family=TikTok+Sans:wght@300..900&display=swap" }],
-        appearance: {
-          variables: {
-            colorPrimary: "#ffffff",
-            colorBackground: "#111111",
-            colorText: "#ffffff",
-            colorSecondaryText: "#999999",
-            colorBorder: "#1a1a1a",
-            colorDanger: "#ff3b30",
-            buttonPrimaryColorBackground: "#ffffff",
-            buttonPrimaryColorText: "#0a0a0a",
-            fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif",
-            borderRadius: "8px",
-            spacingUnit: "4px",
-          },
-        },
+        appearance: connectAppearance(),
       });
       setConnectInstance(instance);
     } catch (err) {
@@ -362,6 +349,11 @@ export default function CreatorProfile({ navigate, navigateToProfile, toggleThem
     }
     setConnectingPayouts(false);
   };
+
+  // Switching the look while the payout screens are open: Stripe's frames get the new colours too.
+  useEffect(() => {
+    connectInstance?.update({ appearance: connectAppearance() });
+  }, [isInverted, connectInstance]);
 
   const handleOnboardingExit = () => {
     setConnectInstance(null);
@@ -966,7 +958,7 @@ setTimeout(() => setSaved(false), 2000);
           <div onClick={forceSignOut} style={{ padding: "14px", borderRadius: "8px", border: "1px solid var(--c-222)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "var(--t-999)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Sign Out
           </div>
-          <div onClick={() => setShowDeleteConfirm(true)} style={{ padding: "14px", borderRadius: "8px", border: "1px solid rgba(255,68,68,0.3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "#ff4444", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          <div onClick={() => setShowDeleteConfirm(true)} style={{ padding: "14px", borderRadius: "8px", border: "1px solid var(--a-255-68-68-0_3)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: "pointer", color: "var(--t-ff4444)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             Delete Account
           </div>
         </div>
@@ -1003,11 +995,11 @@ setTimeout(() => setSaved(false), 2000);
                 // The account is gone. This clears the profile row if the database didn't already.
                 await supabase.from("profiles").delete().eq("id", userId);
                 await forceSignOut();
-              }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid rgba(255,68,68,0.3)", color: "#ff4444", opacity: deletingAccount ? 0.5 : 1, fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              }} style={{ flex: 1, padding: "13px", borderRadius: "8px", background: "transparent", border: "1px solid var(--a-255-68-68-0_3)", color: "var(--t-ff4444)", opacity: deletingAccount ? 0.5 : 1, fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: deletingAccount ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 {deletingAccount ? "Deleting..." : "Delete"}
               </div>
             </div>
-            {deleteError && <p style={{ color: "#ff4444", fontSize: "12px", lineHeight: 1.5, marginTop: "12px" }}>{deleteError}</p>}
+            {deleteError && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", lineHeight: 1.5, marginTop: "12px" }}>{deleteError}</p>}
           </div>
         </div>
       )}
@@ -1192,7 +1184,7 @@ setTimeout(() => setSaved(false), 2000);
                   {connectedPlatforms.has(platform) ? (
                     <>
                       <span onClick={() => openPostPicker(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-fff)", color: "var(--t-fff)", cursor: "pointer" }}>Choose videos</span>
-                      <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "#ff4444", cursor: "pointer" }}>Disconnect</span>
+                      <span onClick={() => handleDisconnectSocial(platform)} style={{ fontSize: "11px", padding: "6px 12px", borderRadius: "20px", border: "1px solid var(--c-333)", color: "var(--t-ff4444)", cursor: "pointer" }}>Disconnect</span>
                     </>
                   ) : platform === "youtube" ? (
                     <span style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: "1px solid var(--c-222)", color: "var(--t-777)" }}>Coming soon</span>
@@ -1340,7 +1332,7 @@ setTimeout(() => setSaved(false), 2000);
             </select>
           </div>
         )}
-        {connectError && <p style={{ fontSize: "12px", color: "#ff4444", margin: 0 }}>{connectError}</p>}
+        {connectError && <p style={{ fontSize: "12px", color: "var(--t-ff4444)", margin: 0 }}>{connectError}</p>}
         <div onClick={!connectingPayouts ? handleConnectPayouts : undefined} style={{ padding: "13px", borderRadius: "8px", background: connectingPayouts ? "var(--c-1a1a1a)" : "var(--c-fff)", color: connectingPayouts ? "var(--t-555)" : "var(--t-0a0a0a)", fontSize: "13px", fontWeight: 600, textAlign: "center", cursor: connectingPayouts ? "default" : "pointer", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           {connectingPayouts ? "Loading..." : connectStatus?.connected ? "Continue Setup" : "Set Up Payouts"}
         </div>
@@ -1405,7 +1397,7 @@ setTimeout(() => setSaved(false), 2000);
             <div style={{ position: "absolute", top: "3px", left: notificationsEnabled ? "23px" : "3px", width: "18px", height: "18px", borderRadius: "50%", background: notificationsEnabled ? "var(--c-0a0a0a)" : "var(--c-555)", transition: "left 0.2s" }} />
           </div>
         </div>
-        {notifError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
+        {notifError && <p style={{ color: "var(--t-ff4444)", fontSize: "12px", marginTop: "10px" }}>{notifError}</p>}
       </div>
     </div>
   );
