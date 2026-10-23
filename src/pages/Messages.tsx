@@ -1836,22 +1836,6 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     setShowPayment(true);
   };
 
-  // Shared by the top Deal Desk bar and the in-chat pay prompt card, both of
-  // which are tied to a single, specific campaign already (not a place
-  // where picking between several makes sense).
-  const openPaymentModal = () => {
-    if (!activeConvo?.application_id) return;
-    openPaymentModalForApp({
-      id: activeConvo.application_id,
-      status: activeConvo.application_status || "",
-      campaign_id: activeConvo.campaign_id || "",
-      campaign_name: activeConvo.campaign_name || "",
-      campaign_budget: activeConvo.campaign_budget || 0,
-      campaign_type: activeConvo.campaign_type || "paid",
-      platforms: activeConvo.campaign_platforms || [],
-    });
-  };
-
   const handlePayButtonClick = () => {
     if (payableApps.length === 0) return;
     if (payableApps.length === 1) { openPaymentModalForApp(payableApps[0]); return; }
@@ -2721,11 +2705,8 @@ return (
             {(() => {
               const chatOpenedIdx = messages.findIndex(m => m.text?.startsWith(CHAT_OPENED_PREFIX));
               const paymentIdx = messages.map(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)).lastIndexOf(true);
-              const showPayCard = role === "brand" && !!activeConvo?.application_id
-                && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded";
-              // Mirrors showPayCard for the creator's side of the same
-              // pre-payment window - nothing to post or get paid for yet,
-              // but no reason to make them wait to upload.
+              // The creator's side of the pre-payment window: nothing to post or get paid
+              // for yet, but no reason to make them wait to upload.
               const showPreFundingUploadCard = role === "creator" && !!activeConvo?.application_id && !!currentUserId
                 && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded";
               // The price can be talked over until the deal is paid or closed; a gifted
@@ -2770,17 +2751,6 @@ return (
               const eventTime = parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               return (
                 <div key={m.id} style={{ display: "contents" }}>
-                {showPayCard && i === cardInsertAtIdx && (
-                  <div style={{ alignSelf: "flex-start", maxWidth: "85%", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "14px", padding: "14px 16px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div>
-                      <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "2px" }}>Ready to lock in the deal?</p>
-                      <p style={{ color: "var(--t-aaa)", fontSize: "12px" }}>Secure funds in escrow for "{activeConvo?.campaign_name || "this campaign"}" so {activeConvo?.other_name || "the creator"} can get started.</p>
-                    </div>
-                    <div onClick={openPaymentModal} style={{ alignSelf: "flex-start", background: "var(--c-fff)", color: "var(--t-0a0a0a)", borderRadius: "6px", padding: "8px 14px", fontSize: "11px", fontWeight: 600, cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
-                      Lock Deal & Pay
-                    </div>
-                  </div>
-                )}
                 {i === cardInsertAtIdx && priceCardEl}
                 {showPreFundingUploadCard && i === cardInsertAtIdx && activeConvo?.application_id && currentUserId && (
                   <PreFundingDeliverableCard applicationId={activeConvo.application_id} currentUserId={currentUserId} />
