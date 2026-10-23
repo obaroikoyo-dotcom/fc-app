@@ -35,7 +35,7 @@ test.describe("review and release", () => {
     await expect(brandPage.getByText("Are you happy with the content?")).toBeVisible({ timeout: 20_000 });
     await expect(brandPage.getByText("Payment Secured")).toBeVisible();
     // Until the money is released the brand only gets the watermarked preview.
-    await expect(brandPage.getByText(/This is a preview/)).toBeVisible();
+    await expect(brandPage.getByText("PREVIEW").first()).toBeVisible();
 
     await brandPage.getByText("Yes, I'm happy", { exact: true }).click();
     await expect(brandPage.getByText("Are you happy with the content?")).toBeHidden({ timeout: 45_000 });

@@ -617,9 +617,9 @@ function PreviewVideo({ src, watermark, maxHeight, note }: { src: string; waterm
           </div>
         </div>
       </div>
-      <p style={{ fontSize: "10px", color: "var(--t-888)", marginTop: "6px", lineHeight: 1.5 }}>
-        {note ?? "This is a preview. The clean video without the watermark, with a download button, appears once the payment is released, either when you tell us you're happy or when the review time ends."}
-      </p>
+      {note && (
+        <p style={{ fontSize: "10px", color: "var(--t-888)", marginTop: "6px", lineHeight: 1.5 }}>{note}</p>
+      )}
     </div>
   );
 }
