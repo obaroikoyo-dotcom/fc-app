@@ -1041,10 +1041,8 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
             // deals released a way that never touched TikTok at all.
             <p style={{ fontSize: "11px", color: "var(--t-ccc)", display: "flex", alignItems: "center", gap: "5px" }}><CheckIcon /> Payout released{myPost?.status === "published" ? ". The post is confirmed live." : "."}</p>
           ) : !deliveryPlatform ? (
-            <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.5 }}>
-              {!platform
-                ? `This campaign doesn't require a specific platform. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`
-                : socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
+            !platform ? null : <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.5 }}>
+              {socialPlatformFor(platform) === "instagram" || socialPlatformFor(platform) === "youtube"
                 ? `Automatic ${socialPlatformFor(platform) === "instagram" ? "Instagram" : "YouTube"} post verification is coming soon. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`
                 : `${platform} doesn't support automatic post verification. Your payment is released when the brand says they're happy with your video, or automatically if they don't answer within ${REVIEW_WINDOW_DAYS} days.`}
             </p>
