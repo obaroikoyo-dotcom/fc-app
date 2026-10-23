@@ -825,6 +825,133 @@ test.describe("fee wording", () => {
   });
 });
 
+// One creator and one brand can have several deals going at once (a campaign each), all in the one chat.
+// The chat used to follow only the newest application, so paying or delivering the other one left both
+// sides with nothing to press. Now there is a tab for each deal and everything follows the tab.
+test.describe("several deals with the same person in one chat", () => {
+  const tabs = (page: Page) => page.getByTestId("deal-tabs");
+  const tab = (page: Page, name: string) => tabs(page).getByRole("tab", { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`) });
+  const net = (budget: number) => (budget * 90) / 100;
+
+  test("creator: a second campaign from the same brand gets its own tab, and the funded deal keeps its upload box", async ({ page }) => {
+    test.setTimeout(120_000);
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+    const t0 = await db(page);
+
+    // the visitor's funded deal, and another campaign from the same brand they have not applied to
+    const funded = t0.applications.find(a => a.creator_id === uid && a.status === "funded")!;
+    const fundedCampaign = t0.campaigns.find(c => c.id === funded.campaign_id)!;
+    const appliedTo = new Set(t0.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+    const other = t0.campaigns.find(c => c.brand_id === fundedCampaign.brand_id && !c.is_draft && c.id !== fundedCampaign.id && !appliedTo.has(c.id))!;
+    const brandName = t0.brand_profiles.find(b => b.id === fundedCampaign.brand_id)!.name as string;
+
+    await page.locator(".item-enter", { has: page.getByText(other.name, { exact: true }) }).getByText("Apply", { exact: true }).click();
+    await page.getByPlaceholder(/Introduce yourself/i).fill("Hi, I would love to make this one too.");
+    await page.getByText(/TikTok Video|IG Reel|IG Story|YouTube Short/).last().click();
+    if (await page.locator("input[type=file]").count()) await page.locator("input[type=file]").first().setInputFiles("public/demo-assets/sample.mp4");
+    await page.getByText(/^Submit Application$/i).click();
+    await expect.poll(async () => (await db(page)).applications.find(a => a.creator_id === uid && a.campaign_id === other.id)?.status, { timeout: 25_000 }).toBe("accepted");
+
+    // still one chat with the brand, now with a tab for each deal; it opens on the funded one
+    const t1 = await db(page);
+    const chats = t1.conversations.filter(c => [c.participant_1, c.participant_2].includes(uid) && [c.participant_1, c.participant_2].includes(fundedCampaign.brand_id));
+    expect(chats, "one chat, not two").toHaveLength(1);
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+    await expect(tabs(page).getByRole("tab")).toHaveCount(2);
+    await expect(tab(page, fundedCampaign.name)).toHaveAttribute("aria-selected", "true");
+    await expect(tab(page, fundedCampaign.name)).toContainText("Funded");
+    await expect(tab(page, other.name)).toContainText("Open");
+    const uploadPrompt = page.getByText("Tap to upload your deliverable video");
+    await expect(uploadPrompt).toHaveCount(1);
+    await expect(page.getByText("Get a head start"), "the funded deal's own upload box, not the early one").toHaveCount(0);
+
+    // the other tab: its own status and its own early "get a head start" upload box, not the funded deal's
+    await tab(page, other.name).click();
+    await expect(tab(page, other.name)).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByText("Pending Terms Review")).toBeVisible();
+    await expect(page.getByText("Get a head start")).toBeVisible();
+    await expect(uploadPrompt).toHaveCount(1);
+
+    // back on the funded deal, the video goes to that deal and nowhere else
+    await tab(page, fundedCampaign.name).click();
+    await expect(page.getByText("Get a head start")).toHaveCount(0);
+    const [chooser] = await Promise.all([
+      page.waitForEvent("filechooser"),
+      uploadPrompt.click(),
+    ]);
+    await chooser.setFiles("public/demo-assets/sample.mp4");
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === funded.id)?.status, { timeout: 30_000 }).toBe("paid");
+    const after = await db(page);
+    expect(after.applications.find(a => a.id === funded.id)!.deliverable_url, "the funded deal has its video").toBeTruthy();
+    expect(after.applications.find(a => a.creator_id === uid && a.campaign_id === other.id)!.deliverable_url ?? null, "the other deal got no video").toBeNull();
+    // the tab changed stage by itself, without leaving the chat
+    await expect(tab(page, fundedCampaign.name)).toContainText("Paid");
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: Pay and Screen Out follow the tab, a funded deal keeps its own controls, and one declined deal leaves messaging open", async ({ page }) => {
+    test.setTimeout(150_000);
+    const { leaks, errors } = await openDemo(page, "brand");
+    const uid = await myId(page);
+    const t0 = await db(page);
+
+    // a creator I have accepted on one campaign who also applied, later, to another of mine
+    const mine = t0.campaigns.filter(c => c.brand_id === uid && !c.is_draft && c.type === "paid" && Number(c.budget) > 0);
+    const accepted = t0.applications.find(a => a.status === "accepted" && mine.some(c => c.id === a.campaign_id))!;
+    const first = mine.find(c => c.id === accepted.campaign_id)!;
+    const second = mine.find(c => c.id !== first.id && !t0.applications.some(x => x.campaign_id === c.id && x.creator_id === accepted.creator_id))!;
+    const creatorName = t0.creator_profiles.find(c => c.id === accepted.creator_id)!.name as string;
+    await page.evaluate(({ app, campaignId }) => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      saved.tables.applications.push({ ...app, id: crypto.randomUUID(), campaign_id: campaignId, status: "pending", created_at: new Date().toISOString(), responded_at: null, video_url: null, deliverable_url: null });
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    }, { app: accepted, campaignId: second.id });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
+    await page.getByText(/^messages$/i).nth(1).click(); // the Messages tab beside Applications
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    // opens on the deal that was accepted, not on the newer application still waiting
+    await expect(tabs(page).getByRole("tab")).toHaveCount(2);
+    await expect(tab(page, first.name)).toHaveAttribute("aria-selected", "true");
+    await expect(tab(page, first.name)).toContainText("Open");
+    await expect(tab(page, second.name)).toContainText("Applied");
+
+    // Pay goes straight to the deal in view: no "which campaign" question
+    await page.getByText("Pay", { exact: true }).first().click();
+    await expect(page.getByText(`Locking in with ${creatorName} for "${first.name}"`)).toBeVisible();
+    await expect(page.getByText("Which campaign are you paying for?")).toHaveCount(0);
+    await page.getByText(/^Pay £/).click();
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === accepted.id)?.status, { timeout: 15_000 }).toBe("funded");
+    await expect(tab(page, first.name)).toContainText("Funded");
+    await expect(page.getByText("Funded: Awaiting Delivery")).toBeVisible();
+    // the (simulated) creator hands the video in, and the brand has its controls for that deal
+    await expect.poll(async () => !!(await db(page)).applications.find(a => a.id === accepted.id)?.deliverable_url, { timeout: 25_000 }).toBe(true);
+    await expect(page.getByText("Yes, I'm happy", { exact: true })).toBeVisible({ timeout: 15_000 });
+
+    // the other tab has its own price box, and Screen Out there declines only that deal
+    await tab(page, second.name).click();
+    await expect(tab(page, second.name)).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByTestId("deal-price-card").getByText(`£${net(Number(second.budget)).toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(page.getByText("Yes, I'm happy", { exact: true })).toHaveCount(0);
+    await page.getByText("Screen Out", { exact: true }).click();
+    await expect.poll(async () => (await db(page)).applications.find(a => a.campaign_id === second.id && a.creator_id === accepted.creator_id)?.status, { timeout: 15_000 }).toBe("rejected");
+    expect((await db(page)).applications.find(a => a.id === accepted.id)!.status, "the funded deal is untouched").toBe("funded");
+    await expect(tab(page, second.name)).toContainText("Declined");
+    // one declined campaign must not close the chat while another deal is going
+    await expect(page.getByPlaceholder("Message...")).toBeVisible();
+    await expect(page.getByText(/Messaging disabled/)).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+});
+
 test.describe("campaign cover photos", () => {
   // The smallest valid PNG: enough to be a real picture the browser can read.
   const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");

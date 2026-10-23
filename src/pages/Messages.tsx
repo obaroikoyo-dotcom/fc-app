@@ -19,8 +19,9 @@ import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
-import { COMBINED_PLATFORM_FEE_PERCENT, dealBreakdown, formatPence } from "../lib/fees";
+import { COMBINED_PLATFORM_FEE_PERCENT, dealBreakdown } from "../lib/fees";
 import DealPriceCard from "../components/DealPriceCard";
+import DealTabs from "../components/DealTabs";
 import { cardElementOptions } from "../lib/stripeTheme";
 import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
 import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
@@ -162,6 +163,7 @@ interface Conversation {
   other_is_enterprise?: boolean;
   campaign_name?: string;
   campaign_platforms?: string[];
+  creator_id?: string; // the creator in this pair, so every one of their deals with this brand can be followed live
 }
 
 interface Message {
@@ -211,6 +213,33 @@ const headerAction: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: "38px", boxSizing: "border-box",
   padding: "0 14px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", flexShrink: 0,
 };
+
+// A brand and creator can have several deals going at once (one per campaign), all in the
+// same chat, and the chat shows one at a time. This picks the one it opens on: the one that
+// most needs attention (money held and waiting on a video, then a dispute, then an open
+// deal, then one still waiting to be accepted, then finished ones). Applications arrive
+// newest first and the sort keeps that order inside each group, so the newest of a kind wins.
+const DEAL_ORDER = ["funded", "disputed", "accepted", "pending", "paid", "refunded", "rejected"];
+function pickDeal(deals: LinkedApplication[]): LinkedApplication | undefined {
+  const rank = (status: string) => { const i = DEAL_ORDER.indexOf(status); return i === -1 ? DEAL_ORDER.indexOf("accepted") : i; };
+  return [...deals].sort((a, b) => rank(a.status) - rank(b.status))[0];
+}
+
+// The conversation with its "current deal" fields pointed at one of its deals. Everything in
+// the chat that talks about the deal (the price box, the upload and approve cards, the status,
+// Pay and Screen Out) reads these.
+function viewingDeal(convo: Conversation, deal: LinkedApplication): Conversation {
+  return {
+    ...convo,
+    application_id: deal.id,
+    application_status: deal.status,
+    campaign_id: deal.campaign_id,
+    campaign_name: deal.campaign_name,
+    campaign_budget: deal.campaign_budget,
+    campaign_type: deal.campaign_type,
+    campaign_platforms: deal.platforms,
+  };
+}
 
 const REACTION_EMOJI = ["❤️", "😂", "😮", "😢", "👍"];
 const CHAT_OPENED_PREFIX = "Chat Opened!";
@@ -1319,7 +1348,6 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const [showPayment, setShowPayment] = useState(false);
   const [paymentApp, setPaymentApp] = useState<Application | null>(null);
   const [campaignBudget, setCampaignBudget] = useState(0);
-  const [campaignPickerFor, setCampaignPickerFor] = useState<"pay" | "screenout" | null>(null);
   const [isEnterprise, setIsEnterprise] = useState(false);
   // Prices agreed in this chat, for every deal between this pair (live).
   const { offers: dealOffers, refresh: refreshDealOffers } = useDealOffers((activeConvo?.linked_applications || []).map(a => a.id));
@@ -1585,7 +1613,9 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
                 platforms: a.platforms || [],
               };
             });
-            const latestApp = linkedApplications[0];
+            // The chat opens on the deal that most needs attention; the tabs at the top
+            // switch to the others (see pickDeal).
+            const dealInView = pickDeal(linkedApplications);
 
             return {
               ...c,
@@ -1594,14 +1624,15 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
               other_avatar: otherAvatar,
               other_verified: otherVerified,
               other_is_enterprise: otherEnterprise,
+              creator_id: creatorSearchId,
               linked_applications: linkedApplications,
-              application_id: latestApp?.id,
-              application_status: latestApp?.status,
-              campaign_id: latestApp?.campaign_id,
-              campaign_name: latestApp?.campaign_name,
-              campaign_budget: latestApp?.campaign_budget || 0,
-              campaign_type: latestApp?.campaign_type,
-              campaign_platforms: latestApp?.platforms || []
+              application_id: dealInView?.id,
+              application_status: dealInView?.status,
+              campaign_id: dealInView?.campaign_id,
+              campaign_name: dealInView?.campaign_name,
+              campaign_budget: dealInView?.campaign_budget || 0,
+              campaign_type: dealInView?.campaign_type,
+              campaign_platforms: dealInView?.platforms || []
             };
           }));
           const sorted = enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
@@ -1746,7 +1777,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     // conversation quickly could otherwise resolve to the previous open's
     // not-yet-closed channel and throw on .on() after it's already subscribed.
     let channel = supabase.channel(`convo-${convo.id}-${Math.random().toString(36).slice(2)}`);
-    if (convo.application_id) {
+    if (convo.creator_id) {
       // The "Payment Secured" message itself arrives live via the messages
       // INSERT subscription below, but the Deliverable upload card is gated
       // on applications.status ("funded"/"paid"/etc), which had no realtime
@@ -1754,9 +1785,19 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       // funding a deal left the creator staring at the old state until they
       // refreshed. Mirror the status change into activeConvo as soon as the
       // row updates (e.g. the moment the Stripe webhook marks it funded).
-      channel = channel.on("postgres_changes", { event: "UPDATE", schema: "public", table: "applications", filter: `id=eq.${convo.application_id}` }, payload => {
-        const updated = payload.new as { status: string };
-        setActiveConvo(prev => prev && prev.id === convo.id ? { ...prev, application_status: updated.status } : prev);
+      // Every deal between the pair is followed, not just the one in view, so
+      // a deal paid or delivered while you are looking at another one still
+      // shows its new stage on its tab.
+      channel = channel.on("postgres_changes", { event: "UPDATE", schema: "public", table: "applications", filter: `creator_id=eq.${convo.creator_id}` }, payload => {
+        const updated = payload.new as { id: string; status: string };
+        setActiveConvo(prev => {
+          if (!prev || prev.id !== convo.id || !prev.linked_applications?.some(d => d.id === updated.id)) return prev;
+          return {
+            ...prev,
+            application_status: prev.application_id === updated.id ? updated.status : prev.application_status,
+            linked_applications: prev.linked_applications.map(d => d.id === updated.id ? { ...d, status: updated.status } : d),
+          };
+        });
         // Also re-read the deliverable: a creator uploading doesn't change
         // the status, so without this the brand only saw it after a refresh.
         setDeliverableTick(t => t + 1);
@@ -1845,12 +1886,30 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     }
   };
 
-  // A brand and creator can have run more than one campaign together, so
-  // paying/screening-out isn't always unambiguous - these are the
-  // applications between this pair that are still open (not already paid
-  // or already screened out), i.e. the ones eligible for either action.
-  const payableApps: LinkedApplication[] = (activeConvo?.linked_applications || [])
-    .filter(a => a.status !== "paid" && a.status !== "funded" && a.status !== "rejected");
+  // A brand and creator can have run more than one campaign together, and the
+  // chat shows one of those deals at a time (the tabs at the top choose which).
+  // Pay and Screen Out act on the deal in view, and only while it is still open:
+  // not already paid, funded or screened out.
+  const dealInView: LinkedApplication | undefined = (activeConvo?.linked_applications || []).find(a => a.id === activeConvo?.application_id);
+  const dealIsOpen = !!dealInView && dealInView.status !== "paid" && dealInView.status !== "funded" && dealInView.status !== "rejected";
+  // Messaging stops only when every deal in the chat has been screened out - one
+  // screened-out campaign must not shut the door on another that is still going.
+  const everyDealClosed = (activeConvo?.linked_applications || []).length > 0 && (activeConvo?.linked_applications || []).every(a => a.status === "rejected");
+
+  // Tapping a tab: point the chat at that deal, and take the reader to where its cards are.
+  const dealScrollWanted = useRef(false);
+  const showDeal = (dealId: string) => {
+    const deal = activeConvo?.linked_applications?.find(a => a.id === dealId);
+    if (!activeConvo || !deal || deal.id === activeConvo.application_id) return;
+    dealScrollWanted.current = true;
+    setActiveConvo(viewingDeal(activeConvo, deal));
+    clearUnreadForConvo(activeConvo.id, deal.campaign_id, deal.id);
+  };
+  useEffect(() => {
+    if (!dealScrollWanted.current) return;
+    dealScrollWanted.current = false;
+    requestAnimationFrame(() => document.querySelector("[data-deal-anchor]")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [activeConvo?.application_id]);
 
   // What a deal costs right now: the price agreed in this chat, else the campaign's
   // own budget (which a chat price never changes).
@@ -1868,14 +1927,11 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       creator_name: activeConvo.other_name,
       campaign_name: app.campaign_name
     });
-    setCampaignPickerFor(null);
     setShowPayment(true);
   };
 
   const handlePayButtonClick = () => {
-    if (payableApps.length === 0) return;
-    if (payableApps.length === 1) { openPaymentModalForApp(payableApps[0]); return; }
-    setCampaignPickerFor("pay");
+    if (dealInView && dealIsOpen) openPaymentModalForApp(dealInView);
   };
 
   const screenOutApp = async (app: LinkedApplication) => {
@@ -1886,16 +1942,14 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     // creator who's been funded can never be screened out - re-check the real row.
     const { data: fresh } = await supabase.from("applications").select("status").eq("id", app.id).single();
     if (!fresh || ["funded", "paid", "disputed", "rejected"].includes(fresh.status)) {
-      setCampaignPickerFor(null);
       await loadConversations();
       return;
     }
     await supabase.from("applications").update({ status: "rejected" }).eq("id", app.id);
-    setCampaignPickerFor(null);
     // Patch locally right away - loadConversations() below only refreshes
     // the conversations list, not the currently-open activeConvo, so
     // without this the screened-out campaign would still show as payable
-    // in the picker until the chat is closed and reopened.
+    // until the chat is closed and reopened.
     setActiveConvo(prev => prev ? {
       ...prev,
       application_status: prev.application_id === app.id ? "rejected" : prev.application_status,
@@ -1905,9 +1959,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
   };
 
   const handleScreenOutButtonClick = () => {
-    if (payableApps.length === 0) return;
-    if (payableApps.length === 1) { screenOutApp(payableApps[0]); return; }
-    setCampaignPickerFor("screenout");
+    if (dealInView && dealIsOpen) screenOutApp(dealInView);
   };
 
   const send = async () => {
@@ -2284,18 +2336,27 @@ return (
           )}
         </div>
 
+        {/* The deals this pair has going (one per campaign): which one the chat is showing */}
+        {view === "chat" && activeConvo && (activeConvo.linked_applications?.length ?? 0) > 1 && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
+          <DealTabs
+            deals={(activeConvo.linked_applications || []).map(d => ({ id: d.id, name: d.campaign_name, status: d.status }))}
+            activeId={activeConvo.application_id}
+            onPick={showDeal}
+          />
+        )}
+
         {/* Chat actions (brand): their own row, big enough to hit, so the name above keeps its room */}
         {view === "chat" && activeConvo && role === "brand" && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
           <div style={{ display: "flex", gap: "10px", padding: "10px 1.25rem", borderBottom: "1px solid var(--c-111)", background: "var(--c-0a0a0a)" }}>
             <span
               onClick={handlePayButtonClick}
-              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "var(--t-0a0a0a)" : "var(--t-444)", background: payableApps.length > 0 ? "var(--c-fff)" : "var(--c-161616)", cursor: payableApps.length > 0 ? "pointer" : "default" }}
+              style={{ ...headerAction, flex: 1, color: dealIsOpen ? "var(--t-0a0a0a)" : "var(--t-444)", background: dealIsOpen ? "var(--c-fff)" : "var(--c-161616)", cursor: dealIsOpen ? "pointer" : "default" }}
             >
               Pay
             </span>
             <span
               onClick={handleScreenOutButtonClick}
-              style={{ ...headerAction, flex: 1, color: payableApps.length > 0 ? "var(--t-ff3b30)" : "var(--t-444)", border: `1px solid ${payableApps.length > 0 ? "var(--c-3a1a1a)" : "var(--c-222)"}`, cursor: payableApps.length > 0 ? "pointer" : "default" }}
+              style={{ ...headerAction, flex: 1, color: dealIsOpen ? "var(--t-ff3b30)" : "var(--t-444)", border: `1px solid ${dealIsOpen ? "var(--c-3a1a1a)" : "var(--c-222)"}`, cursor: dealIsOpen ? "pointer" : "default" }}
             >
               Screen Out
             </span>
@@ -2739,8 +2800,15 @@ return (
               <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
             {(() => {
-              const chatOpenedIdx = messages.findIndex(m => m.text?.startsWith(CHAT_OPENED_PREFIX));
-              const paymentIdx = messages.map(m => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX)).lastIndexOf(true);
+              // With several deals in the chat, the cards belong to the deal in view: they sit after that
+              // campaign's own "Chat Opened" card and take the place of its own "Payment secured" card
+              // (both name the campaign in quotes), falling back to the first Chat Opened and the last payment.
+              const dealName = activeConvo?.campaign_name;
+              const namesDeal = (m: Message) => !!dealName && !!m.text && m.text.includes(`"${dealName}"`);
+              const openedAt = messages.flatMap((m, i) => m.text?.startsWith(CHAT_OPENED_PREFIX) ? [i] : []);
+              const paidAt = messages.flatMap((m, i) => m.text?.startsWith(PAYMENT_CONFIRMED_PREFIX) ? [i] : []);
+              const chatOpenedIdx = openedAt.find(i => namesDeal(messages[i])) ?? openedAt[0] ?? -1;
+              const paymentIdx = [...paidAt].reverse().find(i => namesDeal(messages[i])) ?? paidAt[paidAt.length - 1] ?? -1;
               // The creator's side of the pre-payment window: nothing to post or get paid
               // for yet, but no reason to make them wait to upload.
               const showPreFundingUploadCard = role === "creator" && !!activeConvo?.application_id && !!currentUserId
@@ -2751,6 +2819,7 @@ return (
                 && activeConvo.application_status !== "rejected" && activeConvo.application_status !== "paid" && activeConvo.application_status !== "funded" && activeConvo.application_status !== "disputed";
               const priceCardEl = showPriceCard && activeConvo?.application_id && currentUserId ? (
                 <DealPriceCard
+                  key={activeConvo.application_id}
                   applicationId={activeConvo.application_id}
                   role={role === "brand" ? "brand" : "creator"}
                   currentUserId={currentUserId}
@@ -2774,6 +2843,19 @@ return (
               // this one after a refund - just shows as a plain event card,
               // since there's no longer a live delivery card for those.
               const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid" || activeConvo?.application_status === "disputed";
+              // The deal in view's own cards after its "Chat Opened": its price box and, for a creator,
+              // the "upload now" box. Keyed by deal, so switching deals never carries one's state to another.
+              const dealCards = (
+                <>
+                  {priceCardEl}
+                  {showPreFundingUploadCard && activeConvo?.application_id && currentUserId && (
+                    <PreFundingDeliverableCard key={activeConvo.application_id} applicationId={activeConvo.application_id} currentUserId={currentUserId} />
+                  )}
+                </>
+              );
+              // Where a tap on a tab takes the reader: the deal's delivery card once it is paid for, otherwise its price box.
+              const anchorIdx = deliveryCardShowsPayment && paymentIdx >= 0 ? paymentIdx : cardInsertAtIdx;
+              const anchor = <div data-deal-anchor="" style={{ scrollMarginTop: `${stickyHeight + 8}px` }} />;
 
               const list = messages.map((m, i) => {
               const mine = m.sender_id === currentUserId;
@@ -2787,10 +2869,8 @@ return (
               const eventTime = parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               return (
                 <div key={m.id} style={{ display: "contents" }}>
-                {i === cardInsertAtIdx && priceCardEl}
-                {showPreFundingUploadCard && i === cardInsertAtIdx && activeConvo?.application_id && currentUserId && (
-                  <PreFundingDeliverableCard applicationId={activeConvo.application_id} currentUserId={currentUserId} />
-                )}
+                {i === anchorIdx && anchor}
+                {i === cardInsertAtIdx && dealCards}
                 {showDivider && i === dividerAtIdx && (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
                     <div style={{ flex: 1, height: "1px", background: "var(--c-1a1a1a)" }} />
@@ -2800,6 +2880,7 @@ return (
                 )}
                 {isPaymentEvent && i === paymentIdx && deliveryCardShowsPayment && activeConvo?.application_id && currentUserId ? (
                   <EscrowDeliveryCard
+                    key={activeConvo.application_id}
                     applicationId={activeConvo.application_id}
                     role={role === "brand" ? "brand" : "creator"}
                     currentUserId={currentUserId}
@@ -2923,7 +3004,7 @@ return (
               );
               });
               // Nothing follows "Chat Opened" yet, so there is no message to put the card in front of.
-              return <>{list}{messages.length <= cardInsertAtIdx && priceCardEl}</>;
+              return <>{list}{messages.length <= anchorIdx && anchor}{messages.length <= cardInsertAtIdx && dealCards}</>;
             })()}
             {otherIsTyping && (
               <div style={{ display: "flex", justifyContent: "flex-start" }}>
@@ -2946,7 +3027,7 @@ return (
               <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "var(--t-888)", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <LockIcon /> You can't message this user
               </div>
-            ) : activeConvo?.application_status === "rejected" ? (
+            ) : everyDealClosed ? (
               <div style={{ flex: 1, background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "8px", padding: "12px", textTransform: "uppercase", fontSize: "11px", letterSpacing: "0.05em", color: "var(--t-888)", textAlign: "center", fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: "7px" }}>
                 <LockIcon /> Messaging disabled (application finalized)
               </div>
@@ -3035,34 +3116,6 @@ return (
               onClick={() => setActionSheetFor(null)}
               style={{ padding: "14px 16px", fontSize: "14px", color: "var(--t-888)", cursor: "pointer", textAlign: "center", borderTop: "1px solid var(--c-1a1a1a)", marginTop: "4px" }}
             >
-              Cancel
-            </div>
-          </div>
-        </div>
-      )}
-
-      {campaignPickerFor && (
-        <div onClick={() => setCampaignPickerFor(null)} style={{ position: "fixed", inset: 0, background: "var(--a-0-0-0-0_85)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-1a1a1a)", borderRadius: "14px", width: "100%", maxWidth: "380px", padding: "1.5rem" }}>
-            <h3 style={{ fontFamily: "'TikTok Sans', sans-serif", color: "var(--t-fff)", fontSize: "17px", fontWeight: 800, marginBottom: "4px" }}>
-              {campaignPickerFor === "pay" ? "Which campaign are you paying for?" : "Which campaign are you screening out?"}
-            </h3>
-            <p style={{ color: "var(--t-999)", fontSize: "12px", marginBottom: "1.25rem" }}>
-              You and {activeConvo?.other_name || "this creator"} have more than one open campaign together.
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {payableApps.map(app => (
-                <div
-                  key={app.id}
-                  onClick={() => campaignPickerFor === "pay" ? openPaymentModalForApp(app) : screenOutApp(app)}
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px 14px", cursor: "pointer" }}
-                >
-                  <span style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 500 }}>{app.campaign_name}</span>
-                  {campaignPickerFor === "pay" && <span style={{ color: "var(--t-ccc)", fontSize: "12px" }}>{formatPence(dealBreakdown(dealPriceOf(app) * 100, isEnterprise).totalCharge)}</span>}
-                </div>
-              ))}
-            </div>
-            <div onClick={() => setCampaignPickerFor(null)} style={{ marginTop: "1.25rem", padding: "12px", borderRadius: "8px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" as const }}>
               Cancel
             </div>
           </div>
