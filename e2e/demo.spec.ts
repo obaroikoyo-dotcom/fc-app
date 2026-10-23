@@ -606,8 +606,41 @@ test.describe("changing a deal's price in the chat", () => {
     expect(offers.map(o => `${o.amount}:${o.status}`).sort()).toEqual([`${fair}:accepted`, `${fair * 10}:declined`, `${counter}:accepted`].sort());
     expect(Number(t.campaigns.find(c => c.id === target.id)!.budget), "the campaign keeps its own price").toBe(Number(target.budget));
 
+    // Everyone is told, in words that say who did what: what the visitor was told ...
+    const gbp = (n: number) => n.toLocaleString("en-GB");
+    const myName = t.creator_profiles.find(c => c.id === uid)!.name as string;
+    const notes = (userId: string) => t.notifications.filter(n => n.user_id === userId && n.type === "price_offer").map(n => `${n.title} | ${n.body}`);
+    const told = notes(uid);
+    expect(told).toContain(`Price agreed | ${brandName} accepted £${gbp(fair)} for "${target.name}".`);
+    expect(told).toContain(`Offer declined | ${brandName} declined your offer of £${gbp(fair * 10)} for "${target.name}".`);
+    expect(told).toContain(`Counter offer | ${brandName} countered with £${gbp(counter)} for "${target.name}".`);
+    // ... and what the brand was told about the visitor's offers and answer
+    const brandTold = notes(target.brand_id as string);
+    expect(brandTold).toContain(`New price offered | ${myName} offered £${gbp(fair)} for "${target.name}".`);
+    expect(brandTold).toContain(`New price offered | ${myName} offered £${gbp(fair * 10)} for "${target.name}".`);
+    expect(brandTold).toContain(`Price agreed | ${myName} accepted £${gbp(counter)} for "${target.name}".`);
+
     expect(leaks, "nothing may reach the real backend").toEqual([]);
     expect(errors).toEqual([]);
+  });
+
+  test("the wording of price notifications: offer, counter-offer, accepted, declined", async ({ page }) => {
+    await openDemo(page, "creator");
+    const out = await page.evaluate(async () => {
+      const { priceNotice } = await import("/src/lib/priceNotices.ts");
+      return {
+        offer: priceNotice("offer", "Sam", 1200, "Summer drop"),
+        counter: priceNotice("counter", "Sam", 950, "Summer drop"),
+        accept: priceNotice("accept", "Sam", 950, "Summer drop"),
+        decline: priceNotice("decline", "Sam", 1200, "Summer drop"),
+        noName: priceNotice("offer", "  ", 50, "X"),
+      };
+    });
+    expect(out.offer).toEqual({ title: "New price offered", body: 'Sam offered £1,200 for "Summer drop".' });
+    expect(out.counter).toEqual({ title: "Counter offer", body: 'Sam countered with £950 for "Summer drop".' });
+    expect(out.accept).toEqual({ title: "Price agreed", body: 'Sam accepted £950 for "Summer drop".' });
+    expect(out.decline).toEqual({ title: "Offer declined", body: 'Sam declined your offer of £1,200 for "Summer drop".' });
+    expect(out.noName.body).toBe('Someone offered £50 for "X".');
   });
 
   test("brand: a lower price is agreed in the chat; the brand is charged that price plus its fee and the creator gets it less theirs", async ({ page }) => {

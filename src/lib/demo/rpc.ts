@@ -4,9 +4,16 @@
 import { PgError, type Row } from "./query";
 import type { Ctx } from "./ctx";
 import { dealPricePounds } from "./prices";
+import { priceNotice } from "../priceNotices";
 
 export function notifyUser(ctx: Ctx, userId: string, type: string, title: string, body: string, data: Row = {}): Row {
   return ctx.db.insert("notifications", { user_id: userId, type, title, body, data });
+}
+
+function nameOfUser(db: Ctx["db"], userId: string): string {
+  const creator = db.rows("creator_profiles").find(r => r.id === userId);
+  const brand = db.rows("brand_profiles").find(r => r.id === userId);
+  return String(creator?.name ?? brand?.name ?? "Someone");
 }
 
 function average(nums: number[]): number | null {
@@ -101,10 +108,13 @@ export function runRpc(ctx: Ctx, fn: string, args: Row): unknown {
       if (offers.length >= 30) throw new PgError(400, "P0001", "There have been a lot of offers on this deal. Agree the price in the chat and go with the current one.");
       if (amount === dealPricePounds(db, app)) throw new PgError(400, "P0001", "That is already the price for this deal.");
       const now = new Date().toISOString();
+      // Answering the other person's waiting offer with a different price is a counter-offer.
+      const counter = offers.some(o => o.status === "pending" && o.proposed_by !== me);
       db.update("price_offers", offers.filter(o => o.status === "pending"), { status: "replaced", responded_at: now });
       const created = db.insert("price_offers", { application_id: app.id, proposed_by: me, amount, status: "pending", responded_at: null }, now);
       const other = me === app.creator_id ? campaign.brand_id : app.creator_id;
-      notifyUser(ctx, other as string, "price_offer", "New price offered", `A new price of £${amount} was offered for "${campaign.name}". Open the chat to accept or decline.`, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo.id });
+      const notice = priceNotice(counter ? "counter" : "offer", nameOfUser(db, me), amount, String(campaign.name));
+      notifyUser(ctx, other as string, "price_offer", notice.title, notice.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo.id });
       return created.id;
     }
 
@@ -122,8 +132,8 @@ export function runRpc(ctx: Ctx, fn: string, args: Row): unknown {
       db.update("price_offers", [offer], { status, responded_at: new Date().toISOString() });
       if (status !== "withdrawn") {
         const convo = db.rows("conversations").find(c => (c.participant_1 === app.creator_id && c.participant_2 === campaign.brand_id) || (c.participant_1 === campaign.brand_id && c.participant_2 === app.creator_id));
-        notifyUser(ctx, offer.proposed_by as string, "price_offer", status === "accepted" ? "Price agreed" : "Price offer declined",
-          `Your offer of £${offer.amount} for "${campaign.name}" was ${status}.`, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
+        const notice = priceNotice(status === "accepted" ? "accept" : "decline", nameOfUser(db, me), Number(offer.amount), String(campaign.name));
+        notifyUser(ctx, offer.proposed_by as string, "price_offer", notice.title, notice.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
       }
       return null;
     }

@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import { dealBreakdown, formatPence } from "../lib/fees";
-import { MAX_DEAL_PRICE, MIN_DEAL_PRICE, answerDealPrice, currentDealPrice, proposeDealPrice, type PriceOffer } from "../lib/priceOffers";
+import { MAX_DEAL_PRICE, MIN_DEAL_PRICE, answerDealPrice, currentDealPrice, proposeDealPrice, pushPriceNotice, type PriceOffer } from "../lib/priceOffers";
+import type { PriceNoticeKind } from "../lib/priceNotices";
 
 // The price of one deal, shown in the chat, with a way for either person to offer a
 // different one. The other person accepts or declines; only then does the price
@@ -19,7 +20,7 @@ const button: CSSProperties = {
 };
 const primary: CSSProperties = { ...button, background: "var(--c-fff)", color: "var(--t-0a0a0a)", border: "1px solid var(--c-fff)" };
 
-export default function DealPriceCard({ applicationId, role, currentUserId, otherName, baseBudget, offers, brandIsEnterprise, onChanged }: {
+export default function DealPriceCard({ applicationId, role, currentUserId, otherName, baseBudget, offers, brandIsEnterprise, onChanged, notify }: {
   applicationId: string;
   role: "brand" | "creator";
   currentUserId: string;
@@ -28,6 +29,8 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
   offers: PriceOffer[] | undefined;
   brandIsEnterprise: boolean;
   onChanged: () => void; // reload the offers after something was sent or answered
+  // Who to send the phone push message to, and what it says (the entry in the notifications list is written by the database).
+  notify: { otherUserId: string; myName: string; campaignName: string; conversationId: string };
 }) {
   const { price, agreed, open } = currentDealPrice(offers, baseBudget);
   const [editing, setEditing] = useState(false);
@@ -45,7 +48,7 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
   const typed = /^\d+$/.test(value.trim()) ? Number(value.trim()) : NaN;
   const validTyped = Number.isInteger(typed) && typed >= MIN_DEAL_PRICE && typed <= MAX_DEAL_PRICE;
 
-  const run = async (task: () => Promise<string | null>) => {
+  const run = async (task: () => Promise<string | null>, afterSuccess?: () => void) => {
     setBusy(true);
     setError(null);
     const problem = await task();
@@ -54,12 +57,18 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
     setEditing(false);
     setValue("");
     onChanged();
+    afterSuccess?.();
   };
+
+  const push = (recipientId: string, kind: PriceNoticeKind, amount: number) =>
+    void pushPriceNotice({ recipientId, kind, myName: notify.myName, amount, campaignName: notify.campaignName, applicationId, conversationId: notify.conversationId });
 
   const sendOffer = () => {
     if (!validTyped) { setError(`Enter a whole number of pounds between ${pounds(MIN_DEAL_PRICE)} and ${pounds(MAX_DEAL_PRICE)}.`); return; }
     if (typed === price) { setError("That is already the price."); return; }
-    void run(() => proposeDealPrice(applicationId, typed));
+    // Answering the other person's waiting offer with a different price is a counter-offer.
+    const kind: PriceNoticeKind = open && open.proposed_by !== currentUserId ? "counter" : "offer";
+    void run(() => proposeDealPrice(applicationId, typed), () => push(notify.otherUserId, kind, typed));
   };
 
   const mine = open?.proposed_by === currentUserId;
@@ -86,8 +95,8 @@ export default function DealPriceCard({ applicationId, role, currentUserId, othe
               </>
             ) : (
               <>
-                <button type="button" disabled={busy} style={primary} onClick={() => run(() => answerDealPrice(open.id, "accept"))}>Accept {pounds(open.amount)}</button>
-                <button type="button" disabled={busy} style={button} onClick={() => run(() => answerDealPrice(open.id, "decline"))}>Decline</button>
+                <button type="button" disabled={busy} style={primary} onClick={() => run(() => answerDealPrice(open.id, "accept"), () => push(open.proposed_by, "accept", open.amount))}>Accept {pounds(open.amount)}</button>
+                <button type="button" disabled={busy} style={button} onClick={() => run(() => answerDealPrice(open.id, "decline"), () => push(open.proposed_by, "decline", open.amount))}>Decline</button>
               </>
             )}
           </div>

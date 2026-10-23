@@ -2742,6 +2742,7 @@ return (
                   offers={dealOffers[activeConvo.application_id]}
                   brandIsEnterprise={role === "brand" ? isEnterprise : !!activeConvo.other_is_enterprise}
                   onChanged={refreshDealOffers}
+                  notify={{ otherUserId: otherParticipantId(activeConvo) || "", myName: currentUserName, campaignName: activeConvo.campaign_name || "this campaign", conversationId: activeConvo.id }}
                 />
               ) : null;
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list

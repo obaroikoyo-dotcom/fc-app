@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "./supabase";
+import { priceNotice, type PriceNoticeKind } from "./priceNotices";
 
 // Changing a deal's price in the chat. One side offers, the other accepts; only
 // then does the price of that one deal change (the campaign's own budget, which
@@ -65,6 +66,35 @@ export async function proposeDealPrice(applicationId: string, amount: number): P
 export async function answerDealPrice(offerId: string, action: "accept" | "decline" | "withdraw"): Promise<string | null> {
   const { error } = await supabase.rpc("answer_deal_price", { p_offer_id: offerId, p_action: action });
   return error ? reason(error.message) : null;
+}
+
+// The phone push message that goes with a price change (the entry in the notifications
+// list is written by the database function). Best effort: a push that can't be sent never
+// stops the offer itself, and someone with push switched off just sees it in the app.
+export async function pushPriceNotice(args: {
+  recipientId: string;
+  kind: PriceNoticeKind;
+  myName: string;
+  amount: number;
+  campaignName: string;
+  applicationId: string;
+  conversationId: string;
+}): Promise<void> {
+  if (!args.recipientId) return;
+  const { title, body } = priceNotice(args.kind, args.myName, args.amount, args.campaignName);
+  try {
+    await supabase.functions.invoke("send-push", {
+      body: {
+        user_id: args.recipientId,
+        type: "price_offer",
+        title,
+        body,
+        data: { application_id: args.applicationId, conversation_id: args.conversationId },
+      },
+    });
+  } catch (err) {
+    console.error("Failed to push the price notice:", err);
+  }
 }
 
 // Every offer for these deals, kept fresh: reloaded when something changes (the
