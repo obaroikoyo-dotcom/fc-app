@@ -702,6 +702,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
   const [sendingResponse, setSendingResponse] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -833,16 +834,18 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = ""; // so the same file can be picked again
     if (!file) return;
     setError("");
     const validationError = await validateVideoFile(file);
     if (validationError) { setError(validationError); return; }
+    const replacing = !!deliverableUrl; // swapping a video that was already sent
     setUploading(true);
     try {
       const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
       setDeliveredAt(new Date().toISOString());
-      notifyBrandOfDeliverable(applicationId);
+      notifyBrandOfDeliverable(applicationId, replacing);
     } catch (err) {
       setError((err as Error).message || "Upload failed");
     }
@@ -1034,6 +1037,24 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
       {deliverableUrl && (
         <PreviewVideo src={deliverableUrl} watermark={role === "brand" && applicationStatus !== "paid"} maxHeight="220px" />
+      )}
+
+      {/* Picked the wrong video? The creator can swap it while the deal is still waiting on the brand and nothing has
+          been posted from it. The brand's review time starts again from the new one, so nobody loses time. */}
+      {role === "creator" && applicationStatus === "funded" && deliverableUrl && !myPost && (
+        <div style={{ marginBottom: "10px" }}>
+          <input ref={replaceRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
+          <span
+            role="button"
+            onClick={() => !uploading && replaceRef.current?.click()}
+            style={{ fontSize: "11px", color: "var(--t-999)", textDecoration: "underline", cursor: uploading ? "default" : "pointer" }}
+          >
+            {uploading ? "Uploading..." : "Wrong video? Replace it"}
+          </span>
+          <p style={{ fontSize: "11px", color: "var(--t-999)", lineHeight: 1.5, margin: "4px 0 0" }}>
+            The brand's {REVIEW_WINDOW_DAYS} days to check it start again from the new upload.
+          </p>
+        </div>
       )}
 
       {role === "brand" && applicationStatus === "paid" && deliverableUrl && (
@@ -1259,15 +1280,17 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = ""; // so the same file can be picked again
     if (!file) return;
     setError("");
     const validationError = await validateVideoFile(file);
     if (validationError) { setError(validationError); return; }
+    const replacing = !!deliverableUrl; // the brand was already told about the first one
     setUploading(true);
     try {
       const url = await uploadDeliverable(applicationId, currentUserId, file);
       setDeliverableUrl(url);
-      notifyBrandOfDeliverable(applicationId);
+      if (!replacing) notifyBrandOfDeliverable(applicationId);
     } catch (err) {
       setError((err as Error).message || "Upload failed");
     }
@@ -1287,7 +1310,17 @@ function PreFundingDeliverableCard({ applicationId, currentUserId }: PreFundingD
         </p>
       </div>
       {deliverableUrl ? (
-        <video src={deliverableUrl} controls style={{ width: "100%", borderRadius: "8px", maxHeight: "200px", background: "#000" }} />
+        <>
+          <video src={deliverableUrl} controls style={{ width: "100%", borderRadius: "8px", maxHeight: "200px", background: "#000" }} />
+          <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />
+          <span
+            role="button"
+            onClick={() => !uploading && fileRef.current?.click()}
+            style={{ fontSize: "11px", color: "var(--t-999)", textDecoration: "underline", cursor: uploading ? "default" : "pointer", alignSelf: "flex-start" }}
+          >
+            {uploading ? "Uploading..." : "Wrong video? Replace it"}
+          </span>
+        </>
       ) : (
         <>
           <input ref={fileRef} type="file" accept="video/*" style={{ display: "none" }} onChange={handleUpload} />

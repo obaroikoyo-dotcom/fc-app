@@ -43,8 +43,9 @@ export async function uploadDeliverable(applicationId: string, creatorId: string
 
 // Tells the brand (in-app notification + push) that the creator just sent
 // their deliverable. Best-effort: the upload itself already succeeded, so a
-// failed notification must never surface as an upload error.
-export async function notifyBrandOfDeliverable(applicationId: string): Promise<void> {
+// failed notification must never surface as an upload error. `replaced` is a
+// creator swapping the video they already sent (the review time starts again).
+export async function notifyBrandOfDeliverable(applicationId: string, replaced = false): Promise<void> {
   try {
     const { data: app } = await supabase
       .from("applications")
@@ -59,8 +60,10 @@ export async function notifyBrandOfDeliverable(applicationId: string): Promise<v
     await notifyAndPush({
       user_id: campaign.brand_id,
       type: "deliverable_uploaded",
-      title: "Deliverable Received",
-      body: funded
+      title: replaced ? "New Video Received" : "Deliverable Received",
+      body: replaced
+        ? `Your creator replaced their video for "${campaign.name}". Your ${REVIEW_WINDOW_DAYS} days to check it start again from now.`
+        : funded
         ? `Your creator sent their video for "${campaign.name}". Are you happy with it? You have ${REVIEW_WINDOW_DAYS} days to answer. If you don't, the payment is released to the creator automatically.`
         : `Your creator has already sent their video for "${campaign.name}". Once you've paid, you'll have ${REVIEW_WINDOW_DAYS} days to check it.`,
       data: { campaign_id: app.campaign_id, application_id: app.id },

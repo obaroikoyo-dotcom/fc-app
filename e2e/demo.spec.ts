@@ -952,6 +952,89 @@ test.describe("several deals with the same person in one chat", () => {
   });
 });
 
+// A creator who picks the wrong video used to be stuck with it: there was no way to change it once sent.
+test.describe("replacing a video sent by mistake", () => {
+  const VIDEO = "public/demo-assets/sample.mp4";
+
+  test("creator: before the brand has paid, the early upload can be swapped", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const open = t0.applications.find(a => a.creator_id === uid && a.status === "accepted")!;
+    const brandId = t0.campaigns.find(c => c.id === open.campaign_id)!.brand_id;
+    const brandName = t0.brand_profiles.find(b => b.id === brandId)!.name as string;
+
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+    await expect(page.getByText("Wrong video? Replace it")).toHaveCount(0); // nothing sent yet
+    const [first] = await Promise.all([page.waitForEvent("filechooser"), page.getByText("Tap to upload your deliverable video").click()]);
+    await first.setFiles(VIDEO);
+    await expect(page.getByText("Wrong video? Replace it")).toBeVisible();
+    const sent = (await db(page)).applications.find(a => a.id === open.id)!.deliverable_url;
+    expect(sent).toBeTruthy();
+
+    const [second] = await Promise.all([page.waitForEvent("filechooser"), page.getByText("Wrong video? Replace it").click()]);
+    await second.setFiles(VIDEO);
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === open.id)!.deliverable_url, { timeout: 15_000 }).not.toBe(sent);
+    await expect(page.getByText("Wrong video? Replace it")).toBeVisible(); // and it can be swapped again
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("creator: once the brand has paid, the video can be swapped until the brand answers, and the brand's review time starts again", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const funded = t0.applications.find(a => a.creator_id === uid && a.status === "funded")!;
+    const brandId = t0.campaigns.find(c => c.id === funded.campaign_id)!.brand_id;
+    const brandName = t0.brand_profiles.find(b => b.id === brandId)!.name as string;
+
+    // the creator already sent a video an hour ago (set up in the saved world, so no one reacts to it)
+    const hourAgo = new Date(Date.now() - 3_600_000).toISOString();
+    await page.evaluate(({ id, at }) => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      const app = saved.tables.applications.find((a: { id: string }) => a.id === id);
+      app.deliverable_url = "/demo-assets/sample.mp4";
+      app.deliverable_uploaded_at = at;
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    }, { id: funded.id, at: hourAgo });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
+    await page.getByText(brandName, { exact: true }).first().click();
+
+    await expect(page.getByText("Wrong video? Replace it")).toBeVisible();
+    await expect(page.getByText("The brand's 5 days to check it start again from the new upload.")).toBeVisible();
+    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByText("Wrong video? Replace it").click()]);
+    await chooser.setFiles(VIDEO);
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === funded.id)!.deliverable_url, { timeout: 15_000 }).not.toBe("/demo-assets/sample.mp4");
+    const after = (await db(page)).applications.find(a => a.id === funded.id)!;
+    expect(Date.parse(after.deliverable_uploaded_at), "the brand's review time started again").toBeGreaterThan(Date.parse(hourAgo) + 30 * 60_000);
+    expect(after.status, "still waiting on the brand").toBe("funded");
+    // the brand is told it is a new video, not a first one
+    const told = (await db(page)).notifications.filter(n => n.type === "deliverable_uploaded").map(n => `${n.title} | ${n.body}`);
+    expect(told.some(n => n.startsWith("New Video Received | Your creator replaced their video"))).toBe(true);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: sees no replace link, only its own choices", async ({ page }) => {
+    await openDemo(page, "brand");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const mine = new Set(t0.campaigns.filter(c => c.brand_id === uid).map(c => c.id));
+    const funded = t0.applications.find(a => mine.has(a.campaign_id) && a.status === "funded")!;
+    const creatorName = t0.creator_profiles.find(c => c.id === funded.creator_id)!.name as string;
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(/^messages$/i).nth(1).click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+    await expect(page.getByText("Funded: Awaiting Delivery")).toBeVisible();
+    await expect(page.getByText("Wrong video? Replace it")).toHaveCount(0);
+  });
+});
+
 test.describe("campaign cover photos", () => {
   // The smallest valid PNG: enough to be a real picture the browser can read.
   const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
