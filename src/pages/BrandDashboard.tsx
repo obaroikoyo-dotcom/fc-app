@@ -10,7 +10,7 @@ import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
 import VerifiedBadge from "../components/VerifiedBadge";
 import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, formatResponseTime, type BrandTrackRecord } from "../lib/brandStats";
-import { dealBreakdown } from "../lib/fees";
+import { COMBINED_PLATFORM_FEE_PERCENT, dealBreakdown } from "../lib/fees";
 import { NICHES_A_TO_Z } from "../lib/niches";
 import { FilterToggle, FilterPanel } from "../components/FilterBar";
 import CampaignShelf, { ShelfHeading, type ShelfCard } from "../components/CampaignShelf";
@@ -513,8 +513,9 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         // this is what a creator would actually see for this campaign.
                         c.type === "paid" && budgetVal ? (
                           <div style={{ display: "flex", flexDirection: "column" }}>
-                            <span style={{ fontSize: "12px", color: "var(--t-999)", fontWeight: 500 }}>Your Net Payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
+                            <span style={{ fontSize: "12px", color: "var(--t-999)", fontWeight: 500 }}>Your Net Payout</span>
                             <span style={{ fontSize: "24px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.15 }}>£{creatorNetPayout.toLocaleString()}</span>
+                            <span style={{ fontSize: "11px", color: "var(--t-999)", marginTop: "3px" }}>{isEnterprise ? "No platform fee" : "After platform fee"}</span>
                           </div>
                         ) : (
                           <div style={{ display: "flex", flexDirection: "column" }}>
@@ -524,18 +525,17 @@ export default function BrandDashboard({ navigate, tab, setTab, navigateToProfil
                         )
                       ) : c.type === "paid" && budgetVal ? (
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "12px", color: "var(--t-999)", fontWeight: 500 }}>Base Budget</span>
+                          {/* Your own campaign: what the creator gets and what it costs you in all. Other brands' campaigns show their budget. */}
+                          <span style={{ fontSize: "12px", color: "var(--t-999)", fontWeight: 500 }}>{isOwn ? "Creator gets" : "Base Budget"}</span>
                           <span style={{ fontSize: "24px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.15 }}>
-                            £{budgetVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            £{(isOwn ? creatorNetPayout : budgetVal).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           {isOwn && (
                             <span style={{ fontSize: "12px", color: "var(--t-999)", marginTop: "6px", lineHeight: 1.5 }}>
+                              Total <span style={{ color: "var(--t-fff)", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                               {isEnterprise
-                                ? <>Total: <span style={{ color: "var(--t-fff)", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (0% platform fee + 2.5% + 20p card processing)</>
-                                : <>Total: <span style={{ color: "var(--t-fff)", fontWeight: 500 }}>£{currentTotalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> (+5% fee)</>
-                              }
-                              <br />
-                              Creator nets <span style={{ color: "var(--t-fff)", fontWeight: 500 }}>£{creatorNetPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>{!isEnterprise && " (-10% cut)"}
+                                ? " (0% platform fee + 2.5% + 20p card processing)"
+                                : `, including the ${COMBINED_PLATFORM_FEE_PERCENT}% platform fee`}
                             </span>
                           )}
                         </div>

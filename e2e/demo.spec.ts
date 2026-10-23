@@ -558,6 +558,9 @@ test.describe("explore shelves", () => {
 test.describe("changing a deal's price in the chat", () => {
   const card = (page: Page) => page.getByTestId("deal-price-card");
   const money = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // The card, the offers and the notifications all talk about what the creator gets (the budget less
+  // FlipCollab's cut), never the budget behind it. Budgets in the demo are multiples of £10, so it is a whole number.
+  const net = (budget: number) => (budget * 90) / 100;
 
   test("creator: offer a price, get it accepted, get a counter-offer and accept it; the campaign's own price never moves", async ({ page }) => {
     const { leaks, errors } = await openDemo(page, "creator");
@@ -567,7 +570,7 @@ test.describe("changing a deal's price in the chat", () => {
     const before = await db(page);
     const dealBrands = new Set(before.applications.filter(a => a.creator_id === uid).map(a => before.campaigns.find(c => c.id === a.campaign_id)?.brand_id));
     const appliedTo = new Set(before.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
-    const target = before.campaigns.find(c => !c.is_draft && c.type === "paid" && Number(c.budget) >= 100 && !appliedTo.has(c.id) && !dealBrands.has(c.brand_id))!;
+    const target = before.campaigns.find(c => !c.is_draft && c.type === "paid" && Number(c.budget) >= 100 && Number(c.budget) % 10 === 0 && !appliedTo.has(c.id) && !dealBrands.has(c.brand_id))!;
     const base = Math.round(Number(target.budget));
     const brandName = before.brand_profiles.find(b => b.id === target.brand_id)!.name as string;
     await page.locator(".item-enter", { has: page.getByText(target.name, { exact: true }) }).getByText("Apply", { exact: true }).click();
@@ -580,37 +583,43 @@ test.describe("changing a deal's price in the chat", () => {
     await page.getByText("Messages", { exact: true }).last().click();
     await page.getByText(brandName, { exact: true }).first().click();
 
-    // the price is on show, with what it means for the creator (90% after the platform fee)
+    // the price is on show as what the creator gets, "after platform fee": no percentage, and nothing
+    // about the brand's budget or what the brand pays
     await expect(card(page)).toBeVisible();
-    await expect(card(page).getByText(`£${base.toLocaleString()}`, { exact: true })).toBeVisible();
-    await expect(card(page).getByText(`You'd receive £${money(base * 0.9)} after the 10% platform fee`)).toBeVisible();
+    await expect(card(page).getByText(`£${net(base).toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(card(page).getByText("After platform fee", { exact: true })).toBeVisible();
+    const seen = await card(page).innerText();
+    expect(seen).not.toContain("%");
+    expect(seen).not.toMatch(/charged|FlipCollab/i);
+    expect(seen).not.toContain(`£${base.toLocaleString()}`);
+    expect(seen).not.toContain(money(base * 1.05));
 
     // offers that are not allowed are refused, with a reason, and nothing is saved
     await card(page).getByRole("button", { name: "Offer a different price" }).click();
     await card(page).getByRole("textbox").fill("0");
     await card(page).getByRole("button", { name: "Send offer" }).click();
     await expect(card(page).getByRole("alert")).toContainText("whole number of pounds");
-    await card(page).getByRole("textbox").fill(String(base));
+    await card(page).getByRole("textbox").fill(String(net(base)));
     await card(page).getByRole("button", { name: "Send offer" }).click();
     await expect(card(page).getByRole("alert")).toContainText("already the price");
     expect((await db(page)).price_offers).toEqual([]);
 
-    // a fair offer is sent, then the (simulated) brand accepts it
-    const fair = base + 20;
-    await card(page).getByRole("textbox").fill(String(fair));
+    // a fair offer is sent (the box takes what the creator gets), then the (simulated) brand accepts it
+    const fair = base + 20; // the deal's price as the database keeps it
+    await card(page).getByRole("textbox").fill(String(net(fair)));
     await card(page).getByRole("button", { name: "Send offer" }).click();
-    await expect(card(page).getByText(`You offered £${fair.toLocaleString()}`)).toBeVisible();
+    await expect(card(page).getByText(`You offered £${net(fair).toLocaleString()}`)).toBeVisible();
     await expect(card(page).getByText("Agreed price")).toBeVisible({ timeout: 15_000 });
-    await expect(card(page).getByText(`£${fair.toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(card(page).getByText(`£${net(fair).toLocaleString()}`, { exact: true })).toBeVisible();
 
     // an offer far too high is declined and the brand comes back with its own price
     await card(page).getByRole("button", { name: "Offer a different price" }).click();
-    await card(page).getByRole("textbox").fill(String(fair * 10));
+    await card(page).getByRole("textbox").fill(String(net(fair * 10)));
     await card(page).getByRole("button", { name: "Send offer" }).click();
     const counter = fair * 2;
-    await expect(card(page).getByText(`${brandName} offered £${counter.toLocaleString()}`)).toBeVisible({ timeout: 15_000 });
-    await card(page).getByRole("button", { name: `Accept £${counter.toLocaleString()}` }).click();
-    await expect(card(page).getByText(`£${counter.toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(card(page).getByText(`${brandName} offered £${net(counter).toLocaleString()}`)).toBeVisible({ timeout: 15_000 });
+    await card(page).getByRole("button", { name: `Accept £${net(counter).toLocaleString()}` }).click();
+    await expect(card(page).getByText(`£${net(counter).toLocaleString()}`, { exact: true })).toBeVisible();
 
     // what was saved: each offer's end state, and the campaign itself untouched
     const t = await db(page);
@@ -624,14 +633,15 @@ test.describe("changing a deal's price in the chat", () => {
     const myName = t.creator_profiles.find(c => c.id === uid)!.name as string;
     const notes = (userId: string) => t.notifications.filter(n => n.user_id === userId && n.type === "price_offer").map(n => `${n.title} | ${n.body}`);
     const told = notes(uid);
-    expect(told).toContain(`Price agreed | ${brandName} accepted £${gbp(fair)} for "${target.name}".`);
-    expect(told).toContain(`Offer declined | ${brandName} declined your offer of £${gbp(fair * 10)} for "${target.name}".`);
-    expect(told).toContain(`Counter offer | ${brandName} countered with £${gbp(counter)} for "${target.name}".`);
+    // (every amount is what the creator gets, the figure on the price card)
+    expect(told).toContain(`Price agreed | ${brandName} accepted £${gbp(net(fair))} for "${target.name}".`);
+    expect(told).toContain(`Offer declined | ${brandName} declined your offer of £${gbp(net(fair * 10))} for "${target.name}".`);
+    expect(told).toContain(`Counter offer | ${brandName} countered with £${gbp(net(counter))} for "${target.name}".`);
     // ... and what the brand was told about the visitor's offers and answer
     const brandTold = notes(target.brand_id as string);
-    expect(brandTold).toContain(`New price offered | ${myName} offered £${gbp(fair)} for "${target.name}".`);
-    expect(brandTold).toContain(`New price offered | ${myName} offered £${gbp(fair * 10)} for "${target.name}".`);
-    expect(brandTold).toContain(`Price agreed | ${myName} accepted £${gbp(counter)} for "${target.name}".`);
+    expect(brandTold).toContain(`New price offered | ${myName} offered £${gbp(net(fair))} for "${target.name}".`);
+    expect(brandTold).toContain(`New price offered | ${myName} offered £${gbp(net(fair * 10))} for "${target.name}".`);
+    expect(brandTold).toContain(`Price agreed | ${myName} accepted £${gbp(net(counter))} for "${target.name}".`);
 
     expect(leaks, "nothing may reach the real backend").toEqual([]);
     expect(errors).toEqual([]);
@@ -647,6 +657,8 @@ test.describe("changing a deal's price in the chat", () => {
         accept: priceNotice("accept", "Sam", 950, "Summer drop"),
         decline: priceNotice("decline", "Sam", 1200, "Summer drop"),
         noName: priceNotice("offer", "  ", 50, "X"),
+        pence: priceNotice("offer", "Sam", 100.8, "X"),
+        thousandsAndPence: priceNotice("counter", "Sam", 1199.7, "X"),
       };
     });
     expect(out.offer).toEqual({ title: "New price offered", body: 'Sam offered £1,200 for "Summer drop".' });
@@ -654,6 +666,36 @@ test.describe("changing a deal's price in the chat", () => {
     expect(out.accept).toEqual({ title: "Price agreed", body: 'Sam accepted £950 for "Summer drop".' });
     expect(out.decline).toEqual({ title: "Offer declined", body: 'Sam declined your offer of £1,200 for "Summer drop".' });
     expect(out.noName.body).toBe('Someone offered £50 for "X".');
+    // pence only when there are some, the same as the database writes them
+    expect(out.pence.body).toBe('Sam offered £100.80 for "X".');
+    expect(out.thousandsAndPence.body).toBe('Sam countered with £1,199.70 for "X".');
+  });
+
+  test("a typed price becomes the smallest budget that gives the creator at least that much", async ({ page }) => {
+    await openDemo(page, "creator");
+    const out = await page.evaluate(async () => {
+      const { budgetForCreatorNet, creatorNetPence } = await import("/src/lib/fees.ts");
+      const wrong: string[] = [];
+      for (const enterprise of [false, true]) {
+        for (let pounds = 1; pounds <= 20000; pounds++) {
+          const budget = budgetForCreatorNet(pounds * 100, enterprise);
+          if (creatorNetPence(budget, enterprise) < pounds * 100) wrong.push(`${enterprise}:${pounds} gives the creator too little`);
+          if (budget > 1 && creatorNetPence(budget - 1, enterprise) >= pounds * 100) wrong.push(`${enterprise}:${pounds} is not the smallest budget`);
+        }
+      }
+      return {
+        wrong: wrong.slice(0, 5),
+        ninety: budgetForCreatorNet(9000, false),   // £90 to the creator is a £100 budget
+        hundred: budgetForCreatorNet(10000, false), // £100 needs £112, which gives £100.80
+        hundredNet: creatorNetPence(112, false),
+        enterprise: budgetForCreatorNet(10000, true), // no platform fee: the same number
+      };
+    });
+    expect(out.wrong).toEqual([]);
+    expect(out.ninety).toBe(100);
+    expect(out.hundred).toBe(112);
+    expect(out.hundredNet).toBe(10080);
+    expect(out.enterprise).toBe(100);
   });
 
   test("brand: a lower price is agreed in the chat; the brand is charged that price plus its fee and the creator gets it less theirs", async ({ page }) => {
@@ -665,7 +707,7 @@ test.describe("changing a deal's price in the chat", () => {
     const campaign = mine.get(pending.campaign_id)!;
     const creatorName = t0.creator_profiles.find(c => c.id === pending.creator_id)!.name as string;
     const base = Math.round(Number(campaign.budget));
-    const agreed = Math.round(base * 0.8);
+    const agreed = Math.round(base * 0.8 / 10) * 10; // a lower price, a multiple of £10 so what the creator gets is a whole number of pounds
 
     await page.getByText("Messages", { exact: true }).last().click();
     await page.getByText(campaign.name, { exact: true }).first().click();
@@ -674,16 +716,23 @@ test.describe("changing a deal's price in the chat", () => {
     await page.getByText(/Go to messages/i).click();
     await page.getByText(creatorName, { exact: true }).first().click();
 
+    // the price is what the creator gets; the brand is also told what it is charged, with the fee as one figure
     await expect(card(page)).toBeVisible();
-    await expect(card(page).getByText(`£${money(base * 1.05)} charged to you, including the 5% platform fee`)).toBeVisible();
+    await expect(card(page).getByText(`£${net(base).toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(card(page).getByText(`£${money(base * 1.05)} charged to you, including the 15% FlipCollab platform fee`)).toBeVisible();
     await card(page).getByRole("button", { name: "Offer a different price" }).click();
-    await card(page).getByRole("textbox").fill(String(agreed));
-    await expect(card(page).getByText(`£${money(agreed * 1.05)} charged to you, including the 5% platform fee`)).toBeVisible(); // the preview
+    await card(page).getByRole("textbox").fill(String(net(agreed)));
+    await expect(card(page).getByText(`£${money(agreed * 1.05)} charged to you, including the 15% FlipCollab platform fee`)).toBeVisible(); // the preview
     await card(page).getByRole("button", { name: "Send offer" }).click();
     await expect(card(page).getByText("Agreed price")).toBeVisible({ timeout: 15_000 });
+    await expect(card(page).getByText(`£${net(agreed).toLocaleString()}`, { exact: true })).toBeVisible();
 
-    // paying: the button and the saved payment both use the agreed price
+    // paying: the button and the saved payment both use the agreed price, and the box says it the same way
     await page.getByText("Pay", { exact: true }).first().click();
+    await expect(page.getByText("Creator gets", { exact: true })).toBeVisible();
+    await expect(page.getByText("Platform fee (15%)", { exact: true })).toBeVisible();
+    await expect(page.getByText(`£${(net(agreed)).toFixed(2)}`, { exact: true })).toBeVisible();
+    await expect(page.getByText(`£${(agreed * 0.15).toFixed(2)}`, { exact: true })).toBeVisible();
     await expect(page.getByText(`Pay £${money(agreed * 1.05)}`)).toBeVisible();
     await page.getByText(/^Pay £/).click();
     await expect.poll(async () => (await db(page)).applications.find(a => a.id === pending.id)?.status, { timeout: 15_000 }).toBe("funded");
@@ -695,6 +744,81 @@ test.describe("changing a deal's price in the chat", () => {
 
     // once paid, the price is locked and the card is gone
     await expect(card(page)).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+});
+
+test.describe("fee wording", () => {
+  const money = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // A creator is only told "after platform fee"; the percentage is in the terms. This catches any way of
+  // writing it: "10% platform fee", "(-10%)", "(0% cut)".
+  const feePercentage = /\d+\s*%\s*(platform|cut|fee)|\(-?\d+%\)|\(\d+%\s*cut\)/i;
+
+  test("creator: both Explore tabs and the application page say 'after platform fee', never a percentage", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "creator");
+    const t = await db(page);
+    const uid = await myId(page);
+    const enterprise = new Set(t.brand_profiles.filter(b => b.is_enterprise).map(b => b.id));
+
+    // Discover Deals
+    const cards = page.locator(".item-enter");
+    await expect(cards.first()).toBeVisible();
+    await expect(cards.getByText("After platform fee", { exact: true }).first()).toBeVisible();
+    for (const text of await cards.allInnerTexts()) expect(text).not.toMatch(feePercentage);
+
+    // My Pitches
+    await page.getByText(/^My Pitches/).click();
+    await expect(cards.first()).toBeVisible();
+    await expect(cards.getByText(/^(After|No) platform fee$/).first()).toBeVisible();
+    for (const text of await cards.allInnerTexts()) expect(text).not.toMatch(feePercentage);
+
+    // the application page
+    const appliedTo = new Set(t.applications.filter(a => a.creator_id === uid).map(a => a.campaign_id));
+    const target = t.campaigns.find(c => !c.is_draft && c.type === "paid" && Number(c.budget) > 0 && !appliedTo.has(c.id) && !enterprise.has(c.brand_id))!;
+    await page.getByText(/^Discover Deals/i).click();
+    await page.locator(".item-enter", { has: page.getByText(target.name, { exact: true }) }).getByText("Apply", { exact: true }).click();
+    await expect(page.getByText("Net Take-home (after platform fee)", { exact: true })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(`£${(Number(target.budget) * 0.9).toLocaleString()}`, { exact: true })).toBeVisible();
+    expect(await page.locator("body").innerText()).not.toMatch(feePercentage);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: Your Campaigns says what the creator gets and the total with the one platform fee; so do Market and the Post form", async ({ page }) => {
+    const { leaks, errors } = await openDemo(page, "brand");
+    const t = await db(page);
+    const uid = await myId(page);
+    expect(t.brand_profiles.find(b => b.id === uid)?.is_enterprise, "the demo brand is a standard one").toBeFalsy();
+    const mine = t.campaigns.find(c => c.brand_id === uid && !c.is_draft && c.type === "paid" && Number(c.budget) > 0)!;
+    const budget = Number(mine.budget);
+    const own = () => page.locator(".item-enter", { has: page.getByText(mine.name, { exact: true }) });
+
+    // Your Campaigns
+    await expect(own().getByText("Creator gets", { exact: true })).toBeVisible();
+    await expect(own().getByText(`£${money(budget * 0.9)}`, { exact: true })).toBeVisible();
+    await expect(own()).toContainText(`Total £${money(budget * 1.05)}, including the 15% platform fee`);
+    await expect(own()).not.toContainText(/Base Budget|5% fee|10% cut/i);
+
+    // Market: your own campaign shows what a creator sees, with no percentage
+    await page.getByText("Market", { exact: true }).click();
+    await expect(own().getByText("Your Net Payout", { exact: true })).toBeVisible();
+    await expect(own().getByText("After platform fee", { exact: true })).toBeVisible();
+    await expect(own().getByText(`£${(budget * 0.9).toLocaleString()}`, { exact: true })).toBeVisible();
+    await expect(own()).not.toContainText(feePercentage);
+
+    // Post: the box under the budget
+    await page.getByText("Post", { exact: true }).last().click();
+    await page.getByPlaceholder("500", { exact: true }).fill("100");
+    await expect(page.getByText("Creator gets", { exact: true })).toBeVisible();
+    await expect(page.getByText("£90.00", { exact: true })).toBeVisible();
+    await expect(page.getByText("Platform fee (15%)", { exact: true })).toBeVisible();
+    await expect(page.getByText("£15.00", { exact: true })).toBeVisible();
+    await expect(page.getByText("£105.00", { exact: true })).toBeVisible();
+    await expect(page.getByText("Enterprise replaces the 15% platform fee with a card processing fee of 2.5% + 20p.")).toBeVisible();
+    await expect(page.getByText(/\(\+5%\)|\(-10%\)|5% brand and 10% creator/)).toHaveCount(0);
 
     expect(leaks, "nothing may reach the real backend").toEqual([]);
     expect(errors).toEqual([]);

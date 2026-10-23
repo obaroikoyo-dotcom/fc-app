@@ -5,7 +5,7 @@ import { usePersistedState } from "../lib/usePersistedState";
 import { useMemoryPersistedState, clearMemoryPersistedState } from "../lib/useMemoryPersistedState";
 import { uploadToR2 } from "../lib/r2Upload";
 import { socialPlatformFor } from "../lib/campaignDelivery";
-import { dealBreakdown } from "../lib/fees";
+import { COMBINED_PLATFORM_FEE_PERCENT, dealBreakdown } from "../lib/fees";
 import { prepareCoverPhoto, coverSrc } from "../lib/coverPhoto";
 import CampaignTile from "../components/CampaignTile";
 
@@ -223,7 +223,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
   const numericBudget = Math.max(0, parseInt(budget, 10) || 0);
   // Same maths the server uses at checkout (see src/lib/fees.ts).
   const breakdown = dealBreakdown(numericBudget * 100, isEnterprise);
-  const platformFee = breakdown.brandFee / 100;
+  const platformFee = (breakdown.brandFee + breakdown.creatorCut) / 100; // both of FlipCollab's fees, shown to the brand as one
   const processingFee = breakdown.processingFee / 100;
   const totalCost = breakdown.totalCharge / 100;
   const creatorPayout = breakdown.creatorPayout / 100;
@@ -550,10 +550,10 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
             {numericBudget > 0 && (
               <div style={{ background: "var(--c-0a0a0a)", border: "1px solid var(--c-161616)", borderRadius: "6px", padding: "10px 12px", marginTop: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--t-888)", marginBottom: "4px" }}>
-                  <span>Base budget</span><span>£{numericBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>Creator gets</span><span>£{creatorPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--t-888)", marginBottom: "4px" }}>
-                  <span>Platform fee {isEnterprise ? "(0%)" : "(+5%)"}</span>
+                  <span>Platform fee ({isEnterprise ? 0 : COMBINED_PLATFORM_FEE_PERCENT}%)</span>
                   <span style={{ color: isEnterprise ? "var(--t-fff)" : "var(--t-444)" }}>£{platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {isEnterprise && (
@@ -565,10 +565,6 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 <hr style={{ border: "0", borderTop: "1px solid var(--c-161616)", margin: "6px 0" }} />
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 600, color: "var(--t-fff)" }}>
                   <span>Total</span><span style={{ color: "var(--t-fff)" }}>£{totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", color: "var(--t-777)", marginTop: "4px" }}>
-                  <span>Creator payout {isEnterprise ? "(0% cut)" : "(-10%)"}</span>
-                  <span>£{creatorPayout.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 {isEnterprise && (
                   <p style={{ fontSize: "11px", color: "var(--t-777)", lineHeight: 1.5, margin: "10px 0 0" }}>
@@ -590,7 +586,7 @@ export default function CreateCampaign({ onPosted, isEnterprise, onNavigateEnter
                 )}
                 {!isEnterprise && (
                   <p style={{ fontSize: "10px", color: "var(--t-666)", lineHeight: 1.5, margin: "6px 0 0" }}>
-                    Enterprise replaces the 5% brand and 10% creator platform fees with a card processing fee of 2.5% + 20p.
+                    Enterprise replaces the {COMBINED_PLATFORM_FEE_PERCENT}% platform fee with a card processing fee of 2.5% + 20p.
                   </p>
                 )}
               </div>

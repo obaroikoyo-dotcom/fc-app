@@ -429,7 +429,7 @@ export default function Explore({ navigate, navigateToProfile, navigateToApply }
                       <>
                         <p style={{ margin: 0, fontSize: "12px", color: "var(--t-999)", marginBottom: "2px" }}>You'd earn</p>
                         <p style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif", lineHeight: 1.1 }}>£{netCreatorPayout.toLocaleString()}</p>
-                        <p style={{ margin: 0, fontSize: "11px", color: "var(--t-999)", marginTop: "3px" }}>{brandIsEnterprise ? "No platform fee" : "After the 10% platform fee"}</p>
+                        <p style={{ margin: 0, fontSize: "11px", color: "var(--t-999)", marginTop: "3px" }}>{brandIsEnterprise ? "No platform fee" : "After platform fee"}</p>
                       </>
                     ) : (
                       <>

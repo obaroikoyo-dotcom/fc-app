@@ -3,7 +3,7 @@
 
 import { PgError, type Row } from "./query";
 import type { Ctx } from "./ctx";
-import { dealPricePounds } from "./prices";
+import { creatorNetPounds, dealPricePounds } from "./prices";
 import { priceNotice } from "../priceNotices";
 
 export function notifyUser(ctx: Ctx, userId: string, type: string, title: string, body: string, data: Row = {}): Row {
@@ -113,7 +113,7 @@ export function runRpc(ctx: Ctx, fn: string, args: Row): unknown {
       db.update("price_offers", offers.filter(o => o.status === "pending"), { status: "replaced", responded_at: now });
       const created = db.insert("price_offers", { application_id: app.id, proposed_by: me, amount, status: "pending", responded_at: null }, now);
       const other = me === app.creator_id ? campaign.brand_id : app.creator_id;
-      const notice = priceNotice(counter ? "counter" : "offer", nameOfUser(db, me), amount, String(campaign.name));
+      const notice = priceNotice(counter ? "counter" : "offer", nameOfUser(db, me), creatorNetPounds(db, campaign, amount), String(campaign.name));
       notifyUser(ctx, other as string, "price_offer", notice.title, notice.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo.id });
       return created.id;
     }
@@ -132,7 +132,7 @@ export function runRpc(ctx: Ctx, fn: string, args: Row): unknown {
       db.update("price_offers", [offer], { status, responded_at: new Date().toISOString() });
       if (status !== "withdrawn") {
         const convo = db.rows("conversations").find(c => (c.participant_1 === app.creator_id && c.participant_2 === campaign.brand_id) || (c.participant_1 === campaign.brand_id && c.participant_2 === app.creator_id));
-        const notice = priceNotice(status === "accepted" ? "accept" : "decline", nameOfUser(db, me), Number(offer.amount), String(campaign.name));
+        const notice = priceNotice(status === "accepted" ? "accept" : "decline", nameOfUser(db, me), creatorNetPounds(db, campaign, Number(offer.amount)), String(campaign.name));
         notifyUser(ctx, offer.proposed_by as string, "price_offer", notice.title, notice.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
       }
       return null;

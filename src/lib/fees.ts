@@ -47,3 +47,31 @@ export function dealBreakdown(budgetPence: number, isEnterprise: boolean): DealB
 export function formatPence(pence: number): string {
   return `£${(pence / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+
+// 9000 -> "£90", 10080 -> "£100.80": whole pounds without the pence, anything else with them.
+export function formatPounds(pence: number): string {
+  const digits = pence % 100 === 0 ? 0 : 2;
+  return `£${(pence / 100).toLocaleString(undefined, { minimumFractionDigits: digits, maximumFractionDigits: digits })}`;
+}
+
+// Brands see FlipCollab's two fees as one: the 5% on top of what they pay and the 10% off
+// what the creator gets, both worked out on the same budget (15% of it in all).
+export const COMBINED_PLATFORM_FEE_PERCENT = Math.round((BRAND_PLATFORM_FEE_RATE + CREATOR_PLATFORM_FEE_RATE) * 100);
+
+// Prices in the chat are talked about as what the creator gets, while the database keeps the
+// deal's budget in whole pounds. These two convert between them.
+
+// What the creator gets (pence) for a deal at this budget (whole pounds).
+export function creatorNetPence(budgetPounds: number, isEnterprise: boolean): number {
+  return dealBreakdown(budgetPounds * 100, isEnterprise).creatorPayout;
+}
+
+// The smallest budget (whole pounds) that gives the creator at least this much (pence).
+export function budgetForCreatorNet(netPence: number, isEnterprise: boolean): number {
+  const wanted = Math.max(0, Math.round(netPence));
+  const share = isEnterprise ? 1 : 1 - CREATOR_PLATFORM_FEE_RATE;
+  let budget = Math.max(1, Math.ceil(wanted / (100 * share)));
+  while (creatorNetPence(budget, isEnterprise) < wanted) budget++;
+  while (budget > 1 && creatorNetPence(budget - 1, isEnterprise) >= wanted) budget--;
+  return budget;
+}

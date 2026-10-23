@@ -133,7 +133,7 @@ export default function BrandCampaignPreview({ campaignId, goBack }: Props) {
           {campaign.type === "paid" && (
             <div style={{ textAlign: "right" }}>
               <span style={{ display: "block", fontSize: "9px", color: "var(--t-888)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Net Take-home {campaign.brand_profiles?.is_enterprise ? "(0% cut)" : "(-10%)"}
+                Net Take-home {campaign.brand_profiles?.is_enterprise ? "(no platform fee)" : "(after platform fee)"}
               </span>
               <span style={{ fontSize: "16px", fontWeight: 800, color: "var(--t-fff)", fontFamily: "'TikTok Sans', sans-serif" }}>
                 £{(parseInt(campaign.budget, 10) * (campaign.brand_profiles?.is_enterprise ? 1 : 0.90)).toLocaleString()}

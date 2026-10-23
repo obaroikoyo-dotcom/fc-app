@@ -19,7 +19,7 @@ import { parseUtc } from "../lib/parseUtc";
 import { validateVideoFile } from "../lib/videoDuration";
 import { getSocialConnections } from "../lib/social";
 import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
-import { dealBreakdown } from "../lib/fees";
+import { COMBINED_PLATFORM_FEE_PERCENT, dealBreakdown, formatPence } from "../lib/fees";
 import DealPriceCard from "../components/DealPriceCard";
 import { cardElementOptions } from "../lib/stripeTheme";
 import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
@@ -251,7 +251,7 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
   // Mirrors create-payment-intent's exact rounding (see src/lib/fees.ts) so
   // this pre-payment display can never show a different number than what
   // actually gets charged/recorded. The server recomputes all of it itself.
-  const { brandFee, processingFee, totalCharge, creatorPayout: creatorPayoutDisplay } = dealBreakdown(campaignBudget, isEnterprise);
+  const { brandFee, creatorCut, processingFee, totalCharge, creatorPayout: creatorPayoutDisplay } = dealBreakdown(campaignBudget, isEnterprise);
 
   // Demo only: the demo backend funds the deal the moment the payment is
   // created, so there is no card to confirm and nothing goes to Stripe.
@@ -411,13 +411,13 @@ function PaymentModalContent({ paymentApp, campaignBudget, isEnterprise, current
 
       <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "0.85rem", marginBottom: "1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-          <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Creator Payout {isEnterprise ? "(100%)" : "(90%)"}</span>
+          <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Creator gets</span>
           <span style={{ color: "var(--t-fff)", fontSize: "13px" }}>£{(creatorPayoutDisplay / 100).toFixed(2)}</span>
         </div>
         {!isEnterprise && (
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-            <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Platform Fee (5%)</span>
-            <span style={{ color: "var(--t-fff)", fontSize: "13px" }}>£{(brandFee / 100).toFixed(2)}</span>
+            <span style={{ color: "var(--t-999)", fontSize: "13px" }}>Platform fee ({COMBINED_PLATFORM_FEE_PERCENT}%)</span>
+            <span style={{ color: "var(--t-fff)", fontSize: "13px" }}>£{((brandFee + creatorCut) / 100).toFixed(2)}</span>
           </div>
         )}
         {isEnterprise && (
@@ -3058,7 +3058,7 @@ return (
                   style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "12px 14px", cursor: "pointer" }}
                 >
                   <span style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 500 }}>{app.campaign_name}</span>
-                  {campaignPickerFor === "pay" && <span style={{ color: "var(--t-ccc)", fontSize: "12px" }}>£{dealPriceOf(app).toFixed(2)}</span>}
+                  {campaignPickerFor === "pay" && <span style={{ color: "var(--t-ccc)", fontSize: "12px" }}>{formatPence(dealBreakdown(dealPriceOf(app) * 100, isEnterprise).totalCharge)}</span>}
                 </div>
               ))}
             </div>

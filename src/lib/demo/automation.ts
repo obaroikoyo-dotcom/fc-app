@@ -10,8 +10,8 @@ import type { Ctx } from "./ctx";
 import { notifyUser } from "./rpc";
 import { releaseDeal } from "./functions";
 import { SAMPLE_VIDEO_URL } from "./seed";
-import { dealPricePounds } from "./prices";
-import { priceNotice } from "../priceNotices";
+import { creatorNetPounds, dealPricePounds } from "./prices";
+import { poundsText, priceNotice } from "../priceNotices";
 
 export type Scheduler = (fn: () => void, ms: number) => void;
 
@@ -103,18 +103,18 @@ export function startAutomation(ctx: Ctx, schedule: Scheduler = (fn, ms) => { se
     const now = new Date().toISOString();
     if (amount >= current * 0.5 && amount <= current * 2) {
       db.update("price_offers", [offer], { status: "accepted", responded_at: now });
-      const text = `Happy to go with £${amount}. Thanks for agreeing that with me.`;
+      const text = `Happy to go with ${poundsText(creatorNetPounds(db, campaign, amount))}. Thanks for agreeing that with me.`;
       if (convo) say(convo, other, text);
-      const accepted = priceNotice("accept", nameOf(other), amount, String(campaign.name));
+      const accepted = priceNotice("accept", nameOf(other), creatorNetPounds(db, campaign, amount), String(campaign.name));
       notifyUser(ctx, me, "price_offer", accepted.title, accepted.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
       return;
     }
     db.update("price_offers", [offer], { status: "declined", responded_at: now });
     const counter = Math.max(1, Math.round(amount < current * 0.5 ? current * 0.5 : current * 2));
     db.insert("price_offers", { application_id: app.id, proposed_by: other, amount: counter, status: "pending", responded_at: null }, now);
-    const declined = priceNotice("decline", nameOf(other), amount, String(campaign.name));
+    const declined = priceNotice("decline", nameOf(other), creatorNetPounds(db, campaign, amount), String(campaign.name));
     notifyUser(ctx, me, "price_offer", declined.title, declined.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
-    const countered = priceNotice("counter", nameOf(other), counter, String(campaign.name));
+    const countered = priceNotice("counter", nameOf(other), creatorNetPounds(db, campaign, counter), String(campaign.name));
     notifyUser(ctx, me, "price_offer", countered.title, countered.body, { campaign_id: campaign.id, application_id: app.id, conversation_id: convo?.id });
   };
 
