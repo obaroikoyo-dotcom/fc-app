@@ -5,6 +5,7 @@ import { PgError, type Row } from "./query";
 import type { Ctx } from "./ctx";
 import { creatorNetPounds, dealPricePounds } from "./prices";
 import { priceNotice } from "../priceNotices";
+import { MAX_VIDEO_REQUESTS } from "../review";
 
 export function notifyUser(ctx: Ctx, userId: string, type: string, title: string, body: string, data: Row = {}): Row {
   return ctx.db.insert("notifications", { user_id: userId, type, title, body, data });
@@ -72,7 +73,7 @@ export function runRpc(ctx: Ctx, fn: string, args: Row): unknown {
       if (!app) throw new PgError(400, "P0001", "We couldn't find that deal.");
       if (app.status !== "funded") throw new PgError(400, "P0001", "A new video can only be requested once the deal is paid.");
       if (!app.deliverable_url) throw new PgError(400, "P0001", "There's no video to replace yet.");
-      if ((app.revision_count ?? 0) >= 2) throw new PgError(400, "P0001", "You've already asked for two new videos on this deal.");
+      if ((app.revision_count ?? 0) >= MAX_VIDEO_REQUESTS) throw new PgError(400, "P0001", `You've used all ${MAX_VIDEO_REQUESTS} video requests on this deal.`);
       const campaign = db.rows("campaigns").find(c => c.id === app.campaign_id);
       db.update("applications", [app], {
         deliverable_url: null,

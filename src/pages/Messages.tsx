@@ -24,7 +24,7 @@ import DealPriceCard from "../components/DealPriceCard";
 import DealTabs from "../components/DealTabs";
 import { cardElementOptions } from "../lib/stripeTheme";
 import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
-import { REVIEW_WINDOW_DAYS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
+import { REVIEW_WINDOW_DAYS, MAX_VIDEO_REQUESTS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
 import { isDemoMode } from "../lib/demo/mode";
 import { downloadDeliverable } from "../lib/deliverableDownload";
 
@@ -1152,7 +1152,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
         </p>
       )}
 
-      {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount < 2 && !showDisputeForm && (
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount < MAX_VIDEO_REQUESTS && !showDisputeForm && (
         showRevisionForm ? (
           <div style={{ marginTop: "10px", padding: "12px", borderRadius: "8px", border: "1px solid var(--c-262626)", background: "var(--c-111)" }}>
             <p style={{ fontSize: "11px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "6px" }}>What should the creator change?</p>
@@ -1164,7 +1164,7 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
               style={{ width: "100%", minHeight: "70px", background: "var(--c-0a0a0a)", border: "1px solid var(--c-222)", borderRadius: "6px", padding: "10px", color: "var(--t-fff)", fontSize: "12px", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" as const }}
             />
             <p style={{ fontSize: "10px", color: "var(--t-666)", marginTop: "6px", lineHeight: 1.5 }}>
-              The current video is sent back and the creator uploads a new one. You can do this {2 - revisionCount === 1 ? "one more time" : "up to 2 times"} per deal.
+              The current video is sent back and the creator uploads a new one. You can do this {MAX_VIDEO_REQUESTS - revisionCount === 1 ? "one more time" : revisionCount === 0 ? `up to ${MAX_VIDEO_REQUESTS} times` : `${MAX_VIDEO_REQUESTS - revisionCount} more times`} on this deal.
             </p>
             <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
               <div onClick={() => { setShowRevisionForm(false); setRevisionText(""); }} style={{ flex: 1, padding: "9px", borderRadius: "6px", border: "1px solid var(--c-222)", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
@@ -1177,14 +1177,14 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
           </div>
         ) : (
           <div onClick={() => setShowRevisionForm(true)} style={{ marginTop: "8px", padding: "9px", borderRadius: "8px", color: "var(--t-999)", fontSize: "11px", fontWeight: 600, textAlign: "center", cursor: "pointer", textTransform: "uppercase" }}>
-            Request Another Video{revisionCount > 0 ? " (1 left)" : ""}
+            Request Another Video{revisionCount > 0 ? ` (${MAX_VIDEO_REQUESTS - revisionCount} left)` : ""}
           </div>
         )
       )}
 
-      {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount >= 2 && (
+      {role === "brand" && applicationStatus === "funded" && deliverableUrl && revisionCount >= MAX_VIDEO_REQUESTS && (
         <p style={{ fontSize: "10px", color: "var(--t-666)", textAlign: "center", marginTop: "8px", lineHeight: 1.5 }}>
-          You have used both video requests for this deal. Tell us you're happy, or report a problem.
+          You have used all {MAX_VIDEO_REQUESTS} video requests for this deal. Tell us you're happy, or report a problem.
         </p>
       )}
 

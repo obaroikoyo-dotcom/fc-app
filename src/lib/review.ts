@@ -7,6 +7,11 @@
 export const REVIEW_WINDOW_DAYS = 5;
 export const REVIEW_WINDOW_MS = REVIEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
+// How many times a brand can send a deal back for another video. The database
+// (request_deliverable_revision) enforces the same number - if you change it,
+// change it there, in the demo (src/lib/demo/rpc.ts) and in the Terms and Help text.
+export const MAX_VIDEO_REQUESTS = 5;
+
 // When the review window closes, as a timestamp - or null if nothing has been
 // delivered yet (the clock starts at delivery, or at payment if the creator
 // uploaded first; the database keeps deliverable_uploaded_at in step with that).

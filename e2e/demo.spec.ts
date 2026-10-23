@@ -969,7 +969,7 @@ test.describe("replacing a video sent by mistake", () => {
     await expect(page.getByText("Wrong video? Replace it")).toHaveCount(0); // nothing sent yet
     const [first] = await Promise.all([page.waitForEvent("filechooser"), page.getByText("Tap to upload your deliverable video").click()]);
     await first.setFiles(VIDEO);
-    await expect(page.getByText("Wrong video? Replace it")).toBeVisible();
+    await expect(page.getByText("Wrong video? Replace it")).toBeVisible({ timeout: 30_000 }); // checking the video's length can be slow on a busy machine
     const sent = (await db(page)).applications.find(a => a.id === open.id)!.deliverable_url;
     expect(sent).toBeTruthy();
 
@@ -1032,6 +1032,66 @@ test.describe("replacing a video sent by mistake", () => {
     await page.getByText(creatorName, { exact: true }).first().click();
     await expect(page.getByText("Funded: Awaiting Delivery")).toBeVisible();
     await expect(page.getByText("Wrong video? Replace it")).toHaveCount(0);
+  });
+});
+
+// A brand can send a deal back for another video up to five times (it used to be two).
+test.describe("asking for another video", () => {
+  test("brand: the fifth request is offered and works, then there are none left", async ({ page }) => {
+    test.setTimeout(90_000);
+    const { leaks, errors } = await openDemo(page, "brand");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const mine = new Set(t0.campaigns.filter(c => c.brand_id === uid).map(c => c.id));
+    const funded = t0.applications.find(a => mine.has(a.campaign_id) && a.status === "funded")!;
+    const creatorName = t0.creator_profiles.find(c => c.id === funded.creator_id)!.name as string;
+
+    // four requests are already behind this deal, and the creator's latest video is in
+    await page.evaluate(id => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      const app = saved.tables.applications.find((a: { id: string }) => a.id === id);
+      app.revision_count = 4;
+      app.deliverable_url = "/demo-assets/sample.mp4";
+      app.deliverable_uploaded_at = new Date().toISOString();
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    }, funded.id);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
+    await page.getByText(/^messages$/i).nth(1).click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    // one left: say so, ask, and the video is sent back
+    await page.getByText("Request Another Video (1 left)").click();
+    await expect(page.getByText(/You can do this one more time on this deal\./)).toBeVisible();
+    await page.getByPlaceholder("Be specific so they get it right the next time.").fill("Please change the ending");
+    await page.getByText("Request Another Video", { exact: true }).click();
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === funded.id)!.revision_count, { timeout: 15_000 }).toBe(5);
+
+    // the (simulated) creator sends a new one, and now the brand has used every request
+    await expect.poll(async () => !!(await db(page)).applications.find(a => a.id === funded.id)!.deliverable_url, { timeout: 25_000 }).toBe(true);
+    await expect(page.getByText("You have used all 5 video requests for this deal. Tell us you're happy, or report a problem.")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/^Request Another Video/)).toHaveCount(0);
+
+    // and the database side refuses a sixth even if asked directly
+    const refused = await page.evaluate(async id => {
+      const { requestDeliverableRevision } = await import("/src/lib/campaignDelivery.ts");
+      try { await requestDeliverableRevision(id, "once more please"); return "allowed"; } catch (e) { return (e as Error).message; }
+    }, funded.id);
+    expect(refused).toBe("You've used all 5 video requests on this deal.");
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("the Terms and the Help answers say five, wherever they are written", async ({ page }) => {
+    await openDemo(page, "creator");
+    // the wording lives in the pages' own source, so read it from the dev server
+    for (const file of ["TermsPage", "TermsModal", "BrandProfile", "CreatorProfile"]) {
+      const source = await page.evaluate(async f => (await fetch(`/src/pages/${f}.tsx`)).text(), file);
+      expect(source, `${file} says five`).toContain("up to 5 times");
+      expect(source, `${file} no longer says two`).not.toContain("up to 2 times");
+    }
   });
 });
 

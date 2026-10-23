@@ -73,8 +73,8 @@ export async function notifyBrandOfDeliverable(applicationId: string, replaced =
   }
 }
 
-// Sends a funded deal back for a new deliverable (max 2 times, enforced in
-// the database). The server clears the current video, restarts the review
+// Sends a funded deal back for a new deliverable (up to MAX_VIDEO_REQUESTS times,
+// enforced in the database). The server clears the current video, restarts the review
 // clock for whatever gets uploaded next, and notifies the creator.
 export async function requestDeliverableRevision(applicationId: string, note: string): Promise<void> {
   const { error } = await supabase.rpc("request_deliverable_revision", { p_application_id: applicationId, p_note: note });
