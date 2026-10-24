@@ -659,7 +659,6 @@ interface EscrowDeliveryCardProps {
   currentUserId: string;
   applicationStatus: string;
   onReleased: () => void;
-  paymentMessage?: { text: string; created_at: string } | null;
   // Bumped by the parent whenever the application row changes in realtime
   // (e.g. the creator just uploaded), so the card re-reads the deliverable.
   refreshKey?: number;
@@ -672,7 +671,7 @@ interface EscrowDeliveryCardProps {
 // happened. Once a video is delivered the brand is asked if they're happy
 // (Vinted-style): yes releases the payment, and no answer within the review
 // window releases it automatically.
-function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, paymentMessage, refreshKey }: EscrowDeliveryCardProps) {
+function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationStatus, onReleased, refreshKey }: EscrowDeliveryCardProps) {
   const [deliverableUrl, setDeliverableUrl] = useState<string | null>(null);
   // When the review clock started (upload, or payment if the creator uploaded
   // first). Drives the "you have X left" line and the creator's deadline note.
@@ -924,28 +923,6 @@ function EscrowDeliveryCard({ applicationId, role, currentUserId, applicationSta
 
   return (
     <div style={{ background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", borderRadius: "10px", padding: "1rem", margin: "0.75rem 1.25rem" }}>
-      {/* This card only ever renders once application_status is "funded" or
-          "paid" (see the parent's gate), so the deal's payment is always
-          secured by the time it's showing - the actual "Payment Secured"
-          event (same icon/title/timestamp/body as it used to show as its
-          own chat bubble) now lives at the top of this same box instead, so
-          "is my payment safe" and "what do I do next" are one card, not two.
-          The parent no longer renders that message as a separate bubble. */}
-      {paymentMessage && (
-        <div style={{ display: "flex", gap: "11px", alignItems: "flex-start", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid var(--c-1a1a1a)" }}>
-          <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "var(--a-255-255-255-0_06)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--t-ccc)", flexShrink: 0 }}>
-            <ShieldCheckIcon />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "10px" }}>
-              <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600 }}>Payment Secured</p>
-              <p style={{ color: "var(--t-666)", fontSize: "10px", flexShrink: 0 }}>{parseUtc(paymentMessage.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
-            </div>
-            <p style={{ color: "var(--t-999)", fontSize: "12px", lineHeight: 1.5, marginTop: "3px" }}>{paymentMessage.text.slice(PAYMENT_CONFIRMED_PREFIX.length).trim()}</p>
-          </div>
-        </div>
-      )}
-
       <p style={{ fontSize: "12px", color: "var(--t-fff)", fontWeight: 600, marginBottom: "8px" }}>Deliverable</p>
 
       {mediaDeleteAt && new Date(mediaDeleteAt).getTime() > Date.now() && (
@@ -1408,6 +1385,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
   const inputBarRef = useRef<HTMLDivElement>(null);
+  const streamRef = useRef<HTMLDivElement>(null);
   const chatVideoInputRef = useRef<HTMLInputElement>(null);
   const [inputBarHeight, setInputBarHeight] = useState(0);
 
@@ -1561,6 +1539,20 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     scroller.addEventListener("scroll", onScroll);
     return () => scroller.removeEventListener("scroll", onScroll);
   }, [view]);
+
+  // The deliverable box sits under the latest message and fills in a moment after it appears (the video,
+  // the buttons), which makes the chat taller; if you were at the bottom, stay at the bottom.
+  useEffect(() => {
+    if (view !== "chat") return;
+    const scroller = document.querySelector(".page-enter");
+    const stream = streamRef.current;
+    if (!scroller || !stream || typeof ResizeObserver === "undefined") return;
+    const watcher = new ResizeObserver(() => {
+      if (isNearBottomRef.current) scroller.scrollTop = scroller.scrollHeight;
+    });
+    watcher.observe(stream);
+    return () => watcher.disconnect();
+  }, [view, activeConvo?.id]);
 
   useLayoutEffect(() => {
     if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
@@ -2828,7 +2820,7 @@ return (
           )}
 
           {/* CHAT MESSAGES STREAM */}
-          <div style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `calc(${inputBarHeight + 65}px + env(safe-area-inset-bottom, 0px))` : "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
+          <div ref={streamRef} data-testid="chat-stream" style={{ padding: "1rem 1.25rem", display: "flex", flexDirection: "column", gap: "10px", paddingTop: stickyHeight ? `${stickyHeight}px` : "6rem", paddingBottom: inputBarHeight ? `calc(${inputBarHeight + 65}px + env(safe-area-inset-bottom, 0px))` : "calc(8rem + env(safe-area-inset-bottom, 0px))" }}>
             {messages.length === 0 && (
               <p style={{ color: "var(--t-777)", fontSize: "12px", textAlign: "center", marginTop: "2rem" }}>Start the conversation</p>
             )}
@@ -2867,27 +2859,35 @@ return (
               const cardInsertAtIdx = chatOpenedIdx + 1; // -1 (not found) + 1 = 0, i.e. top of the list
               const showDivider = paymentIdx >= 0 && paymentIdx < messages.length - 1;
               const dividerAtIdx = paymentIdx + 1;
-              // The Deliverable card now renders inline in place of the
-              // current application's own Payment Secured message (right
-              // where it naturally falls in the timeline, same as it always
-              // did), rather than pinned separately above the chat. Any
-              // *other* Payment Secured message - an older, already-settled
-              // application from a prior campaign with this same pair, or
-              // this one after a refund - just shows as a plain event card,
-              // since there's no longer a live delivery card for those.
-              const deliveryCardShowsPayment = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid" || activeConvo?.application_status === "disputed";
-              // The deal in view's own cards after its "Chat Opened": its price box and, for a creator,
-              // the "upload now" box. Keyed by deal, so switching deals never carries one's state to another.
-              const dealCards = (
+              // The deliverable boxes - the creator's "upload now" box before payment, and the Deliverable box
+              // (upload, approve, report, download) once the deal is paid for - sit at the very END of the chat,
+              // under the latest message, so they are always where you land and never buried in the middle of
+              // the conversation. The "Payment Secured" message stays in the timeline as a plain event card.
+              // Keyed by deal, so switching deals never carries one deal's state to another.
+              const deliveryCardShows = activeConvo?.application_status === "funded" || activeConvo?.application_status === "paid" || activeConvo?.application_status === "disputed";
+              const bottomCards = (showPreFundingUploadCard || (deliveryCardShows && !!activeConvo?.application_id && !!currentUserId)) ? (
                 <>
-                  {priceCardEl}
                   {showPreFundingUploadCard && activeConvo?.application_id && currentUserId && (
                     <PreFundingDeliverableCard key={activeConvo.application_id} applicationId={activeConvo.application_id} currentUserId={currentUserId} />
                   )}
+                  {deliveryCardShows && activeConvo?.application_id && currentUserId && (
+                    <EscrowDeliveryCard
+                      key={activeConvo.application_id}
+                      applicationId={activeConvo.application_id}
+                      role={role === "brand" ? "brand" : "creator"}
+                      currentUserId={currentUserId}
+                      applicationStatus={activeConvo.application_status!}
+                      refreshKey={deliverableTick}
+                      onReleased={async () => {
+                        if (!activeConvo?.application_id) return;
+                        const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();
+                        if (data) setActiveConvo(prev => prev ? { ...prev, application_status: data.status } : prev);
+                      }}
+                    />
+                  )}
                 </>
-              );
-              // Where a tap on a tab takes the reader: the deal's delivery card once it is paid for, otherwise its price box.
-              const anchorIdx = deliveryCardShowsPayment && paymentIdx >= 0 ? paymentIdx : cardInsertAtIdx;
+              ) : null;
+              // Where a tap on a tab takes the reader: the deal's boxes at the bottom, or its price box when it has none.
               const anchor = <div data-deal-anchor="" style={{ scrollMarginTop: `${stickyHeight + 8}px` }} />;
 
               const list = messages.map((m, i) => {
@@ -2902,8 +2902,8 @@ return (
               const eventTime = parseUtc(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               return (
                 <div key={m.id} style={{ display: "contents" }}>
-                {i === anchorIdx && anchor}
-                {i === cardInsertAtIdx && dealCards}
+                {!bottomCards && i === cardInsertAtIdx && anchor}
+                {i === cardInsertAtIdx && priceCardEl}
                 {showDivider && i === dividerAtIdx && (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "4px 0" }}>
                     <div style={{ flex: 1, height: "1px", background: "var(--c-1a1a1a)" }} />
@@ -2911,22 +2911,7 @@ return (
                     <div style={{ flex: 1, height: "1px", background: "var(--c-1a1a1a)" }} />
                   </div>
                 )}
-                {isPaymentEvent && i === paymentIdx && deliveryCardShowsPayment && activeConvo?.application_id && currentUserId ? (
-                  <EscrowDeliveryCard
-                    key={activeConvo.application_id}
-                    applicationId={activeConvo.application_id}
-                    role={role === "brand" ? "brand" : "creator"}
-                    currentUserId={currentUserId}
-                    applicationStatus={activeConvo.application_status!}
-                    paymentMessage={{ text: m.text, created_at: m.created_at }}
-                    refreshKey={deliverableTick}
-                    onReleased={async () => {
-                      if (!activeConvo?.application_id) return;
-                      const { data } = await supabase.from("applications").select("status").eq("id", activeConvo.application_id).single();
-                      if (data) setActiveConvo(prev => prev ? { ...prev, application_status: data.status } : prev);
-                    }}
-                  />
-                ) : isPaymentEvent ? (
+                {isPaymentEvent ? (
                   <SystemEventCard
                     icon={<ShieldCheckIcon />}
                     title="Payment Secured"
@@ -3036,18 +3021,26 @@ return (
                 </div>
               );
               });
-              // Nothing follows "Chat Opened" yet, so there is no message to put the card in front of.
-              return <>{list}{messages.length <= anchorIdx && anchor}{messages.length <= cardInsertAtIdx && dealCards}</>;
+              // Nothing follows "Chat Opened" yet, so there is no message to put the price box in front of.
+              return (
+                <>
+                  {list}
+                  {!bottomCards && messages.length <= cardInsertAtIdx && anchor}
+                  {messages.length <= cardInsertAtIdx && priceCardEl}
+                  {otherIsTyping && (
+                    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                      <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span className="typing-dot" style={{ animationDelay: "0ms" }} />
+                        <span className="typing-dot" style={{ animationDelay: "160ms" }} />
+                        <span className="typing-dot" style={{ animationDelay: "320ms" }} />
+                      </div>
+                    </div>
+                  )}
+                  {bottomCards && anchor}
+                  {bottomCards}
+                </>
+              );
             })()}
-            {otherIsTyping && (
-              <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ padding: "12px 14px", borderRadius: "16px 16px 16px 4px", background: "var(--c-111)", border: "1px solid var(--c-1a1a1a)", display: "flex", alignItems: "center", gap: "4px" }}>
-                  <span className="typing-dot" style={{ animationDelay: "0ms" }} />
-                  <span className="typing-dot" style={{ animationDelay: "160ms" }} />
-                  <span className="typing-dot" style={{ animationDelay: "320ms" }} />
-                </div>
-              </div>
-            )}
           </div>
 
           {/* INPUT BAR CONTROLLER */}

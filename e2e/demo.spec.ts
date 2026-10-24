@@ -1035,6 +1035,77 @@ test.describe("replacing a video sent by mistake", () => {
   });
 });
 
+// The deliverable box used to sit wherever its deal's "Payment Secured" or "Chat Opened" message happened to be,
+// which buried it in the middle of a long chat. It is now always the last thing in the chat.
+test.describe("the deliverable box sits at the bottom of the chat", () => {
+  const stream = (page: Page) => page.getByTestId("chat-stream");
+  const lastThing = (page: Page) => stream(page).locator(":scope > *").last();
+  const above = async (page: Page, upper: ReturnType<Page["getByText"]>, lower: ReturnType<Page["getByText"]>) => {
+    const [u, l] = [await upper.first().boundingBox(), await lower.first().boundingBox()];
+    expect(u && l && u.y < l.y, "the first is above the second").toBe(true);
+  };
+
+  test("creator, before payment: the early upload box is last, and stays last when a message arrives", async ({ page }) => {
+    test.setTimeout(60_000);
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const open = t0.applications.find(a => a.creator_id === uid && a.status === "accepted")!;
+    const brandId = t0.campaigns.find(c => c.id === open.campaign_id)!.brand_id;
+    const brandName = t0.brand_profiles.find(b => b.id === brandId)!.name as string;
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+
+    await expect(stream(page).getByText("Get a head start")).toHaveCount(1);
+    await expect(lastThing(page)).toContainText("Get a head start");
+
+    // a new message lands above the box, not below it
+    await page.getByPlaceholder("Message...").fill("a new message from me");
+    await page.getByPlaceholder("Message...").press("Enter");
+    await expect(stream(page).getByText("a new message from me")).toBeVisible();
+    await page.waitForTimeout(5_000); // the (simulated) brand answers
+    await expect(lastThing(page)).toContainText("Get a head start");
+    await above(page, stream(page).getByText("a new message from me"), stream(page).getByText("Get a head start"));
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("creator, once paid: the Deliverable box is last and the Payment Secured message stays in the timeline above it", async ({ page }) => {
+    await openDemo(page, "creator");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const funded = t0.applications.find(a => a.creator_id === uid && a.status === "funded")!;
+    const brandId = t0.campaigns.find(c => c.id === funded.campaign_id)!.brand_id;
+    const brandName = t0.brand_profiles.find(b => b.id === brandId)!.name as string;
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+
+    await expect(stream(page).getByText("Deliverable", { exact: true })).toHaveCount(1);
+    await expect(lastThing(page)).toContainText("Deliverable");
+    await expect(lastThing(page)).toContainText("Tap to upload your deliverable video");
+    await expect(stream(page).getByText("Payment Secured")).toHaveCount(1);
+    await above(page, stream(page).getByText("Payment Secured"), stream(page).getByText("Deliverable", { exact: true }));
+  });
+
+  test("brand, once paid: the Deliverable box with its choices is last", async ({ page }) => {
+    await openDemo(page, "brand");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const mine = new Set(t0.campaigns.filter(c => c.brand_id === uid).map(c => c.id));
+    const funded = t0.applications.find(a => mine.has(a.campaign_id) && a.status === "funded")!;
+    const creatorName = t0.creator_profiles.find(c => c.id === funded.creator_id)!.name as string;
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(/^messages$/i).nth(1).click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    await expect(stream(page).getByText("Deliverable", { exact: true })).toHaveCount(1);
+    await expect(lastThing(page)).toContainText("Deliverable");
+    await expect(stream(page).getByText("Payment Secured")).toHaveCount(1);
+    await above(page, stream(page).getByText("Payment Secured"), stream(page).getByText("Deliverable", { exact: true }));
+  });
+});
+
 // A brand can send a deal back for another video up to five times (it used to be two).
 test.describe("asking for another video", () => {
   test("brand: the fifth request is offered and works, then there are none left", async ({ page }) => {
