@@ -11,6 +11,69 @@ const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
 
 const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 
+// Tells the admin in the app (an in-app notification, the same kind a new dispute sends). Best effort:
+// whatever happened has already been recorded, so a failed note must never fail the webhook.
+async function tellAdmin(supabase: ReturnType<typeof createClient>, title: string, body: string, data: Record<string, unknown>) {
+  try {
+    const { data: adminId } = await supabase.rpc("get_admin_user_id");
+    if (!adminId) return;
+    const { error } = await supabase.from("notifications").insert({ user_id: adminId, type: "dispute_raised", title, body, data });
+    if (error) console.error("stripe-webhook: couldn't write the admin notification:", error);
+  } catch (err) {
+    console.error("stripe-webhook: couldn't tell the admin:", err);
+  }
+}
+
+// A card chargeback is the brand's bank taking the money back, outside the app. It is treated like
+// any other dispute: the deal is frozen ("disputed", so nothing can be released or auto-released from
+// money that is being reversed), it shows in the admin's dispute list, and the creator can add their
+// side. Two events can reveal a chargeback - "payment succeeded" and "chargeback filed" - and Stripe
+// doesn't promise which arrives first (for the chargeback test card they arrive in the same second),
+// so both handlers below call this. It does nothing until the deal is actually holding the money
+// (status "funded"), and the freeze is one conditional update, so only one caller can do it.
+async function freezeDealForChargeback(supabase: ReturnType<typeof createClient>, campaignId: string, creatorId: string, reason: string) {
+  const { data: application } = await supabase
+    .from("applications")
+    .select("id, campaigns!inner(brand_id, name)")
+    .eq("campaign_id", campaignId)
+    .eq("creator_id", creatorId)
+    .maybeSingle();
+  if (!application) return;
+  const campaign = Array.isArray(application.campaigns) ? application.campaigns[0] : application.campaigns;
+
+  const { data: frozen } = await supabase
+    .from("applications")
+    .update({ status: "disputed", disputed_at: new Date().toISOString() })
+    .eq("id", application.id)
+    .eq("status", "funded")
+    .select("id");
+  if (!frozen?.length) return;
+
+  const campaignName = campaign?.name ?? "a campaign";
+  const ids = { application_id: application.id, campaign_id: campaignId };
+  const { error: disputeError } = await supabase.from("disputes").insert({
+    application_id: application.id,
+    brand_id: campaign?.brand_id,
+    creator_id: creatorId,
+    reason,
+    raised_by: "brand",
+  });
+  if (disputeError) console.error("stripe-webhook: couldn't open a dispute for the chargeback:", disputeError);
+
+  await tellAdmin(supabase, "Card Chargeback", `The brand's bank disputed the card payment for "${campaignName}". The deal is frozen. Deal with it in Stripe, then settle it in Admin review.`, ids);
+  try {
+    await supabase.from("notifications").insert({
+      user_id: creatorId,
+      type: "dispute_raised",
+      title: "Payment On Hold",
+      body: `The brand's bank has questioned the card payment for "${campaignName}", so your payout is on hold while FlipCollab looks into it. You can add your side in the chat.`,
+      data: ids,
+    });
+  } catch (err) {
+    console.error("stripe-webhook: couldn't tell the creator about the chargeback:", err);
+  }
+}
+
 serve(async (req) => {
   // Fail closed. With an empty secret the signature check below would still
   // "pass" for anyone who signs a fake event with an empty key (the Stripe
@@ -59,14 +122,24 @@ serve(async (req) => {
     // rather than the platform's general balance.
     const { data: tx, error } = await supabase
       .from("transactions")
-      .update({ status: "completed", stripe_charge_id: paymentIntent.latest_charge as string })
+      .update({ stripe_charge_id: paymentIntent.latest_charge as string })
       .eq("stripe_payment_intent_id", paymentIntent.id)
-      .select("campaign_id, creator_id, payout_release_mode")
+      .select("id, campaign_id, creator_id, payout_release_mode")
       .maybeSingle();
 
     if (error) {
       console.error("Failed to update transaction:", error);
       return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    }
+
+    // Now "completed" - but only from "pending" (or "failed"). Stripe doesn't promise the order its events
+    // arrive in, and a chargeback or refund that landed a moment earlier must not be written over.
+    if (tx) {
+      await supabase
+        .from("transactions")
+        .update({ status: "completed" })
+        .eq("id", tx.id)
+        .in("status", ["pending", "failed"]);
     }
 
     // Only save the card as "reusable" once Stripe has actually confirmed the
@@ -100,6 +173,14 @@ serve(async (req) => {
         .eq("campaign_id", tx.campaign_id)
         .eq("creator_id", tx.creator_id)
         .not("status", "in", "(funded,paid,rejected,disputed)");
+
+      // If the chargeback was filed before this confirmation arrived, the deal only just became
+      // "funded" - freeze it now. (The chargeback handler does the same from its side; whichever
+      // of the two runs second sees both facts, and the freeze can only happen once.)
+      const { data: current } = await supabase.from("transactions").select("status").eq("id", tx.id).maybeSingle();
+      if (current?.status === "disputed") {
+        await freezeDealForChargeback(supabase, tx.campaign_id, tx.creator_id, "Card chargeback: the brand's bank disputed this payment with Stripe.");
+      }
     }
   }
 
@@ -113,9 +194,10 @@ serve(async (req) => {
   }
 
   // A card chargeback (the brand's bank reversing the payment) happens entirely
-  // outside the app. Record it so the deal stops looking healthy and an admin
-  // sees it. We can't claw back a Transfer automatically, so if the creator
-  // was already paid this is flagged for manual handling, not silently ignored.
+  // outside the app. Record it, freeze the deal while it still holds the money
+  // (see freezeDealForChargeback) and tell the admin. We can't claw back a
+  // Transfer automatically, so if the creator was already paid this is flagged
+  // for manual handling, not silently ignored.
   if (event.type === "charge.dispute.created") {
     const dispute = event.data.object as Stripe.Dispute;
     const paymentIntentId = typeof dispute.payment_intent === "string" ? dispute.payment_intent : dispute.payment_intent?.id;
@@ -128,6 +210,11 @@ serve(async (req) => {
         .maybeSingle();
       if (tx?.stripe_transfer_id) {
         console.error("CHARGEBACK ON A PAID-OUT DEAL - manual recovery needed", { paymentIntentId, disputeId: dispute.id });
+        await tellAdmin(supabase, "Card Chargeback On A Paid Deal",
+          "The brand's bank disputed a card payment that has already been paid out to the creator. This needs handling by hand in Stripe.",
+          { campaign_id: tx.campaign_id });
+      } else if (tx) {
+        await freezeDealForChargeback(supabase, tx.campaign_id, tx.creator_id, `Card chargeback: the brand's bank disputed this payment with Stripe (${dispute.reason}).`);
       }
     }
   }
