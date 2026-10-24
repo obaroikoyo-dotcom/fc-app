@@ -3,7 +3,8 @@ import { useEffect, useRef } from "react";
 // A creator and a brand can have several deals going at once, one for each campaign the
 // creator applied to, all in the same chat. The chat shows one deal at a time: its price
 // box, its upload and approve cards, its status, and what Pay and Screen Out act on.
-// These tabs choose which. They only appear when there is more than one deal.
+// These tabs choose which. They only appear when the brand has accepted more than one
+// (see lib/dealTabs.ts), and a red dot marks a deal that has something new in it.
 //
 // Written in the app's dark palette like the rest of the chat; the light look is applied on top.
 
@@ -11,11 +12,11 @@ export interface DealTab {
   id: string;
   name: string;
   status: string;
+  unread?: boolean;
 }
 
 // What each stage of a deal is called to the people in it.
 const STAGE: Record<string, string> = {
-  pending: "Applied",
   accepted: "Open",
   funded: "Funded",
   paid: "Paid",
@@ -52,6 +53,9 @@ export default function DealTabs({ deals, activeId, onPick }: {
     >
       {deals.map(deal => {
         const on = deal.id === activeId;
+        const stage = STAGE[deal.status] ?? deal.status;
+        // The deal you are looking at has nothing "new" left in it.
+        const hasNew = !!deal.unread && !on;
         return (
           <button
             key={deal.id}
@@ -59,16 +63,20 @@ export default function DealTabs({ deals, activeId, onPick }: {
             type="button"
             role="tab"
             aria-selected={on}
+            aria-label={`${deal.name}, ${stage}${hasNew ? ", something new" : ""}`}
             onClick={() => onPick(deal.id)}
             style={{
-              flex: sharing ? "1 1 0" : "0 0 auto", minWidth: 0, maxWidth: sharing ? "none" : "min(200px, 60vw)", minHeight: "42px", boxSizing: "border-box",
-              padding: "5px 12px", borderRadius: "8px", border: `1px solid ${on ? "var(--c-fff)" : "var(--c-222)"}`,
+              position: "relative", flex: sharing ? "1 1 0" : "0 0 auto", minWidth: 0, maxWidth: sharing ? "none" : "min(200px, 60vw)", minHeight: "42px", boxSizing: "border-box",
+              padding: hasNew ? "5px 20px 5px 12px" : "5px 12px", borderRadius: "8px", border: `1px solid ${on ? "var(--c-fff)" : "var(--c-222)"}`,
               background: on ? "var(--c-fff)" : "transparent", color: on ? "var(--t-0a0a0a)" : "var(--t-ddd)",
               fontFamily: "inherit", textAlign: "left", cursor: "pointer", display: "flex", flexDirection: "column", justifyContent: "center", gap: "1px",
             }}
           >
             <span style={{ fontSize: "12px", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{deal.name}</span>
-            <span style={{ fontSize: "11px", fontWeight: 500, color: on ? "var(--t-0a0a0a)" : "var(--t-999)" }}>{STAGE[deal.status] ?? deal.status}</span>
+            <span style={{ fontSize: "11px", fontWeight: 500, color: on ? "var(--t-0a0a0a)" : "var(--t-999)" }}>{stage}</span>
+            {hasNew && (
+              <span data-testid="deal-unread" aria-hidden="true" style={{ position: "absolute", top: "6px", right: "4px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)" }} />
+            )}
           </button>
         );
       })}

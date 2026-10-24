@@ -35,6 +35,7 @@ import { initOneSignal, oneSignalLogin, oneSignalLogout } from "./lib/onesignal"
 import { autoRequestPush, subscribeToPush, isPushEnabled, isIOSDevice } from "./lib/push";
 import { isDemoMode } from "./lib/demo/mode";
 import { isLightTheme, saveLightTheme, applyTheme } from "./lib/theme";
+import { useAdminAttention } from "./lib/adminAttention";
 import DemoNotice from "./components/DemoNotice";
 
 
@@ -79,6 +80,7 @@ interface NavProps {
 }
 
 function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
+  const adminWaiting = useAdminAttention(page);
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#6f6f6f" : "#8a8a8a";
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
@@ -116,11 +118,16 @@ function CreatorNav({ page, navigate, isInverted, unreadCount = 0 }: NavProps) {
       </div>
 
       <div onClick={() => navigate("creator-profile")} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="8" r="4" stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8"/>
-          <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
-            stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
+        <div style={{ position: "relative", display: "flex" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8"/>
+            <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
+              stroke={page === "creator-profile" ? activeColor : inactiveColor} strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          {adminWaiting > 0 && (
+            <div data-testid="admin-dot-nav" style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", border: `2px solid ${bgColor}` }} />
+          )}
+        </div>
         <span className="nav-label" style={{ fontSize: "11px", color: page === "creator-profile" ? activeColor : inactiveColor, letterSpacing: "0.08em", textTransform: "uppercase" }}>Profile</span>
       </div>
     </div>
@@ -135,6 +142,7 @@ interface BrandNavProps extends NavProps {
 }
 
 function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted, unreadCount = 0 }: BrandNavProps) {
+  const adminWaiting = useAdminAttention(page);
   const activeColor = isInverted ? "#0a0a0a" : "#fff";
   const inactiveColor = isInverted ? "#6f6f6f" : "#8a8a8a";
   const bgColor = isInverted ? "#ffffff" : "#0a0a0a";
@@ -187,11 +195,16 @@ function BrandNav({ page, navigate, tab, setTab, setViewingProfileId, isInverted
         <span className="nav-label" style={{ fontSize: "11px", color: postActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Post</span>
       </div>
       <div onClick={() => { setViewingProfileId(null); navigate("brand-profile"); }} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "pointer" }}>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="8" r="4" stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
-          <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
-            stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
+        <div style={{ position: "relative", display: "flex" }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8"/>
+            <path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
+              stroke={profileActive ? activeColor : inactiveColor} strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
+          {adminWaiting > 0 && (
+            <div data-testid="admin-dot-nav" style={{ position: "absolute", top: "-2px", right: "-4px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", border: `2px solid ${bgColor}` }} />
+          )}
+        </div>
         <span className="nav-label" style={{ fontSize: "11px", color: profileActive ? activeColor : inactiveColor, letterSpacing: "0.04em", textTransform: "uppercase" }}>Profile</span>
       </div>
     </div>

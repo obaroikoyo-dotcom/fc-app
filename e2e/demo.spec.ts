@@ -833,6 +833,34 @@ test.describe("several deals with the same person in one chat", () => {
   const tab = (page: Page, name: string) => tabs(page).getByRole("tab", { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`) });
   const net = (budget: number) => (budget * 90) / 100;
 
+  // A creator the visitor (a brand) has accepted on one campaign, and another of the brand's paid campaigns they have not dealt on yet.
+  const pickPair = (t0: Tables, brandId: string) => {
+    const mine = t0.campaigns.filter(c => c.brand_id === brandId && !c.is_draft && c.type === "paid" && Number(c.budget) > 0);
+    const accepted = t0.applications.find(a => a.status === "accepted" && mine.some(c => c.id === a.campaign_id))!;
+    const first = mine.find(c => c.id === accepted.campaign_id)!;
+    const second = mine.find(c => c.id !== first.id && !t0.applications.some(x => x.campaign_id === c.id && x.creator_id === accepted.creator_id))!;
+    const creatorName = t0.creator_profiles.find(c => c.id === accepted.creator_id)!.name as string;
+    return { accepted, first, second, creatorName };
+  };
+
+  // Gives that creator a second deal on `campaign`. An accepted one also has what accepting really leaves in the chat,
+  // the "Chat Opened" message (which is how a deal that is declined later keeps its tab).
+  const addSecondDeal = (page: Page, app: Tables[string][number], campaign: Tables[string][number], brandId: string, status: "pending" | "accepted") =>
+    page.evaluate(({ app, campaign, brandId, status }) => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      const now = new Date().toISOString();
+      // dated before the first deal, so the chat still opens on that one
+      saved.tables.applications.push({ ...app, id: crypto.randomUUID(), campaign_id: campaign.id, status, created_at: "2020-01-01T00:00:00.000Z", responded_at: status === "accepted" ? now : null, video_url: null, deliverable_url: null });
+      if (status === "accepted") {
+        const convo = saved.tables.conversations.find((c: { participant_1: string; participant_2: string }) => [c.participant_1, c.participant_2].includes(brandId) && [c.participant_1, c.participant_2].includes(app.creator_id));
+        saved.tables.messages.push({
+          id: crypto.randomUUID(), conversation_id: convo.id, sender_id: brandId, video_url: null, image_url: null, media_type: null, read_at: now, edited_at: null, deleted_at: null, created_at: now,
+          text: `Chat Opened! The brand is interested in talking details for "${campaign.name}". Let's align on dates and deliverables before finalizing the deal!`,
+        });
+      }
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    }, { app, campaign: { id: campaign.id, name: campaign.name }, brandId, status });
+
   test("creator: a second campaign from the same brand gets its own tab, and the funded deal keeps its upload box", async ({ page }) => {
     test.setTimeout(120_000);
     const { leaks, errors } = await openDemo(page, "creator");
@@ -863,6 +891,9 @@ test.describe("several deals with the same person in one chat", () => {
     await expect(tab(page, fundedCampaign.name)).toHaveAttribute("aria-selected", "true");
     await expect(tab(page, fundedCampaign.name)).toContainText("Funded");
     await expect(tab(page, other.name)).toContainText("Open");
+    // the brand's "chat opened" for the new deal is unread: its tab has a red dot, the deal in view does not
+    await expect(tab(page, other.name).getByTestId("deal-unread")).toBeVisible();
+    await expect(tab(page, fundedCampaign.name).getByTestId("deal-unread")).toHaveCount(0);
     const uploadPrompt = page.getByText("Tap to upload your deliverable video");
     await expect(uploadPrompt).toHaveCount(1);
     await expect(page.getByText("Get a head start"), "the funded deal's own upload box, not the early one").toHaveCount(0);
@@ -870,6 +901,9 @@ test.describe("several deals with the same person in one chat", () => {
     // the other tab: its own status and its own early "get a head start" upload box, not the funded deal's
     await tab(page, other.name).click();
     await expect(tab(page, other.name)).toHaveAttribute("aria-selected", "true");
+    // looking at the deal reads what was new in it: the dot goes, here and in the database
+    await expect(tab(page, other.name).getByTestId("deal-unread")).toHaveCount(0);
+    await expect.poll(async () => (await db(page)).notifications.find(n => n.user_id === uid && n.type === "campaign_chatting" && n.data?.campaign_id === other.id)?.read, { timeout: 10_000 }).toBe(true);
     await expect(page.getByText("Pending Terms Review")).toBeVisible();
     await expect(page.getByText("Get a head start")).toBeVisible();
     await expect(uploadPrompt).toHaveCount(1);
@@ -899,28 +933,20 @@ test.describe("several deals with the same person in one chat", () => {
     const uid = await myId(page);
     const t0 = await db(page);
 
-    // a creator I have accepted on one campaign who also applied, later, to another of mine
-    const mine = t0.campaigns.filter(c => c.brand_id === uid && !c.is_draft && c.type === "paid" && Number(c.budget) > 0);
-    const accepted = t0.applications.find(a => a.status === "accepted" && mine.some(c => c.id === a.campaign_id))!;
-    const first = mine.find(c => c.id === accepted.campaign_id)!;
-    const second = mine.find(c => c.id !== first.id && !t0.applications.some(x => x.campaign_id === c.id && x.creator_id === accepted.creator_id))!;
-    const creatorName = t0.creator_profiles.find(c => c.id === accepted.creator_id)!.name as string;
-    await page.evaluate(({ app, campaignId }) => {
-      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
-      saved.tables.applications.push({ ...app, id: crypto.randomUUID(), campaign_id: campaignId, status: "pending", created_at: new Date().toISOString(), responded_at: null, video_url: null, deliverable_url: null });
-      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
-    }, { app: accepted, campaignId: second.id });
+    // a creator I have accepted on one campaign, whom I have accepted on another of mine too
+    const { accepted, first, second, creatorName } = pickPair(t0, uid);
+    await addSecondDeal(page, accepted, second, uid, "accepted");
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
     await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
     await page.getByText(/^messages$/i).nth(1).click(); // the Messages tab beside Applications
     await page.getByText(creatorName, { exact: true }).first().click();
 
-    // opens on the deal that was accepted, not on the newer application still waiting
+    // a tab for each accepted deal; it opens on the first one
     await expect(tabs(page).getByRole("tab")).toHaveCount(2);
     await expect(tab(page, first.name)).toHaveAttribute("aria-selected", "true");
     await expect(tab(page, first.name)).toContainText("Open");
-    await expect(tab(page, second.name)).toContainText("Applied");
+    await expect(tab(page, second.name)).toContainText("Open");
 
     // Pay goes straight to the deal in view: no "which campaign" question
     await page.getByText("Pay", { exact: true }).first().click();
@@ -946,6 +972,93 @@ test.describe("several deals with the same person in one chat", () => {
     // one declined campaign must not close the chat while another deal is going
     await expect(page.getByPlaceholder("Message...")).toBeVisible();
     await expect(page.getByText(/Messaging disabled/)).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: an application still waiting has no tab, and accepting it gives the chat a second one", async ({ page }) => {
+    test.setTimeout(150_000);
+    const { leaks, errors } = await openDemo(page, "brand");
+    const uid = await myId(page);
+    const { accepted, first, second, creatorName } = pickPair(await db(page), uid);
+    await addSecondDeal(page, accepted, second, uid, "pending");
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
+    await page.getByText(/^messages$/i).nth(1).click(); // the Messages tab beside Applications
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    // one accepted deal and one still waiting for an answer: the chat is just the accepted one, with no tabs
+    await expect(page.getByText("Pay", { exact: true }).first()).toBeVisible();
+    await expect(tabs(page)).toHaveCount(0);
+
+    // accept the waiting one from the applications list
+    await page.getByText("←", { exact: true }).first().click();
+    await page.getByText(/^applications$/i).click();
+    await page.locator(".item-enter", { has: page.getByText(second.name, { exact: true }) }).click();
+    await page.locator(".item-enter", { has: page.getByText(creatorName, { exact: true }) }).click();
+    await page.getByText("Accept & Chat", { exact: true }).click();
+    await page.getByText(/Go to Messages/i).click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    // now both are in the chat
+    await expect(tabs(page).getByRole("tab")).toHaveCount(2);
+    await expect(tab(page, first.name)).toHaveAttribute("aria-selected", "true");
+    await expect(tab(page, second.name)).toContainText("Open");
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("brand: a deal declined before it was ever accepted gets no tab", async ({ page }) => {
+    test.setTimeout(120_000);
+    const { leaks, errors } = await openDemo(page, "brand");
+    const uid = await myId(page);
+    const { accepted, creatorName, second } = pickPair(await db(page), uid);
+    // an application that was turned down straight away: no "Chat Opened" message was ever sent for it
+    await page.evaluate(({ app, campaignId }) => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      const now = new Date().toISOString();
+      saved.tables.applications.push({ ...app, id: crypto.randomUUID(), campaign_id: campaignId, status: "rejected", created_at: now, responded_at: now, video_url: null, deliverable_url: null });
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    }, { app: accepted, campaignId: second.id });
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await page.getByText("Messages", { exact: true }).last().click({ timeout: 20_000 });
+    await page.getByText(/^messages$/i).nth(1).click();
+    await page.getByText(creatorName, { exact: true }).first().click();
+
+    await expect(page.getByText("Pay", { exact: true }).first()).toBeVisible();
+    await expect(tabs(page)).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("creator: opening a chat again from the list shows where the deal is now, not where it was", async ({ page }) => {
+    test.setTimeout(120_000);
+    const { leaks, errors } = await openDemo(page, "creator");
+    const uid = await myId(page);
+    const t0 = await db(page);
+    const funded = t0.applications.find(a => a.creator_id === uid && a.status === "funded")!;
+    const brandId = t0.campaigns.find(c => c.id === funded.campaign_id)!.brand_id;
+    const brandName = t0.brand_profiles.find(b => b.id === brandId)!.name as string;
+
+    await page.getByText("Messages", { exact: true }).last().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+    await expect(page.getByText("Funded: Deliver to Get Paid")).toBeVisible();
+    // hand the video in: the (simulated) brand approves and the deal becomes paid
+    const [chooser] = await Promise.all([page.waitForEvent("filechooser"), page.getByText("Tap to upload your deliverable video").click()]);
+    await chooser.setFiles("public/demo-assets/sample.mp4");
+    await expect.poll(async () => (await db(page)).applications.find(a => a.id === funded.id)?.status, { timeout: 30_000 }).toBe("paid");
+    await page.getByText("Got it", { exact: true }).click({ timeout: 10_000 }).catch(() => undefined); // the "Payout Released" notice
+
+    // the list was read while the deal was funded; opening the chat again must not bring that back
+    await page.getByText("←", { exact: true }).first().click();
+    await page.getByText(brandName, { exact: true }).first().click();
+    await expect(page.getByText("Payout Released", { exact: true })).toBeVisible();
+    await expect(page.getByText("Funded: Deliver to Get Paid")).toHaveCount(0);
 
     expect(leaks, "nothing may reach the real backend").toEqual([]);
     expect(errors).toEqual([]);
@@ -1283,5 +1396,74 @@ test.describe("on an iPhone", () => {
   test("a direct /demo/brand link asks straight away too", async ({ page }) => {
     await page.goto(`/demo/brand?${KEY}`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText("Add FlipCollab to your home screen")).toBeVisible({ timeout: 5_000 });
+  });
+});
+
+// The admin is told, with a red dot, wherever the way to Admin Review is: on the Profile tab, on the
+// menu button, on the Admin Review row, and on each tab inside that has something waiting. Nobody else sees one.
+test.describe("red dots for the admin", () => {
+  // The demo's made-up people never have the admin's address, so for the test the demo's sign-in is told to use it.
+  const beAdmin = (page: Page) => page.route(/\/src\/lib\/demo\/auth\.ts/, async route => {
+    const response = await route.fetch();
+    const text = await response.text();
+    const body = text.replace(/export function demoEmail\([^)]*\) \{[\s\S]*?\n\}/, 'export function demoEmail() { return "obaroikoyo@gmail.com"; }');
+    if (body === text) throw new Error("the demo's sign-in changed shape: update this test");
+    await route.fulfill({ response, body });
+  });
+
+  // One brand asking to be verified and one report waiting for a decision, then the app reads them.
+  const leaveWorkForAdmin = async (page: Page) => {
+    await page.evaluate(() => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      const now = new Date().toISOString();
+      saved.tables.verification_requests.push({ id: crypto.randomUUID(), brand_id: saved.tables.brand_profiles[0].id, note: "Please verify us", status: "pending", requested_at: now });
+      saved.tables.reports.push({ id: crypto.randomUUID(), reporter_id: saved.tables.profiles[0].id, reported_user_id: saved.tables.profiles[1].id, reason: "Spam", status: "open", created_at: now });
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    });
+    await page.waitForTimeout(700); // the saved copy is written a moment after each change
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+  };
+
+  for (const role of ["creator", "brand"] as const) {
+    test(`${role} who is the admin: dots on the Profile tab, the menu button and the Admin Review row, and on the tabs inside`, async ({ page }) => {
+      test.setTimeout(90_000);
+      await beAdmin(page);
+      const { leaks, errors } = await openDemo(page, role);
+      await leaveWorkForAdmin(page);
+      await expect(page.getByTestId("admin-dot-nav")).toBeVisible({ timeout: 20_000 });
+
+      await page.getByText("Profile", { exact: true }).last().click();
+      await expect(page.getByTestId("admin-dot-menu")).toBeVisible();
+      await page.getByTestId("admin-dot-menu").click();
+      await expect(page.getByText("Admin Review", { exact: true })).toBeVisible();
+      await expect(page.getByTestId("admin-dot-row")).toBeVisible();
+
+      await page.getByText("Admin Review", { exact: true }).click();
+      await expect(page.getByText("Verification (1)")).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText("Reports (1)")).toBeVisible();
+      await expect(page.getByText("Disputes (0)")).toBeVisible();
+      // a dot on the two tabs with something waiting, none on the empty one
+      await expect(page.getByTestId("admin-tab-dot")).toHaveCount(2);
+      await expect(page.getByRole("button", { name: /^Disputes/ }).getByTestId("admin-tab-dot")).toHaveCount(0);
+
+      expect(leaks, "nothing may reach the real backend").toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
+
+  test("anyone else sees no dot, even with work waiting", async ({ page }) => {
+    test.setTimeout(90_000);
+    const { leaks, errors } = await openDemo(page, "creator");
+    await leaveWorkForAdmin(page);
+    await expect(page.getByText("Profile", { exact: true }).last()).toBeVisible({ timeout: 20_000 });
+    await page.waitForTimeout(1_500); // long enough for a dot to have shown
+    await expect(page.getByTestId("admin-dot-nav")).toHaveCount(0);
+    await page.getByText("Profile", { exact: true }).last().click();
+    await expect(page.getByText("My Profile")).toBeVisible();
+    await expect(page.getByTestId("admin-dot-menu")).toHaveCount(0);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
   });
 });

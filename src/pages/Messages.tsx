@@ -22,6 +22,7 @@ import { getCreatorPayoutsEnabled } from "../lib/stripeConnect";
 import { COMBINED_PLATFORM_FEE_PERCENT, dealBreakdown } from "../lib/fees";
 import DealPriceCard from "../components/DealPriceCard";
 import DealTabs from "../components/DealTabs";
+import { dealsWithTabs, unreadDealNotifications } from "../lib/dealTabs";
 import { cardElementOptions } from "../lib/stripeTheme";
 import { currentDealPrice, useDealOffers } from "../lib/priceOffers";
 import { REVIEW_WINDOW_DAYS, MAX_VIDEO_REQUESTS, reviewEndsAt, formatTimeLeft, formatReviewEnd } from "../lib/review";
@@ -217,12 +218,39 @@ const headerAction: React.CSSProperties = {
 // A brand and creator can have several deals going at once (one per campaign), all in the
 // same chat, and the chat shows one at a time. This picks the one it opens on: the one that
 // most needs attention (money held and waiting on a video, then a dispute, then an open
-// deal, then one still waiting to be accepted, then finished ones). Applications arrive
-// newest first and the sort keeps that order inside each group, so the newest of a kind wins.
-const DEAL_ORDER = ["funded", "disputed", "accepted", "pending", "paid", "refunded", "rejected"];
+// deal, then finished ones). An application the brand hasn't accepted yet comes last: it has
+// no tab (see dealsWithTabs), so the chat is never left sitting on one that can't be switched
+// away from. Applications arrive newest first and the sort keeps that order inside each group,
+// so the newest of a kind wins.
+const DEAL_ORDER = ["funded", "disputed", "accepted", "paid", "refunded", "rejected", "pending"];
 function pickDeal(deals: LinkedApplication[]): LinkedApplication | undefined {
   const rank = (status: string) => { const i = DEAL_ORDER.indexOf(status); return i === -1 ? DEAL_ORDER.indexOf("accepted") : i; };
   return [...deals].sort((a, b) => rank(a.status) - rank(b.status))[0];
+}
+
+// Every application between one creator and one brand, newest first - not just the latest: a pair can
+// have run more than one campaign together, and each needs its own pay/screen-out action. Null when the
+// read failed, so a caller can tell that from a pair that really has none.
+async function fetchLinkedApplications(creatorId: string, brandId: string): Promise<LinkedApplication[] | null> {
+  const { data, error } = await supabase
+    .from("applications")
+    .select("id, status, campaign_id, platforms, campaigns!inner(name, budget, brand_id, type)")
+    .eq("creator_id", creatorId)
+    .eq("campaigns.brand_id", brandId)
+    .order("created_at", { ascending: false });
+  if (error) return null;
+  return (data || []).map(a => {
+    const camp = a.campaigns as unknown as { name?: string; budget?: string; type?: string } | null;
+    return {
+      id: a.id,
+      status: a.status,
+      campaign_id: a.campaign_id,
+      campaign_name: camp?.name || "Campaign",
+      campaign_budget: parseInt(camp?.budget ?? "", 10) || 0,
+      campaign_type: camp?.type || "paid",
+      platforms: a.platforms || [],
+    };
+  });
 }
 
 // The conversation with its "current deal" fields pointed at one of its deals. Everything in
@@ -1380,6 +1408,10 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
   // Track unread conversation IDs locally to place red dots on chats
   const [unreadConvoIds, setUnreadConvoIds] = useState<string[]>([]);
+  // Deals in the open chat with something unread in them (a red dot on their tab), and a counter
+  // that goes up when a notification arrives so they are looked at again.
+  const [dealDots, setDealDots] = useState<string[]>([]);
+  const [notificationTick, setNotificationTick] = useState(0);
   const [seenCampaignIds, setSeenCampaignIds] = useState<string[]>([]);
   
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -1477,6 +1509,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, (payload) => {
           fetchUnreadMessages(user.id); // use local var, not state
           const n = payload.new as { id: string; user_id: string; type: string; title: string; body: string };
+          if (n.type !== "new_message") setNotificationTick(t => t + 1);
           if (role === "creator" && n.type === "payment_received") {
             setPaymentPopup({ title: n.title, body: n.body });
             // Showing the popup is the "seeing" of it - mark it read
@@ -1554,17 +1587,44 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
     return () => watcher.disconnect();
   }, [view, activeConvo?.id]);
 
+  // The deals that get a tab: the ones the brand has accepted (see dealsWithTabs). Worked out here,
+  // ahead of the header's height being measured, because the tabs are part of that header.
+  const tabbedDeals = dealsWithTabs(
+    activeConvo?.linked_applications ?? [],
+    messages.filter(m => m.text?.startsWith(CHAT_OPENED_PREFIX)).map(m => m.text),
+  );
+  const showingTabs = tabbedDeals.length > 1;
+
   useLayoutEffect(() => {
     if (stickyRef.current) setStickyHeight(stickyRef.current.offsetHeight);
     if (inputBarRef.current) setInputBarHeight(inputBarRef.current.offsetHeight);
-  }, [view, role, brandTab, activeConvo]);
+  }, [view, role, brandTab, activeConvo, showingTabs]);
 
   // When opening a chat, automatically clear its unread status
   useEffect(() => {
     if (view === "chat" && activeConvo) {
-      clearUnreadForConvo(activeConvo.id, activeConvo.campaign_id, activeConvo.application_id);
+      clearUnreadForConvo(activeConvo.id, activeConvo.campaign_id, activeConvo.application_id, (activeConvo.linked_applications ?? []).map(d => d.campaign_id));
     }
   }, [view, activeConvo?.id]);
+
+  // The red dots on the deal tabs: which deals in the open chat have a notification nobody has read.
+  // Looked at again when the chat opens, when its deals change, when you switch deal and when a new
+  // notification arrives. What is new in the deal you are looking at is read by looking at it.
+  useEffect(() => {
+    if (view !== "chat" || !activeConvo || !currentUserId) return;
+    const deals = activeConvo.linked_applications ?? [];
+    if (deals.length < 2) return;
+    let live = true;
+    unreadDealNotifications(currentUserId, activeConvo.id, deals).then(unread => {
+      if (!live) return;
+      setDealDots([...new Set(unread.map(n => n.dealId))].filter(id => id !== activeConvo.application_id));
+      const seen = unread.filter(n => n.dealId === activeConvo.application_id).map(n => n.id);
+      if (seen.length > 0 && document.visibilityState === "visible") {
+        supabase.from("notifications").update({ read: true }).in("id", seen).then(() => undefined);
+      }
+    });
+    return () => { live = false; };
+  }, [view, activeConvo, currentUserId, notificationTick]);
 
   const loadConversations = async () => {
     setLoading(true);
@@ -1615,29 +1675,8 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
             const creatorSearchId = profile?.role === "creator" ? otherId : user.id;
             const brandSearchId = profile?.role === "brand" ? otherId : user.id;
 
-            // Fetch every application between this brand+creator pair, not
-            // just the latest - a brand and creator can have run more than
-            // one campaign together, and each needs its own pay/screen-out
-            // action rather than only ever surfacing the newest one.
-            const { data: linkedApps } = await supabase
-              .from("applications")
-              .select("id, status, campaign_id, platforms, campaigns!inner(name, budget, brand_id, type)")
-              .eq("creator_id", creatorSearchId)
-              .eq("campaigns.brand_id", brandSearchId)
-              .order("created_at", { ascending: false });
-
-            const linkedApplications: LinkedApplication[] = (linkedApps || []).map(a => {
-              const camp = a.campaigns as unknown as { name?: string; budget?: string; type?: string } | null;
-              return {
-                id: a.id,
-                status: a.status,
-                campaign_id: a.campaign_id,
-                campaign_name: camp?.name || "Campaign",
-                campaign_budget: parseInt(camp?.budget ?? "", 10) || 0,
-                campaign_type: camp?.type || "paid",
-                platforms: a.platforms || [],
-              };
-            });
+            // Every deal between this brand+creator pair, not just the latest.
+            const linkedApplications = (await fetchLinkedApplications(creatorSearchId, brandSearchId)) ?? [];
             // The chat opens on the deal that most needs attention; the tabs at the top
             // switch to the others (see pickDeal).
             const dealInView = pickDeal(linkedApplications);
@@ -1707,7 +1746,7 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
   // Whatever the brand/creator can already see by opening this conversation
   // - the payment-secured system message, the application itself - counts
   // as "seen", so clear all three kinds here.
-  const clearUnreadForConvo = async (convoId: string, campaignId?: string | null, applicationId?: string | null) => {
+  const clearUnreadForConvo = async (convoId: string, campaignId?: string | null, applicationId?: string | null, dealCampaignIds: string[] = []) => {
   // Clear the dot immediately rather than waiting on the round-trip below.
   setUnreadConvoIds(prev => prev.filter(id => id !== convoId));
 
@@ -1722,7 +1761,10 @@ export default function Messages({ navigate, role, openConvoId, onConvoOpened, n
 
   if (notifs) {
     const toMark = notifs.filter(n =>
-      ((n.type === "new_message" || n.type === "campaign_chatting") && n.data?.conversation_id === convoId)
+      (n.type === "new_message" && n.data?.conversation_id === convoId)
+      // "Chat opened" is about one deal: it is read when that deal is looked at, and until then the deal's
+      // tab has a dot. One that names a campaign this chat has no deal for would never be, so it goes with the chat.
+      || (n.type === "campaign_chatting" && n.data?.conversation_id === convoId && !dealCampaignIds.includes(n.data?.campaign_id))
       || (!!campaignId && n.data?.campaign_id === campaignId)
       || (!!applicationId && n.data?.application_id === applicationId)
     ).map(n => n.id);
@@ -1787,6 +1829,21 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       .eq("conversation_id", convoId).neq("sender_id", myId).is("read_at", null);
   };
 
+  // The list a chat is opened from can be a while old, and a deal may have moved on since (paid, refunded,
+  // disputed) or a new one been accepted. Read the pair's deals again so every tab shows where its deal is now.
+  // The deal you are looking at stays the one you are looking at.
+  const refreshDeals = async (convo: Conversation) => {
+    if (!convo.creator_id) return;
+    const brandId = convo.participant_1 === convo.creator_id ? convo.participant_2 : convo.participant_1;
+    const fresh = await fetchLinkedApplications(convo.creator_id, brandId);
+    if (!fresh) return;
+    setActiveConvo(prev => {
+      if (!prev || prev.id !== convo.id) return prev;
+      const viewing = fresh.find(d => d.id === prev.application_id);
+      return { ...prev, linked_applications: fresh, application_status: viewing?.status ?? prev.application_status };
+    });
+  };
+
   const openChat = async (convo: Conversation) => {
     setActiveConvo(convo);
     setView("chat");
@@ -1794,6 +1851,7 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     setReactions({});
     isNearBottomRef.current = true;
     loadMessages(convo.id);
+    refreshDeals(convo);
     if (currentUserId) markMessagesRead(convo.id, currentUserId);
 
     if (chatChannelRef.current) supabase.removeChannel(chatChannelRef.current);
@@ -1815,6 +1873,8 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
       // shows its new stage on its tab.
       channel = channel.on("postgres_changes", { event: "UPDATE", schema: "public", table: "applications", filter: `creator_id=eq.${convo.creator_id}` }, payload => {
         const updated = payload.new as { id: string; status: string };
+        // A deal this chat didn't know yet (the brand has just accepted another application): read them again.
+        if (!convo.linked_applications?.some(d => d.id === updated.id)) refreshDeals(convo);
         setActiveConvo(prev => {
           if (!prev || prev.id !== convo.id || !prev.linked_applications?.some(d => d.id === updated.id)) return prev;
           return {
@@ -1928,7 +1988,8 @@ return { ...app, creator_name: cp?.name || "Creator", creator_avatar: cp?.avatar
     if (!activeConvo || !deal || deal.id === activeConvo.application_id) return;
     dealScrollWanted.current = true;
     setActiveConvo(viewingDeal(activeConvo, deal));
-    clearUnreadForConvo(activeConvo.id, deal.campaign_id, deal.id);
+    setDealDots(prev => prev.filter(id => id !== deal.id));
+    clearUnreadForConvo(activeConvo.id, deal.campaign_id, deal.id, (activeConvo.linked_applications ?? []).map(d => d.campaign_id));
   };
   useEffect(() => {
     if (!dealScrollWanted.current) return;
@@ -2361,10 +2422,10 @@ return (
           )}
         </div>
 
-        {/* The deals this pair has going (one per campaign): which one the chat is showing */}
-        {view === "chat" && activeConvo && (activeConvo.linked_applications?.length ?? 0) > 1 && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
+        {/* The deals this pair has going, once the brand has accepted more than one (one per campaign): which one the chat is showing */}
+        {view === "chat" && activeConvo && showingTabs && !blockedIds.includes(otherParticipantId(activeConvo) || "") && (
           <DealTabs
-            deals={(activeConvo.linked_applications || []).map(d => ({ id: d.id, name: d.campaign_name, status: d.status }))}
+            deals={tabbedDeals.map(d => ({ id: d.id, name: d.campaign_name, status: d.status, unread: dealDots.includes(d.id) }))}
             activeId={activeConvo.application_id}
             onPick={showDeal}
           />

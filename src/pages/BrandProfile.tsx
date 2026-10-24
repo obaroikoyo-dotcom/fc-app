@@ -15,6 +15,7 @@ import StarRating from "../components/StarRating";
 import { getBrandTrackRecord, getBrandReviews, formatResponseTime, type BrandTrackRecord, type BrandReview } from "../lib/brandStats";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { useAdminAttention } from "../lib/adminAttention";
 import { uploadToR2 } from "../lib/r2Upload";
 
 const COMING_SOON_SOCIALS = ["YouTube", "Twitter/X", "Pinterest"];
@@ -150,6 +151,7 @@ const [cancelledAtPeriodEnd, setCancelledAtPeriodEnd] = useState(false);
   const [trackRecord, setTrackRecord] = useState<BrandTrackRecord | null>(null);
   const [reviews, setReviews] = useState<BrandReview[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const adminWaiting = useAdminAttention(); // things waiting in Admin Review (always 0 for anyone else)
   const [profileLoading, setProfileLoading] = useState(true);
   const showProfileSkeleton = useDelayedLoading(profileLoading);
   const hasProfileLoadedOnce = useHasLoadedOnce(profileLoading);
@@ -364,13 +366,14 @@ const loadFavourites = async () => {
     color: active ? "var(--t-0a0a0a)" : "var(--t-555)",
     fontSize: "12px", fontWeight: 500, cursor: "pointer", transition: "all 0.15s",
   });
-  const settingsRow = (label: string, sub: string, onClick: () => void, icon?: string, isLast = false): React.ReactNode => (
+  const settingsRow = (label: string, sub: string, onClick: () => void, icon?: string, isLast = false, hasNew = false): React.ReactNode => (
     <div onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "13px", padding: "13px 14px", borderBottom: isLast ? "none" : "1px solid var(--c-1a1a1a)", cursor: "pointer" }}>
       {icon && <SettingsIcon name={icon} color="var(--t-999)" size={18} />}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "14px", color: "var(--t-fff)", fontWeight: 500 }}>{label}</p>
         {sub && <p style={{ fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", fontSize: "12px", color: "var(--t-888)", marginTop: "2px" }}>{sub}</p>}
       </div>
+      {hasNew && <span data-testid="admin-dot-row" aria-label="Needs attention" style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", flexShrink: 0 }} />}
       <ChevronIcon />
     </div>
   );
@@ -440,10 +443,11 @@ const loadFavourites = async () => {
     <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)", fontFamily: "'TikTok Sans', 'Helvetica Neue', sans-serif", paddingBottom: "calc(6rem + env(safe-area-inset-bottom, 0px))" }}>
       <div style={{ padding: "1rem 1.25rem", paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--c-111)", position: "fixed", top: 0, left: 0, right: 0, background: "var(--c-0a0a0a)", zIndex: 100 }}>
         <span style={{ fontFamily: "'TikTok Sans', sans-serif", fontSize: "18px", fontWeight: 800, color: "var(--t-fff)" }}>Brand Profile</span>
-        <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
+        <div onClick={() => { setView("settings"); setSettingsSection("main"); }} style={{ position: "relative", width: "36px", height: "36px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", cursor: "pointer" }}>
           <div style={{ width: "18px", height: "2px", background: "var(--c-fff)", borderRadius: "1px" }} />
           <div style={{ width: "18px", height: "2px", background: "var(--c-fff)", borderRadius: "1px" }} />
           <div style={{ width: "18px", height: "2px", background: "var(--c-fff)", borderRadius: "1px" }} />
+          {adminWaiting > 0 && <span data-testid="admin-dot-menu" style={{ position: "absolute", top: "3px", right: "3px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)" }} />}
         </div>
       </div>
 
@@ -721,7 +725,7 @@ const loadFavourites = async () => {
 
         {isAdmin && sectionHeader("Admin")}
         {isAdmin && sectionCard(
-          settingsRow("Admin Review", "Verification requests & reports", () => navigate("admin-review"), "admin", true)
+          settingsRow("Admin Review", "Verification requests & reports", () => navigate("admin-review"), "admin", true, adminWaiting > 0)
         )}
 
         {sectionHeader("General")}

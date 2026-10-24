@@ -231,6 +231,11 @@ export default function AdminReview({ goBack }: Props) {
     </div>
   );
 
+  // A red dot beside a tab that has something waiting in it.
+  const waitingDot = (count: number) => count > 0 ? (
+    <span data-testid="admin-tab-dot" aria-hidden="true" style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", marginLeft: "6px", verticalAlign: "middle" }} />
+  ) : null;
+
   if (loading && !hasLoadedOnce && !showSkeleton) {
     return <div style={{ minHeight: "100%", background: "var(--c-0a0a0a)" }}>{header}</div>;
   }
@@ -282,13 +287,13 @@ export default function AdminReview({ goBack }: Props) {
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
         <button onClick={() => setTab("verification")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "verification" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "verification" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-          Verification ({requests.length})
+          Verification ({requests.length}){waitingDot(requests.length)}
         </button>
         <button onClick={() => setTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "reports" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-          Reports ({reports.length})
+          Reports ({reports.length}){waitingDot(reports.length)}
         </button>
         <button onClick={() => setTab("disputes")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "disputes" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "disputes" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-          Disputes ({disputes.length})
+          Disputes ({disputes.length}){waitingDot(disputes.length)}
         </button>
         <button onClick={() => setTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "accounts" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Accounts
