@@ -1400,16 +1400,23 @@ test.describe("on an iPhone", () => {
 });
 
 // The admin is told, with a red dot, wherever the way to Admin Review is: on the Profile tab, on the
-// menu button, on the Admin Review row, and on each tab inside that has something waiting. Nobody else sees one.
+// menu button, on the Admin Review row, and on each tab inside that has something new in it. Opening a
+// tab is looking at it, so its dot goes. Nobody else sees one.
 test.describe("red dots for the admin", () => {
   // The demo's made-up people never have the admin's address, so for the test the demo's sign-in is told to use it.
-  const beAdmin = (page: Page) => page.route(/\/src\/lib\/demo\/auth\.ts/, async route => {
+  // (And the demo has no disputes to review, so one can be added to what its admin-only function returns.)
+  const rewriteDemo = (page: Page, file: RegExp, from: RegExp | string, to: string) => page.route(file, async route => {
     const response = await route.fetch();
     const text = await response.text();
-    const body = text.replace(/export function demoEmail\([^)]*\) \{[\s\S]*?\n\}/, 'export function demoEmail() { return "obaroikoyo@gmail.com"; }');
-    if (body === text) throw new Error("the demo's sign-in changed shape: update this test");
+    const body = text.replace(from, to);
+    if (body === text) throw new Error(`the demo's ${file} changed shape: update this test`);
     await route.fulfill({ response, body });
   });
+  const beAdmin = (page: Page) =>
+    rewriteDemo(page, /\/src\/lib\/demo\/auth\.ts/, /export function demoEmail\([^)]*\) \{[\s\S]*?\n\}/, 'export function demoEmail() { return "obaroikoyo@gmail.com"; }');
+  const withOneDispute = (page: Page) =>
+    rewriteDemo(page, /\/src\/lib\/demo\/rpc\.ts/, 'case "admin_list_users":',
+      'case "admin_open_disputes": return [{ id: "dispute-1", application_id: "app-1", reason: "The video is not what we agreed", created_at: new Date().toISOString(), brand_name: "Test Brand", creator_name: "Test Creator", campaign_name: "Test Campaign", deliverable_url: null, previous_deliverable_url: null, revision_note: null, revision_count: 1, raised_by: "brand", creator_response: null }];\n    case "admin_list_users":');
 
   // One brand asking to be verified and one report waiting for a decision, then the app reads them.
   const leaveWorkForAdmin = async (page: Page) => {
@@ -1425,10 +1432,17 @@ test.describe("red dots for the admin", () => {
     await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
   };
 
+  const openAdminReview = async (page: Page) => {
+    await page.getByText("Profile", { exact: true }).last().click();
+    await page.getByTestId("admin-dot-menu").click();
+    await page.getByText("Admin Review", { exact: true }).click();
+  };
+
   for (const role of ["creator", "brand"] as const) {
-    test(`${role} who is the admin: dots on the Profile tab, the menu button and the Admin Review row, and on the tabs inside`, async ({ page }) => {
+    test(`${role} who is the admin: dots on the way in, and they go once the tabs have been opened`, async ({ page }) => {
       test.setTimeout(90_000);
       await beAdmin(page);
+      await withOneDispute(page);
       const { leaks, errors } = await openDemo(page, role);
       await leaveWorkForAdmin(page);
       await expect(page.getByTestId("admin-dot-nav")).toBeVisible({ timeout: 20_000 });
@@ -1442,15 +1456,115 @@ test.describe("red dots for the admin", () => {
       await page.getByText("Admin Review", { exact: true }).click();
       await expect(page.getByText("Verification (1)")).toBeVisible({ timeout: 15_000 });
       await expect(page.getByText("Reports (1)")).toBeVisible();
-      await expect(page.getByText("Disputes (0)")).toBeVisible();
-      // a dot on the two tabs with something waiting, none on the empty one
+      await expect(page.getByText("Disputes (1)")).toBeVisible();
+      // Verification is the tab that opens, so it has been looked at; the other two have something new
+      const dotOn = (name: RegExp) => page.getByRole("button", { name }).getByTestId("admin-tab-dot");
       await expect(page.getByTestId("admin-tab-dot")).toHaveCount(2);
-      await expect(page.getByRole("button", { name: /^Disputes/ }).getByTestId("admin-tab-dot")).toHaveCount(0);
+      await expect(dotOn(/^Verification/)).toHaveCount(0);
+      await expect(dotOn(/^Reports/)).toHaveCount(1);
+      await expect(dotOn(/^Disputes/)).toHaveCount(1);
+
+      // opening a tab takes its dot away, and only its own
+      await page.getByRole("button", { name: /^Reports/ }).click();
+      await expect(dotOn(/^Reports/)).toHaveCount(0);
+      await expect(dotOn(/^Disputes/)).toHaveCount(1);
+      await page.getByRole("button", { name: /^Disputes/ }).click();
+      await expect(page.getByTestId("admin-tab-dot")).toHaveCount(0);
+
+      // everything has been looked at, so back on the profile there are no dots left
+      await page.getByText("←", { exact: true }).first().click();
+      await expect(page.getByText(role === "creator" ? "My Profile" : "Brand Profile")).toBeVisible();
+      await page.waitForTimeout(1_500); // long enough for a dot to have shown
+      await expect(page.getByTestId("admin-dot-nav")).toHaveCount(0);
+      await expect(page.getByTestId("admin-dot-menu")).toHaveCount(0);
 
       expect(leaks, "nothing may reach the real backend").toEqual([]);
       expect(errors).toEqual([]);
     });
   }
+
+  test("a new item brings the dot back", async ({ page }) => {
+    test.setTimeout(90_000);
+    await beAdmin(page);
+    const { leaks, errors } = await openDemo(page, "creator");
+    await leaveWorkForAdmin(page);
+    await expect(page.getByTestId("admin-dot-nav")).toBeVisible({ timeout: 20_000 });
+    await openAdminReview(page);
+    await page.getByRole("button", { name: /^Reports/ }).click();
+    await page.getByText("←", { exact: true }).first().click();
+    await expect(page.getByText("My Profile")).toBeVisible();
+    await page.waitForTimeout(1_500);
+    await expect(page.getByTestId("admin-dot-nav")).toHaveCount(0);
+
+    // someone files another report
+    await page.evaluate(() => {
+      const saved = JSON.parse(sessionStorage.getItem("fc_demo_db")!);
+      saved.tables.reports.push({ id: crypto.randomUUID(), reporter_id: saved.tables.profiles[2].id, reported_user_id: saved.tables.profiles[3].id, reason: "Fake account", status: "open", created_at: new Date().toISOString() });
+      sessionStorage.setItem("fc_demo_db", JSON.stringify(saved));
+    });
+    await page.waitForTimeout(700);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByText("Not now", { exact: true }).click({ timeout: 2_000 }).catch(() => undefined);
+    await expect(page.getByTestId("admin-dot-nav")).toBeVisible({ timeout: 20_000 });
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
+  test("refunding the brand or paying the creator takes three steps, so a mis-tap does nothing", async ({ page }) => {
+    test.setTimeout(90_000);
+    await beAdmin(page);
+    await withOneDispute(page);
+    const { leaks, errors } = await openDemo(page, "creator");
+    await leaveWorkForAdmin(page);
+    // the demo cannot move money: if the money call is made it answers with an alert, which is how a call shows here
+    const alerts: string[] = [];
+    page.on("dialog", d => { alerts.push(d.message()); void d.dismiss(); });
+    await expect(page.getByTestId("admin-dot-nav")).toBeVisible({ timeout: 20_000 });
+    await openAdminReview(page);
+    await page.getByRole("button", { name: /^Disputes/ }).click();
+    const confirm = page.getByTestId("money-confirm");
+
+    // step 1 is the tap on the button: it asks, it does not act
+    await page.getByText("Refund Brand", { exact: true }).click();
+    await expect(confirm).toContainText("Step 2 of 3");
+    await expect(confirm).toContainText("goes back to Test Brand's card and Test Creator is not paid");
+    await page.waitForTimeout(500);
+    expect(alerts, "nothing happens on the first tap").toEqual([]);
+    await confirm.getByText("Go back", { exact: true }).click();
+    await expect(confirm).toHaveCount(0);
+    await expect(page.getByText("Release to Creator", { exact: true })).toBeVisible();
+
+    // step 2 continues, step 3 needs the word typed
+    await page.getByText("Refund Brand", { exact: true }).click();
+    await confirm.getByText("Continue", { exact: true }).click();
+    await expect(confirm).toContainText("Step 3 of 3");
+    await expect(confirm).toContainText("Type REFUND to confirm");
+    await confirm.getByText("Refund brand now", { exact: true }).click();
+    await confirm.getByRole("textbox").fill("REFUN");
+    await confirm.getByText("Refund brand now", { exact: true }).click();
+    await page.waitForTimeout(500);
+    expect(alerts, "the last button does nothing until the word is typed").toEqual([]);
+    await confirm.getByRole("textbox").fill("REFUND");
+    await confirm.getByText("Refund brand now", { exact: true }).click();
+    await expect.poll(() => alerts.length, { timeout: 10_000 }).toBe(1);
+
+    // paying the creator is the same three steps, with its own word
+    await page.getByText("Release to Creator", { exact: true }).click();
+    await expect(confirm).toContainText("is paid out to Test Creator and Test Brand is not refunded");
+    await confirm.getByText("Continue", { exact: true }).click();
+    await expect(confirm).toContainText("Type RELEASE to confirm");
+    await confirm.getByRole("textbox").fill("refund");
+    await confirm.getByText("Pay creator now", { exact: true }).click();
+    await page.waitForTimeout(500);
+    expect(alerts.length, "the wrong word does nothing").toBe(1);
+    await confirm.getByRole("textbox").fill("release");
+    await confirm.getByText("Pay creator now", { exact: true }).click();
+    await expect.poll(() => alerts.length, { timeout: 10_000 }).toBe(2);
+
+    expect(leaks, "nothing may reach the real backend").toEqual([]);
+    expect(errors).toEqual([]);
+  });
 
   test("anyone else sees no dot, even with work waiting", async ({ page }) => {
     test.setTimeout(90_000);

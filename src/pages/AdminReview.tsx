@@ -5,6 +5,8 @@ import { avatarSrc } from "../lib/avatar";
 import { listUsers, setAccountStatus, type UserSearchResult } from "../lib/moderation";
 import { useDelayedLoading } from "../lib/useDelayedLoading";
 import { useHasLoadedOnce } from "../lib/useHasLoadedOnce";
+import { markAdminSeen, unseenAdminIds, type AdminKind } from "../lib/adminAttention";
+import { MAX_VIDEO_REQUESTS } from "../lib/review";
 
 const ADMIN_EMAIL = "obaroikoyo@gmail.com";
 
@@ -82,6 +84,11 @@ export default function AdminReview({ goBack }: Props) {
     setChatLoading(false);
   };
   const [resolvingId, setResolvingId] = useState<string | null>(null);
+  // Refunding the brand or paying the creator moves real money and can't be undone, so it takes three
+  // deliberate steps: the tap on the button, "Continue" on a plain statement of what will happen, and
+  // typing a word before the last button works.
+  const [confirming, setConfirming] = useState<{ id: string; resolution: "refund" | "release"; step: 2 | 3 } | null>(null);
+  const [typedWord, setTypedWord] = useState("");
   const [loading, setLoading] = useState(true);
   const showSkeleton = useDelayedLoading(loading);
   const hasLoadedOnce = useHasLoadedOnce(loading);
@@ -123,6 +130,7 @@ export default function AdminReview({ goBack }: Props) {
       .select("id, brand_id, note, requested_at, brand_profiles(name, logo_url)")
       .eq("status", "pending")
       .order("requested_at", { ascending: true });
+    markAdminSeen("verification", (reqs || []).map((r: { id: string }) => r.id)); // it is the tab that opens first
     setRequests((reqs || []).map((r: any) => ({
       id: r.id,
       brand_id: r.brand_id,
@@ -187,6 +195,16 @@ export default function AdminReview({ goBack }: Props) {
     setLoading(false);
   };
 
+  // Opening a tab is looking at what is in it, so its red dot goes.
+  const showTab = (next: typeof tab) => {
+    setTab(next);
+    setConfirming(null);
+    setTypedWord("");
+    if (next === "verification") markAdminSeen(next, requests.map(r => r.id));
+    else if (next === "reports") markAdminSeen(next, reports.map(r => r.id));
+    else if (next === "disputes") markAdminSeen(next, disputes.map(d => d.id));
+  };
+
   const handleApprove = async (id: string) => {
     setActioningId(id);
     const { error } = await supabase.rpc("approve_verification_request", { target_request_id: id });
@@ -212,6 +230,8 @@ export default function AdminReview({ goBack }: Props) {
     setResolvingId(id);
     const { error } = await supabase.functions.invoke("resolve-dispute", { body: { dispute_id: id, resolution } });
     setResolvingId(null);
+    setConfirming(null);
+    setTypedWord("");
     if (!error) {
       setDisputes(prev => prev.filter(d => d.id !== id));
     } else {
@@ -231,8 +251,8 @@ export default function AdminReview({ goBack }: Props) {
     </div>
   );
 
-  // A red dot beside a tab that has something waiting in it.
-  const waitingDot = (count: number) => count > 0 ? (
+  // A red dot beside a tab with something in it that hasn't been looked at (never on the tab that is open).
+  const waitingDot = (kind: AdminKind, ids: string[]) => kind !== tab && unseenAdminIds(kind, ids).length > 0 ? (
     <span data-testid="admin-tab-dot" aria-hidden="true" style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "var(--b-ff3b30)", marginLeft: "6px", verticalAlign: "middle" }} />
   ) : null;
 
@@ -286,16 +306,16 @@ export default function AdminReview({ goBack }: Props) {
       {header}
 
       <div style={{ display: "flex", borderBottom: "1px solid var(--c-111)" }}>
-        <button onClick={() => setTab("verification")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "verification" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "verification" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-          Verification ({requests.length}){waitingDot(requests.length)}
+        <button onClick={() => showTab("verification")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "verification" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "verification" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+          Verification ({requests.length}){waitingDot("verification", requests.map(r => r.id))}
         </button>
-        <button onClick={() => setTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "reports" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-          Reports ({reports.length}){waitingDot(reports.length)}
+        <button onClick={() => showTab("reports")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "reports" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "reports" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+          Reports ({reports.length}){waitingDot("reports", reports.map(r => r.id))}
         </button>
-        <button onClick={() => setTab("disputes")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "disputes" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "disputes" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
-          Disputes ({disputes.length}){waitingDot(disputes.length)}
+        <button onClick={() => showTab("disputes")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "disputes" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "disputes" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+          Disputes ({disputes.length}){waitingDot("disputes", disputes.map(d => d.id))}
         </button>
-        <button onClick={() => setTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "accounts" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
+        <button onClick={() => showTab("accounts")} style={{ flex: 1, padding: "14px", background: "transparent", border: "none", borderBottom: tab === "accounts" ? "2px solid var(--c-fff)" : "2px solid transparent", color: tab === "accounts" ? "var(--t-fff)" : "var(--t-444)", fontSize: "12px", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", cursor: "pointer", fontFamily: "inherit" }}>
           Accounts
         </button>
       </div>
@@ -388,7 +408,7 @@ export default function AdminReview({ goBack }: Props) {
                     )}
                     {d.revision_count > 0 && (
                       <p style={{ color: "var(--t-888)", fontSize: "11px", lineHeight: 1.5, marginBottom: "10px" }}>
-                        Revision requests used: {d.revision_count}/2{d.revision_note ? ` · last note: "${d.revision_note}"` : ""}
+                        Revision requests used: {d.revision_count}/{MAX_VIDEO_REQUESTS}{d.revision_note ? ` · last note: "${d.revision_note}"` : ""}
                       </p>
                     )}
                     <div style={{ display: "flex", gap: "14px", marginBottom: "12px" }}>
@@ -422,20 +442,70 @@ export default function AdminReview({ goBack }: Props) {
                         )}
                       </div>
                     )}
+                    {confirming?.id === d.id ? (() => {
+                      const refund = confirming.resolution === "refund";
+                      const word = refund ? "REFUND" : "RELEASE";
+                      const ready = typedWord.trim().toUpperCase() === word;
+                      const cancel = () => { setConfirming(null); setTypedWord(""); };
+                      const small: React.CSSProperties = { flex: 1, padding: "10px", borderRadius: "8px", fontSize: "12px", fontWeight: 600, textAlign: "center" };
+                      return (
+                        <div data-testid="money-confirm" style={{ border: "1px solid var(--c-333)", borderRadius: "8px", padding: "12px", background: "var(--c-0a0a0a)" }}>
+                          <p style={{ color: "var(--t-888)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>Step {confirming.step} of 3</p>
+                          {confirming.step === 2 ? (
+                            <>
+                              <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>{refund ? `Refund ${d.brand_name}?` : `Pay ${d.creator_name}?`}</p>
+                              <p style={{ color: "var(--t-bbb)", fontSize: "12px", lineHeight: 1.6, marginBottom: "12px" }}>
+                                {refund
+                                  ? `The money for "${d.campaign_name}" goes back to ${d.brand_name}'s card and ${d.creator_name} is not paid.`
+                                  : `The money for "${d.campaign_name}" is paid out to ${d.creator_name} and ${d.brand_name} is not refunded.`} This can't be undone.
+                              </p>
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <div onClick={cancel} style={{ ...small, border: "1px solid var(--c-222)", color: "var(--t-ccc)", cursor: "pointer" }}>Go back</div>
+                                <div onClick={() => setConfirming({ ...confirming, step: 3 })} style={{ ...small, background: "var(--c-fff)", color: "var(--t-0a0a0a)", cursor: "pointer" }}>Continue</div>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <p style={{ color: "var(--t-fff)", fontSize: "13px", fontWeight: 600, marginBottom: "6px" }}>Type {word} to confirm</p>
+                              <input
+                                value={typedWord}
+                                onChange={e => setTypedWord(e.target.value)}
+                                placeholder={word}
+                                autoCapitalize="characters"
+                                autoCorrect="off"
+                                style={{ width: "100%", background: "var(--c-111)", border: "1px solid var(--c-222)", borderRadius: "8px", padding: "11px 14px", color: "var(--t-fff)", fontSize: "14px", outline: "none", fontFamily: "inherit", marginBottom: "10px", boxSizing: "border-box" as const }}
+                              />
+                              <div style={{ display: "flex", gap: "8px" }}>
+                                <div onClick={cancel} style={{ ...small, border: "1px solid var(--c-222)", color: "var(--t-ccc)", cursor: "pointer" }}>Cancel</div>
+                                <div
+                                  onClick={() => ready && !resolvingId ? handleResolveDispute(d.id, confirming.resolution) : undefined}
+                                  style={refund
+                                    ? { ...small, border: "1px solid var(--a-255-77-77-0_3)", color: "var(--t-ff4d4d)", cursor: ready ? "pointer" : "default", opacity: ready && resolvingId !== d.id ? 1 : 0.4 }
+                                    : { ...small, background: "var(--c-fff)", color: "var(--t-0a0a0a)", cursor: ready ? "pointer" : "default", opacity: ready && resolvingId !== d.id ? 1 : 0.4 }}
+                                >
+                                  {resolvingId === d.id ? "..." : refund ? "Refund brand now" : "Pay creator now"}
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })() : (
                     <div style={{ display: "flex", gap: "8px" }}>
                       <div
-                        onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "refund")}
+                        onClick={() => resolvingId ? undefined : (setTypedWord(""), setConfirming({ id: d.id, resolution: "refund", step: 2 }))}
                         style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid var(--a-255-77-77-0_3)", color: "var(--t-ff4d4d)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
                       >
                         {resolvingId === d.id ? "..." : "Refund Brand"}
                       </div>
                       <div
-                        onClick={() => resolvingId ? undefined : handleResolveDispute(d.id, "release")}
+                        onClick={() => resolvingId ? undefined : (setTypedWord(""), setConfirming({ id: d.id, resolution: "release", step: 2 }))}
                         style={{ flex: 1, padding: "10px", borderRadius: "8px", background: "var(--c-fff)", color: "var(--t-0a0a0a)", fontSize: "12px", fontWeight: 600, textAlign: "center", cursor: resolvingId ? "default" : "pointer", opacity: resolvingId === d.id ? 0.6 : 1 }}
                       >
                         Release to Creator
                       </div>
                     </div>
+                    )}
                   </div>
                 );
               })}
